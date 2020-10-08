@@ -1,0 +1,3 @@
+# Hades
+
+A GBA emulator.
