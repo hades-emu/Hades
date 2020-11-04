@@ -10,8 +10,11 @@
 #include "hades.h"
 #include "core.h"
 
+/*
+** Execute the Data Processing instructions (ADD, SUB, MOV, etc.).
+*/
 void
-core_data_processing(
+core_arm_data_processing(
     struct core *core,
     uint32_t op
 ) {
@@ -48,7 +51,7 @@ core_data_processing(
 
         rm = op & 0xF;
         shift = (op >> 4) & 0xFF;
-        op2 = compute_shift(core, shift, core->registers[rm], cond && rd != 15);
+        op2 = core_compute_shift(core, shift, core->registers[rm], cond && rd != 15);
     }
 
     /*
@@ -58,114 +61,123 @@ core_data_processing(
         case 0: // AND (op1 AND op2)
             core->registers[rd] = op1 & op2;
             if (cond && rd != 15) {
-                core_cpsr_update_zn(core, core->registers[rd]);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
             }
             break;
         case 1: // EOR (op1 XOR op2)
             core->registers[rd] = op1 ^ op2;
             if (cond && rd != 15) {
-                core_cpsr_update_zn(core, core->registers[rd]);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
             }
             break;
         case 2: // SUB (op1 - op2)
             overflow = safe_usub(op1, op2, &core->registers[rd]);
             if (cond && rd != 15) {
-                core_cpsr_update_overflow(core, overflow);
-                core_cpsr_update_zn(core, core->registers[rd]);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
+                core->cpsr.overflow = overflow;
             }
             break;
         case 3: // RSB (op2 - op1)
             overflow = safe_usub(op2, op1, &core->registers[rd]);
             if (cond && rd != 15) {
-                core_cpsr_update_overflow(core, overflow);
-                core_cpsr_update_zn(core, core->registers[rd]);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
+                core->cpsr.overflow = overflow;
             }
             break;
         case 4: // ADD (op1 + op2)
             overflow = safe_uadd(op1, op2, &core->registers[rd]);
             if (cond && rd != 15) {
-                core_cpsr_update_overflow(core, overflow);
-                core_cpsr_update_zn(core, op1 + op2);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
+                core->cpsr.overflow = overflow;
             }
             break;
         case 5: // ADC (op1 + op2 + carry)
             overflow = safe_uadd(op1, op2, &core->registers[rd]);
-            overflow |= safe_uadd(core->registers[rd], bitfield_get(core->cpsr, CPSR_C), &core->registers[rd]);
+            overflow |= safe_uadd(core->registers[rd], core->cpsr.carry, &core->registers[rd]);
             if (cond && rd != 15) {
-                core_cpsr_update_overflow(core, overflow);
-                core_cpsr_update_zn(core, op1 + op2);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
+                core->cpsr.overflow = overflow;
             }
             break;
         case 6: // SBC (op1 - op2 + carry - 1)
             overflow = safe_usub(op1, op2, &core->registers[rd]);
-            overflow |= safe_uadd(core->registers[rd], bitfield_get(core->cpsr, CPSR_C), &core->registers[rd]);
+            overflow |= safe_uadd(core->registers[rd], core->cpsr.carry, &core->registers[rd]);
             overflow |= safe_usub(core->registers[rd], 1, &core->registers[rd]);
             if (cond && rd != 15) {
-                core_cpsr_update_overflow(core, overflow);
-                core_cpsr_update_zn(core, op1 + op2);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
+                core->cpsr.overflow = overflow;
             }
             break;
         case 7: // RSC (op2 - op1 + carry - 1)
             overflow = safe_usub(op2, op1, &core->registers[rd]);
-            overflow |= safe_uadd(core->registers[rd], bitfield_get(core->cpsr, CPSR_C), &core->registers[rd]);
+            overflow |= safe_uadd(core->registers[rd], core->cpsr.carry, &core->registers[rd]);
             overflow |= safe_usub(core->registers[rd], 1, &core->registers[rd]);
             if (cond && rd != 15) {
-                core_cpsr_update_overflow(core, overflow);
-                core_cpsr_update_zn(core, op1 + op2);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
+                core->cpsr.overflow = overflow;
             }
             break;
         case 8: // TST (as AND, but result is not written)
-            core_cpsr_update_zn(core, op1 & op2);
+            core->cpsr.zero = ((op1 & op2) == 0);
+            core->cpsr.negative = (((op1 & op2) & 0x80000000) != 0);
             break;
         case 9: // TEQ (as EOR, but result is not written)
-            core_cpsr_update_zn(core, op1 ^ op2);
+            core->cpsr.zero = ((op1 ^ op2) == 0);
+            core->cpsr.negative = (((op1 ^ op2) & 0x80000000) != 0);
             break;
         case 10: // CMP (as SUB, but result is not written)
             overflow = safe_usub(op1, op2, NULL);
             if (cond && rd != 15) {
-                core_cpsr_update_overflow(core, overflow);
-                core_cpsr_update_zn(core, op1 - op2);
+                core->cpsr.zero = ((op1 - op2) == 0);
+                core->cpsr.negative = (((op1 - op2) & 0x80000000) != 0);
+                core->cpsr.overflow = overflow;
             }
             break;
         case 11: // CMN (as ADD, but result is not written)
             overflow = safe_uadd(op1, op2, NULL);
             if (cond && rd != 15) {
-                core_cpsr_update_overflow(core, overflow);
-                core_cpsr_update_zn(core, op1 + op2);
+                core->cpsr.zero = ((op1 + op2) == 0);
+                core->cpsr.negative = (((op1 + op2) & 0x80000000) != 0);
+                core->cpsr.overflow = overflow;
             }
             break;
         case 12: // ORR (op1 OR op2)
             core->registers[rd] = op1 | op2;
             if (cond && rd != 15) {
-                core_cpsr_update_zn(core, core->registers[rd]);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
             }
             break;
         case 13: // MOV (op2, op1 is ignored)
             core->registers[rd] = op2;
             if (cond && rd != 15) {
-                core_cpsr_update_zn(core, core->registers[rd]);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
             }
             break;
         case 14: // BIC (op1 AND NOT op2)
             core->registers[rd] = op1 & ~op2;
             if (cond && rd != 15) {
-                core_cpsr_update_zn(core, core->registers[rd]);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
             }
             break;
         case 15: // MVN (NOT op2, op1 is ignored)
             core->registers[rd] = ~op2;
             if (cond && rd != 15) {
-                core_cpsr_update_zn(core, core->registers[rd]);
+                core->cpsr.zero = (core->registers[rd] == 0);
+                core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
             }
             break;
         default:
             break;
     }
-
-    hs_logln(
-        CORE,
-        "%s <- 0x%08x",
-        registers_name[rd],
-        core->registers[rd]
-    );
 }

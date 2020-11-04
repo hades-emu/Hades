@@ -7,16 +7,38 @@
 ##
 ################################################################################
 
-project('Hades', 'c')
+project(
+    'Hades',
+    'c',
+    version: '0.0.1',
+    default_options: ['c_std=gnu11']
+)
 
 executable(
     'hades',
-    'source/core/branch.c',
+    'source/core/arm/branch.c',
+    'source/core/arm/data.c',
+    'source/core/arm/mul.c',
+    'source/core/arm/psr.c',
+    'source/core/arm/sdt.c',
+    'source/core/bus.c',
     'source/core/core.c',
-    'source/core/data.c',
-    'source/core/mem.c',
-    'source/core/sdt.c',
+    'source/debugger/cmd/context.c',
+    'source/debugger/cmd/continue.c',
+    'source/debugger/cmd/disas.c',
+    'source/debugger/cmd/help.c',
+    'source/debugger/cmd/next.c',
+    'source/debugger/cmd/print.c',
+    'source/debugger/cmd/registers.c',
+    'source/debugger/cmd/set.c',
+    'source/debugger/cmd/step.c',
+    'source/debugger/debugger.c',
+    'source/rom/rom.c',
     'source/main.c',
-    dependencies: dependency('capstone', version: '>=3.0.0', required: true),
+    'source/utils.c',
+    dependencies: [
+        dependency('capstone', version: '>=3.0.0', required: true),
+        dependency('readline', version: '>=7', required: true),
+    ],
     include_directories: include_directories('include')
 )

@@ -15,7 +15,7 @@
 ** Read the byte at the given address.
 */
 uint8_t
-core_mem_read8(
+core_bus_read8(
     struct core const *core,
     uint32_t addr
 ) {
@@ -30,7 +30,7 @@ core_mem_read8(
 ** Read the byte at the given address.
 */
 void
-core_mem_write8(
+core_bus_write8(
     struct core *core,
     uint32_t addr,
     uint8_t val
@@ -46,7 +46,7 @@ core_mem_write8(
 ** Read the word at the given address, hiding all endianness conversions.
 */
 uint16_t
-core_mem_read16(
+core_bus_read16(
     struct core const *core,
     uint32_t addr
 ) {
@@ -65,7 +65,7 @@ core_mem_read16(
 ** Read the word at the given address, hiding all endianness conversions.
 */
 void
-core_mem_write16(
+core_bus_write16(
     struct core *core,
     uint32_t addr,
     uint16_t val
@@ -85,7 +85,7 @@ core_mem_write16(
 ** Read the double-word at the given address, hiding all endianness conversions.
 */
 uint32_t
-core_mem_read32(
+core_bus_read32(
     struct core const *core,
     uint32_t addr
 ) {
@@ -104,7 +104,7 @@ core_mem_read32(
 ** Read the double-word at the given address, hiding all endianness conversions.
 */
 void
-core_mem_write32(
+core_bus_write32(
     struct core *core,
     uint32_t addr,
     uint32_t val

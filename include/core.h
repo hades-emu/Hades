@@ -21,13 +21,13 @@
 # include <stdlib.h>
 # include "hades.h"
 
+struct debugger;
+
 /*
 ** An ARM core.
 */
 struct core {
-    struct {
-        bool dump_asm;
-    } debug;
+    struct debugger *debugger;      // The debugger this core is linked with.
 
     uint8_t *memory;
     size_t memory_size;
@@ -45,45 +45,50 @@ struct core {
             uint32_t r8;
             uint32_t r9;
             uint32_t r10;
-            uint32_t r11;
-            uint32_t r12;
-            uint32_t r13;
-            uint32_t r14;       // Link Register
-            uint32_t r15;       // Program counter
+            uint32_t r11;       // FP
+            uint32_t r12;       // IP
+            uint32_t r13;       // SP
+            uint32_t r14;       // LR
+            uint32_t r15;       // PC
         } __packed;
         uint32_t registers[16];
     };
 
-    uint32_t cpsr;
+    uint32_t prefetch;              // The next instruction to be executed
+    bool force_pipeline_reload;     // Forces a reload of the 3-stage pipeline
 
-    bool big_endian;
+    union {
+        struct {
+#ifdef __BIG_ENDIAN__
+            uint32_t negative: 1;
+            uint32_t zero: 1;
+            uint32_t carry: 1;
+            uint32_t overflow: 1;
+            uint32_t : 20;
+            uint32_t irq_disable: 1;
+            uint32_t fiq_disable: 1;
+            uint32_t state: 1;
+            uint32_t mode: 5;
+#else
+            uint32_t mode: 5;
+            uint32_t thumb: 1;
+            uint32_t fiq_disable: 1;
+            uint32_t irq_disable: 1;
+            uint32_t : 20;
+            uint32_t overflow: 1;
+            uint32_t carry: 1;
+            uint32_t zero: 1;
+            uint32_t negative: 1;
+#endif
+        };
+        uint32_t raw;
+    } cpsr __packed;
+
+    uint8_t big_endian;
 };
 
 /*
-** The user-friendly name of all registers
-*/
-static char const * const registers_name[] = {
-    [0]     = "r0",
-    [1]     = "r1",
-    [2]     = "r2",
-    [3]     = "r3",
-    [4]     = "r4",
-    [5]     = "r5",
-    [6]     = "r6",
-    [7]     = "r7",
-    [8]     = "r8",
-    [9]     = "r9",
-    [10]    = "r10",
-    [11]    = "fp",
-    [12]    = "ip",
-    [13]    = "sp",
-    [14]    = "lr",
-    [15]    = "pc",
-};
-
-
-/*
-** The fifteen possible conditions
+** The fifteen possible conditions that prefixes an instruction.
 */
 enum opcode_cond {
     COND_EQ = 0b0000,   // Equal
@@ -104,68 +109,51 @@ enum opcode_cond {
 };
 
 /*
-** The prefix used to describe which condition the following instruction uses.
+** An enumeration of all the modes the processor can be in.
 */
-static char const * const cond_suffix[] = {
-    [COND_EQ] = "EQ",
-    [COND_NE] = "NE",
-    [COND_CS] = "CS",
-    [COND_CC] = "CC",
-    [COND_MI] = "MI",
-    [COND_PL] = "PL",
-    [COND_VS] = "VS",
-    [COND_VC] = "VC",
-    [COND_HI] = "HI",
-    [COND_LS] = "LS",
-    [COND_GE] = "GE",
-    [COND_LT] = "LT",
-    [COND_GT] = "GT",
-    [COND_LE] = "LE",
-    [COND_AL] = "",
+enum core_modes {
+    MODE_USER            = 0b10000,
+    MODE_FIQ             = 0b10001,
+    MODE_IRQ             = 0b10010,
+    MODE_SUPERVISOR      = 0b10011,
+    MODE_ABORT           = 0b10111,
+    MODE_UNDEFINED       = 0b11011,
+    MODE_SYSTEM          = 0b11111,
 };
 
-/*
-** The offset, in bit, of each and every flag in the CPSR.
-*/
-enum cpsr_bits {
-    CPSR_M0         = 0,
-    CPSR_M1         = 1,
-    CPSR_M2         = 2,
-    CPSR_M3         = 3,
-    CPSR_M4         = 4,
-    CPSR_THUMB      = 5,
-    CPSR_FIQ        = 6,
-    CPSR_IRQ        = 7,
-    CPSR_V          = 28,
-    CPSR_C          = 29,
-    CPSR_Z          = 30,
-    CPSR_N          = 31,
-};
+/* core/arm/branch.c */
+void core_arm_branch(struct core *core, uint32_t op);
+void core_arm_branchxchg(struct core *core, uint32_t op);
 
-/* branch.c */
-void core_branch(struct core *core, uint32_t op);
-void core_branchxchg(struct core *core, uint32_t op);
+/* core/arm/data.c */
+void core_arm_data_processing(struct core *core, uint32_t op);
 
-/* core.c */
-void core_next_op(struct core *core);
-uint32_t compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool update_carry);
-void core_cpsr_update_thumb(struct core *core, bool thumb);
-void core_cpsr_update_carry(struct core *core, bool carry);
-void core_cpsr_update_zn(struct core *core, uint32_t val);
-void core_cpsr_update_overflow(struct core *core, bool overflow);
+/* core/arm/mul.c */
+void core_arm_mul(struct core *core, uint32_t op);
 
-/* data.c */
-void core_data_processing(struct core *core, uint32_t op);
+/* core/arm/psr.c */
+void core_arm_mrs(struct core *core, uint32_t op);
+void core_arm_msr(struct core *core, uint32_t op);
+void core_arm_msrf(struct core *core, uint32_t op);
 
-/* mem.c */
-uint8_t core_mem_read8(struct core const *core, uint32_t addr);
-void core_mem_write8(struct core *core, uint32_t addr, uint8_t val);
-uint16_t core_mem_read16(struct core const *core, uint32_t addr);
-void core_mem_write16(struct core *core, uint32_t addr, uint16_t val);
-uint32_t core_mem_read32(struct core const *core, uint32_t addr);
-void core_mem_write32(struct core *core, uint32_t addr, uint32_t val);
+/* core/arm/sdt.c */
+void core_arm_sdt(struct core *core, uint32_t op);
 
-/* sdt.c */
-void core_sdt(struct core *core, uint32_t op);
+/* core/bus.c */
+uint8_t core_bus_read8(struct core const *core, uint32_t addr);
+void core_bus_write8(struct core *core, uint32_t addr, uint8_t val);
+uint16_t core_bus_read16(struct core const *core, uint32_t addr);
+void core_bus_write16(struct core *core, uint32_t addr, uint16_t val);
+uint32_t core_bus_read32(struct core const *core, uint32_t addr);
+void core_bus_write32(struct core *core, uint32_t addr, uint32_t val);
+
+/* core/core.c */
+void core_init(struct core *core, uint8_t *mem, size_t mem_size);
+void core_destroy(struct core *core);
+void core_run(struct core *core);
+void core_reset(struct core *core);
+void core_step(struct core *core);
+void core_reload_pipeline(struct core *core);
+uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool update_carry);
 
 #endif /* !CORE_H */
