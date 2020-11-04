@@ -15,40 +15,99 @@
 */
 
 #include <stdbool.h>
+#include <string.h>
 #include "hades.h"
 #include "core.h"
 
 /*
-** Fetch, decode and execute the next instruction.
+** Initialize the core by attaching the given memory to it
+** and initializing its registers.
 */
 void
-core_next_op(
+core_init(
+    struct core *core,
+    uint8_t *mem,
+    size_t mem_size
+) {
+    memset(core, 0, sizeof(*core));
+    core->memory = mem;
+    core->memory_size = mem_size;
+    core_reset(core);
+}
+
+/*
+** Destroy a core and free its memory.
+*/
+void
+core_destroy(
+    struct core *core
+) {
+    free(core->memory);
+}
+
+/*
+** Reset the core and the memory to their default values.
+*/
+void
+core_reset(
+    struct core *core
+) {
+    int i;
+
+    for (i = 0; i < 16; ++i) {
+        core->registers[i] = 0;
+    }
+
+    core->r15 = 0x8000000;      // Entry point of the game
+    core->cpsr.raw = 0;
+    core->cpsr.mode = MODE_SYSTEM;
+    core->big_endian = false;
+    core_reload_pipeline(core);
+}
+
+/*
+** Fetch, decode and execute instructions until the computer catches fire.
+*/
+void
+core_run(
+    struct core *core
+) {
+    while (true) {
+        core_step(core);
+    }
+}
+
+/*
+** Fetch, decode and execute the next ARM instruction.
+*/
+static
+void
+core_step_arm(
     struct core *core
 ) {
     uint32_t op;
     bool can_exec;
 
-    op = core_mem_read32(core, core->r15);
+    op = core->prefetch;
+    core->prefetch = core_bus_read32(core, core->r15);
     core->r15 += 4;
-
-    //printf("[CPU] Decoding %#08x\n", op->value);
 
     // Test if the conditions required to execute the instruction are met
     switch (op >> 28) {
-        case COND_EQ: can_exec = bitfield_get(core->cpsr, CPSR_Z); break;
-        case COND_NE: can_exec = !bitfield_get(core->cpsr, CPSR_Z); break;
-        case COND_CS: can_exec = bitfield_get(core->cpsr, CPSR_C); break;
-        case COND_CC: can_exec = !bitfield_get(core->cpsr, CPSR_C); break;
-        case COND_MI: can_exec = bitfield_get(core->cpsr, CPSR_N); break;
-        case COND_PL: can_exec = !bitfield_get(core->cpsr, CPSR_N); break;
-        case COND_VS: can_exec = bitfield_get(core->cpsr, CPSR_V); break;
-        case COND_VC: can_exec = !bitfield_get(core->cpsr, CPSR_V); break;
-        case COND_HI: can_exec = bitfield_get(core->cpsr, CPSR_C) && !bitfield_get(core->cpsr, CPSR_Z); break;
-        case COND_LS: can_exec = !bitfield_get(core->cpsr, CPSR_C) || bitfield_get(core->cpsr, CPSR_Z); break;
-        case COND_GE: can_exec = bitfield_get(core->cpsr, CPSR_N) == bitfield_get(core->cpsr, CPSR_V); break;
-        case COND_LT: can_exec = bitfield_get(core->cpsr, CPSR_N) != bitfield_get(core->cpsr, CPSR_V); break;
-        case COND_GT: can_exec = !bitfield_get(core->cpsr, CPSR_Z) && (bitfield_get(core->cpsr, CPSR_N) == bitfield_get(core->cpsr, CPSR_V));break;
-        case COND_LE: can_exec = bitfield_get(core->cpsr, CPSR_Z) || (bitfield_get(core->cpsr, CPSR_N) != bitfield_get(core->cpsr, CPSR_V)); break;
+        case COND_EQ: can_exec = core->cpsr.zero; break;
+        case COND_NE: can_exec = !core->cpsr.zero; break;
+        case COND_CS: can_exec = core->cpsr.carry; break;
+        case COND_CC: can_exec = !core->cpsr.carry; break;
+        case COND_MI: can_exec = core->cpsr.negative; break;
+        case COND_PL: can_exec = !core->cpsr.negative; break;
+        case COND_VS: can_exec = core->cpsr.overflow; break;
+        case COND_VC: can_exec = !core->cpsr.overflow; break;
+        case COND_HI: can_exec = core->cpsr.carry && !core->cpsr.zero; break;
+        case COND_LS: can_exec = !core->cpsr.carry || core->cpsr.zero; break;
+        case COND_GE: can_exec = core->cpsr.negative == core->cpsr.overflow; break;
+        case COND_LT: can_exec = core->cpsr.negative != core->cpsr.overflow; break;
+        case COND_GT: can_exec = !core->cpsr.zero && (core->cpsr.negative == core->cpsr.overflow);break;
+        case COND_LE: can_exec = core->cpsr.zero || (core->cpsr.negative != core->cpsr.overflow); break;
         case COND_AL: can_exec = true; break;
         default:
             panic(CORE, "Unknown cond %u\n", op >> 28);
@@ -59,13 +118,21 @@ core_next_op(
         return ;
     }
 
-    switch ((op >> 25) & 0b111) {
+    switch (bitfield_get_range(op, 25, 28)) {
         case 0:
         case 1:
-            if ((op & 0xFFFFFF0) == 0x12FFF10) {
-                core_branchxchg(core, op);
-            } else if (bitfield_get(op, 25) || !bitfield_get(op, 7) || !bitfield_get(op, 4)) {
-                core_data_processing(core, op);
+            if (bitfield_get_range(op, 4, 28) == 0x12FFF1) {
+                core_arm_branchxchg(core, op);
+            } else if (bitfield_get_range(op, 23, 25) == 0b10 && bitfield_get_range(op, 16, 22) == 0b001111) {
+                core_arm_mrs(core, op);
+            } else if (bitfield_get_range(op, 23, 25 == 0b10) && bitfield_get_range(op, 12, 22) == 0b1010011111) {
+                core_arm_msr(core, op);
+            } else if (bitfield_get_range(op, 23, 25 == 0b10) && bitfield_get_range(op, 12, 22) == 0b1010001111) {
+                core_arm_msrf(core, op);
+            } else if (!bitfield_get(op, 4) || !bitfield_get(op, 7)) {
+                core_arm_data_processing(core, op);
+            } else if (bitfield_get_range(op, 22, 24) == 0) {
+                core_arm_mul(core, op);
             } else {
                 panic(CORE, "Unknown instruction");
             }
@@ -76,11 +143,10 @@ core_next_op(
             if (bitfield_get(op, 25) && bitfield_get(op, 4)) {
                 panic(CORE, "Undefined state");
             }
-
-            core_sdt(core, op);
+            core_arm_sdt(core, op);
             break;
         case 5:
-            core_branch(core, op);
+            core_arm_branch(core, op);
             break;
         default:
             panic(CORE, "Unknown instruction");
@@ -89,69 +155,44 @@ core_next_op(
 }
 
 /*
-** Update the carry flag of the CPSR.
+** Fetch, decode and execute the next Thumb instruction.
+*/
+static
+void
+core_step_thumb(
+    struct core *core
+) {
+    unimplemented(CORE, "Thumb mode isn't implemented (yet).");
+}
+
+/*
+** Fetch, decode and execute the next instruction.
 */
 void
-core_cpsr_update_carry(
-    struct core *core,
-    bool carry
+core_step(
+    struct core *core
 ) {
-    if (carry != bitfield_get(core->cpsr, CPSR_C)) {
-        hs_logln(DEBUG, "CPSR: carry flag %s", carry ? "set" : "unset");
-        bitfield_update(&core->cpsr, CPSR_C, carry);
+    if (core->cpsr.thumb) {
+        core_step_thumb(core);
+    } else {
+        core_step_arm(core);
     }
 }
 
 /*
-** Update the thumb flag of the CPSR.
+** Reload the cached op-code on the 3-stage pipeline.
+** This must be called when the value of PC is changed.
 */
 void
-core_cpsr_update_thumb(
-    struct core *core,
-    bool thumb
+core_reload_pipeline(
+    struct core *core
 ) {
-    if (thumb != bitfield_get(core->cpsr, CPSR_THUMB)) {
-        hs_logln(DEBUG, "CPSR: thumb flag %s", thumb ? "set" : "unset");
-        bitfield_update(&core->cpsr, CPSR_THUMB, thumb);
-    }
-}
-
-/*
-** Update the zero and negative flag of the CPSR.
-*/
-void
-core_cpsr_update_zn(
-    struct core *core,
-    uint32_t val
-) {
-    bool z;
-    bool n;
-
-    z = (val == 0);
-    n = ((val & 0x80000000) != 0);
-
-    if (z != bitfield_get(core->cpsr, CPSR_Z)) {
-        hs_logln(DEBUG, "CPSR: zero flag %s", z ? "set" : "unset");
-        bitfield_update(&core->cpsr, CPSR_Z, z);
-    }
-
-    if (n != bitfield_get(core->cpsr, CPSR_N)) {
-        hs_logln(DEBUG, "CPSR: negative flag %s", n ? "set" : "unset");
-        bitfield_update(&core->cpsr, CPSR_N, n);
-    }
-}
-
-/*
-** Update the overflow flag of the CPSR.
-*/
-void
-core_cpsr_update_overflow(
-    struct core *core,
-    bool overflow
-) {
-    if (overflow != bitfield_get(core->cpsr, CPSR_V)) {
-        hs_logln(DEBUG, "CPSR: overflow flag %s", overflow ? "set" : "unset");
-        bitfield_update(&core->cpsr, CPSR_V, overflow);
+    if (core->cpsr.thumb) {
+        core->prefetch = core_bus_read16(core, core->r15);
+        core->r15 += 2;
+    } else {
+        core->prefetch = core_bus_read32(core, core->r15);
+        core->r15 += 4;
     }
 }
 
@@ -161,7 +202,7 @@ core_cpsr_update_overflow(
 ** correct value.
 */
 uint32_t
-compute_shift(
+core_compute_shift(
     struct core *core,
     uint32_t encoded_shift,
     uint32_t value,
@@ -211,7 +252,7 @@ compute_shift(
             ** and the value is left untouched.
             */
             if (bits == 0) {
-                carry_out = bitfield_get(core->cpsr, CPSR_C);
+                carry_out = core->cpsr.carry;
             } else {
                 value <<= bits - 1;
                 carry_out = value >> 31;                    // Save the carry
@@ -244,7 +285,7 @@ compute_shift(
             if (bits == 0) {
                 carry_out = value & 0b1;
                 value >>= 1;
-                value |= bitfield_get(core->cpsr, CPSR_C) << 31;
+                value |= core->cpsr.carry << 31;
             } else {
                 carry_out = (value >> (bits - 1)) & 0b1;    // Save the carry
                 value = (value >> bits) | (value << (32 - bits));
@@ -253,7 +294,7 @@ compute_shift(
     }
 
     if (update_carry) {
-        core_cpsr_update_carry(core, carry_out);
+        core->cpsr.carry = carry_out;
     }
 
     return (value);

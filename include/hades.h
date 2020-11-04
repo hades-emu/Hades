@@ -16,7 +16,51 @@
 # include <stdarg.h>
 # include <stdlib.h>
 
-# define __packed __attribute__((packed))
+/*
+** A useful set of macros that act like keywords that are not available
+** otherwise in C11.
+*/
+# define inline             __inline
+# define asm                __asm__
+# define restrict           __restrict
+# define __pure             __attribute__((pure))
+# define __const            __attribute__((const))
+# define __cold             __attribute__((cold))
+# define __hot              __attribute__((hot))
+# define __used             __attribute__((used))
+# define __unused           __attribute__((unused))
+# define __packed           __attribute__((packed))
+# define __weak             __attribute__((weak))
+# define __weakref(x)       __attribute__((weakref(x)))
+# define __alias(x)         __attribute__((alias(x)))
+# define __aligned(x)       __attribute__((aligned(x)))
+# define __section(s)       __attribute__((section(s)))
+# define __noreturn         __attribute__((noreturn))
+# define likely(x)          __builtin_expect((x), 1)
+# define unlikely(x)        __builtin_expect((x), 0)
+# define __optimize(x)      __attribute__((optimize(x)))
+
+/*
+** A set of ANSI control sequences to format the terminal.
+*/
+# define RESET          "\e[0m"
+# define BOLD           "\e[1m"
+
+# define RED            "\e[31m"
+# define GREEN          "\e[32m"
+# define YELLOW         "\e[33m"
+# define BLUE           "\e[34m"
+# define MAGENTA        "\e[35m"
+# define CYAN           "\e[36m"
+# define LIGHT_GRAY     "\e[37m"
+# define DARK_GRAY      "\e[90m"
+# define LIGHT_RED      "\e[91m"
+# define LIGHT_GREEN    "\e[92m"
+# define LIGHT_YELLOW   "\e[93m"
+# define LIGHT_BLUE     "\e[94m"
+# define LIGHT_MAGENTA  "\e[95m"
+# define LIGHT_CYAN     "\e[96m"
+# define WHITE          "\e[97m"
 
 enum modules {
     GLOBAL      = 0,
@@ -32,104 +76,30 @@ static char const * const modules_str[] = {
     [DEBUG]     = " DEBUG ",
 };
 
-/*
-** Append to the log the given formatted string.
-*/
-static inline
-void
-hs_loga(
-    char const *fmt,
-    ...
-) {
-    va_list va;
+/* Panic if the given constant expression evaluates to `false`. */
+# define static_assert(e)                                           \
+    _Static_assert(                                                 \
+        e,                                                          \
+        "(" #e ") evaluated to false (in " __FILE__ " at line)"     \
+    )
 
-    va_start(va, fmt);
-    vprintf(fmt, va);
-    va_end(va);
-}
+/* Panic if the given expression evaluates to `false` */
+# define hs_assert(expr)                                    \
+    do {                                                    \
+        if (unlikely(!(expr))) {                            \
+            panic(                                          \
+                ERROR,                                      \
+                "assert(%s) failed (in %s at line %u).\n",  \
+                #expr,                                      \
+                __FILE__,                                   \
+                __LINE__                                    \
+            );                                              \
+        }                                                   \
+    }                                                       \
+    while (0)
 
-/*
-** Log the given formatted string, followed by a `\n`.
-*/
-static inline
-void
-hs_log(
-    enum modules module,
-    char const *fmt,
-    ...
-) {
-    va_list va;
-
-    va_start(va, fmt);
-    printf("[%s] ", modules_str[module]);
-    vprintf(fmt, va);
-    va_end(va);
-}
-
-/*
-** Log the given formatted string, followed by a `\n`.
-*/
-static inline
-void
-hs_logln(
-    enum modules module,
-    char const *fmt,
-    ...
-) {
-    va_list va;
-
-    va_start(va, fmt);
-    printf("[%s] ", modules_str[module]);
-    vprintf(fmt, va);
-    printf("\n");
-    va_end(va);
-}
-
-/*
-** Print the given formatted string to stderr, followed by a `\n`, and then
-** exit(1).
-*/
-__attribute__((noreturn))
-static inline
-void
-panic(
-    enum modules module,
-    char const *fmt,
-    ...
-) {
-    va_list va;
-
-    va_start(va, fmt);
-    printf("[%s] Abort: ", modules_str[module]);
-    vprintf(fmt, va);
-    printf("\n");
-    va_end(va);
-
-    exit(1);
-}
-
-/*
-** Print the given formatted string to stderr, followed by a `\n`, and then
-** exit(1).
-*/
-__attribute__((noreturn))
-static inline
-void
-unimplemented(
-    enum modules module,
-    char const *fmt,
-    ...
-) {
-    va_list va;
-
-    va_start(va, fmt);
-    printf("[%s] Abort: ", modules_str[module]);
-    vprintf(fmt, va);
-    printf("\n");
-    va_end(va);
-
-    exit(1);
-}
+/* Return the size of static array */
+# define array_length(array) (sizeof(array) / sizeof(*(array)))
 
 /*
 ** Get the `nth` bit of `val`.
@@ -141,6 +111,35 @@ bitfield_get(
     uint32_t nth
 ) {
     return (val & (1 << nth));
+}
+
+/*
+** Return the value of the bits from `start` (inclusive), `end` (exclusive) of `val`.
+*/
+static inline
+uint32_t
+bitfield_get_range(
+    uint32_t val,
+    uint32_t start,
+    uint32_t end
+) {
+    uint32_t bits;
+
+    bits = val << (32 - end) >> (32 - end);
+    return (bits >> start);
+}
+
+static inline
+uint32_t
+bitfield_set_range(
+    uint32_t val,
+    uint32_t start,
+    uint32_t end
+) {
+    uint32_t bits;
+
+    bits = val << (32 - end) >> (32 - end);
+    return (bits >> start);
 }
 
 /*
@@ -237,5 +236,13 @@ safe_usub(
         return __builtin_sub_overflow_p(a, b, *c);
     }
 }
+
+/* utils.c */
+char **strsplit(char *str, size_t *size);
+void hs_loga(char const *fmt, ...);
+void hs_log(enum modules module, char const *fmt, ...);
+void hs_logln(enum modules module, char const *fmt, ...);
+void panic(enum modules module, char const *fmt, ...) __attribute__((noreturn));
+void unimplemented(enum modules module, char const *fmt, ...) __attribute__((noreturn));
 
 #endif /* !HADES_H */

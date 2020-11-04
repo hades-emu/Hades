@@ -14,7 +14,7 @@
 ** Execute the Single Data Transfer kind of instructions.
 */
 void
-core_sdt(
+core_arm_sdt(
     struct core *core,
     uint32_t op
 ) {
@@ -26,8 +26,8 @@ core_sdt(
     uint32_t rn;
 
 
-    rd = op >> 12 & 0xF;
-    rn = op >> 16 & 0xF;
+    rd = bitfield_get_range(op, 12, 16);
+    rn = bitfield_get_range(op, 16, 20);
 
     base = core->registers[rn];
     offset = 0;
@@ -41,8 +41,8 @@ core_sdt(
         uint32_t shift;
 
         rm = op & 0xF;
-        shift = (op >> 4) & 0xFF;
-        offset = compute_shift(core, shift, core->registers[rm], false);
+        shift = bitfield_get_range(op, 4, 12);
+        offset = core_compute_shift(core, shift, core->registers[rm], false);
     } else {
         offset = op & 0xFFF;
     }
@@ -71,46 +71,19 @@ core_sdt(
     ** Bit 20 indicates if it is a load or a store, bit 22 if it is
     ** a byte or word transfer
     */
-    if (bitfield_get(op, 20)) { // Load
-        if (bitfield_get(op, 22)) { // Byte
-            core->registers[rd] = core_mem_read8(core, effective_addr);
-            hs_logln(
-                CORE,
-                "%s <- 0x%08x <- byte [0x%08x]",
-                registers_name[rd],
-                core->registers[rd],
-                effective_addr
-            );
-        } else { // Word
-            core->registers[rd] = core_mem_read16(core, effective_addr);
-            hs_logln(
-                CORE,
-                "%s <- 0x%08x <- word [0x%08x]",
-                registers_name[rd],
-                core->registers[rd],
-                effective_addr
-            );
-        }
-    } else { // Store
-        if (bitfield_get(op, 22)) { // Byte
-            core_mem_write8(core, effective_addr, core->registers[rd]);
-            hs_logln(
-                CORE,
-                "byte [0x%08x] <- 0x%08x <- %s",
-                effective_addr,
-                core->registers[rd],
-                registers_name[rd]
-            );
-        } else { // Word
-            core_mem_write16(core, effective_addr, core->registers[rd]);
-            hs_logln(
-                CORE,
-                "word [0x%08x] <- 0x%08x <- %s ",
-                effective_addr,
-                core->registers[rd],
-                registers_name[rd]
-            );
-        }
+    switch (bitfield_get(op, 20) << 1 | bitfield_get(op, 22)) {
+        case 0b00: // Store word
+            core_bus_write32(core, effective_addr, core->registers[rd]);
+            break;
+        case 0b01: // Store byte
+            core_bus_write8(core, effective_addr, core->registers[rd]);
+            break;
+        case 0b10: // Load word
+            core->registers[rd] = core_bus_read32(core, effective_addr);
+            break;
+        case 0b11: // Load byte
+            core->registers[rd] = core_bus_read8(core, effective_addr);
+            break;
     }
 
     /*
@@ -119,6 +92,5 @@ core_sdt(
     */
     if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
         core->registers[rn] = addr;
-        hs_logln(CORE, "%s <- 0x%08x", registers_name[rn], addr);
     }
 }
