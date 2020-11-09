@@ -22,6 +22,8 @@ main(
     if (argc == 2) {
         struct core core;
         struct debugger debugger;
+        uint8_t *mem;
+        size_t mem_size;
         FILE *file;
 
         file = fopen(argv[1], "rb");
@@ -32,10 +34,16 @@ main(
 
         /* First, initialize the system and attach the debugger */
 
+        mem_size = 0x10000000;
+        mem = malloc(mem_size);
+        hs_assert(mem != NULL);
+
+        memset(mem, 0, mem_size);
+
         core_init(
             &core,
-            malloc(0x10000000),
-            0x10000000
+            mem,
+            mem_size
         );
 
         rom_load(&core, file);
@@ -53,7 +61,7 @@ main(
 
         /* Finally, free all memory. */
 
-        core_destroy(&core);
+        free(mem);
 
         return (EXIT_SUCCESS);
     } else {

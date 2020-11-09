@@ -34,7 +34,7 @@ debugger_cmd_set(
                     core->registers[alias->idx] = reg_value;
                     break;
                 case REGISTER_R15:
-                    core->r15 = reg_value;
+                    core->pc = reg_value;
                     core_reload_pipeline(core);
                     break;
                 case REGISTER_CPSR:

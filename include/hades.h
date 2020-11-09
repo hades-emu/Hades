@@ -114,45 +114,14 @@ bitfield_get(
 }
 
 /*
-** Return the value of the bits from `start` (inclusive), `end` (exclusive) of `val`.
+** Return the value of the bits from `start` (inclusive) to `end` (exclusive) of `val`.
 */
-static inline
-uint32_t
-bitfield_get_range(
-    uint32_t val,
-    uint32_t start,
-    uint32_t end
-) {
-    uint32_t bits;
-
-    bits = val << (32 - end) >> (32 - end);
-    return (bits >> start);
-}
-
-static inline
-uint32_t
-bitfield_set_range(
-    uint32_t val,
-    uint32_t start,
-    uint32_t end
-) {
-    uint32_t bits;
-
-    bits = val << (32 - end) >> (32 - end);
-    return (bits >> start);
-}
+# define bitfield_get_range(val, start, end)    ((typeof(val))(((typeof(val))((val) << (sizeof(val) * 8 - (end)))) >> (sizeof(val) * 8 - (end) + (start))))
 
 /*
 ** Set the `nth` bit of `val`.
 */
-static inline
-void
-bitfield_set(
-    uint32_t *val,
-    uint32_t nth
-) {
-    *val |= (1 << nth);
-}
+# define bitfield_set(val, nth)                 (val |= (1 << nth))
 
 /*
 ** Clear the `nth` bit of `val`.
@@ -179,6 +148,34 @@ bitfield_update(
 
     *val &= ~(1 << nth);     // Clear the bit
     *val |= (b << nth);      // Set the bit
+}
+
+/*
+** Sign-extend a 11-bits value to a signed 32-bit value.
+*/
+static inline
+int32_t
+sign_extend11(
+    uint32_t value
+) {
+     if ((value & 0x400) != 0)
+         return ((int32_t)(value | 0xFFFFF800));
+     else
+         return ((int32_t)value);
+}
+
+/*
+** Sign-extend a 12-bits value to a signed 32-bit value.
+*/
+static inline
+int32_t
+sign_extend12(
+    uint32_t value
+) {
+     if ((value & 0x800) != 0)
+         return ((int32_t)(value | 0xFFFFF000));
+     else
+         return ((int32_t)value);
 }
 
 /*
@@ -217,11 +214,11 @@ safe_uadd(
 }
 
 /*
-** Safely subs `a` with `b` and store the result in `*c` if `c` is non-NULL.
+** Safely substracts `b` from `a` and store the result in `*c` if `c` is non-NULL (`*c = a - b`).
 ** Return true if the operation overflowed.
 **
-** In practise, wraps `__builtin_uadd_overflow()` and
-** `__builtin_uadd_overflow_p()`.
+** In practise, wraps `__builtin_usub_overflow()` and
+** `__builtin_usub_overflow_p()`.
 */
 static inline
 bool

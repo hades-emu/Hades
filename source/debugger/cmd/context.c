@@ -26,15 +26,13 @@ debugger_dump_context(
         1,
         ((char const * const[]){"disas"})
     );
-    if (debugger->core->r13 > 5 * 16) {
-        printf("-----------------------------------Stack------------------------------------\n");
-        debugger_cmd_print_u8(
-            debugger->core,
-            debugger->core->r13 - 5 * 16,
-            5 * 16,
-            16
-        );
-    }
+    printf("-----------------------------------Stack------------------------------------\n");
+    debugger_cmd_print_u8(
+        debugger->core,
+        debugger->core->sp,
+        5 * 16,
+        16
+    );
     printf("----------------------------------------------------------------------------\n");
 }
 

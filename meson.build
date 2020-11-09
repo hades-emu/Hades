@@ -11,16 +11,20 @@ project(
     'Hades',
     'c',
     version: '0.0.1',
-    default_options: ['c_std=gnu11']
+    default_options: ['c_std=gnu11'],
 )
 
 executable(
     'hades',
     'source/core/arm/branch.c',
-    'source/core/arm/data.c',
+    'source/core/arm/alu.c',
     'source/core/arm/mul.c',
     'source/core/arm/psr.c',
     'source/core/arm/sdt.c',
+    'source/core/thumb/alu.c',
+    'source/core/thumb/branch.c',
+    'source/core/thumb/loadstore.c',
+    'source/core/thumb/logical.c',
     'source/core/bus.c',
     'source/core/core.c',
     'source/debugger/cmd/context.c',
@@ -40,5 +44,5 @@ executable(
         dependency('capstone', version: '>=3.0.0', required: true),
         dependency('readline', version: '>=7', required: true),
     ],
-    include_directories: include_directories('include')
+    include_directories: include_directories('include'),
 )

@@ -53,7 +53,6 @@ debugger_cmd_disas_around(
     cs_insn *insn;
     size_t mnemonic_len;
     size_t count;
-    size_t i;
 
     uint32_t ptr_start;     // Where the disassembly begins
     uint32_t ptr_end;       // Where it ends
@@ -73,15 +72,25 @@ debugger_cmd_disas_around(
     /* Calculate the value of `ptr_start` */
     {
         size_t i;
+        uint32_t tmp;
 
         i = 0;
         ptr_start = ptr;
-        while (i < radius && ptr_start > 0) {
-            if (cs_disasm(handle, core->memory + ptr_start, op_len, ptr_start, 1, &insn) != 1) {
+        tmp = ptr;
+        while (i < radius && tmp > 0) {
+            size_t count;
+
+            count = cs_disasm(handle, core->memory + tmp, 4, tmp, 1, &insn);
+            if (count == 0 && core->cpsr.thumb) {
+                tmp -= 2;
+                count = cs_disasm(handle, core->memory + tmp, 4, tmp, 1, &insn);
+            }
+            if (count == 0){
                 break;
             }
+            ptr_start = tmp;
+            tmp -= op_len;
             cs_free(insn, 1);
-            ptr_start -= op_len;
             ++i;
         }
     }
@@ -92,12 +101,12 @@ debugger_cmd_disas_around(
 
         i = 0;
         ptr_end = ptr;
-        while (i < radius + 1 && ptr_end < core->memory_size) {
-            if (cs_disasm(handle, core->memory + ptr_end, op_len, ptr_end, 1, &insn) != 1) {
+        while (i < radius && ptr_end < core->memory_size) {
+            if (cs_disasm(handle, core->memory + ptr_end, 4, ptr_end, 1, &insn) != 1) {
                 break;
             }
+            ptr_end += insn[0].size;
             cs_free(insn, 1);
-            ptr_end += op_len;
             ++i;
         }
     }
@@ -115,20 +124,63 @@ debugger_cmd_disas_around(
 
     mnemonic_len = find_biggest_mnenmonic(insn, count);
 
-    i = 0;
-    while (i < count) {
-        printf(
-            " %c %08x" RESET ": " LIGHT_GREEN "%-*s" LIGHT_MAGENTA " %s" RESET "\n",
-            insn[i].address == ptr ? '>' : ' ',
-            (uint32_t)insn[i].address,
-            (int)mnemonic_len,
-            insn[i].mnemonic,
-            insn[i].op_str
-        );
-        ++i;
+    if (mnemonic_len < 5) {
+        mnemonic_len = 5;
     }
 
+    /* Print <bad> for instructions that couldn't be disassembled before ptr_start */
+    {
+        uint32_t p;
+
+        p = ptr - (radius - 1) * op_len;
+        while (p < ptr_start) {
+            printf(
+                " %c %08x" RESET ": " LIGHT_GREEN "%-*s" LIGHT_MAGENTA " %s" RESET "\n",
+                p == ptr ? '>' : ' ',
+                p,
+                (int)mnemonic_len,
+                "<bad>",
+                ""
+            );
+            p += op_len;
+        }
+    }
+
+    {
+        size_t i;
+
+        i = 0;
+        while (i < count) {
+            printf(
+                " %c %08x" RESET ": " LIGHT_GREEN "%-*s" LIGHT_MAGENTA " %s" RESET "\n",
+                insn[i].address == ptr ? '>' : ' ',
+                (uint32_t)insn[i].address,
+                (int)mnemonic_len,
+                insn[i].mnemonic,
+                insn[i].op_str
+            );
+            ++i;
+        }
+    }
+
+    /* Print <bad> for instructions that couldn't be disassembled after ptr_end */
+    {
+        while (ptr_end < ptr + radius * op_len) {
+            printf(
+                " %c %08x" RESET ": " LIGHT_GREEN "%-*s" LIGHT_MAGENTA " %s" RESET "\n",
+                ptr_end == ptr ? '>' : ' ',
+                ptr_end,
+                (int)mnemonic_len,
+                "<bad>",
+                ""
+            );
+            ptr_end += op_len;
+        }
+    }
+
+
     cs_free(insn, count);
+    // cs_close(handle) ? TODO FIXME
 }
 
 void
@@ -145,7 +197,7 @@ debugger_cmd_disas(
     op_len = core->cpsr.thumb ? 2 : 4;
 
     if (argc == 1) {
-        ptr = core->r15 - op_len;
+        ptr = core->pc - op_len;
     } else if (argc == 2) {
         ptr = debugger_eval_expr(core, argv[1]);
     } else {
@@ -166,6 +218,6 @@ debugger_cmd_disas(
     debugger_cmd_disas_around(
         core,
         ptr,
-        4
+        5
     );
 }
