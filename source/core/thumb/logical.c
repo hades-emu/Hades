@@ -37,8 +37,8 @@ core_thumb_lsl(
         value <<= 1;
     }
 
-    core->cpsr.zero = (value == 0);
-    core->cpsr.negative = ((value & 0x80000000) != 0);
+    core->cpsr.zero = !value;
+    core->cpsr.negative = bitfield_get(value, 31);
 
     core->registers[rd] = value;
 }
@@ -72,8 +72,8 @@ core_thumb_lsr(
     core->cpsr.carry = value & 0b1;
     value >>= 1;
 
-    core->cpsr.zero = (value == 0);
-    core->cpsr.negative = ((value & 0x80000000) != 0);
+    core->cpsr.zero = !value;
+    core->cpsr.negative = bitfield_get(value, 31);
 
     core->registers[rd] = value;
 }
@@ -107,8 +107,8 @@ core_thumb_asr(
     core->cpsr.carry = value & 0b1;
     value = (int32_t)value >> 1;
 
-    core->cpsr.zero = (value == 0);
-    core->cpsr.negative = ((value & 0x80000000) != 0);
+    core->cpsr.zero = !value;
+    core->cpsr.negative = bitfield_get(value, 31);
 
     core->registers[rd] = value;
 }

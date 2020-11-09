@@ -104,14 +104,7 @@ static char const * const modules_str[] = {
 /*
 ** Get the `nth` bit of `val`.
 */
-static inline
-bool
-bitfield_get(
-    uint32_t val,
-    uint32_t nth
-) {
-    return (val & (1 << nth));
-}
+# define bitfield_get(val, nth)                 ((typeof(val))(bool)((val) & (1 << (nth))))
 
 /*
 ** Return the value of the bits from `start` (inclusive) to `end` (exclusive) of `val`.
@@ -121,19 +114,7 @@ bitfield_get(
 /*
 ** Set the `nth` bit of `val`.
 */
-# define bitfield_set(val, nth)                 (val |= (1 << nth))
-
-/*
-** Clear the `nth` bit of `val`.
-*/
-static inline
-void
-bitfield_clear(
-    uint32_t *val,
-    uint32_t nth
-) {
-    *val &= ~(1 << nth);
-}
+# define bitfield_set(val, nth)                 ((val) |= (1 << (nth)))
 
 /*
 ** Set the `nth` bit of `*val` to `b`.
@@ -186,52 +167,65 @@ int32_t
 sign_extend24(
     uint32_t value
 ) {
-     if ((value & 0x800000) != 0)
-         return ((int32_t)(value | 0xFF000000));
-     else
-         return ((int32_t)value);
+    if ((value & 0x800000) != 0)
+        return ((int32_t)(value | 0xFF000000));
+    else
+        return ((int32_t)value);
 }
 
 /*
-** Safely adds `a` and `b` and store the result in `*c` if `c` is non-NULL.
-** Return true if the operation overflowed.
-**
-** In practise, wraps `__builtin_uadd_overflow()` and
-** `__builtin_uadd_overflow_p()`.
+** Return the value of the carry bit when performing `a + b`.
 */
 static inline
 bool
-safe_uadd(
+uadd32(
     uint32_t a,
-    uint32_t b,
-    uint32_t *c
+    uint32_t b
 ) {
-    if (c) {
-        return __builtin_uadd_overflow(a, b, c);
-    } else {
-        return __builtin_add_overflow_p(a, b, *c);
-    }
+    return (bitfield_get(a, 31) + bitfield_get(b, 31) > bitfield_get(a + b, 31));
 }
 
 /*
-** Safely substracts `b` from `a` and store the result in `*c` if `c` is non-NULL (`*c = a - b`).
-** Return true if the operation overflowed.
-**
-** In practise, wraps `__builtin_usub_overflow()` and
-** `__builtin_usub_overflow_p()`.
+** Return the value of the overflow bit when performing `a + b`.
 */
 static inline
 bool
-safe_usub(
-    uint32_t a,
-    uint32_t b,
-    uint32_t *c
+iadd32(
+    int32_t a,
+    int32_t b
 ) {
-    if (c) {
-        return __builtin_usub_overflow(a, b, c);
-    } else {
-        return __builtin_sub_overflow_p(a, b, *c);
-    }
+    uint32_t res;
+
+    res = (uint32_t)a + (uint32_t)b;
+    return (!bitfield_get(a ^ b, 31) && bitfield_get(a ^ res, 31));
+}
+
+
+/*
+** Return the value of the borrow bit when performing `a - b`.
+*/
+static inline
+bool
+usub32(
+    uint32_t a,
+    uint32_t b
+) {
+    return (a >= b);
+}
+
+/*
+** Return the value of the overflow bit when performing `a - b`.
+*/
+static inline
+bool
+isub32(
+    int32_t a,
+    int32_t b
+) {
+    uint32_t res;
+
+    res = (uint32_t)a + (uint32_t)b;
+    return (bitfield_get(a ^ b, 31) && bitfield_get(a ^ res, 31));
 }
 
 /* utils.c */
