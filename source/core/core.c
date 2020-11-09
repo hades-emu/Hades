@@ -36,16 +36,6 @@ core_init(
 }
 
 /*
-** Destroy a core and free its memory.
-*/
-void
-core_destroy(
-    struct core *core
-) {
-    free(core->memory);
-}
-
-/*
 ** Reset the core and the memory to their default values.
 */
 void
@@ -58,7 +48,7 @@ core_reset(
         core->registers[i] = 0;
     }
 
-    core->r15 = 0x8000000;      // Entry point of the game
+    core->pc = 0x8000000;      // Entry point of the game
     core->cpsr.raw = 0;
     core->cpsr.mode = MODE_SYSTEM;
     core->big_endian = false;
@@ -88,31 +78,14 @@ core_step_arm(
     uint32_t op;
     bool can_exec;
 
+
     op = core->prefetch;
-    core->prefetch = core_bus_read32(core, core->r15);
-    core->r15 += 4;
+    core->prefetch = core_bus_read32(core, core->pc);
+    core->pc += 4;
+
+    can_exec = core_compute_cond(core, op >> 28);
 
     // Test if the conditions required to execute the instruction are met
-    switch (op >> 28) {
-        case COND_EQ: can_exec = core->cpsr.zero; break;
-        case COND_NE: can_exec = !core->cpsr.zero; break;
-        case COND_CS: can_exec = core->cpsr.carry; break;
-        case COND_CC: can_exec = !core->cpsr.carry; break;
-        case COND_MI: can_exec = core->cpsr.negative; break;
-        case COND_PL: can_exec = !core->cpsr.negative; break;
-        case COND_VS: can_exec = core->cpsr.overflow; break;
-        case COND_VC: can_exec = !core->cpsr.overflow; break;
-        case COND_HI: can_exec = core->cpsr.carry && !core->cpsr.zero; break;
-        case COND_LS: can_exec = !core->cpsr.carry || core->cpsr.zero; break;
-        case COND_GE: can_exec = core->cpsr.negative == core->cpsr.overflow; break;
-        case COND_LT: can_exec = core->cpsr.negative != core->cpsr.overflow; break;
-        case COND_GT: can_exec = !core->cpsr.zero && (core->cpsr.negative == core->cpsr.overflow);break;
-        case COND_LE: can_exec = core->cpsr.zero || (core->cpsr.negative != core->cpsr.overflow); break;
-        case COND_AL: can_exec = true; break;
-        default:
-            panic(CORE, "Unknown cond %u\n", op >> 28);
-    }
-
     // Ignore instructions where the conditions aren't met.
     if (!can_exec) {
         return ;
@@ -125,12 +98,12 @@ core_step_arm(
                 core_arm_branchxchg(core, op);
             } else if (bitfield_get_range(op, 23, 25) == 0b10 && bitfield_get_range(op, 16, 22) == 0b001111) {
                 core_arm_mrs(core, op);
-            } else if (bitfield_get_range(op, 23, 25 == 0b10) && bitfield_get_range(op, 12, 22) == 0b1010011111) {
+            } else if (bitfield_get_range(op, 23, 25) == 0b10 && bitfield_get_range(op, 12, 22) == 0b1010011111) {
                 core_arm_msr(core, op);
-            } else if (bitfield_get_range(op, 23, 25 == 0b10) && bitfield_get_range(op, 12, 22) == 0b1010001111) {
+            } else if (bitfield_get_range(op, 23, 25) == 0b10 && bitfield_get_range(op, 12, 22) == 0b1010001111) {
                 core_arm_msrf(core, op);
             } else if (!bitfield_get(op, 4) || !bitfield_get(op, 7)) {
-                core_arm_data_processing(core, op);
+                core_arm_alu(core, op);
             } else if (bitfield_get_range(op, 22, 24) == 0) {
                 core_arm_mul(core, op);
             } else {
@@ -149,7 +122,7 @@ core_step_arm(
             core_arm_branch(core, op);
             break;
         default:
-            panic(CORE, "Unknown instruction");
+            panic(CORE, "Unknown ARM instruction");
             break;
     }
 }
@@ -162,7 +135,114 @@ void
 core_step_thumb(
     struct core *core
 ) {
-    unimplemented(CORE, "Thumb mode isn't implemented (yet).");
+    uint16_t op;
+
+    op = core->prefetch;
+    core->prefetch = core_bus_read16(core, core->pc);
+    core->pc += 2;
+
+    switch (bitfield_get_range(op, 13, 16)) {
+        case 0b000:
+            switch (bitfield_get_range(op, 11, 13)) {
+                case 0b00:
+                    core_thumb_lsl(core, op);
+                    break;
+                case 0b01:
+                    core_thumb_lsr(core, op);
+                    break;
+                case 0b10:
+                    core_thumb_asr(core, op);
+                    break;
+                case 0b11:
+                    if (bitfield_get(op, 9)) {
+                        core_thumb_sub(core, op);
+                    } else {
+                        core_thumb_add(core, op);
+                    }
+                    break;
+            }
+            break;
+        case 0b001:
+            switch bitfield_get_range(op, 11, 13) {
+                case 0b00:
+                    core_thumb_mov_imm(core, op);
+                    break;
+                case 0b01:
+                    core_thumb_cmp_imm(core, op);
+                    break;
+                case 0b10:
+                    core_thumb_add_imm(core, op);
+                    break;
+                case 0b11:
+                    core_thumb_sub_imm(core, op);
+                    break;
+            }
+            break;
+        case 0b010:
+            if (bitfield_get_range(op, 10, 13) == 0b000) {
+                core_thumb_alu(core, op);
+            } else if (bitfield_get_range(op, 8, 13) == 0b00100) {
+                core_thumb_add_reg(core, op);
+            } else if (bitfield_get_range(op, 8, 13) == 0b00101) {
+                core_thumb_cmp_reg(core, op);
+            } else if (bitfield_get_range(op, 8, 13) == 0b00110) {
+                core_thumb_mov_reg(core, op);
+            } else if (bitfield_get_range(op, 8, 13) == 0b00111) {
+                core_thumb_branchxchg(core, op);
+            } else if (bitfield_get_range(op, 11, 13) == 0b01) {
+                core_thumb_ldr_pc(core, op);
+            } else if (bitfield_get(op, 9)) {
+                core_thumb_sdt_reg(core, op);
+            } else {
+                core_thumb_sdt_sign_halfword(core, op);
+            }
+            break;
+        case 0b011:
+            core_thumb_sdt_imm(core, op);
+            break;
+        case 0b100:
+            if (bitfield_get(op, 12)) {
+                core_thumb_sdt_sp(core, op);
+            } else {
+                core_thumb_sdt_halfword(core, op);
+            }
+            break;
+        case 0b101:
+            if (bitfield_get_range(op, 11, 13) == 0b00) {
+                core_thumb_add_from_pc(core, op);
+            } else if (bitfield_get_range(op, 11, 13) == 0b01) {
+                core_thumb_add_from_sp(core, op);
+            } else if (bitfield_get_range(op, 8, 12) == 0) {
+                core_thumb_add_sp(core, op);
+            } else {
+                if (bitfield_get(op, 11)) {
+                    core_thumb_pop(core, op);
+                } else {
+                    core_thumb_push(core, op);
+                }
+            }
+            break;
+        case 0b110:
+            if (bitfield_get(op, 12)) {
+                core_thumb_branch_cond(core, op);
+            } else {
+                goto unknown_op;
+            }
+            break;
+        case 0b111:
+            if (bitfield_get(op, 12)) {
+                core_thumb_branchlink(core, op);
+            } else if (!bitfield_get(op, 11)) {
+                core_thumb_branch(core, op);
+            } else {
+                goto unknown_op;
+            }
+            break;
+        default:
+unknown_op:
+            panic(CORE, "Unknown thumb instruction. Opcode: 0x%04x", op);
+            break;
+    }
 }
 
 /*
@@ -172,6 +252,10 @@ void
 core_step(
     struct core *core
 ) {
+    static size_t count = 0;
+
+    printf("Executing instruction %zu...\n", ++count);
+
     if (core->cpsr.thumb) {
         core_step_thumb(core);
     } else {
@@ -188,11 +272,11 @@ core_reload_pipeline(
     struct core *core
 ) {
     if (core->cpsr.thumb) {
-        core->prefetch = core_bus_read16(core, core->r15);
-        core->r15 += 2;
+        core->prefetch = core_bus_read16(core, core->pc);
+        core->pc += 2;
     } else {
-        core->prefetch = core_bus_read32(core, core->r15);
-        core->r15 += 4;
+        core->prefetch = core_bus_read32(core, core->pc);
+        core->pc += 4;
     }
 }
 
@@ -298,4 +382,30 @@ core_compute_shift(
     }
 
     return (value);
+}
+
+bool
+core_compute_cond(
+    struct core *core,
+    uint32_t cond
+) {
+    switch (cond) {
+        case COND_EQ: return core->cpsr.zero;
+        case COND_NE: return !core->cpsr.zero;
+        case COND_CS: return core->cpsr.carry;
+        case COND_CC: return !core->cpsr.carry;
+        case COND_MI: return core->cpsr.negative;
+        case COND_PL: return !core->cpsr.negative;
+        case COND_VS: return core->cpsr.overflow;
+        case COND_VC: return !core->cpsr.overflow;
+        case COND_HI: return core->cpsr.carry && !core->cpsr.zero;
+        case COND_LS: return !core->cpsr.carry || core->cpsr.zero;
+        case COND_GE: return core->cpsr.negative == core->cpsr.overflow;
+        case COND_LT: return core->cpsr.negative != core->cpsr.overflow;
+        case COND_GT: return !core->cpsr.zero && (core->cpsr.negative == core->cpsr.overflow);
+        case COND_LE: return core->cpsr.zero || (core->cpsr.negative != core->cpsr.overflow);
+        case COND_AL: return true;
+        default:
+            panic(CORE, "Unknown cond %u\n", cond);
+    }
 }

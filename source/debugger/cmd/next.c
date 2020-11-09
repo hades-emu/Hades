@@ -25,8 +25,8 @@ debugger_cmd_next(
     if (argc == 1) {
         uint32_t next_pc;
 
-        next_pc = core->r15 + op_len;
-        while (core->r15 != next_pc) {
+        next_pc = core->pc + op_len;
+        while (core->pc != next_pc) {
             core_step(core);
         }
 
@@ -34,8 +34,8 @@ debugger_cmd_next(
     } else if (argc == 2) {
         uint32_t next_pc;
 
-        next_pc = core->r15 + strtoul(argv[1], NULL, 0) * op_len;
-        while (core->r15 != next_pc) {
+        next_pc = core->pc + strtoul(argv[1], NULL, 0) * op_len;
+        while (core->pc != next_pc) {
             core_step(core);
         }
 

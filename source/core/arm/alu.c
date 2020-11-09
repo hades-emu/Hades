@@ -14,7 +14,7 @@
 ** Execute the Data Processing instructions (ADD, SUB, MOV, etc.).
 */
 void
-core_arm_data_processing(
+core_arm_alu(
     struct core *core,
     uint32_t op
 ) {
@@ -43,7 +43,6 @@ core_arm_data_processing(
         imm = op & 0xFF;
         rot = (op >> 8) & 0xF;
         rot *= 2;
-
         op2 = (imm >> rot) | (imm << (32 - rot));
     } else { // Register
         uint32_t rm;
@@ -134,19 +133,17 @@ core_arm_data_processing(
             core->cpsr.negative = (((op1 ^ op2) & 0x80000000) != 0);
             break;
         case 10: // CMP (as SUB, but result is not written)
-            overflow = safe_usub(op1, op2, NULL);
             if (cond && rd != 15) {
                 core->cpsr.zero = ((op1 - op2) == 0);
                 core->cpsr.negative = (((op1 - op2) & 0x80000000) != 0);
-                core->cpsr.overflow = overflow;
+                core->cpsr.overflow = safe_usub(op1, op2, NULL);
             }
             break;
         case 11: // CMN (as ADD, but result is not written)
-            overflow = safe_uadd(op1, op2, NULL);
             if (cond && rd != 15) {
                 core->cpsr.zero = ((op1 + op2) == 0);
                 core->cpsr.negative = (((op1 + op2) & 0x80000000) != 0);
-                core->cpsr.overflow = overflow;
+                core->cpsr.overflow = safe_uadd(op1, op2, NULL);
             }
             break;
         case 12: // ORR (op1 OR op2)

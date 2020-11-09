@@ -33,7 +33,7 @@ core_arm_sdt(
     offset = 0;
 
     /*
-    ** If bit 25 is *not* set, the offset is an immediate value
+    ** If bit 25 is *not* set, the offset is an immediate value ROR-shifted by a certain amount.
     ** Otherwise, it is derived from a register shifted by a certain amount.
     */
     if (bitfield_get(op, 25)) {
@@ -44,7 +44,12 @@ core_arm_sdt(
         shift = bitfield_get_range(op, 4, 12);
         offset = core_compute_shift(core, shift, core->registers[rm], false);
     } else {
-        offset = op & 0xFFF;
+        uint32_t imm;
+        uint32_t shift;
+
+        imm = bitfield_get_range(op, 0, 8);
+        shift = bitfield_get_range(op, 8, 12) << 1;
+        offset = (imm >> shift) | (imm << (32 - shift));
     }
 
     /*
@@ -71,7 +76,7 @@ core_arm_sdt(
     ** Bit 20 indicates if it is a load or a store, bit 22 if it is
     ** a byte or word transfer
     */
-    switch (bitfield_get(op, 20) << 1 | bitfield_get(op, 22)) {
+    switch ((bitfield_get(op, 20) << 1) | bitfield_get(op, 22)) {
         case 0b00: // Store word
             core_bus_write32(core, effective_addr, core->registers[rd]);
             break;

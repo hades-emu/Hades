@@ -45,11 +45,11 @@ struct core {
             uint32_t r8;
             uint32_t r9;
             uint32_t r10;
-            uint32_t r11;       // FP
-            uint32_t r12;       // IP
-            uint32_t r13;       // SP
-            uint32_t r14;       // LR
-            uint32_t r15;       // PC
+            uint32_t fp;       // FP
+            uint32_t ip;       // IP
+            uint32_t sp;       // SP
+            uint32_t lr;       // LR
+            uint32_t pc;       // PC
         } __packed;
         uint32_t registers[16];
     };
@@ -121,12 +121,12 @@ enum core_modes {
     MODE_SYSTEM          = 0b11111,
 };
 
+/* core/arm/alu.c */
+void core_arm_alu(struct core *core, uint32_t op);
+
 /* core/arm/branch.c */
 void core_arm_branch(struct core *core, uint32_t op);
 void core_arm_branchxchg(struct core *core, uint32_t op);
-
-/* core/arm/data.c */
-void core_arm_data_processing(struct core *core, uint32_t op);
 
 /* core/arm/mul.c */
 void core_arm_mul(struct core *core, uint32_t op);
@@ -139,6 +139,42 @@ void core_arm_msrf(struct core *core, uint32_t op);
 /* core/arm/sdt.c */
 void core_arm_sdt(struct core *core, uint32_t op);
 
+/* core/thumb/alu.c */
+void core_thumb_add(struct core *core, uint16_t op);
+void core_thumb_sub(struct core *core, uint16_t op);
+void core_thumb_add_from_sp(struct core *core, uint16_t op);
+void core_thumb_add_from_pc(struct core *core, uint16_t op);
+void core_thumb_alu(struct core *core, uint16_t op);
+void core_thumb_add_reg(struct core *core, uint16_t op);
+void core_thumb_cmp_reg(struct core *core, uint16_t op);
+void core_thumb_mov_reg(struct core *core, uint16_t op);
+void core_thumb_mov_imm(struct core *core, uint16_t op);
+void core_thumb_cmp_imm(struct core *core, uint16_t op);
+void core_thumb_add_imm(struct core *core, uint16_t op);
+void core_thumb_sub_imm(struct core *core, uint16_t op);
+void core_thumb_add_sp(struct core *core, uint16_t op);
+
+/* core/thumb/branch.c */
+void core_thumb_branch(struct core *core, uint16_t op);
+void core_thumb_branchlink(struct core *core, uint16_t op);
+void core_thumb_branch_cond(struct core *core, uint16_t op);
+void core_thumb_branchxchg(struct core *core, uint16_t op);
+
+/* core/thumb/loadstore.c */
+void core_thumb_push(struct core *core, uint16_t op);
+void core_thumb_pop(struct core *core, uint16_t op);
+void core_thumb_sdt_imm(struct core *core, uint16_t op);
+void core_thumb_sdt_reg(struct core *core, uint16_t op);
+void core_thumb_sdt_halfword(struct core *core, uint16_t op);
+void core_thumb_sdt_sign_halfword(struct core *core, uint16_t op);
+void core_thumb_ldr_pc(struct core *core, uint16_t op);
+void core_thumb_sdt_sp(struct core *core, uint16_t op);
+
+/* core/thumb/logical.c */
+void core_thumb_lsl(struct core *core, uint16_t op);
+void core_thumb_lsr(struct core *core, uint16_t op);
+void core_thumb_asr(struct core *core, uint16_t op);
+
 /* core/bus.c */
 uint8_t core_bus_read8(struct core const *core, uint32_t addr);
 void core_bus_write8(struct core *core, uint32_t addr, uint8_t val);
@@ -149,11 +185,11 @@ void core_bus_write32(struct core *core, uint32_t addr, uint32_t val);
 
 /* core/core.c */
 void core_init(struct core *core, uint8_t *mem, size_t mem_size);
-void core_destroy(struct core *core);
 void core_run(struct core *core);
 void core_reset(struct core *core);
 void core_step(struct core *core);
 void core_reload_pipeline(struct core *core);
 uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool update_carry);
+bool core_compute_cond(struct core *core, uint32_t cond);
 
 #endif /* !CORE_H */
