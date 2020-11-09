@@ -39,7 +39,7 @@ core_arm_mul(
     }
 
     if (s) {
-        core->cpsr.zero = (core->registers[rd] == 0);
-        core->cpsr.negative = ((core->registers[rd] & 0x80000000) != 0);
+        core->cpsr.zero = !(core->registers[rd]);
+        core->cpsr.negative = bitfield_get(core->registers[rd], 31);
     }
 }
