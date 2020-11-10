@@ -20,7 +20,7 @@ core_thumb_push(
 ) {
     ssize_t i;
 
-    // Push LR
+    /* Push LR */
     if (bitfield_get(op, 8)) {
         core->sp -= 4;
         core_bus_write32(core, core->sp, core->lr);
@@ -55,7 +55,7 @@ core_thumb_pop(
         ++i;
     }
 
-    // Pop LR
+    /* Pop PC */
     if (bitfield_get(op, 8)) {
         core->pc = core_bus_read32(core, core->sp);
         core_reload_pipeline(core);
