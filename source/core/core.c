@@ -48,7 +48,9 @@ core_reset(
         core->registers[i] = 0;
     }
 
-    core->pc = 0x8000000;      // Entry point of the game
+
+    core->sp = 0x03007F00;      // Default SP for system mode
+    core->pc = 0x8000000;       // Entry point of the game
     core->cpsr.raw = 0;
     core->cpsr.mode = MODE_SYSTEM;
     core->big_endian = false;
@@ -192,9 +194,9 @@ core_step_thumb(
             } else if (bitfield_get_range(op, 11, 13) == 0b01) {
                 core_thumb_ldr_pc(core, op);
             } else if (bitfield_get(op, 9)) {
-                core_thumb_sdt_reg(core, op);
-            } else {
                 core_thumb_sdt_sign_halfword(core, op);
+            } else {
+                core_thumb_sdt_reg(core, op);
             }
             break;
         case 0b011:
@@ -272,9 +274,11 @@ core_reload_pipeline(
     struct core *core
 ) {
     if (core->cpsr.thumb) {
+        core->pc &= 0xFFFFFFFE;
         core->prefetch = core_bus_read16(core, core->pc);
         core->pc += 2;
     } else {
+        core->pc &= 0xFFFFFFFC;
         core->prefetch = core_bus_read32(core, core->pc);
         core->pc += 4;
     }

@@ -62,9 +62,9 @@ core_thumb_branch_cond(
     uint16_t op
 ) {
     bool can_exec;
-    uint32_t label;
+    int32_t label;
 
-    label = bitfield_get_range(op, 0, 8) << 1;
+    label = ((int32_t)(int8_t)bitfield_get_range(op, 0, 8)) << 1;
     can_exec = core_compute_cond(core, bitfield_get_range(op, 8, 12));
 
     if (can_exec) {

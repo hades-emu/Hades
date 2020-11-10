@@ -138,6 +138,7 @@ extern struct command g_commands[];
 
 /* debugger/debugger.c */
 void debugger_init(struct debugger *debugger);
+void debugger_destroy(struct debugger *debugger);
 void debugger_attach(struct debugger *debugger, struct core *core);
 void debugger_repl(struct debugger *core);
 uint32_t debugger_eval_expr(struct core const *core, char const *expr);

@@ -224,7 +224,7 @@ isub32(
 ) {
     uint32_t res;
 
-    res = (uint32_t)a + (uint32_t)b;
+    res = (uint32_t)a - (uint32_t)b;
     return (bitfield_get(a ^ b, 31) && bitfield_get(a ^ res, 31));
 }
 

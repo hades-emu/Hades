@@ -44,21 +44,33 @@ core_bus_write8(
 
 /*
 ** Read the word at the given address, hiding all endianness conversions.
+**
+** This function returns an `uint32_t` instead of an `uint16_t` to account for
+** some of the shenanigans the ARM7TDMI does when supplied an unligned address.
 */
-uint16_t
+uint32_t
 core_bus_read16(
     struct core const *core,
     uint32_t addr
 ) {
+    uint32_t value;
+    uint32_t rotate;
+
+    rotate = (addr % 2) << 3;
+    addr &= 0xFFFFFFFE;
+
     if (addr >= (core->memory_size - 1)) {
         panic(CORE, "Segmentation fault: invalid read of size 16 at address %#08x", addr);
     } else {
         if (core->big_endian) {
-            return be16toh(*(uint16_t *)(core->memory + addr));
+            value = be16toh(*(uint16_t *)(core->memory + addr));
         } else {
-            return le16toh(*(uint16_t *)(core->memory + addr));
+            value = le16toh(*(uint16_t *)(core->memory + addr));
         }
     }
+
+    /* Unaligned 16-bits loads are supposed to be unpredictable, but in practise the GBA rotates them */
+    return ((value >> rotate) | (value << (32 - rotate)));
 }
 
 /*
@@ -89,15 +101,24 @@ core_bus_read32(
     struct core const *core,
     uint32_t addr
 ) {
+    uint32_t value;
+    uint32_t rotate;
+
+    rotate = (addr % 4) << 3;
+    addr &= 0xFFFFFFFE;
+
     if (addr >= (core->memory_size - 3)) {
         panic(CORE, "Segmentation fault: invalid read of size 32 at address %#08x", addr);
     } else {
         if (core->big_endian) {
-            return be32toh(*(uint32_t *)(core->memory + addr));
+            value = be32toh(*(uint32_t *)(core->memory + addr));
         } else {
-            return le32toh(*(uint32_t *)(core->memory + addr));
+            value = le32toh(*(uint32_t *)(core->memory + addr));
         }
     }
+
+    /* Unaligned 32-bits loads are rotated */
+    return ((value >> rotate) | (value << (32 - rotate)));
 }
 
 /*
