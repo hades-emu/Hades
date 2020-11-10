@@ -61,6 +61,8 @@ main(
 
         /* Finally, free all memory. */
 
+        debugger_destroy(&debugger);
+
         free(mem);
 
         return (EXIT_SUCCESS);

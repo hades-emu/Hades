@@ -178,7 +178,7 @@ void core_thumb_asr(struct core *core, uint16_t op);
 /* core/bus.c */
 uint8_t core_bus_read8(struct core const *core, uint32_t addr);
 void core_bus_write8(struct core *core, uint32_t addr, uint8_t val);
-uint16_t core_bus_read16(struct core const *core, uint32_t addr);
+uint32_t core_bus_read16(struct core const *core, uint32_t addr);
 void core_bus_write16(struct core *core, uint32_t addr, uint16_t val);
 uint32_t core_bus_read32(struct core const *core, uint32_t addr);
 void core_bus_write32(struct core *core, uint32_t addr, uint32_t val);

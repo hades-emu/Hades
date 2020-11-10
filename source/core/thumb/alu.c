@@ -139,6 +139,10 @@ core_thumb_add_reg(
     hs_assert(h1 | h2); // Ensure h1 != 0 && h2 != 0, or op is undefined.
 
     core->registers[rd] = core->registers[rd] + core->registers[rs];
+
+    if (rd == 15) {
+        core_reload_pipeline(core);
+    }
 }
 
 /*
@@ -369,7 +373,9 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(core->registers[rd], 31);
             break;
         case 0b1101:
-            panic(CORE, "Thumb ALU operation MUL not implemented yet.");
+            core->registers[rd] = op1 * op2;
+            core->cpsr.zero = !(core->registers[rd]);
+            core->cpsr.negative = bitfield_get(core->registers[rd], 31);
             break;
         case 0b1110:
             // BIC (op1 AND NOT op2)
@@ -382,9 +388,6 @@ core_thumb_alu(
             core->registers[rd] = ~op2;
             core->cpsr.zero = !(core->registers[rd]);
             core->cpsr.negative = bitfield_get(core->registers[rd], 31);
-            break;
-        default:
-            panic(CORE, "Thumb ALU operation %x not implemented yet.", bitfield_get_range(op, 6, 13));
             break;
     }
 }

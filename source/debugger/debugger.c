@@ -109,6 +109,20 @@ debugger_init(
     struct debugger *debugger
 ) {
     memset(debugger, 0, sizeof(*debugger));
+    using_history();
+    read_history(".hades-dbg.history");
+}
+
+/*
+** Destroy the given debugger.
+**
+** The debugger musn't be used after this call.
+*/
+void
+debugger_destroy(
+    struct debugger *debugger
+) {
+    write_history(".hades-dbg.history");
 }
 
 /*
@@ -145,7 +159,13 @@ debugger_repl(
         size_t tokens_length;
         struct command const *cmd;
 
+        /* Skip blank lines */
+        if (!*input) {
+            continue;
+        }
+
         add_history(input);
+        append_history(1, ".hades-dbg.history");
         tokens = strsplit(input, &tokens_length);
         if (tokens_length == 0) {
             goto next;
