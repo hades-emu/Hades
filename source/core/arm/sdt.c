@@ -8,6 +8,7 @@
 \******************************************************************************/
 
 #include "hades.h"
+#include "memory.h"
 #include "core.h"
 
 /*
@@ -78,16 +79,16 @@ core_arm_sdt(
     */
     switch ((bitfield_get(op, 20) << 1) | bitfield_get(op, 22)) {
         case 0b00: // Store word
-            core_bus_write32(core, effective_addr, core->registers[rd]);
+            mem_write32(core, effective_addr, core->registers[rd]);
             break;
         case 0b01: // Store byte
-            core_bus_write8(core, effective_addr, core->registers[rd]);
+            mem_write8(core, effective_addr, core->registers[rd]);
             break;
         case 0b10: // Load word
-            core->registers[rd] = core_bus_read32(core, effective_addr);
+            core->registers[rd] = mem_read32(core, effective_addr);
             break;
         case 0b11: // Load byte
-            core->registers[rd] = core_bus_read8(core, effective_addr);
+            core->registers[rd] = mem_read8(core, effective_addr);
             break;
     }
 

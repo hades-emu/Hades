@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include "debugger.h"
+#include "core.h"
 #include "hades.h"
 
 void

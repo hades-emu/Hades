@@ -77,10 +77,10 @@ static char const * const modules_str[] = {
 };
 
 /* Panic if the given constant expression evaluates to `false`. */
-# define static_assert(e)                                           \
-    _Static_assert(                                                 \
-        e,                                                          \
-        "(" #e ") evaluated to false (in " __FILE__ " at line)"     \
+# define static_assert(e)                                   \
+    _Static_assert(                                         \
+        e,                                                  \
+        "(" #e ") evaluated to false (in " __FILE__ ")"     \
     )
 
 /* Panic if the given expression evaluates to `false` */
@@ -199,7 +199,6 @@ iadd32(
     res = (uint32_t)a + (uint32_t)b;
     return (!bitfield_get(a ^ b, 31) && bitfield_get(a ^ res, 31));
 }
-
 
 /*
 ** Return the value of the borrow bit when performing `a - b`.

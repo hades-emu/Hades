@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "hades.h"
+#include "memory.h"
 #include "core.h"
 
 /*
@@ -26,17 +27,15 @@
 void
 core_init(
     struct core *core,
-    uint8_t *mem,
-    size_t mem_size
+    struct memory *mem
 ) {
     memset(core, 0, sizeof(*core));
     core->memory = mem;
-    core->memory_size = mem_size;
     core_reset(core);
 }
 
 /*
-** Reset the core and the memory to their default values.
+** Reset the core to its default values.
 */
 void
 core_reset(
@@ -82,7 +81,7 @@ core_step_arm(
 
 
     op = core->prefetch;
-    core->prefetch = core_bus_read32(core, core->pc);
+    core->prefetch = mem_read32(core, core->pc);
     core->pc += 4;
 
     can_exec = core_compute_cond(core, op >> 28);
@@ -140,7 +139,7 @@ core_step_thumb(
     uint16_t op;
 
     op = core->prefetch;
-    core->prefetch = core_bus_read16(core, core->pc);
+    core->prefetch = mem_read16(core, core->pc);
     core->pc += 2;
 
     switch (bitfield_get_range(op, 13, 16)) {
@@ -275,11 +274,11 @@ core_reload_pipeline(
 ) {
     if (core->cpsr.thumb) {
         core->pc &= 0xFFFFFFFE;
-        core->prefetch = core_bus_read16(core, core->pc);
+        core->prefetch = mem_read16(core, core->pc);
         core->pc += 2;
     } else {
         core->pc &= 0xFFFFFFFC;
-        core->prefetch = core_bus_read32(core, core->pc);
+        core->prefetch = mem_read32(core, core->pc);
         core->pc += 4;
     }
 }

@@ -11,8 +11,8 @@
 # define DEBUGGER_H
 
 # include <stdbool.h>
-# include "core.h"
 # include "hades.h"
+# include "core.h"
 
 struct debugger {
     struct core *core;        // The core this debugger is attached to.

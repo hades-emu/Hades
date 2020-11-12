@@ -19,9 +19,11 @@
 
 # include <stdint.h>
 # include <stdlib.h>
+# include "memory.h"
 # include "hades.h"
 
 struct debugger;
+struct memory;
 
 /*
 ** An ARM core.
@@ -29,8 +31,7 @@ struct debugger;
 struct core {
     struct debugger *debugger;      // The debugger this core is linked with.
 
-    uint8_t *memory;
-    size_t memory_size;
+    struct memory *memory;          // The main memory
 
     union {
         struct {
@@ -175,16 +176,8 @@ void core_thumb_lsl(struct core *core, uint16_t op);
 void core_thumb_lsr(struct core *core, uint16_t op);
 void core_thumb_asr(struct core *core, uint16_t op);
 
-/* core/bus.c */
-uint8_t core_bus_read8(struct core const *core, uint32_t addr);
-void core_bus_write8(struct core *core, uint32_t addr, uint8_t val);
-uint32_t core_bus_read16(struct core const *core, uint32_t addr);
-void core_bus_write16(struct core *core, uint32_t addr, uint16_t val);
-uint32_t core_bus_read32(struct core const *core, uint32_t addr);
-void core_bus_write32(struct core *core, uint32_t addr, uint32_t val);
-
 /* core/core.c */
-void core_init(struct core *core, uint8_t *mem, size_t mem_size);
+void core_init(struct core *core, struct memory *);
 void core_run(struct core *core);
 void core_reset(struct core *core);
 void core_step(struct core *core);
