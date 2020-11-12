@@ -23,14 +23,14 @@ core_thumb_push(
     /* Push LR */
     if (bitfield_get(op, 8)) {
         core->sp -= 4;
-        core_bus_write32(core, core->sp, core->lr);
+        mem_write32(core, core->sp, core->lr);
     }
 
     i = 7;
     while (i >= 0) {
         if (bitfield_get(op, i)) {
             core->sp -= 4;
-            core_bus_write32(core, core->sp, core->registers[i]);
+            mem_write32(core, core->sp, core->registers[i]);
         }
         --i;
     }
@@ -49,7 +49,7 @@ core_thumb_pop(
     i = 0;
     while (i < 8) {
         if (bitfield_get(op, i)) {
-            core->registers[i] = core_bus_read32(core, core->sp);
+            core->registers[i] = mem_read32(core, core->sp);
             core->sp += 4;
         }
         ++i;
@@ -57,7 +57,7 @@ core_thumb_pop(
 
     /* Pop PC */
     if (bitfield_get(op, 8)) {
-        core->pc = core_bus_read32(core, core->sp);
+        core->pc = mem_read32(core, core->sp);
         core_reload_pipeline(core);
         core->sp += 4;
 
@@ -83,16 +83,16 @@ core_thumb_sdt_imm(
 
     switch ((bitfield_get(op, 11) << 1) | bitfield_get(op, 12)) {
         case 0b00: // Store word
-            core_bus_write32(core, core->registers[rb] + (offset << 2), core->registers[rd]);
+            mem_write32(core, core->registers[rb] + (offset << 2), core->registers[rd]);
             break;
         case 0b01: // Store byte
-            core_bus_write8(core, core->registers[rb] + offset, core->registers[rd]);
+            mem_write8(core, core->registers[rb] + offset, core->registers[rd]);
             break;
         case 0b10: // Load word
-            core->registers[rd] = core_bus_read32(core, core->registers[rb] + (offset << 2));
+            core->registers[rd] = mem_read32(core, core->registers[rb] + (offset << 2));
             break;
         case 0b11: // Load byte
-            core->registers[rd] = core_bus_read8(core, core->registers[rb] + offset);
+            core->registers[rd] = mem_read8(core, core->registers[rb] + offset);
             break;
     }
 }
@@ -115,16 +115,16 @@ core_thumb_sdt_reg(
 
     switch ((bitfield_get(op, 11) << 1) | bitfield_get(op, 10)) {
         case 0b00: // Store word
-            core_bus_write32(core, core->registers[rb] + core->registers[ro], core->registers[rd]);
+            mem_write32(core, core->registers[rb] + core->registers[ro], core->registers[rd]);
             break;
         case 0b01: // Store byte
-            core_bus_write8(core, core->registers[rb] + core->registers[ro], core->registers[rd]);
+            mem_write8(core, core->registers[rb] + core->registers[ro], core->registers[rd]);
             break;
         case 0b10: // Load word
-            core->registers[rd] = core_bus_read32(core, core->registers[rb] + core->registers[ro]);
+            core->registers[rd] = mem_read32(core, core->registers[rb] + core->registers[ro]);
             break;
         case 0b11: // Load byte
-            core->registers[rd] = core_bus_read8(core, core->registers[rb] + core->registers[ro]);
+            core->registers[rd] = mem_read8(core, core->registers[rb] + core->registers[ro]);
             break;
     }
 }
@@ -149,10 +149,10 @@ core_thumb_sdt_halfword(
 
     if (l) {
         // LDRH
-        core->registers[rd] = core_bus_read16(core, core->registers[rb] + offset);
+        core->registers[rd] = mem_read16(core, core->registers[rb] + offset);
     } else {
         // STRH
-        core_bus_write16(core, core->registers[rb] + offset, (uint16_t)core->registers[rd]);
+        mem_write16(core, core->registers[rb] + offset, (uint16_t)core->registers[rd]);
     }
 }
 
@@ -178,24 +178,24 @@ core_thumb_sdt_sign_halfword(
     switch ((bitfield_get(op, 10) << 1) | bitfield_get(op, 11)) {
         case 0b00:
             // Store halfword
-            core_bus_write16(core, addr, core->registers[rd]);
+            mem_write16(core, addr, core->registers[rd]);
             break;
         case 0b01:
             // Load halfword
-            core->registers[rd] = core_bus_read16(core, addr);
+            core->registers[rd] = mem_read16(core, addr);
             break;
         case 0b10:
             // Load sign-extended byte
-            core->registers[rd] = (int32_t)(int8_t)core_bus_read8(core, addr);
+            core->registers[rd] = (int32_t)(int8_t)mem_read8(core, addr);
             break;
         case 0b11:
             // Load sign-extended halfword
 
             // (Unligned addresses are a bitch)
             if (bitfield_get(addr, 0)) {
-                core->registers[rd] = (int32_t)(int8_t)(uint8_t)core_bus_read16(core, addr);
+                core->registers[rd] = (int32_t)(int8_t)(uint8_t)mem_read16(core, addr);
             } else {
-                core->registers[rd] = (int32_t)(int16_t)(uint16_t)core_bus_read16(core, addr);
+                core->registers[rd] = (int32_t)(int16_t)(uint16_t)mem_read16(core, addr);
             }
             break;
     }
@@ -215,7 +215,7 @@ core_thumb_ldr_pc(
     rd = bitfield_get_range(op, 8, 11);
     offset = bitfield_get_range(op, 0, 8) << 2;
 
-    core->registers[rd] = core_bus_read32(core, (core->pc & 0xFFFFFFFC) + offset);
+    core->registers[rd] = mem_read32(core, (core->pc & 0xFFFFFFFC) + offset);
 }
 
 /*
@@ -236,9 +236,9 @@ core_thumb_sdt_sp(
 
     if (l) {
         // LDT
-        core->registers[rd] = core_bus_read32(core, core->sp + offset);
+        core->registers[rd] = mem_read32(core, core->sp + offset);
     } else {
         // SDT
-        core_bus_write32(core,  core->sp + offset, core->registers[rd]);
+        mem_write32(core,  core->sp + offset, core->registers[rd]);
     }
 }

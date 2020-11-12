@@ -9,8 +9,10 @@
 
 #include <string.h>
 #include <ctype.h>
-#include "debugger.h"
 #include "hades.h"
+#include "core.h"
+#include "memory.h"
+#include "debugger.h"
 
 static
 void
@@ -22,11 +24,11 @@ debugger_cmd_print_str(
     uint32_t i;
 
     i = 0;
-    while (addr + i < core->memory_size && isprint(core->memory[addr + i])) {
+    while (addr + i < MEMORY_RAW_SIZE && isprint(core->memory->raw[addr + i])) {
         if (i % align == 0) {
             printf("%08x: " LIGHT_MAGENTA, addr + i);
         }
-        printf("%c", core->memory[addr + i]);
+        printf("%c", core->memory->raw[addr + i]);
         if (i % align == align - 1) {
             printf(RESET "\n");
         }
@@ -46,10 +48,10 @@ debugger_cmd_print_char(
     uint32_t i;
 
     i = 0;
-    while (i < len && addr + i < core->memory_size) {
+    while (i < len && addr + i < MEMORY_RAW_SIZE) {
         char c;
 
-        c = core->memory[addr + i];
+        c = core->memory->raw[addr + i];
         if (i % align == 0) {
             printf("%08x: " LIGHT_MAGENTA, addr + i);
         }
@@ -83,8 +85,8 @@ debugger_cmd_print_u8(
     size_t i;
 
     end = start + nb;
-    if (end > core->memory_size) {
-        end = core->memory_size;
+    if (end > MEMORY_RAW_SIZE) {
+        end = MEMORY_RAW_SIZE;
     }
 
     while (start < end)
@@ -97,8 +99,8 @@ debugger_cmd_print_u8(
         printf("%08x: " LIGHT_MAGENTA, start);
 
         i = 0;
-        while (i < len && start + i < core->memory_size) {
-            printf("%02x ", core->memory[start + i]);
+        while (i < len && start + i < MEMORY_RAW_SIZE) {
+            printf("%02x ", core->memory->raw[start + i]);
             ++i;
         }
         while (i < align) {
@@ -109,10 +111,10 @@ debugger_cmd_print_u8(
         printf(RESET "|");
 
         i = 0;
-        while (i < len && start + i < core->memory_size) {
+        while (i < len && start + i < MEMORY_RAW_SIZE) {
             char c;
 
-            c = core->memory[start + i];
+            c = core->memory->raw[start + i];
             printf("%c", isprint(c) ? c : '.');
 
             ++i;
@@ -147,8 +149,8 @@ debugger_cmd_print_u16(
     size_t i;
 
     end = start + nb * 2;
-    if (end > core->memory_size - 1) {
-        end = core->memory_size;
+    if (end > MEMORY_RAW_SIZE - 1) {
+        end = MEMORY_RAW_SIZE;
     }
 
     while (start < end)
@@ -161,8 +163,8 @@ debugger_cmd_print_u16(
         printf("%08x: " LIGHT_MAGENTA, start);
 
         i = 0;
-        while (i < len && start + i * 2 < core->memory_size - 1) {
-            printf("%04x ", core_bus_read16(core, start + i * 2)),
+        while (i < len && start + i * 2 < MEMORY_RAW_SIZE - 1) {
+            printf("%04x ", mem_read16(core, start + i * 2)),
             ++i;
         }
         while (i < align) {
@@ -173,10 +175,10 @@ debugger_cmd_print_u16(
         printf(RESET "|");
 
         i = 0;
-        while (i < len * 2 && start + i < core->memory_size) {
+        while (i < len * 2 && start + i < MEMORY_RAW_SIZE) {
             char c;
 
-            c = core->memory[start + i];
+            c = core->memory->raw[start + i];
             printf("%c", isprint(c) ? c : '.');
             ++i;
         }
@@ -210,8 +212,8 @@ debugger_cmd_print_u32(
     size_t i;
 
     end = start + nb * 4;
-    if (end > core->memory_size - 3) {
-        end = core->memory_size;
+    if (end > MEMORY_RAW_SIZE - 3) {
+        end = MEMORY_RAW_SIZE;
     }
 
     while (start < end)
@@ -224,8 +226,8 @@ debugger_cmd_print_u32(
         printf("%08x: " LIGHT_MAGENTA, start);
 
         i = 0;
-        while (i < len && start + i * 4 < core->memory_size - 3) {
-            printf("%08x ", core_bus_read32(core, start + i * 4)),
+        while (i < len && start + i * 4 < MEMORY_RAW_SIZE - 3) {
+            printf("%08x ", mem_read32(core, start + i * 4)),
             ++i;
         }
         while (i < align) {
@@ -236,10 +238,10 @@ debugger_cmd_print_u32(
         printf(RESET "|");
 
         i = 0;
-        while (i < len * 4 && start + i < core->memory_size) {
+        while (i < len * 4 && start + i < MEMORY_RAW_SIZE) {
             char c;
 
-            c = core->memory[start + i];
+            c = core->memory->raw[start + i];
             printf("%c", isprint(c) ? c : '.');
 
             ++i;
@@ -271,7 +273,7 @@ debugger_cmd_print(
     quantity = debugger_eval_expr(core, argv[2]);
     addr = debugger_eval_expr(core, argv[3]);
 
-    if (addr >= core->memory_size) {
+    if (addr >= MEMORY_RAW_SIZE) {
         printf("Address (0x%08x) is out of memory.\n", addr);
         return ;
     }

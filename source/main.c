@@ -11,8 +11,8 @@
 #include <errno.h>
 #include "hades.h"
 #include "core.h"
+#include "memory.h"
 #include "debugger.h"
-#include "rom.h"
 
 int
 main(
@@ -21,49 +21,38 @@ main(
 ) {
     if (argc == 2) {
         struct core core;
+        struct memory *memory;
         struct debugger debugger;
-        uint8_t *mem;
-        size_t mem_size;
-        FILE *file;
 
-        file = fopen(argv[1], "rb");
-        if (!file) {
-            fprintf(stderr, "hades: can't open %s: %s", argv[1], strerror(errno));
+        /* First, initialize the GBA system */
+
+        memory = malloc(sizeof(*memory));
+        hs_assert(memory != NULL);
+
+        mem_init(memory);
+
+        if (mem_load_rom(memory, argv[1]) < 0) {
+            fprintf(stderr, "hades: can't load %s: %s", argv[1], strerror(errno));
             return (EXIT_FAILURE);
         }
 
-        /* First, initialize the system and attach the debugger */
-
-        mem_size = 0x10000000;
-        mem = malloc(mem_size);
-        hs_assert(mem != NULL);
-
-        memset(mem, 0, mem_size);
-
         core_init(
             &core,
-            mem,
-            mem_size
+            memory
         );
 
-        rom_load(&core, file);
-
-        core_reset(&core);
-
-        fclose(file);
-
         debugger_init(&debugger);
-        debugger_attach(&debugger, &core);
 
         /* Then enter the debugger's REPL. */
 
+        debugger_attach(&debugger, &core);
         debugger_repl(&debugger);
 
         /* Finally, free all memory. */
 
         debugger_destroy(&debugger);
 
-        free(mem);
+        free(memory);
 
         return (EXIT_SUCCESS);
     } else {

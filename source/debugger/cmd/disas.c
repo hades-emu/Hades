@@ -11,6 +11,8 @@
 #include <capstone/capstone.h>
 #include <string.h>
 #include "debugger.h"
+#include "memory.h"
+#include "core.h"
 #include "hades.h"
 
 static
@@ -80,10 +82,10 @@ debugger_cmd_disas_around(
         while (i < radius && tmp > 0) {
             size_t count;
 
-            count = cs_disasm(handle, core->memory + tmp, 4, tmp, 1, &insn);
+            count = cs_disasm(handle, core->memory->raw + tmp, 4, tmp, 1, &insn);
             if (count == 0 && core->cpsr.thumb) {
                 tmp -= 2;
-                count = cs_disasm(handle, core->memory + tmp, 4, tmp, 1, &insn);
+                count = cs_disasm(handle, core->memory->raw + tmp, 4, tmp, 1, &insn);
             }
             if (count == 0){
                 break;
@@ -101,8 +103,8 @@ debugger_cmd_disas_around(
 
         i = 0;
         ptr_end = ptr;
-        while (i < radius && ptr_end < core->memory_size) {
-            if (cs_disasm(handle, core->memory + ptr_end, 4, ptr_end, 1, &insn) != 1) {
+        while (i < radius && ptr_end < MEMORY_RAW_SIZE) {
+            if (cs_disasm(handle, core->memory->raw + ptr_end, 4, ptr_end, 1, &insn) != 1) {
                 break;
             }
             ptr_end += insn[0].size;
@@ -115,7 +117,7 @@ debugger_cmd_disas_around(
 
     count = cs_disasm(
         handle,
-        core->memory + ptr_start,
+        core->memory->raw + ptr_start,
         ptr_end - ptr_start,
         ptr_start,
         (ptr_end - ptr_start) / op_len,
@@ -210,7 +212,7 @@ debugger_cmd_disas(
         return ;
     }
 
-    if (ptr >= core->memory_size) {
+    if (ptr >= MEMORY_RAW_SIZE) {
         printf("The address to disassemble (0x%08x) is out of memory.\n", ptr);
         return ;
     }

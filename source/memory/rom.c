@@ -15,21 +15,29 @@
 */
 
 #include <stdio.h>
-#include "rom.h"
-#include "core.h"
+#include "memory.h"
 #include "hades.h"
 
 /*
-** Load the ROM.
-**
-** It's recommended to reset the CPU before using (re)loading a ROM, or unpredictable things might happen.
+** Load the ROM into the given RAM.
 */
-void
-rom_load(
-    struct core *core,
-    FILE *file
+int
+mem_load_rom(
+    struct memory *memory,
+    char const *filename
 ) {
-    fread(core->memory + 0x08000000, 1, 0x2000000, file);
-    fread(core->memory + 0x0a000000, 1, 0x2000000, file);
-    fread(core->memory + 0x0c000000, 1, 0x2000000, file);
+    FILE *file;
+
+    file = fopen(filename, "rb");
+    if (!file) {
+        return (-1);
+    }
+
+    fread(memory->raw + 0x08000000, 1, 0x2000000, file);
+    fseek(file, 0, SEEK_SET);
+    fread(memory->raw + 0x0a000000, 1, 0x2000000, file);
+    fseek(file, 0, SEEK_SET);
+    fread(memory->raw + 0x0c000000, 1, 0x2000000, file);
+
+    return (0);
 }
