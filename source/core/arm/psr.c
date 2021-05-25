@@ -7,44 +7,53 @@
 **
 \******************************************************************************/
 
-#include "core.h"
 #include "hades.h"
+#include "gba.h"
 
 /*
-** Execute the MRS instruction (transfer PSR contents to a register)
+** Execute the MRS instruction (PSR to general-purpose register)
 */
 void
 core_arm_mrs(
-    struct core *core,
+    struct gba *gba,
     uint32_t op
 ) {
     uint32_t rd;
 
     rd = bitfield_get_range(op, 12, 16);
+
     if (bitfield_get(op, 22)) { // Source PSR = SPSR_<current_mode>
-        unimplemented(CORE, "MRS with a source PSR different than the CPSR isn't implemented yet.");
+        unimplemented(HS_CORE, "MRS with a source PSR different than the CPSR isn't implemented yet.");
     } else { // Source PSR = CPSR
-        core->registers[rd] = core->cpsr.raw;
+        gba->core.registers[rd] = gba->core.cpsr.raw;
     }
 }
 
 /*
-** Execute the MSR instruction (transfer register contents to PSR).
+** Execute the MSR instruction (general-purpose register to PSR)
 */
 void
 core_arm_msr(
-    struct core *core,
+    struct gba *gba,
     uint32_t op
 ) {
+    struct core *core;
     uint32_t rm;
 
+    core = &gba->core;
     rm = bitfield_get_range(op, 0, 4);
-    if (bitfield_get(op, 22)) { // Dest PSR = SPSR_<current_mode>
-        unimplemented(CORE, "MSR with a dest PSR different than the CPSR isn't implemented yet.");
-    } else { // Dest PSR = CPSR
-        core->cpsr.raw = core->registers[rm];
-    }
 
+    if (bitfield_get(op, 22)) { // Dest PSR = SPSR_<current_mode>
+        unimplemented(HS_CORE, "MSR with a dest PSR different than the CPSR isn't implemented yet.");
+    } else { // Dest PSR = CPSR
+        uint32_t new_cpsr;
+
+        new_cpsr = core->registers[rm];
+
+        core_switch_mode(core, new_cpsr & 0x1F);
+
+        core->cpsr.raw = new_cpsr;
+    }
 }
 
 /*
@@ -55,5 +64,5 @@ core_arm_msrf(
     struct core *core,
     uint32_t op
 ) {
-    unimplemented(CORE, "The MSR instruction with flag bits is not implemented yet.");
+    unimplemented(HS_CORE, "The MSR instruction with flag bits is not implemented yet.");
 }

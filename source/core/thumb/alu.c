@@ -7,22 +7,24 @@
 **
 \******************************************************************************/
 
-#include "core.h"
 #include "hades.h"
+#include "gba.h"
 
 /*
-** Implement the ADD instruction.
+** Implement the ADD instruction (low registers).
 */
 void
-core_thumb_add(
-    struct core *core,
+core_thumb_lo_add(
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint32_t rd;
     uint32_t rs;
     uint32_t rhs;
     bool immediate;
 
+    core = &gba->core;
     rd = bitfield_get_range(op, 0, 3);
     rs = bitfield_get_range(op, 3, 6);
     immediate = bitfield_get(op, 10);
@@ -42,18 +44,20 @@ core_thumb_add(
 }
 
 /*
-** Implement the SUB instruction.
+** Implement the SUB instruction (low registers).
 */
 void
-core_thumb_sub(
-    struct core *core,
+core_thumb_lo_sub(
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint32_t rd;
     uint32_t rs;
     uint32_t rhs;
     bool immediate;
 
+    core = &gba->core;
     rd = bitfield_get_range(op, 0, 3);
     rs = bitfield_get_range(op, 3, 6);
     immediate = bitfield_get(op, 10);
@@ -73,19 +77,67 @@ core_thumb_sub(
 }
 
 /*
-** Implement the ADD immediate instruction.
+** Implement the MOV from immediate instruction.
 */
 void
-core_thumb_add_imm(
-    struct core *core,
+core_thumb_mov_imm(
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint16_t rd;
     uint32_t imm;
 
     rd = bitfield_get_range(op, 8, 11);
     imm = bitfield_get_range(op, 0, 8);
 
+    core = &gba->core;
+    core->registers[rd] = imm;
+    core->cpsr.zero = !(core->registers[rd]);
+    core->cpsr.negative = bitfield_get(core->registers[rd], 31); // Useless ?
+}
+
+/*
+** Implement the Compare Immediate instructions.
+*/
+void
+core_thumb_cmp_imm(
+    struct gba *gba,
+    uint16_t op
+) {
+    struct core *core;
+    uint16_t rd;
+    uint32_t imm;
+    uint32_t tmp;
+
+    rd = bitfield_get_range(op, 8, 11);
+    imm = bitfield_get_range(op, 0, 8);
+
+    core = &gba->core;
+    tmp = core->registers[rd] - imm;
+
+    core->cpsr.zero = !tmp;
+    core->cpsr.negative = bitfield_get(tmp, 31);
+    core->cpsr.carry = usub32(core->registers[rd], imm);
+    core->cpsr.overflow = isub32(core->registers[rd], imm);
+}
+
+/*
+** Implement the ADD immediate instruction.
+*/
+void
+core_thumb_add_imm(
+    struct gba *gba,
+    uint16_t op
+) {
+    struct core *core;
+    uint16_t rd;
+    uint32_t imm;
+
+    rd = bitfield_get_range(op, 8, 11);
+    imm = bitfield_get_range(op, 0, 8);
+
+    core = &gba->core;
     core->cpsr.carry = uadd32(core->registers[rd], imm);
     core->cpsr.overflow = iadd32(core->registers[rd], imm);
 
@@ -100,15 +152,17 @@ core_thumb_add_imm(
 */
 void
 core_thumb_sub_imm(
-    struct core *core,
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint16_t rd;
     uint32_t imm;
 
     rd = bitfield_get_range(op, 8, 11);
     imm = bitfield_get_range(op, 0, 8);
 
+    core = &gba->core;
     core->cpsr.carry = usub32(core->registers[rd], imm);
     core->cpsr.overflow = isub32(core->registers[rd], imm);
 
@@ -119,13 +173,14 @@ core_thumb_sub_imm(
 }
 
 /*
-** Implement the ADD High Register instruction.
+** Implement the ADD from/to High Register instruction.
 */
 void
-core_thumb_add_reg(
-    struct core *core,
+core_thumb_hi_add(
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint16_t rd;
     uint16_t rs;
     bool h1;
@@ -138,6 +193,7 @@ core_thumb_add_reg(
 
     hs_assert(h1 | h2); // Ensure h1 != 0 && h2 != 0, or op is undefined.
 
+    core = &gba->core;
     core->registers[rd] = core->registers[rd] + core->registers[rs];
 
     if (rd == 15) {
@@ -146,19 +202,84 @@ core_thumb_add_reg(
 }
 
 /*
+** Implement the CMP from/to High Register instruction.
+*/
+void
+core_thumb_hi_cmp(
+    struct gba *gba,
+    uint16_t op
+) {
+    struct core *core;
+    uint16_t rd;
+    uint16_t rs;
+    bool h1;
+    bool h2;
+    uint32_t op1;
+    uint32_t op2;
+
+    h1 = bitfield_get(op, 7);
+    h2 = bitfield_get(op, 6);
+    rd = bitfield_get_range(op, 0, 3) + h1 * 8;
+    rs = bitfield_get_range(op, 3, 6) + h2 * 8;
+
+    core = &gba->core;
+    op1 = core->registers[rd];
+    op2 = core->registers[rs];
+
+    hs_assert(h1 | h2); // Ensure h1 != 0 && h2 != 0, or op is undefined.
+
+    core->cpsr.zero = !(op1 - op2);
+    core->cpsr.negative = bitfield_get(op1 - op2, 31);
+    core->cpsr.carry = usub32(op1, op2);
+    core->cpsr.overflow = isub32(op1, op2);
+}
+
+/*
+** Implement the MOV from/to High Register instruction.
+*/
+void
+core_thumb_hi_mov(
+    struct gba *gba,
+    uint16_t op
+) {
+    struct core *core;
+    uint16_t rd;
+    uint16_t rs;
+    bool h1;
+    bool h2;
+
+    h1 = bitfield_get(op, 7);
+    h2 = bitfield_get(op, 6);
+    rd = bitfield_get_range(op, 0, 3) + h1 * 8;
+    rs = bitfield_get_range(op, 3, 6) + h2 * 8;
+
+    hs_assert(h1 | h2); // Ensure h1 != 0 && h2 != 0, or op is undefined.
+
+    core = &gba->core;
+    core->registers[rd] = core->registers[rs];
+
+    if (rd == 15) {
+        core->pc &= 0xfffffffe;
+        core_reload_pipeline(core);
+    }
+}
+
+/*
 ** Implement the Load address from SP instruction.
 */
 void
-core_thumb_add_from_sp(
-    struct core *core,
+core_thumb_add_sp_imm(
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint32_t offset;
     uint32_t rd;
 
     offset = bitfield_get_range(op, 0, 8) << 2;
     rd = bitfield_get_range(op, 8, 11);
 
+    core = &gba->core;
     core->registers[rd] = core->sp + offset;
 }
 
@@ -166,17 +287,44 @@ core_thumb_add_from_sp(
 ** Implement the Load address from PC instruction.
 */
 void
-core_thumb_add_from_pc(
-    struct core *core,
+core_thumb_add_pc_imm(
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint32_t offset;
     uint32_t rd;
 
     offset = bitfield_get_range(op, 0, 8) << 2;
     rd = bitfield_get_range(op, 8, 11);
 
+    core = &gba->core;
     core->registers[rd] = (core->pc & 0xFFFFFFFC) + offset;
+}
+
+/*
+** Implement the ADD offset to stack pointer instruction.
+*/
+void
+core_thumb_add_sp_s_imm(
+    struct gba *gba,
+    uint16_t op
+) {
+    struct core *core;
+    bool sign;
+    uint32_t offset;
+
+    core = &gba->core;
+    sign = bitfield_get(op, 7);
+    offset = bitfield_get_range(op, 0, 7) << 2;
+
+    if (sign) {
+        // Offset is negative
+        core->sp -= offset;
+    } else {
+        // Offset is positive
+        core->sp += offset;
+    }
 }
 
 /*
@@ -184,9 +332,10 @@ core_thumb_add_from_pc(
 */
 void
 core_thumb_alu(
-    struct core *core,
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint16_t rd;
     uint16_t rs;
     uint32_t op1;
@@ -196,6 +345,7 @@ core_thumb_alu(
     rd = bitfield_get_range(op, 0, 3);
     rs = bitfield_get_range(op, 3, 6);
 
+    core = &gba->core;
     op1 = core->registers[rd];
     op2 = core->registers[rs];
 
@@ -390,127 +540,4 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(core->registers[rd], 31);
             break;
     }
-}
-
-/*
-** Implement the CMP from register instruction.
-*/
-void
-core_thumb_cmp_reg(
-    struct core *core,
-    uint16_t op
-) {
-    uint16_t rd;
-    uint16_t rs;
-    bool h1;
-    bool h2;
-    uint32_t op1;
-    uint32_t op2;
-
-    h1 = bitfield_get(op, 7);
-    h2 = bitfield_get(op, 6);
-    rd = bitfield_get_range(op, 0, 3) + h1 * 8;
-    rs = bitfield_get_range(op, 3, 6) + h2 * 8;
-    op1 = core->registers[rd];
-    op2 = core->registers[rs];
-
-    hs_assert(h1 | h2); // Ensure h1 != 0 && h2 != 0, or op is undefined.
-
-    core->cpsr.zero = !(op1 - op2);
-    core->cpsr.negative = bitfield_get(op1 - op2, 31);
-    core->cpsr.carry = usub32(op1, op2);
-    core->cpsr.overflow = isub32(op1, op2);
-}
-
-/*
-** Implement the MOV from register instruction.
-*/
-void
-core_thumb_mov_reg(
-    struct core *core,
-    uint16_t op
-) {
-    uint16_t rd;
-    uint16_t rs;
-    bool h1;
-    bool h2;
-
-    h1 = bitfield_get(op, 7);
-    h2 = bitfield_get(op, 6);
-    rd = bitfield_get_range(op, 0, 3) + h1 * 8;
-    rs = bitfield_get_range(op, 3, 6) + h2 * 8;
-
-    hs_assert(h1 | h2); // Ensure h1 != 0 && h2 != 0, or op is undefined.
-
-    core->registers[rd] = core->registers[rs];
-
-    if (rd == 15) {
-        core->pc &= 0xfffffffe;
-        core_reload_pipeline(core);
-    }
-}
-
-/*
-** Implement the MOV from immediate instruction.
-*/
-void
-core_thumb_mov_imm(
-    struct core *core,
-    uint16_t op
-) {
-    uint16_t rd;
-    uint32_t imm;
-
-    rd = bitfield_get_range(op, 8, 11);
-    imm = bitfield_get_range(op, 0, 8);
-
-    core->registers[rd] = imm;
-    core->cpsr.zero = !(core->registers[rd]);
-    core->cpsr.negative = bitfield_get(core->registers[rd], 31); // Useless ?
-}
-
-/*
-** Implement the ADD offset to stack pointer instruction.
-*/
-void
-core_thumb_add_sp(
-    struct core *core,
-    uint16_t op
-) {
-    bool sign;
-    uint32_t offset;
-
-    sign = bitfield_get(op, 7);
-    offset = bitfield_get_range(op, 0, 7) << 2;
-
-    if (sign) {
-        // Offset is negative
-        core->sp -= offset;
-    } else {
-        // Offset is positive
-        core->sp += offset;
-    }
-}
-
-/*
-** Implement the Compare Immediate instructions.
-*/
-void
-core_thumb_cmp_imm(
-    struct core *core,
-    uint16_t op
-) {
-    uint16_t rd;
-    uint32_t imm;
-    uint32_t tmp;
-
-    rd = bitfield_get_range(op, 8, 11);
-    imm = bitfield_get_range(op, 0, 8);
-
-    tmp = core->registers[rd] - imm;
-
-    core->cpsr.zero = !tmp;
-    core->cpsr.negative = bitfield_get(tmp, 31);
-    core->cpsr.carry = usub32(core->registers[rd], imm);
-    core->cpsr.overflow = isub32(core->registers[rd], imm);
 }

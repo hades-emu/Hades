@@ -10,25 +10,30 @@
 #include <string.h>
 #include <ctype.h>
 #include "hades.h"
-#include "core.h"
-#include "memory.h"
 #include "debugger.h"
+#include "gba.h"
 
 static
 void
 debugger_cmd_print_str(
-    struct core const *core,
+    struct gba const *gba,
     uint32_t addr,
     size_t align
 ) {
     uint32_t i;
+    uint8_t c;
 
     i = 0;
-    while (addr + i < MEMORY_RAW_SIZE && isprint(core->memory->raw[addr + i])) {
+    while (true) {
+        c = mem_try_read8(&gba->memory, addr + i);
+        if (!isprint(c)) {
+            break;
+        }
+
         if (i % align == 0) {
             printf("%08x: " LIGHT_MAGENTA, addr + i);
         }
-        printf("%c", core->memory->raw[addr + i]);
+        printf("%c", c);
         if (i % align == align - 1) {
             printf(RESET "\n");
         }
@@ -40,7 +45,7 @@ debugger_cmd_print_str(
 static
 void
 debugger_cmd_print_char(
-    struct core const *core,
+    struct gba const *gba,
     uint32_t addr,
     size_t len,
     size_t align
@@ -48,10 +53,10 @@ debugger_cmd_print_char(
     uint32_t i;
 
     i = 0;
-    while (i < len && addr + i < MEMORY_RAW_SIZE) {
+    while (i < len) {
         char c;
 
-        c = core->memory->raw[addr + i];
+        c = mem_try_read8(&gba->memory, addr + i);
         if (i % align == 0) {
             printf("%08x: " LIGHT_MAGENTA, addr + i);
         }
@@ -75,7 +80,7 @@ debugger_cmd_print_char(
 */
 void
 debugger_cmd_print_u8(
-    struct core const *core,
+    struct gba const *gba,
     uint32_t start,
     size_t nb,
     size_t align
@@ -85,9 +90,6 @@ debugger_cmd_print_u8(
     size_t i;
 
     end = start + nb;
-    if (end > MEMORY_RAW_SIZE) {
-        end = MEMORY_RAW_SIZE;
-    }
 
     while (start < end)
     {
@@ -99,8 +101,8 @@ debugger_cmd_print_u8(
         printf("%08x: " LIGHT_MAGENTA, start);
 
         i = 0;
-        while (i < len && start + i < MEMORY_RAW_SIZE) {
-            printf("%02x ", core->memory->raw[start + i]);
+        while (i < len) {
+            printf("%02x ", mem_try_read8(&gba->memory, start + i));
             ++i;
         }
         while (i < align) {
@@ -111,10 +113,10 @@ debugger_cmd_print_u8(
         printf(RESET "|");
 
         i = 0;
-        while (i < len && start + i < MEMORY_RAW_SIZE) {
+        while (i < len) {
             char c;
 
-            c = core->memory->raw[start + i];
+            c = mem_try_read8(&gba->memory, start + i);
             printf("%c", isprint(c) ? c : '.');
 
             ++i;
@@ -139,7 +141,7 @@ debugger_cmd_print_u8(
 */
 void
 debugger_cmd_print_u16(
-    struct core const *core,
+    struct gba const *gba,
     uint32_t start,
     size_t nb,
     size_t align
@@ -149,9 +151,6 @@ debugger_cmd_print_u16(
     size_t i;
 
     end = start + nb * 2;
-    if (end > MEMORY_RAW_SIZE - 1) {
-        end = MEMORY_RAW_SIZE;
-    }
 
     while (start < end)
     {
@@ -163,8 +162,8 @@ debugger_cmd_print_u16(
         printf("%08x: " LIGHT_MAGENTA, start);
 
         i = 0;
-        while (i < len && start + i * 2 < MEMORY_RAW_SIZE - 1) {
-            printf("%04x ", mem_read16(core, start + i * 2)),
+        while (i < len) {
+            printf("%04x ", mem_try_read16(&gba->memory, start + i * 2)),
             ++i;
         }
         while (i < align) {
@@ -175,10 +174,10 @@ debugger_cmd_print_u16(
         printf(RESET "|");
 
         i = 0;
-        while (i < len * 2 && start + i < MEMORY_RAW_SIZE) {
+        while (i < len * 2) {
             char c;
 
-            c = core->memory->raw[start + i];
+            c = mem_try_read8(&gba->memory, start + i);
             printf("%c", isprint(c) ? c : '.');
             ++i;
         }
@@ -202,7 +201,7 @@ debugger_cmd_print_u16(
 */
 void
 debugger_cmd_print_u32(
-    struct core const *core,
+    struct gba const *gba,
     uint32_t start,
     size_t nb,
     size_t align
@@ -212,9 +211,6 @@ debugger_cmd_print_u32(
     size_t i;
 
     end = start + nb * 4;
-    if (end > MEMORY_RAW_SIZE - 3) {
-        end = MEMORY_RAW_SIZE;
-    }
 
     while (start < end)
     {
@@ -226,8 +222,8 @@ debugger_cmd_print_u32(
         printf("%08x: " LIGHT_MAGENTA, start);
 
         i = 0;
-        while (i < len && start + i * 4 < MEMORY_RAW_SIZE - 3) {
-            printf("%08x ", mem_read32(core, start + i * 4)),
+        while (i < len) {
+            printf("%08x ", mem_try_read32(&gba->memory, start + i * 4)),
             ++i;
         }
         while (i < align) {
@@ -238,10 +234,10 @@ debugger_cmd_print_u32(
         printf(RESET "|");
 
         i = 0;
-        while (i < len * 4 && start + i < MEMORY_RAW_SIZE) {
+        while (i < len * 4) {
             char c;
 
-            c = core->memory->raw[start + i];
+            c = mem_try_read8(&gba->memory, start + i);
             printf("%c", isprint(c) ? c : '.');
 
             ++i;
@@ -259,35 +255,28 @@ debugger_cmd_print_u32(
 
 void
 debugger_cmd_print(
-    struct debugger *debugger,
+    struct gba *gba,
     size_t argc,
     char const * const *argv
 ) {
-    struct core const *core;
     char const *type;
     size_t quantity;
     uint32_t addr;
 
-    core = debugger->core;
     type = argv[1];
-    quantity = debugger_eval_expr(core, argv[2]);
-    addr = debugger_eval_expr(core, argv[3]);
-
-    if (addr >= MEMORY_RAW_SIZE) {
-        printf("Address (0x%08x) is out of memory.\n", addr);
-        return ;
-    }
+    quantity = debugger_eval_expr(gba, argv[2]);
+    addr = debugger_eval_expr(gba, argv[3]);
 
     if (!strcmp(type, "string") || !strcmp(type, "s")) {
-        debugger_cmd_print_str(core, addr, 32);
+        debugger_cmd_print_str(gba, addr, 32);
     } else if (!strcmp(type, "char") ||!strcmp(type, "c")) {
-        debugger_cmd_print_char(core, addr, quantity, 32);
+        debugger_cmd_print_char(gba, addr, quantity, 32);
     } else if (!strcmp(type, "byte") || !strcmp(type, "b") || !strcmp(type, "u8")) {
-        debugger_cmd_print_u8(core, addr, quantity, 16);
+        debugger_cmd_print_u8(gba, addr, quantity, 16);
     } else if (!strcmp(type, "halfword") || !strcmp(type, "h") || !strcmp(type, "u16")) {
-        debugger_cmd_print_u16(core, addr, quantity, 8);
+        debugger_cmd_print_u16(gba, addr, quantity, 8);
     } else if (!strcmp(type, "word") || !strcmp(type, "w") || !strcmp(type, "u32")) {
-        debugger_cmd_print_u32(core, addr, quantity, 4);
+        debugger_cmd_print_u32(gba, addr, quantity, 4);
     } else {
         printf("Invalid type \"%s\". Valid values are 's', 'c', 'b', 'h', and 'w'.\n", type);
     }

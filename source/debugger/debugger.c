@@ -11,11 +11,11 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <string.h>
-#include "core.h"
-#include "debugger.h"
 #include "hades.h"
+#include "debugger.h"
+#include "gba.h"
 
-struct command g_commands[] = {
+struct dbg_command g_commands[] = {
     [CMD_HELP] = {
         .name = "help",
         .alias = "h",
@@ -102,65 +102,27 @@ struct command g_commands[] = {
 };
 
 /*
-** Initialize the given debugger.
-*/
-void
-debugger_init(
-    struct debugger *debugger
-) {
-    memset(debugger, 0, sizeof(*debugger));
-    using_history();
-    read_history(".hades-dbg.history");
-}
-
-/*
-** Destroy the given debugger.
-**
-** The debugger musn't be used after this call.
-*/
-void
-debugger_destroy(
-    struct debugger *debugger
-) {
-    write_history(".hades-dbg.history");
-}
-
-/*
-** Attach the debugger and a core to one another.
-*/
-void
-debugger_attach(
-    struct debugger *debugger,
-    struct core *core
-) {
-    hs_assert(!debugger->core);
-    hs_assert(!core->debugger);
-
-    debugger->core = core;
-    core->debugger = debugger;
-}
-
-/*
 ** Enter a "Read/Evaluate/Print" loop.
 */
 void
 debugger_repl(
-    struct debugger *debugger
+    struct gba *gba
 ) {
     char *input;
 
-    hs_logln(GLOBAL, "Welcome to Hades");
-    hs_logln(GLOBAL, "----------------");
+    hs_logln(HS_GLOBAL, "Welcome to Hades");
+    hs_logln(HS_GLOBAL, "----------------");
 
-    debugger_dump_context(debugger);
+    debugger_dump_context(gba);
 
-    while ((input = readline("$ ")) != NULL) {
+    while ((input = readline("$ ")) != NULL) { // Unsafe TODO FIXME
         char **tokens;
         size_t tokens_length;
-        struct command const *cmd;
+        struct dbg_command const *cmd;
 
         /* Skip blank lines */
         if (!*input) {
+            free(input);
             continue;
         }
 
@@ -177,7 +139,7 @@ debugger_repl(
                 if (cmd->nargs > 0 && cmd->nargs != tokens_length) {
                     printf("Usage: %s\n", cmd->usage);
                 } else if (cmd->func) {
-                    cmd->func(debugger, tokens_length, (char const * const *)tokens);
+                    cmd->func(gba, tokens_length, (char const * const *)tokens);
                 } else {
                     free((void *)tokens);
                     free(input);
@@ -204,10 +166,13 @@ next:
 */
 uint32_t
 debugger_eval_expr(
-    struct core const *core,
+    struct gba const *gba,
     char const *expr
 ) {
+    struct core const *core;
     struct register_alias *alias;
+
+    core = &gba->core;
 
     /* Try to see if it matches a register name. */
     alias = register_alias_list;

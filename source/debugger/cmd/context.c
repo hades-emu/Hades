@@ -7,29 +7,30 @@
 **
 \******************************************************************************/
 
-#include "debugger.h"
 #include "hades.h"
+#include "debugger.h"
+#include "gba.h"
 
 void
 debugger_dump_context(
-    struct debugger *debugger
+    struct gba *gba
 ) {
     printf("---------------------------------Registers----------------------------------\n");
     debugger_cmd_registers(
-        debugger,
+        gba,
         1,
         ((char const * const[]){"registers"})
     );
     printf("------------------------------------Code------------------------------------\n");
     debugger_cmd_disas(
-        debugger,
+        gba,
         1,
         ((char const * const[]){"disas"})
     );
     printf("-----------------------------------Stack------------------------------------\n");
     debugger_cmd_print_u8(
-        debugger->core,
-        debugger->core->sp,
+        gba,
+        gba->core.sp,
         5 * 16,
         16
     );
@@ -38,9 +39,9 @@ debugger_dump_context(
 
 void
 debugger_cmd_context(
-    struct debugger *debugger,
+    struct gba *gba,
     size_t argc __unused,
     char const * const *argv __unused
 ) {
-    debugger_dump_context(debugger);
+    debugger_dump_context(gba);
 }

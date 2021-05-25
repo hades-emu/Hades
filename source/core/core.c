@@ -3,34 +3,37 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2020 - The Hades Authors
+**  Copyright (C) 2021 - The Hades Authors
 **
 \******************************************************************************/
 
 /*
 ** References:
 **   * ARM7TDMI-S Data Sheet
-**      https://vision.gel.ulaval.ca/~jflalonde/cours/1001/h17/docs/arm-instructionset.pdf
+**      https://www.dwedit.org/files/ARM7TDMI.pdf
 **
 */
 
-#include <stdbool.h>
 #include <string.h>
 #include "hades.h"
 #include "memory.h"
 #include "core.h"
+#include "core/arm.h"
+#include "core/thumb.h"
+#include "gba.h"
+#include "video.h"
 
 /*
-** Initialize the core by attaching the given memory to it
-** and initializing its registers.
+** Initialize the core by initializing its registers
+** to their default values.
 */
 void
 core_init(
     struct core *core,
-    struct memory *mem
+    struct memory *memory
 ) {
     memset(core, 0, sizeof(*core));
-    core->memory = mem;
+    core->memory = memory;
     core_reset(core);
 }
 
@@ -43,14 +46,20 @@ core_reset(
 ) {
     int i;
 
-    for (i = 0; i < 16; ++i) {
+    for (i = 0; i < ARRAY_LEN(core->registers); ++i) {
         core->registers[i] = 0;
     }
 
+    for (i = 0; i < ARRAY_LEN(core->bank_registers); ++i) {
+        core->bank_registers[i] = 0;
+    }
+
+    core->r0 = 0x08000000;
+    core->r1 = 0x000000EA;
 
     core->sp = 0x03007F00;      // Default SP for system mode
     core->pc = 0x8000000;       // Entry point of the game
-    core->cpsr.raw = 0;
+    core->cpsr.raw = 0x6000001F;
     core->cpsr.mode = MODE_SYSTEM;
     core->big_endian = false;
     core_reload_pipeline(core);
@@ -61,188 +70,10 @@ core_reset(
 */
 void
 core_run(
-    struct core *core
+    struct gba *gba
 ) {
     while (true) {
-        core_step(core);
-    }
-}
-
-/*
-** Fetch, decode and execute the next ARM instruction.
-*/
-static
-void
-core_step_arm(
-    struct core *core
-) {
-    uint32_t op;
-    bool can_exec;
-
-
-    op = core->prefetch;
-    core->prefetch = mem_read32(core, core->pc);
-    core->pc += 4;
-
-    can_exec = core_compute_cond(core, op >> 28);
-
-    // Test if the conditions required to execute the instruction are met
-    // Ignore instructions where the conditions aren't met.
-    if (!can_exec) {
-        return ;
-    }
-
-    switch (bitfield_get_range(op, 25, 28)) {
-        case 0:
-        case 1:
-            if (bitfield_get_range(op, 4, 28) == 0x12FFF1) {
-                core_arm_branchxchg(core, op);
-            } else if (bitfield_get_range(op, 23, 25) == 0b10 && bitfield_get_range(op, 16, 22) == 0b001111) {
-                core_arm_mrs(core, op);
-            } else if (bitfield_get_range(op, 23, 25) == 0b10 && bitfield_get_range(op, 12, 22) == 0b1010011111) {
-                core_arm_msr(core, op);
-            } else if (bitfield_get_range(op, 23, 25) == 0b10 && bitfield_get_range(op, 12, 22) == 0b1010001111) {
-                core_arm_msrf(core, op);
-            } else if (!bitfield_get(op, 4) || !bitfield_get(op, 7)) {
-                core_arm_alu(core, op);
-            } else if (bitfield_get_range(op, 22, 24) == 0) {
-                core_arm_mul(core, op);
-            } else {
-                panic(CORE, "Unknown instruction");
-            }
-            break;
-        case 2:
-        case 3:
-            // Undefined if bit 25 and 4 are set
-            if (bitfield_get(op, 25) && bitfield_get(op, 4)) {
-                panic(CORE, "Undefined state");
-            }
-            core_arm_sdt(core, op);
-            break;
-        case 5:
-            core_arm_branch(core, op);
-            break;
-        default:
-            panic(CORE, "Unknown ARM instruction");
-            break;
-    }
-}
-
-/*
-** Fetch, decode and execute the next Thumb instruction.
-*/
-static
-void
-core_step_thumb(
-    struct core *core
-) {
-    uint16_t op;
-
-    op = core->prefetch;
-    core->prefetch = mem_read16(core, core->pc);
-    core->pc += 2;
-
-    switch (bitfield_get_range(op, 13, 16)) {
-        case 0b000:
-            switch (bitfield_get_range(op, 11, 13)) {
-                case 0b00:
-                    core_thumb_lsl(core, op);
-                    break;
-                case 0b01:
-                    core_thumb_lsr(core, op);
-                    break;
-                case 0b10:
-                    core_thumb_asr(core, op);
-                    break;
-                case 0b11:
-                    if (bitfield_get(op, 9)) {
-                        core_thumb_sub(core, op);
-                    } else {
-                        core_thumb_add(core, op);
-                    }
-                    break;
-            }
-            break;
-        case 0b001:
-            switch bitfield_get_range(op, 11, 13) {
-                case 0b00:
-                    core_thumb_mov_imm(core, op);
-                    break;
-                case 0b01:
-                    core_thumb_cmp_imm(core, op);
-                    break;
-                case 0b10:
-                    core_thumb_add_imm(core, op);
-                    break;
-                case 0b11:
-                    core_thumb_sub_imm(core, op);
-                    break;
-            }
-            break;
-        case 0b010:
-            if (bitfield_get_range(op, 10, 13) == 0b000) {
-                core_thumb_alu(core, op);
-            } else if (bitfield_get_range(op, 8, 13) == 0b00100) {
-                core_thumb_add_reg(core, op);
-            } else if (bitfield_get_range(op, 8, 13) == 0b00101) {
-                core_thumb_cmp_reg(core, op);
-            } else if (bitfield_get_range(op, 8, 13) == 0b00110) {
-                core_thumb_mov_reg(core, op);
-            } else if (bitfield_get_range(op, 8, 13) == 0b00111) {
-                core_thumb_branchxchg(core, op);
-            } else if (bitfield_get_range(op, 11, 13) == 0b01) {
-                core_thumb_ldr_pc(core, op);
-            } else if (bitfield_get(op, 9)) {
-                core_thumb_sdt_sign_halfword(core, op);
-            } else {
-                core_thumb_sdt_reg(core, op);
-            }
-            break;
-        case 0b011:
-            core_thumb_sdt_imm(core, op);
-            break;
-        case 0b100:
-            if (bitfield_get(op, 12)) {
-                core_thumb_sdt_sp(core, op);
-            } else {
-                core_thumb_sdt_halfword(core, op);
-            }
-            break;
-        case 0b101:
-            if (bitfield_get_range(op, 11, 13) == 0b00) {
-                core_thumb_add_from_pc(core, op);
-            } else if (bitfield_get_range(op, 11, 13) == 0b01) {
-                core_thumb_add_from_sp(core, op);
-            } else if (bitfield_get_range(op, 8, 12) == 0) {
-                core_thumb_add_sp(core, op);
-            } else {
-                if (bitfield_get(op, 11)) {
-                    core_thumb_pop(core, op);
-                } else {
-                    core_thumb_push(core, op);
-                }
-            }
-            break;
-        case 0b110:
-            if (bitfield_get(op, 12)) {
-                core_thumb_branch_cond(core, op);
-            } else {
-                goto unknown_op;
-            }
-            break;
-        case 0b111:
-            if (bitfield_get(op, 12)) {
-                core_thumb_branchlink(core, op);
-            } else if (!bitfield_get(op, 11)) {
-                core_thumb_branch(core, op);
-            } else {
-                goto unknown_op;
-            }
-            break;
-        default:
-unknown_op:
-            panic(CORE, "Unknown thumb instruction. Opcode: 0x%04x", op);
-            break;
+        core_step(gba);
     }
 }
 
@@ -251,16 +82,82 @@ unknown_op:
 */
 void
 core_step(
-    struct core *core
+    struct gba *gba
 ) {
+    struct core *core;
+    size_t i;
+    bool can_exec;
     static size_t count = 0;
 
-    printf("Executing instruction %zu...\n", ++count);
-
+    core = &gba->core;
     if (core->cpsr.thumb) {
-        core_step_thumb(core);
+        uint16_t op;
+
+        op = core->prefetch;
+        core->prefetch = mem_read16(core->memory, core->pc);
+        core->pc += 2;
+
+        i = 0;
+        while (i < thumb_insns_len) {
+            if ((op & thumb_insns[i].mask) == thumb_insns[i].value) {
+                hs_logln(
+                    HS_DEBUG,
+                    "Executing instruction %zu: %s (%#02x)",
+                    ++count,
+                    thumb_insns[i].name,
+                    op
+                );
+
+                if (!thumb_insns[i].op) {
+                    unimplemented(HS_CORE, "thumb instruction \"%s\" isn't implemented.", thumb_insns[i].name);
+                }
+                thumb_insns[i].op(gba, op);
+                video_build_framebuffer(gba);
+                video_build_framebuffer(gba);
+                return ;
+            }
+            ++i;
+        }
+
+        panic(HS_CORE, "Unknown thumb op-code %#04x.", op);
     } else {
-        core_step_arm(core);
+        uint32_t op;
+
+        op = core->prefetch;
+        core->prefetch = mem_read32(core->memory, core->pc);
+        core->pc += 4;
+
+        can_exec = core_compute_cond(core, op >> 28);
+
+        // Test if the conditions required to execute the instruction are met
+        // Ignore instructions where the conditions aren't met.
+        if (!can_exec) {
+            return ;
+        }
+
+        i = 0;
+        while (i < arm_insns_len) {
+            if ((op & arm_insns[i].mask) == arm_insns[i].value) {
+                hs_logln(
+                    HS_DEBUG,
+                    "Executing instruction %zu: %s (%#04x)",
+                    ++count,
+                    arm_insns[i].name,
+                    op
+                );
+
+                if (!arm_insns[i].op) {
+                    unimplemented(HS_CORE, "ARM instruction \"%s\" isn't implemented.", arm_insns[i].name);
+                }
+                arm_insns[i].op(gba, op);
+                video_build_framebuffer(gba);
+                video_build_framebuffer(gba);
+                return ;
+            }
+            ++i;
+        }
+
+        panic(HS_CORE, "Unknown ARM op-code %#08x.", op);
     }
 }
 
@@ -274,12 +171,165 @@ core_reload_pipeline(
 ) {
     if (core->cpsr.thumb) {
         core->pc &= 0xFFFFFFFE;
-        core->prefetch = mem_read16(core, core->pc);
+        core->prefetch = mem_read16(core->memory, core->pc);
         core->pc += 2;
     } else {
         core->pc &= 0xFFFFFFFC;
-        core->prefetch = mem_read32(core, core->pc);
+        core->prefetch = mem_read32(core->memory, core->pc);
         core->pc += 4;
+    }
+    hs_logln(HS_CORE, "Pipeline reloaded");
+}
+
+void
+core_switch_mode(
+    struct core *core,
+    enum arm_modes mode
+) {
+    if (mode != core->cpsr.mode) {
+
+        hs_logln(
+            HS_CORE,
+            "Switching from %s to %s mode.",
+            arm_modes_name[core->cpsr.mode],
+            arm_modes_name[mode]
+        );
+
+        /* Save current registers to their bank */
+        switch (core->cpsr.mode) {
+            case MODE_SYSTEM:
+            case MODE_USER:
+                core->r8_sys = core->r8;
+                core->r9_sys = core->r9;
+                core->r10_sys = core->r10;
+                core->r11_sys = core->fp;
+                core->r12_sys = core->ip;
+                core->r13_sys = core->sp;
+                core->r14_sys = core->lr;
+                core->spsr_sys = core->cpsr.raw;
+                break;
+            case MODE_FIQ:
+                core->r8_fiq = core->r8;
+                core->r9_fiq = core->r9;
+                core->r10_fiq = core->r10;
+                core->r11_fiq = core->fp;
+                core->r12_fiq = core->ip;
+                core->r13_fiq = core->sp;
+                core->r14_fiq = core->lr;
+                core->spsr_fiq = core->cpsr.raw;
+                break;
+            case MODE_IRQ:
+                core->r8_sys = core->r8;
+                core->r9_sys = core->r9;
+                core->r10_sys = core->r10;
+                core->r11_sys = core->fp;
+                core->r12_sys = core->ip;
+                core->r13_irq = core->sp;
+                core->r14_irq = core->lr;
+                core->spsr_irq = core->cpsr.raw;
+                break;
+            case MODE_SUPERVISOR:
+                core->r8_sys = core->r8;
+                core->r9_sys = core->r9;
+                core->r10_sys = core->r10;
+                core->r11_sys = core->fp;
+                core->r12_sys = core->ip;
+                core->r13_svc = core->sp;
+                core->r14_svc = core->lr;
+                core->spsr_svc = core->cpsr.raw;
+                break;
+            case MODE_ABORT:
+                core->r8_sys = core->r8;
+                core->r9_sys = core->r9;
+                core->r10_sys = core->r10;
+                core->r11_sys = core->fp;
+                core->r12_sys = core->ip;
+                core->r13_abt = core->sp;
+                core->r14_abt = core->lr;
+                core->spsr_abt = core->cpsr.raw;
+                break;
+            case MODE_UNDEFINED:
+                core->r8_sys = core->r8;
+                core->r9_sys = core->r9;
+                core->r10_sys = core->r10;
+                core->r11_sys = core->fp;
+                core->r12_sys = core->ip;
+                core->r13_und = core->sp;
+                core->r14_und = core->lr;
+                core->spsr_und = core->cpsr.raw;
+                break;
+            default:
+                panic(HS_CORE, "core_switch_mode: unsupported mode (%u)", mode);
+                break;
+        }
+
+        /* Restore the registers based on the bank's content */
+        switch (mode) {
+            case MODE_SYSTEM:
+            case MODE_USER:
+                core->r8 = core->r8_sys;
+                core->r9 = core->r9_sys;
+                core->r10 = core->r10_sys;
+                core->fp = core->r11_sys;
+                core->ip = core->r12_sys;
+                core->sp = core->r13_sys;
+                core->lr = core->r14_sys;
+                core->cpsr.raw = core->spsr_sys;
+                break;
+            case MODE_FIQ:
+                core->r8 = core->r8_fiq;
+                core->r9 = core->r9_fiq;
+                core->r10 = core->r10_fiq;
+                core->fp = core->r11_fiq;
+                core->ip = core->r12_fiq;
+                core->sp = core->r13_fiq;
+                core->lr = core->r14_fiq;
+                core->cpsr.raw = core->spsr_fiq;
+                break;
+            case MODE_IRQ:
+                core->r8 = core->r8_sys;
+                core->r9 = core->r9_sys;
+                core->r10 = core->r10_sys;
+                core->fp = core->r11_sys;
+                core->ip = core->r12_sys;
+                core->sp = core->r13_irq;
+                core->lr = core->r14_irq;
+                core->cpsr.raw = core->spsr_irq;
+                break;
+            case MODE_SUPERVISOR:
+                core->r8 = core->r8_sys;
+                core->r9 = core->r9_sys;
+                core->r10 = core->r10_sys;
+                core->fp = core->r11_sys;
+                core->ip = core->r12_sys;
+                core->sp = core->r13_svc;
+                core->lr = core->r14_svc;
+                core->cpsr.raw = core->spsr_svc;
+                break;
+            case MODE_ABORT:
+                core->r8 = core->r8_sys;
+                core->r9 = core->r9_sys;
+                core->r10 = core->r10_sys;
+                core->fp = core->r11_sys;
+                core->ip = core->r12_sys;
+                core->sp = core->r13_abt;
+                core->lr = core->r14_abt;
+                core->cpsr.raw = core->spsr_abt;
+                break;
+            case MODE_UNDEFINED:
+                core->r8 = core->r8_sys;
+                core->r9 = core->r9_sys;
+                core->r10 = core->r10_sys;
+                core->fp = core->r11_sys;
+                core->ip = core->r12_sys;
+                core->sp = core->r13_und;
+                core->lr = core->r14_und;
+                core->cpsr.raw = core->spsr_und;
+                break;
+            default:
+                panic(HS_CORE, "core_switch_mode: unsupported mode (%u)", mode);
+                break;
+        }
     }
 }
 
@@ -317,7 +367,7 @@ core_compute_shift(
         if (bits == 0) {
             return (value);
         } else if (bits >= 32) {
-            unimplemented(CORE, "unsupported shifts of more than 32 bits");
+            unimplemented(HS_CORE, "unsupported shifts of more than 32 bits");
         }
 
     } else {                                // Immediate value
@@ -409,6 +459,6 @@ core_compute_cond(
         case COND_LE: return core->cpsr.zero || (core->cpsr.negative != core->cpsr.overflow);
         case COND_AL: return true;
         default:
-            panic(CORE, "Unknown cond %u\n", cond);
+            panic(HS_CORE, "Unknown cond %u\n", cond);
     }
 }

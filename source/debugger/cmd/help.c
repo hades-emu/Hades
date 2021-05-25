@@ -8,16 +8,17 @@
 \******************************************************************************/
 
 #include <string.h>
-#include "debugger.h"
 #include "hades.h"
+#include "debugger.h"
+#include "gba.h"
 
 void
 debugger_cmd_help(
-    struct debugger *debugger __unused,
+    struct gba *gba __unused,
     size_t argc,
     char const * const *argv
 ) {
-    struct command *cmd;
+    struct dbg_command *cmd;
 
     if (argc == 1) {
         printf("Available commands:\n");
@@ -28,8 +29,6 @@ debugger_cmd_help(
             ++cmd;
         }
     } else if (argc == 2) {
-        struct command *cmd;
-
         cmd = g_commands;
         while (cmd->name) {
             if (!strcmp(cmd->name, argv[1])) {

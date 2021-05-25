@@ -10,70 +10,6 @@
 #include <ctype.h>
 #include "hades.h"
 
-char **
-strsplit(
-    char *str,
-    size_t *length
-) {
-    size_t i;
-    char **res;
-    char *save;
-    bool in_word;
-
-    save = str;
-    in_word = false;
-    *length = 0;
-
-    /*
-    ** First we count how many words there is
-    */
-
-    while (*str) {
-        if (in_word && isspace(*str)) {
-            in_word = false;
-        } else if (!in_word && !isspace(*str)) {
-            *length += 1;
-            in_word = true;
-        }
-        str++;
-    }
-
-    i = 0;
-    in_word = false;
-    str = save;
-
-    /*
-    ** Then we allocate an array big enough to hold them
-    */
-
-    res = malloc(sizeof(char *) * *length);
-    hs_assert(res != NULL);
-
-    /*
-    ** And finally we fill that array with the content of `str`, modifying
-    ** it to add some `\0` at word boundaries.
-    */
-
-    while (*str) {
-        if (!isspace(*str)) {
-            res[i] = str;
-            ++i;
-            while (*str) {
-                if (isspace(*str)) {
-                    *str = '\0';
-                    str++;
-                    break;
-                }
-                str++;
-            }
-        } else {
-            str++;
-        }
-    }
-
-    return (res);
-}
-
 /*
 ** Append to the log the given formatted string.
 */
@@ -160,10 +96,75 @@ unimplemented(
     va_list va;
 
     va_start(va, fmt);
-    printf("[%s] Abort: ", modules_str[module]);
+    printf("[%s] Abort: Not Implemented: ", modules_str[module]);
     vprintf(fmt, va);
     printf("\n");
     va_end(va);
 
     exit(1);
 }
+
+char **
+strsplit(
+    char *str,
+    size_t *length
+) {
+    size_t i;
+    char **res;
+    char *save;
+    bool in_word;
+
+    save = str;
+    in_word = false;
+    *length = 0;
+
+    /*
+    ** First we count how many words there is
+    */
+
+    while (*str) {
+        if (in_word && isspace(*str)) {
+            in_word = false;
+        } else if (!in_word && !isspace(*str)) {
+            *length += 1;
+            in_word = true;
+        }
+        str++;
+    }
+
+    i = 0;
+    in_word = false;
+    str = save;
+
+    /*
+    ** Then we allocate an array big enough to hold them
+    */
+
+    res = malloc(sizeof(char *) * *length);
+    hs_assert(res != NULL);
+
+    /*
+    ** And finally we fill that array with the content of `str`, modifying
+    ** it to add some `\0` at word boundaries.
+    */
+
+    while (*str) {
+        if (!isspace(*str)) {
+            res[i] = str;
+            ++i;
+            while (*str) {
+                if (isspace(*str)) {
+                    *str = '\0';
+                    str++;
+                    break;
+                }
+                str++;
+            }
+        } else {
+            str++;
+        }
+    }
+
+    return (res);
+}
+

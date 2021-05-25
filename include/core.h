@@ -3,31 +3,25 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2020 - The Hades Authors
+**  Copyright (C) 2021 - The Hades Authors
 **
 \******************************************************************************/
 
 /*
 ** References:
-**   * ARM7TDMI-S Data Sheet
-**      https://vision.gel.ulaval.ca/~jflalonde/cours/1001/h17/docs/arm-instructionset.pdf
-**
+**   * ARM7TDMI Data Sheet
+**      https://www.dwedit.org/files/ARM7TDMI.pdf
 */
 
 #ifndef CORE_H
 # define CORE_H
 
+# include <stdbool.h>
 # include <stdint.h>
-# include <stdlib.h>
-# include "memory.h"
 # include "hades.h"
 
-struct debugger;
-struct memory;
+struct gba;
 
-/*
-** An ARM core.
-*/
 struct core {
     struct debugger *debugger;      // The debugger this core is linked with.
 
@@ -46,17 +40,55 @@ struct core {
             uint32_t r8;
             uint32_t r9;
             uint32_t r10;
-            uint32_t fp;       // FP
-            uint32_t ip;       // IP
-            uint32_t sp;       // SP
-            uint32_t lr;       // LR
-            uint32_t pc;       // PC
+            uint32_t fp;       // r11
+            uint32_t ip;       // r12
+            uint32_t sp;       // r13
+            uint32_t lr;       // r14
+            uint32_t pc;       // r15
         } __packed;
         uint32_t registers[16];
     };
 
+    union {
+        struct {
+            uint32_t r8_sys;
+            uint32_t r9_sys;
+            uint32_t r10_sys;
+            uint32_t r11_sys;
+            uint32_t r12_sys;
+            uint32_t r13_sys;
+            uint32_t r14_sys;
+            uint32_t spsr_sys;
+
+            uint32_t r8_fiq;
+            uint32_t r9_fiq;
+            uint32_t r10_fiq;
+            uint32_t r11_fiq;
+            uint32_t r12_fiq;
+            uint32_t r13_fiq;
+            uint32_t r14_fiq;
+            uint32_t spsr_fiq;
+
+            uint32_t r13_svc;
+            uint32_t r14_svc;
+            uint32_t spsr_svc;
+
+            uint32_t r13_abt;
+            uint32_t r14_abt;
+            uint32_t spsr_abt;
+
+            uint32_t r13_irq;
+            uint32_t r14_irq;
+            uint32_t spsr_irq;
+
+            uint32_t r13_und;
+            uint32_t r14_und;
+            uint32_t spsr_und;
+        } __packed;
+        uint32_t bank_registers[28];
+    };
+
     uint32_t prefetch;              // The next instruction to be executed
-    bool force_pipeline_reload;     // Forces a reload of the 3-stage pipeline
 
     union {
         struct {
@@ -85,13 +117,13 @@ struct core {
         uint32_t raw;
     } cpsr __packed;
 
-    uint8_t big_endian;
+    bool big_endian;
 };
 
 /*
 ** The fifteen possible conditions that prefixes an instruction.
 */
-enum opcode_cond {
+enum arm_conds {
     COND_EQ = 0b0000,   // Equal
     COND_NE = 0b0001,   // Not Equal
     COND_CS = 0b0010,   // Unsigned higher or same
@@ -112,7 +144,7 @@ enum opcode_cond {
 /*
 ** An enumeration of all the modes the processor can be in.
 */
-enum core_modes {
+enum arm_modes {
     MODE_USER            = 0b10000,
     MODE_FIQ             = 0b10001,
     MODE_IRQ             = 0b10010,
@@ -122,66 +154,26 @@ enum core_modes {
     MODE_SYSTEM          = 0b11111,
 };
 
-/* core/arm/alu.c */
-void core_arm_alu(struct core *core, uint32_t op);
-
-/* core/arm/branch.c */
-void core_arm_branch(struct core *core, uint32_t op);
-void core_arm_branchxchg(struct core *core, uint32_t op);
-
-/* core/arm/mul.c */
-void core_arm_mul(struct core *core, uint32_t op);
-
-/* core/arm/psr.c */
-void core_arm_mrs(struct core *core, uint32_t op);
-void core_arm_msr(struct core *core, uint32_t op);
-void core_arm_msrf(struct core *core, uint32_t op);
-
-/* core/arm/sdt.c */
-void core_arm_sdt(struct core *core, uint32_t op);
-
-/* core/thumb/alu.c */
-void core_thumb_add(struct core *core, uint16_t op);
-void core_thumb_sub(struct core *core, uint16_t op);
-void core_thumb_add_from_sp(struct core *core, uint16_t op);
-void core_thumb_add_from_pc(struct core *core, uint16_t op);
-void core_thumb_alu(struct core *core, uint16_t op);
-void core_thumb_add_reg(struct core *core, uint16_t op);
-void core_thumb_cmp_reg(struct core *core, uint16_t op);
-void core_thumb_mov_reg(struct core *core, uint16_t op);
-void core_thumb_mov_imm(struct core *core, uint16_t op);
-void core_thumb_cmp_imm(struct core *core, uint16_t op);
-void core_thumb_add_imm(struct core *core, uint16_t op);
-void core_thumb_sub_imm(struct core *core, uint16_t op);
-void core_thumb_add_sp(struct core *core, uint16_t op);
-
-/* core/thumb/branch.c */
-void core_thumb_branch(struct core *core, uint16_t op);
-void core_thumb_branchlink(struct core *core, uint16_t op);
-void core_thumb_branch_cond(struct core *core, uint16_t op);
-void core_thumb_branchxchg(struct core *core, uint16_t op);
-
-/* core/thumb/loadstore.c */
-void core_thumb_push(struct core *core, uint16_t op);
-void core_thumb_pop(struct core *core, uint16_t op);
-void core_thumb_sdt_imm(struct core *core, uint16_t op);
-void core_thumb_sdt_reg(struct core *core, uint16_t op);
-void core_thumb_sdt_halfword(struct core *core, uint16_t op);
-void core_thumb_sdt_sign_halfword(struct core *core, uint16_t op);
-void core_thumb_ldr_pc(struct core *core, uint16_t op);
-void core_thumb_sdt_sp(struct core *core, uint16_t op);
-
-/* core/thumb/logical.c */
-void core_thumb_lsl(struct core *core, uint16_t op);
-void core_thumb_lsr(struct core *core, uint16_t op);
-void core_thumb_asr(struct core *core, uint16_t op);
+/*
+** The user-friendly name of all modes.
+*/
+static char const * const arm_modes_name[] = {
+    [MODE_USER]         = "usr",
+    [MODE_FIQ]          = "fiq",
+    [MODE_IRQ]          = "irq",
+    [MODE_SUPERVISOR]   = "svc",
+    [MODE_ABORT]        = "abt",
+    [MODE_UNDEFINED]    = "und",
+    [MODE_SYSTEM]       = "sys"
+};
 
 /* core/core.c */
-void core_init(struct core *core, struct memory *);
-void core_run(struct core *core);
+void core_init(struct core *core, struct memory *memory);
 void core_reset(struct core *core);
-void core_step(struct core *core);
+void core_run(struct gba *gba);
+void core_step(struct gba *gba);
 void core_reload_pipeline(struct core *core);
+void core_switch_mode(struct core *core, enum arm_modes mode);
 uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool update_carry);
 bool core_compute_cond(struct core *core, uint32_t cond);
 

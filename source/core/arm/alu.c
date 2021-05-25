@@ -8,16 +8,17 @@
 \******************************************************************************/
 
 #include "hades.h"
-#include "core.h"
+#include "gba.h"
 
 /*
 ** Execute the Data Processing instructions (ADD, SUB, MOV, etc.).
 */
 void
 core_arm_alu(
-    struct core *core,
+    struct gba *gba,
     uint32_t op
 ) {
+    struct core *core;
     uint32_t rd;
     uint32_t rn;
     uint32_t op1;
@@ -28,6 +29,7 @@ core_arm_alu(
     rn = (op >> 16) & 0xF;
     cond = bitfield_get(op, 20);
 
+    core = &gba->core;
     op1 = core->registers[rn];
     op2 = 0;
 

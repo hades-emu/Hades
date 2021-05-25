@@ -8,13 +8,13 @@
 \******************************************************************************/
 
 #include <string.h>
-#include "debugger.h"
-#include "core.h"
 #include "hades.h"
+#include "debugger.h"
+#include "gba.h"
 
 void
 debugger_cmd_set(
-    struct debugger *debugger,
+    struct gba *gba,
     size_t argc __unused,
     char const * const *argv
 ) {
@@ -23,9 +23,9 @@ debugger_cmd_set(
     uint32_t reg_value;
     struct register_alias *alias;
 
-    core = debugger->core;
+    core = &gba->core;
     reg_name = argv[1];
-    reg_value = debugger_eval_expr(core, argv[2]);
+    reg_value = debugger_eval_expr(gba, argv[2]);
 
     alias = register_alias_list;
     while (alias->name) {

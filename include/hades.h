@@ -15,6 +15,7 @@
 # include <stdbool.h>
 # include <stdarg.h>
 # include <stdlib.h>
+# include <pthread.h>
 
 /*
 ** A useful set of macros that act like keywords that are not available
@@ -41,6 +42,11 @@
 # define __optimize(x)      __attribute__((optimize(x)))
 
 /*
+** Calculate the number of elements of a static array.
+*/
+# define ARRAY_LEN(x)       (sizeof(x) / sizeof((x)[0]))
+
+/*
 ** A set of ANSI control sequences to format the terminal.
 */
 # define RESET          "\e[0m"
@@ -63,17 +69,19 @@
 # define WHITE          "\e[97m"
 
 enum modules {
-    GLOBAL      = 0,
-    ERROR,
-    CORE,
-    DEBUG,
+    HS_GLOBAL      = 0,
+    HS_ERROR,
+    HS_CORE,
+    HS_IO,
+    HS_DEBUG,
 };
 
 static char const * const modules_str[] = {
-    [GLOBAL]    = "       ",
-    [ERROR]     = " ERROR ",
-    [CORE]      = " CORE  ",
-    [DEBUG]     = " DEBUG ",
+    [HS_GLOBAL]     = "       ",
+    [HS_ERROR]      = " ERROR ",
+    [HS_CORE]       = " CORE  ",
+    [HS_DEBUG]      = " DEBUG ",
+    [HS_IO]         = " IO    ",
 };
 
 /* Panic if the given constant expression evaluates to `false`. */
@@ -88,7 +96,7 @@ static char const * const modules_str[] = {
     do {                                                    \
         if (unlikely(!(expr))) {                            \
             panic(                                          \
-                ERROR,                                      \
+                HS_ERROR,                                   \
                 "assert(%s) failed (in %s at line %u).\n",  \
                 #expr,                                      \
                 __FILE__,                                   \

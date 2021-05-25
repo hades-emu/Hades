@@ -7,38 +7,40 @@
 **
 \******************************************************************************/
 
-#include "core.h"
 #include "hades.h"
+#include "gba.h"
 
 /*
 ** Implement the unconditional branch instruction.
 */
 void
 core_thumb_branch(
-    struct core *core,
+    struct gba *gba,
     uint16_t op
 ) {
     int32_t offset;
 
     offset = sign_extend12(bitfield_get_range(op, 0, 11) << 1);
 
-    core->pc += offset;
-    core_reload_pipeline(core);
+    gba->core.pc += offset;
+    core_reload_pipeline(&gba->core);
 }
 
 /*
 ** Implement the two sides of the BL instruction.
 */
 void
-core_thumb_branchlink(
-    struct core *core,
+core_thumb_branch_link(
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint32_t offset;
     bool h;
 
     h = bitfield_get(op, 11);
     offset = bitfield_get_range(op, 0, 11);
+    core = &gba->core;
 
     if (!h) {
         core->lr = core->pc + (sign_extend11(offset) << 12);
@@ -58,12 +60,14 @@ core_thumb_branchlink(
 */
 void
 core_thumb_branch_cond(
-    struct core *core,
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     bool can_exec;
     int32_t label;
 
+    core = &gba->core;
     label = ((int32_t)(int8_t)bitfield_get_range(op, 0, 8)) << 1;
     can_exec = core_compute_cond(core, bitfield_get_range(op, 8, 12));
 
@@ -74,13 +78,14 @@ core_thumb_branch_cond(
 }
 
 /*
-** Implement the Branch Exchange instruction.
+** Implement the Branch Exchange (BX) instruction.
 */
 void
-core_thumb_branchxchg(
-    struct core *core,
+core_thumb_branch_xchg(
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint32_t addr;
     uint16_t rs;
     bool h;
@@ -90,6 +95,7 @@ core_thumb_branchxchg(
 
     hs_assert(!bitfield_get(op, 7));
 
+    core = &gba->core;
     addr = core->registers[rs];
 
     /*

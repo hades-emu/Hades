@@ -8,18 +8,20 @@
 \******************************************************************************/
 
 #include "hades.h"
-#include "core.h"
+#include "gba.h"
 
 /*
 ** Execute the Branch and Branch With Link instructions.
 */
 void
 core_arm_branch(
-    struct core *core,
+    struct gba *gba,
     uint32_t op
 ) {
+    struct core *core;
     int32_t offset;
 
+    core = &gba->core;
     offset = sign_extend24(op & 0xFFFFFF) << 2u;
 
     /*
@@ -44,13 +46,15 @@ core_arm_branch(
 ** Execute the Branch and Exchange instruction.
 */
 void
-core_arm_branchxchg(
-    struct core *core,
+core_arm_branch_xchg(
+    struct gba *gba,
     uint32_t op
 ) {
+    struct core *core;
     uint32_t rn;
     uint32_t addr;
 
+    core = &gba->core;
     rn = op & 0xF;
     addr = core->registers[rn];
 

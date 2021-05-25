@@ -33,11 +33,6 @@ mem_load_rom(
         return (-1);
     }
 
-    fread(memory->raw + 0x08000000, 1, 0x2000000, file);
-    fseek(file, 0, SEEK_SET);
-    fread(memory->raw + 0x0a000000, 1, 0x2000000, file);
-    fseek(file, 0, SEEK_SET);
-    fread(memory->raw + 0x0c000000, 1, 0x2000000, file);
-
+    fread(memory->rom, 1, 0x2000000, file);
     return (0);
 }

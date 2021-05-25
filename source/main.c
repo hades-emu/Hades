@@ -3,16 +3,21 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2020 - The Hades Authors
+**  Copyright (C) 2021 - The Hades Authors
 **
 \******************************************************************************/
 
 #include <string.h>
 #include <errno.h>
+#include <pthread.h>
 #include "hades.h"
-#include "core.h"
+#include "gba.h"
+#include "core/arm.h"
+#include "core/thumb.h"
 #include "memory.h"
 #include "debugger.h"
+
+void *sdl_render_loop(struct gba *gba);
 
 int
 main(
@@ -20,43 +25,52 @@ main(
     char *argv[]
 ) {
     if (argc == 2) {
-        struct core core;
-        struct memory *memory;
-        struct debugger debugger;
+        pthread_t render_thread;
+        struct gba *gba;
 
         /* First, initialize the GBA system */
 
-        memory = malloc(sizeof(*memory));
-        hs_assert(memory != NULL);
+        gba = malloc(sizeof(*gba));
+        hs_assert(gba != NULL);
 
-        mem_init(memory);
+        memset(gba, 0, sizeof(*gba));
 
-        if (mem_load_rom(memory, argv[1]) < 0) {
+        pthread_mutex_init(&gba->framebuffer_mutex, NULL);
+
+        core_arm_decode_insns();
+        core_thumb_decode_insns();
+
+        mem_init(&gba->memory);
+
+        /* Load the given ROM */
+
+        if (mem_load_rom(&gba->memory, argv[1]) < 0) {
             fprintf(stderr, "hades: can't load %s: %s", argv[1], strerror(errno));
             return (EXIT_FAILURE);
         }
 
-        core_init(
-            &core,
-            memory
-        );
+        core_init(&gba->core, &gba->memory);
 
-        debugger_init(&debugger);
+        /* Create the render thread */
+
+        pthread_create(
+            &render_thread,
+            NULL,
+            (void *(*)(void *))
+            sdl_render_loop,
+            gba
+        );
 
         /* Then enter the debugger's REPL. */
 
-        debugger_attach(&debugger, &core);
-        debugger_repl(&debugger);
+        debugger_repl(gba);
 
-        /* Finally, free all memory. */
-
-        debugger_destroy(&debugger);
-
-        free(memory);
+        free(gba);
 
         return (EXIT_SUCCESS);
     } else {
         fprintf(stderr, "Usage: %s <path_to_rom>\n", argv[0]);
         return (EXIT_FAILURE);
     }
+    return (0);
 }

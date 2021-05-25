@@ -10,10 +10,9 @@
 #include <capstone/arm.h>
 #include <capstone/capstone.h>
 #include <string.h>
-#include "debugger.h"
-#include "memory.h"
-#include "core.h"
 #include "hades.h"
+#include "debugger.h"
+#include "gba.h"
 
 static
 size_t
@@ -36,6 +35,35 @@ find_biggest_mnenmonic(
         ++i;
     }
     return (best);
+}
+
+static
+size_t
+try_disas(
+    csh handle,
+    cs_insn **insn_ptr,
+    struct memory const *memory,
+    uint32_t addr,
+    size_t op_len,
+    size_t count
+) {
+    switch (addr) {
+        case CART_0_START ... CART_0_END:
+            if (addr + count * op_len >= CART_0_END) {
+                return (0);
+            }
+            return (cs_disasm(
+                handle,
+                (uint8_t *)memory->rom + (addr & 0x1FFFFFF),
+                op_len * count,
+                addr,
+                count,
+                insn_ptr
+            ));
+        default:
+            //hs_logln(DEBUG, "Invalid disas at addr %p", addr);
+            return (0);
+    }
 }
 
 /*
@@ -82,10 +110,10 @@ debugger_cmd_disas_around(
         while (i < radius && tmp > 0) {
             size_t count;
 
-            count = cs_disasm(handle, core->memory->raw + tmp, 4, tmp, 1, &insn);
+            count = try_disas(handle, &insn, core->memory, tmp, op_len, 1);
             if (count == 0 && core->cpsr.thumb) {
-                tmp -= 2;
-                count = cs_disasm(handle, core->memory->raw + tmp, 4, tmp, 1, &insn);
+                tmp -= op_len;
+                count = try_disas(handle, &insn, core->memory, tmp, op_len, 1);
             }
             if (count == 0){
                 break;
@@ -103,8 +131,8 @@ debugger_cmd_disas_around(
 
         i = 0;
         ptr_end = ptr;
-        while (i < radius && ptr_end < MEMORY_RAW_SIZE) {
-            if (cs_disasm(handle, core->memory->raw + ptr_end, 4, ptr_end, 1, &insn) != 1) {
+        while (i < radius) { // && ptr_end < MEMORY_RAW_SIZE) { TODO FIXME
+            if (try_disas(handle, &insn, core->memory, ptr_end, op_len, 1) != 1) {
                 break;
             }
             ptr_end += insn[0].size;
@@ -115,13 +143,13 @@ debugger_cmd_disas_around(
 
     cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 
-    count = cs_disasm(
+    count = try_disas(
         handle,
-        core->memory->raw + ptr_start,
-        ptr_end - ptr_start,
+        &insn,
+        core->memory,
         ptr_start,
-        (ptr_end - ptr_start) / op_len,
-        &insn
+        op_len,
+        (ptr_end - ptr_start) / op_len
     );
 
     mnemonic_len = find_biggest_mnenmonic(insn, count);
@@ -180,14 +208,15 @@ debugger_cmd_disas_around(
         }
     }
 
-
-    cs_free(insn, count);
-    // cs_close(handle) ? TODO FIXME
+    if (count > 0) {
+        cs_free(insn, count);
+    }
+    cs_close(&handle);
 }
 
 void
 debugger_cmd_disas(
-    struct debugger *debugger,
+    struct gba *gba,
     size_t argc,
     char const * const *argv
 ) {
@@ -195,13 +224,13 @@ debugger_cmd_disas(
     size_t op_len;
     uint32_t ptr;
 
-    core = debugger->core;
+    core = &gba->core;
     op_len = core->cpsr.thumb ? 2 : 4;
 
     if (argc == 1) {
         ptr = core->pc - op_len;
     } else if (argc == 2) {
-        ptr = debugger_eval_expr(core, argv[1]);
+        ptr = debugger_eval_expr(gba, argv[1]);
     } else {
         printf("Usage: %s\n", g_commands[CMD_DISAS].usage);
         return ;
@@ -209,11 +238,6 @@ debugger_cmd_disas(
 
     if (ptr % op_len) {
         printf("The address to disassemble (0x%08x) isn't aligned.\n", ptr);
-        return ;
-    }
-
-    if (ptr >= MEMORY_RAW_SIZE) {
-        printf("The address to disassemble (0x%08x) is out of memory.\n", ptr);
         return ;
     }
 
