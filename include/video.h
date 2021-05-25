@@ -3,10 +3,19 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2020 - The Hades Authors
+**  Copyright (C) 2021 - The Hades Authors
 **
 \******************************************************************************/
 
-#include "memory.h"
+#ifndef VIDEO_H
+# define VIDEO_H
 
-/* Work in progress */
+struct video
+{
+    uint h;
+    uint v;
+};
+
+void video_build_framebuffer(struct gba *gba);
+
+#endif /* !VIDEO_H */

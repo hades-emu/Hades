@@ -14,19 +14,25 @@ project(
     default_options: ['c_std=gnu11'],
 )
 
+if get_option('buildtype').startswith('debug')
+    add_project_arguments('-DDEBUG', language : 'c')
+endif
+
 executable(
     'hades',
-    'source/core/arm/branch.c',
     'source/core/arm/alu.c',
+    'source/core/arm/bdt.c',
+    'source/core/arm/branch.c',
+    'source/core/arm/sdt.c',
+    'source/core/arm/core.c',
+    'source/core/core.c',
     'source/core/arm/mul.c',
     'source/core/arm/psr.c',
-    'source/core/arm/sdt.c',
     'source/core/thumb/alu.c',
     'source/core/thumb/branch.c',
-    'source/core/thumb/loadstore.c',
+    'source/core/thumb/core.c',
     'source/core/thumb/logical.c',
-    'source/core/core.c',
-    'source/core/dma.c',
+    'source/core/thumb/sdt.c',
     'source/debugger/cmd/context.c',
     'source/debugger/cmd/continue.c',
     'source/debugger/cmd/disas.c',
@@ -37,13 +43,18 @@ executable(
     'source/debugger/cmd/set.c',
     'source/debugger/cmd/step.c',
     'source/debugger/debugger.c',
+    'source/memory/io.c',
     'source/memory/memory.c',
     'source/memory/rom.c',
+    'source/render/sdl.c',
+    'source/video/video.c',
     'source/main.c',
     'source/utils.c',
     dependencies: [
         dependency('capstone', version: '>=3.0.0', required: true),
         dependency('readline', version: '>=7', required: true),
+        dependency('sdl2', version: '>=2', required: true),
+        dependency('threads', required: true)
     ],
     include_directories: include_directories('include'),
 )

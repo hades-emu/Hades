@@ -7,17 +7,17 @@
 **
 \******************************************************************************/
 
-#include "debugger.h"
 #include "hades.h"
+#include "debugger.h"
 
 void
 debugger_cmd_continue(
-    struct debugger *debugger,
+    struct gba *gba,
     size_t argc __unused,
     char const * const *argv __unused
 ) {
     while (true) {
         // TODO stop on break point
-        core_step(debugger->core);
+        core_step(gba);
     }
 }

@@ -7,12 +7,13 @@
 **
 \******************************************************************************/
 
-#include "debugger.h"
 #include "hades.h"
+#include "debugger.h"
+#include "gba.h"
 
 void
 debugger_cmd_registers(
-    struct debugger *debugger,
+    struct gba *gba,
     size_t argc __unused,
     char const * const *argv __unused
 ) {
@@ -21,7 +22,7 @@ debugger_cmd_registers(
 
     /* Print the general purpose registers. */
 
-    core = debugger->core;
+    core = &gba->core;
     for (i = 0; i < 4; ++i) {
         printf(
             LIGHT_GREEN "%3s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
@@ -52,7 +53,7 @@ debugger_cmd_registers(
         core->cpsr.irq_disable ? 'i' : '-',
         core->cpsr.fiq_disable ? 'f' : '-',
         core->cpsr.thumb ? 't' : '-',
-        core_modes_name[core->cpsr.mode],
+        arm_modes_name[core->cpsr.mode],
         core->cpsr.raw,
         core->big_endian ? "Big endian" : "Little endian"
     );

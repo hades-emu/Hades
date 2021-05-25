@@ -3,21 +3,22 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2020 - The Hades Authors
+**  Copyright (C) 2021 - The Hades Authors
 **
 \******************************************************************************/
 
-#include "core.h"
 #include "hades.h"
+#include "gba.h"
 
 /*
 ** Execute the Multiply (MUL) and Multiply Accumulate (MLA) instruction.
 */
 void
 core_arm_mul(
-    struct core *core,
+    struct gba *gba,
     uint32_t op
 ) {
+    struct core *core;
     uint32_t rm;
     uint32_t rs;
     uint32_t rn;
@@ -31,6 +32,7 @@ core_arm_mul(
     rd = bitfield_get_range(op, 16, 20);
     s = bitfield_get(op, 20);
     a = bitfield_get(op, 21);
+    core = &gba->core;
 
     if (a) {
         core->registers[rd] = core->registers[rm] * core->registers[rs] + core->registers[rn];
@@ -42,4 +44,6 @@ core_arm_mul(
         core->cpsr.zero = !(core->registers[rd]);
         core->cpsr.negative = bitfield_get(core->registers[rd], 31);
     }
+
+
 }

@@ -7,19 +7,20 @@
 **
 \******************************************************************************/
 
-#include "debugger.h"
 #include "hades.h"
+#include "debugger.h"
+#include "gba.h"
 
 void
 debugger_cmd_next(
-    struct debugger *debugger,
+    struct gba *gba,
     size_t argc,
     char const * const *argv
 ) {
     struct core *core;
     size_t op_len;
 
-    core = debugger->core;
+    core = &gba->core;
     op_len = core->cpsr.thumb ? 2 : 4;
 
     if (argc == 1) {
@@ -27,19 +28,19 @@ debugger_cmd_next(
 
         next_pc = core->pc + op_len;
         while (core->pc != next_pc) {
-            core_step(core);
+            core_step(gba);
         }
 
-        debugger_dump_context(debugger);
+        debugger_dump_context(gba);
     } else if (argc == 2) {
         uint32_t next_pc;
 
         next_pc = core->pc + strtoul(argv[1], NULL, 0) * op_len;
         while (core->pc != next_pc) {
-            core_step(core);
+            core_step(gba);
         }
 
-        debugger_dump_context(debugger);
+        debugger_dump_context(gba);
     } else {
         printf("Usage: %s\n", g_commands[CMD_NEXT].usage);
     }

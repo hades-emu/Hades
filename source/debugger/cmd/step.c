@@ -12,22 +12,22 @@
 
 void
 debugger_cmd_step(
-    struct debugger *debugger,
+    struct gba *gba,
     size_t argc,
     char const * const *argv
 ) {
     if (argc == 1) {
-        core_step(debugger->core);
-        debugger_dump_context(debugger);
+        core_step(gba);
+        debugger_dump_context(gba);
     } else if (argc == 2) {
         unsigned long nb;
 
         nb = strtoul(argv[1], NULL, 0);
         while (nb > 0) {
-            core_step(debugger->core);
+            core_step(gba);
             --nb;
         }
-        debugger_dump_context(debugger);
+        debugger_dump_context(gba);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP].usage);
     }

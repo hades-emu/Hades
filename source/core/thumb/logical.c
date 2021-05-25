@@ -7,17 +7,18 @@
 **
 \******************************************************************************/
 
-#include "core.h"
 #include "hades.h"
+#include "gba.h"
 
 /*
 ** Implement the Logical Shift Left instructions.
 */
 void
 core_thumb_lsl(
-    struct core *core,
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint32_t rd;
     uint32_t rs;
     uint32_t shift;
@@ -27,6 +28,7 @@ core_thumb_lsl(
     rs = bitfield_get_range(op, 3, 6);
     shift = bitfield_get_range(op, 6, 11);
 
+    core = &gba->core;
     value = core->registers[rs];
 
     /* LSL (Logical Shift Left) */
@@ -48,9 +50,10 @@ core_thumb_lsl(
 */
 void
 core_thumb_lsr(
-    struct core *core,
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint32_t rd;
     uint32_t rs;
     uint32_t shift;
@@ -60,6 +63,7 @@ core_thumb_lsr(
     rs = bitfield_get_range(op, 3, 6);
     shift = bitfield_get_range(op, 6, 11);
 
+    core = &gba->core;
     value = core->registers[rs];
 
     /* LSR (Logical Shift Right) */
@@ -83,9 +87,10 @@ core_thumb_lsr(
 */
 void
 core_thumb_asr(
-    struct core *core,
+    struct gba *gba,
     uint16_t op
 ) {
+    struct core *core;
     uint32_t rd;
     uint32_t rs;
     uint32_t shift;
@@ -95,6 +100,7 @@ core_thumb_asr(
     rs = bitfield_get_range(op, 3, 6);
     shift = bitfield_get_range(op, 6, 11);
 
+    core = &gba->core;
     value = core->registers[rs];
 
     /* ASR (Arithmetic Shift Right) */
