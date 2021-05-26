@@ -24,7 +24,7 @@ main(
     int argc,
     char *argv[]
 ) {
-    if (argc == 2) {
+    if (argc == 3) {
         pthread_t render_thread;
         struct gba *gba;
 
@@ -42,14 +42,19 @@ main(
 
         mem_init(&gba->memory);
 
-        /* Load the given ROM */
-
-        if (mem_load_rom(&gba->memory, argv[1]) < 0) {
+        /* Load the BIOS */
+        if (mem_load_bios(&gba->memory, argv[1]) < 0) {
             fprintf(stderr, "hades: can't load %s: %s", argv[1], strerror(errno));
             return (EXIT_FAILURE);
         }
 
-        core_init(&gba->core, &gba->memory);
+        /* Load the given ROM */
+        if (mem_load_rom(&gba->memory, argv[2]) < 0) {
+            fprintf(stderr, "hades: can't load %s: %s", argv[1], strerror(errno));
+            return (EXIT_FAILURE);
+        }
+
+        core_init(gba, &gba->memory);
 
         /* Create the render thread */
 
@@ -69,7 +74,7 @@ main(
 
         return (EXIT_SUCCESS);
     } else {
-        fprintf(stderr, "Usage: %s <path_to_rom>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <bios> <rom>\n", argv[0]);
         return (EXIT_FAILURE);
     }
     return (0);

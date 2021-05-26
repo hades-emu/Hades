@@ -10,3 +10,4 @@ Special thanks to some really good reading/projects that are helping me during t
   - [gba-tests](https://github.com/jsmolka/gba-tests)
   - [mGBA](https://mgba.io/)
   - [chocolateARM](https://github.com/gdkchan/ChocolateARM/)
+  - [gdkGBA](https://github.com/gdkchan/gdkGBA/)

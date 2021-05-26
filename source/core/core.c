@@ -29,22 +29,16 @@
 */
 void
 core_init(
-    struct core *core,
+    struct gba *gba,
     struct memory *memory
 ) {
+    struct core *core;
+    int i;
+
+    core = &gba->core;
+
     memset(core, 0, sizeof(*core));
     core->memory = memory;
-    core_reset(core);
-}
-
-/*
-** Reset the core to its default values.
-*/
-void
-core_reset(
-    struct core *core
-) {
-    int i;
 
     for (i = 0; i < ARRAY_LEN(core->registers); ++i) {
         core->registers[i] = 0;
@@ -54,14 +48,11 @@ core_reset(
         core->bank_registers[i] = 0;
     }
 
-    core->r0 = 0x08000000;
-    core->r1 = 0x000000EA;
-
-    core->sp = 0x03007F00;      // Default SP for system mode
-    core->pc = 0x8000000;       // Entry point of the game
-    core->cpsr.raw = 0x6000001F;
+    core->r13_irq = 0x03007FA0;
+    core->r13_svc = 0x03007FE0;
+    core->sp = 0x03007F00;
     core->cpsr.mode = MODE_SYSTEM;
-    core->big_endian = false;
+
     core_reload_pipeline(core);
 }
 
@@ -206,7 +197,7 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_sys = core->sp;
                 core->r14_sys = core->lr;
-                core->spsr_sys = core->cpsr.raw;
+                //core->spsr_sys = core->cpsr.raw;
                 break;
             case MODE_FIQ:
                 core->r8_fiq = core->r8;
@@ -216,7 +207,7 @@ core_switch_mode(
                 core->r12_fiq = core->ip;
                 core->r13_fiq = core->sp;
                 core->r14_fiq = core->lr;
-                core->spsr_fiq = core->cpsr.raw;
+                //core->spsr_fiq = core->cpsr.raw;
                 break;
             case MODE_IRQ:
                 core->r8_sys = core->r8;
@@ -226,7 +217,7 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_irq = core->sp;
                 core->r14_irq = core->lr;
-                core->spsr_irq = core->cpsr.raw;
+                //core->spsr_irq = core->cpsr.raw;
                 break;
             case MODE_SUPERVISOR:
                 core->r8_sys = core->r8;
@@ -236,7 +227,7 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_svc = core->sp;
                 core->r14_svc = core->lr;
-                core->spsr_svc = core->cpsr.raw;
+                //core->spsr_svc = core->cpsr.raw;
                 break;
             case MODE_ABORT:
                 core->r8_sys = core->r8;
@@ -246,7 +237,7 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_abt = core->sp;
                 core->r14_abt = core->lr;
-                core->spsr_abt = core->cpsr.raw;
+                //core->spsr_abt = core->cpsr.raw;
                 break;
             case MODE_UNDEFINED:
                 core->r8_sys = core->r8;
@@ -256,7 +247,7 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_und = core->sp;
                 core->r14_und = core->lr;
-                core->spsr_und = core->cpsr.raw;
+                //core->spsr_und = core->cpsr.raw;
                 break;
             default:
                 panic(HS_CORE, "core_switch_mode: unsupported mode (%u)", mode);
@@ -274,7 +265,8 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_sys;
                 core->lr = core->r14_sys;
-                core->cpsr.raw = core->spsr_sys;
+                //core->cpsr.raw = core->spsr_sys;
+                core->spsr_sys = core->cpsr.raw;
                 break;
             case MODE_FIQ:
                 core->r8 = core->r8_fiq;
@@ -284,7 +276,8 @@ core_switch_mode(
                 core->ip = core->r12_fiq;
                 core->sp = core->r13_fiq;
                 core->lr = core->r14_fiq;
-                core->cpsr.raw = core->spsr_fiq;
+                //core->cpsr.raw = core->spsr_fiq;
+                core->spsr_fiq = core->cpsr.raw;
                 break;
             case MODE_IRQ:
                 core->r8 = core->r8_sys;
@@ -294,7 +287,8 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_irq;
                 core->lr = core->r14_irq;
-                core->cpsr.raw = core->spsr_irq;
+                //core->cpsr.raw = core->spsr_irq;
+                core->spsr_irq = core->cpsr.raw;
                 break;
             case MODE_SUPERVISOR:
                 core->r8 = core->r8_sys;
@@ -304,7 +298,8 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_svc;
                 core->lr = core->r14_svc;
-                core->cpsr.raw = core->spsr_svc;
+                //core->cpsr.raw = core->spsr_svc;
+                core->spsr_svc = core->cpsr.raw;
                 break;
             case MODE_ABORT:
                 core->r8 = core->r8_sys;
@@ -314,7 +309,8 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_abt;
                 core->lr = core->r14_abt;
-                core->cpsr.raw = core->spsr_abt;
+                //core->cpsr.raw = core->spsr_abt;
+                core->spsr_abt = core->cpsr.raw;
                 break;
             case MODE_UNDEFINED:
                 core->r8 = core->r8_sys;
@@ -324,13 +320,39 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_und;
                 core->lr = core->r14_und;
-                core->cpsr.raw = core->spsr_und;
+                //core->cpsr.raw = core->spsr_und;
+                core->spsr_und = core->cpsr.raw;
                 break;
             default:
                 panic(HS_CORE, "core_switch_mode: unsupported mode (%u)", mode);
                 break;
         }
+        core->cpsr.mode = mode;
     }
+}
+
+/*
+** Interrupt the CPU, switching to the given interrupt vector/mode.
+*/
+void
+core_interrupt(
+    struct gba *gba,
+    enum arm_vectors vector,
+    enum arm_modes mode
+) {
+    struct core *core;
+
+    core = &gba->core;
+
+    core_switch_mode(core, mode);
+
+    core->lr = core->pc - (core->cpsr.thumb ? 2 : 4);
+    core->pc = vector;
+    core->cpsr.irq_disable = true;
+    core->cpsr.fiq_disable |= (vector == VEC_FIQ || VEC_RESET);
+    core->cpsr.thumb = 0;
+
+    core_reload_pipeline(core);
 }
 
 /*

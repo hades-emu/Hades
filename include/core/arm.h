@@ -15,15 +15,13 @@
 
 struct gba;
 
-struct arm_encoded_insn
-{
+struct arm_encoded_insn {
     char const *name;
     char const *mask;
     void (*op)(struct gba *gba, uint32_t op);
 };
 
-struct arm_insn
-{
+struct arm_insn {
     char const *name;
     uint32_t mask;
     uint32_t value;
@@ -54,6 +52,9 @@ void core_arm_msrf(struct gba *gba, uint32_t op);
 /* core/arm/sdt.c */
 void core_arm_sdt(struct gba *gba, uint32_t op);
 void core_arm_hsdt(struct gba *gba, uint32_t op);
+
+/* core/arm/swi.c */
+void core_arm_swi(struct gba *gba, uint32_t op);
 
 extern struct arm_insn arm_insns[];
 extern size_t arm_insns_len;

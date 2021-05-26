@@ -308,7 +308,6 @@ core_thumb_ldr_pc(
     offset = bitfield_get_range(op, 0, 8) << 2;
 
     core = &gba->core;
-    printf("LDR_PC: %u + %i = %u\n", core->pc, offset, (core->pc & 0xFFFFFFFC) + offset);
     core->registers[rd] = mem_read32(core->memory, (core->pc & 0xFFFFFFFC) + offset);
 }
 

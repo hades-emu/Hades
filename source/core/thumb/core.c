@@ -10,15 +10,6 @@
 #include "core/thumb.h"
 #include "gba.h"
 
-static
-void
-core_thumb_stub(
-    struct gba *gba __unused,
-    uint16_t op __unused
-) {
-    hs_logln(HS_DEBUG, "thumb: stub");
-}
-
 struct thumb_encoded_insn thumb_encoded_insns[] = {
     // Move shifted register
     { "lsl",            "00000yyyyysssddd",          core_thumb_lsl},
@@ -110,7 +101,7 @@ struct thumb_encoded_insn thumb_encoded_insns[] = {
     { "ble",            "11011101xxxxxxxx",          core_thumb_branch_cond},
 
     // Software Interrupt
-    { "swi",            "11011111xxxxxxxx",          NULL},
+    { "swi",            "11011111xxxxxxxx",          core_thumb_swi},
 
     // Unconditional Branch (B)
     { "b",              "11100xxxxxxxxxxx",          core_thumb_branch},
@@ -195,7 +186,6 @@ core_thumb_decode_insns(void)
             ++j;
         }
 #endif
-
         ++i;
     }
 }

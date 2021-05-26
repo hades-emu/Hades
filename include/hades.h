@@ -237,9 +237,15 @@ isub32(
 
 /* utils.c */
 char **strsplit(char *str, size_t *size);
+#ifdef DEBUG
 void hs_loga(char const *fmt, ...);
 void hs_log(enum modules module, char const *fmt, ...);
 void hs_logln(enum modules module, char const *fmt, ...);
+#else
+static inline void hs_loga(char const *fmt __unused, ...) { }
+static inline void hs_log(enum modules module __unused, char const *fmt __unused, ...) { }
+static inline void hs_logln(enum modules module __unused, char const *fmt __unused, ...) { }
+#endif
 void panic(enum modules module, char const *fmt, ...) __attribute__((noreturn));
 void unimplemented(enum modules module, char const *fmt, ...) __attribute__((noreturn));
 

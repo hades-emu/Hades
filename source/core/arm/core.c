@@ -87,9 +87,6 @@ static struct arm_encoded_insn arm_encoded_insns[] = {
     { "mul",        "xxxx_000000_0_s_ddddnnnnssss_1001_mmmm",         core_arm_mul},
     { "mla",        "xxxx_000000_1_s_ddddnnnnssss_1001_mmmm",         core_arm_mul},
 
-    // { "mul",        "xxxx_0000000sddddnnnnssss1001mmmm",         core_arm_mul},
-    // {"strh_imm",    "xxxx_000pu0w0xxxxxxxx00001xx1xxxx",         core_arm_hsdt},
-
     // Branch
     {"b",           "xxxx_101_0_xxxxxxxxxxxxxxxxxxxxxxxx",           core_arm_branch},
     {"bl",          "xxxx_101_1_xxxxxxxxxxxxxxxxxxxxxxxx",           core_arm_branch},
@@ -121,6 +118,9 @@ static struct arm_encoded_insn arm_encoded_insns[] = {
 
     {"ldrsh_imm",   "xxxx_000_pu0w1_xxxx_xxxx_0000_1111xxxx",         core_arm_hsdt},
     {"ldrsh_reg",   "xxxx_000_pu1w1_xxxx_xxxx_xxxx_1111xxxx",         core_arm_hsdt},
+
+    // Software Interrupt
+    {"swi",         "xxxx_1111_xxxxxxxxxxxxxxxxxxxxxxxx",           core_arm_swi},
 };
 
 struct arm_insn arm_insns[ARRAY_LEN(arm_encoded_insns)] = { 0 };

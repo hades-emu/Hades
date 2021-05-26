@@ -19,16 +19,35 @@
 #include "hades.h"
 
 /*
-** Load the ROM into the given RAM.
+** Load the BIOS into the emulator's memory.
+*/
+int
+mem_load_bios(
+    struct memory *memory,
+    char const *path
+) {
+    FILE *file;
+
+    file = fopen(path, "rb");
+    if (!file) {
+        return (-1);
+    }
+
+    fread(memory->bios, 1, 0x4000, file);
+    return (0);
+}
+
+/*
+** Load the ROM into the emulator's memory.
 */
 int
 mem_load_rom(
     struct memory *memory,
-    char const *filename
+    char const *path
 ) {
     FILE *file;
 
-    file = fopen(filename, "rb");
+    file = fopen(path, "rb");
     if (!file) {
         return (-1);
     }

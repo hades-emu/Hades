@@ -145,13 +145,28 @@ enum arm_conds {
 ** An enumeration of all the modes the processor can be in.
 */
 enum arm_modes {
-    MODE_USER            = 0b10000,
-    MODE_FIQ             = 0b10001,
-    MODE_IRQ             = 0b10010,
-    MODE_SUPERVISOR      = 0b10011,
-    MODE_ABORT           = 0b10111,
-    MODE_UNDEFINED       = 0b11011,
-    MODE_SYSTEM          = 0b11111,
+    MODE_USER           = 0b10000,
+    MODE_FIQ            = 0b10001,
+    MODE_IRQ            = 0b10010,
+    MODE_SUPERVISOR     = 0b10011,
+    MODE_ABORT          = 0b10111,
+    MODE_UNDEFINED      = 0b11011,
+    MODE_SYSTEM         = 0b11111,
+};
+
+
+/*
+** An enumartion of all the interrupt vectors the ARM7TDMI supports.
+*/
+enum arm_vectors {
+    VEC_RESET           = 0x00, // Reset
+    VEC_UND             = 0x04, // Undefined Instruction
+    VEC_SVC             = 0x08, // Supervisor Call / Software Interrupt
+    VEC_PABT            = 0x0c, // Prefetch Abort
+    VEC_DABT            = 0x10, // Data Abort
+    VEC_ADDR26          = 0x14, // Address exceeds 26 bits (legacy)
+    VEC_IRQ             = 0x18, // Normal Interrupt
+    VEC_FIQ             = 0x1c, // Fast Interrupt
 };
 
 /*
@@ -168,13 +183,15 @@ static char const * const arm_modes_name[] = {
 };
 
 /* core/core.c */
-void core_init(struct core *core, struct memory *memory);
-void core_reset(struct core *core);
+void core_init(struct gba *gba, struct memory *memory);
 void core_run(struct gba *gba);
 void core_step(struct gba *gba);
 void core_reload_pipeline(struct core *core);
 void core_switch_mode(struct core *core, enum arm_modes mode);
 uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool update_carry);
 bool core_compute_cond(struct core *core, uint32_t cond);
+
+/* core/interrupt.c */
+void core_interrupt(struct gba *gba, enum arm_vectors vector, enum arm_modes mode);
 
 #endif /* !CORE_H */

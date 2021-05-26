@@ -48,6 +48,18 @@ try_disas(
     size_t count
 ) {
     switch (addr) {
+        case BIOS_START ... BIOS_END:
+            if (addr + count * op_len >= BIOS_END) {
+                return (0);
+            }
+            return (cs_disasm(
+                handle,
+                (uint8_t *)memory->bios + addr,
+                op_len * count,
+                addr,
+                count,
+                insn_ptr
+            ));
         case CART_0_START ... CART_0_END:
             if (addr + count * op_len >= CART_0_END) {
                 return (0);
@@ -61,7 +73,6 @@ try_disas(
                 insn_ptr
             ));
         default:
-            //hs_logln(DEBUG, "Invalid disas at addr %p", addr);
             return (0);
     }
 }
