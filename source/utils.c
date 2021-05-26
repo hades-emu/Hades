@@ -10,6 +10,8 @@
 #include <ctype.h>
 #include "hades.h"
 
+#ifdef DEBUG
+
 /*
 ** Append to the log the given formatted string.
 */
@@ -59,6 +61,8 @@ hs_logln(
     printf("\n");
     va_end(va);
 }
+
+#endif
 
 /*
 ** Print the given formatted string to stderr, followed by a `\n`, and then

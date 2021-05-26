@@ -15,15 +15,13 @@
 
 struct gba;
 
-struct thumb_encoded_insn
-{
+struct thumb_encoded_insn {
     char const *name;
     char const *mask;
     void (*op)(struct gba *gba, uint16_t op);
 };
 
-struct thumb_insn
-{
+struct thumb_insn {
     char const *name;
     uint16_t mask;
     uint16_t value;
@@ -74,5 +72,8 @@ void core_thumb_sdt_wb_reg(struct gba *gba, uint16_t op);
 void core_thumb_sdt_sbh_reg(struct gba *gba, uint16_t op);
 void core_thumb_ldr_pc(struct gba *gba, uint16_t op);
 void core_thumb_sdt_sp(struct gba *gba, uint16_t op);
+
+/* gba/thumb/swi.c */
+void core_thumb_swi(struct gba *gba, uint16_t op);
 
 #endif /* !CORE_THUMB_H */

@@ -28,64 +28,32 @@ mem_read8(
     struct memory const *memory,
     uint32_t addr
 ) {
-    switch (addr) {
-        case BIOS_START ... BIOS_END:
-            return (memory->bios[addr & 0x3FFF]);
-        case EWRAM_START ... EWRAM_END:
-            return (memory->ewram[addr & 0x3FFFF]);
-        case IWRAM_START ... IWRAM_END:
-            return (memory->iwram[addr & 0x7FFF]);
-        case IO_START ... IO_END:
-            return (memory->io[addr & 0x3FF]);
-        case PALRAM_START ... PALRAM_END:
-            return (memory->palram[addr & 0x3FF]);
-        case VRAM_START ... VRAM_END:
-            return (memory->vram[addr & 0x17FFF]);
-        case OAM_START ... OAM_END:
-            return (memory->oam[addr & 0x3FF]);
-        case CART_0_START ... CART_0_END:
-        case CART_1_START ... CART_1_END:
-        case CART_2_START ... CART_2_END:
-            return (memory->rom[addr & 0x1FFFFFF]);
-        case CART_SRAM_START ... CART_SRAM_END:
-            return (memory->sram[addr & 0xFFFF]);
-    default:
-            panic(HS_CORE, "Invalid read at address %#08x", addr);
-    }
-}
-
-/*
-** Try to read the byte at the given address, return 0 in
-** case of failure.
-*/
-uint8_t
-mem_try_read8(
-    struct memory const *memory,
-    uint32_t addr
-) {
-    switch (addr) {
-        case BIOS_START ... BIOS_END:
-            return (memory->bios[addr & 0x3FFF]);
-        case EWRAM_START ... EWRAM_END:
-            return (memory->ewram[addr & 0x3FFFF]);
-        case IWRAM_START ... IWRAM_END:
-            return (memory->iwram[addr & 0x7FFF]);
-        case IO_START ... IO_END:
-            return (memory->io[addr & 0x3FF]);
-        case PALRAM_START ... PALRAM_END:
-            return (memory->palram[addr & 0x3FF]);
-        case VRAM_START ... VRAM_END:
-            return (memory->vram[addr & 0x17FFF]);
-        case OAM_START ... OAM_END:
-            return (memory->oam[addr & 0x3FF]);
-        case CART_0_START ... CART_0_END:
-        case CART_1_START ... CART_1_END:
-        case CART_2_START ... CART_2_END:
-            return (memory->rom[addr & 0x1FFFFFF]);
-        case CART_SRAM_START ... CART_SRAM_END:
-            return (memory->sram[addr & 0xFFFF]);
+    switch (addr >> 24) {
+        case BIOS_REGION:
+            return (memory->bios[addr & BIOS_MASK]);
+        case EWRAM_REGION:
+            return (memory->ewram[addr & EWRAM_MASK]);
+        case IWRAM_REGION:
+            return (memory->iwram[addr & IWRAM_MASK]);
+        case IO_REGION:
+            return (memory->io[addr & IO_MASK]);
+        case PALRAM_REGION:
+            return (memory->palram[addr & PALRAM_MASK]);
+        case VRAM_REGION:
+            return (memory->vram[addr & VRAM_MASK]);
+        case OAM_REGION:
+            return (memory->oam[addr & OAM_MASK]);
+        case CART_0_REGION_1:
+        case CART_0_REGION_2:
+        case CART_1_REGION_1:
+        case CART_1_REGION_2:
+        case CART_2_REGION_1:
+        case CART_2_REGION_2:
+            return (memory->rom[addr & CART_MASK]);
+        case CART_SRAM_REGION:
+            return (memory->sram[addr & CART_SRAM_MASK]);
         default:
-            return 0;
+            panic(HS_CORE, "Invalid read at address %#08x", addr);
     }
 }
 
@@ -109,32 +77,6 @@ mem_read16(
     value =
         (mem_read8(memory, addr + 0) << 0) |
         (mem_read8(memory, addr + 1) << 8)
-    ;
-
-    /* Unaligned 16-bits loads are supposed to be unpredictable, but in practise the GBA rotates them */
-    return ((value >> rotate) | (value << (32 - rotate)));
-}
-
-/*
-** Try to read the word at the given address, hiding all endianness conversions.
-**
-** This function returns an `uint32_t` instead of an `uint16_t` to account for
-** some of the shenanigans the ARM7TDMI does when supplied an unligned address.
-*/
-uint32_t
-mem_try_read16(
-    struct memory const *memory,
-    uint32_t addr
-) {
-    uint32_t rotate;
-    uint32_t value;
-
-    rotate = (addr % 2) << 3;
-    addr &= 0xFFFFFFFE;
-
-    value =
-        (mem_try_read8(memory, addr + 0) << 0) |
-        (mem_try_read8(memory, addr + 1) << 8)
     ;
 
     /* Unaligned 16-bits loads are supposed to be unpredictable, but in practise the GBA rotates them */
@@ -167,32 +109,6 @@ mem_read32(
 }
 
 /*
-** Try to read the double-word at the given address, hiding all endianness conversions.
-*/
-uint32_t
-mem_try_read32(
-    struct memory const *memory,
-    uint32_t addr
-) {
-    uint32_t rotate;
-    uint32_t value;
-
-    rotate = (addr % 4) << 3;
-    addr &= 0xFFFFFFFE;
-
-    value =
-        (mem_try_read8(memory, addr + 0) << 0) |
-        (mem_try_read8(memory, addr + 1) << 8) |
-        (mem_try_read8(memory, addr + 2) << 16) |
-        (mem_try_read8(memory, addr + 3) << 24)
-    ;
-
-    /* Unaligned 32-bits loads are rotated */
-    return ((value >> rotate) | (value << (32 - rotate)));
-}
-
-
-/*
 ** Read the byte at the given address.
 */
 void
@@ -201,38 +117,41 @@ mem_write8(
     uint32_t addr,
     uint8_t val
 ) {
-    switch (addr) {
-        case BIOS_START ... BIOS_END:
-            memory->bios[addr & 0x3FFF] = val;
+    switch (addr >> 24) {
+        case BIOS_REGION:
+            memory->bios[addr & BIOS_MASK] = val;
             break;
-        case EWRAM_START ... EWRAM_END:
-            memory->ewram[addr & 0x3FFFF] = val;
+        case EWRAM_REGION:
+            memory->ewram[addr & EWRAM_MASK] = val;
             break;
-        case IWRAM_START ... IWRAM_END:
-            memory->iwram[addr & 0x7FFF] = val;
+        case IWRAM_REGION:
+            memory->iwram[addr & IWRAM_MASK] = val;
             break;
-        case IO_START ... IO_END:
-            memory->io[addr & 0x3FF] = val;
+        case IO_REGION:
+            memory->io[addr & IO_MASK] = val;
             if (addr % 4 == 3) {
                 mem_io_write(memory, addr - 3);
             }
             break;
-        case PALRAM_START ... PALRAM_END:
-            memory->palram[addr & 0x3FF] = val;
+        case PALRAM_REGION:
+            memory->palram[addr & PALRAM_MASK] = val;
             break;
-        case VRAM_START ... VRAM_END:
-            memory->vram[addr & 0x17FFF] = val;
+        case VRAM_REGION:
+            memory->vram[addr & VRAM_MASK] = val;
             break;
-        case OAM_START ... OAM_END:
-            memory->oam[addr & 0x3FF] = val;
+        case OAM_REGION:
+            memory->oam[addr & OAM_MASK] = val;
             break;
-        case CART_0_START ... CART_0_END:
-        case CART_1_START ... CART_1_END:
-        case CART_2_START ... CART_2_END:
-            memory->rom[addr & 0x1FFFFFF] = val;
+        case CART_0_REGION_1:
+        case CART_0_REGION_2:
+        case CART_1_REGION_1:
+        case CART_1_REGION_2:
+        case CART_2_REGION_1:
+        case CART_2_REGION_2:
+            memory->rom[addr & CART_MASK] = val;
             break;
-        case CART_SRAM_START ... CART_SRAM_END:
-            memory->sram[addr & 0xFFFF] = val;
+        case CART_SRAM_REGION:
+            memory->sram[addr & CART_SRAM_MASK] = val;
             break;
         default:
             panic(HS_CORE, "Invalid write at address %#08x", addr);

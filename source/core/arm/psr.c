@@ -19,13 +19,37 @@ core_arm_mrs(
     uint32_t op
 ) {
     uint32_t rd;
+    struct core *core;
 
+    core = &gba->core;
     rd = bitfield_get_range(op, 12, 16);
 
     if (bitfield_get(op, 22)) { // Source PSR = SPSR_<current_mode>
-        unimplemented(HS_CORE, "MRS with a source PSR different than the CPSR isn't implemented yet.");
+        switch (core->cpsr.mode) {
+            case MODE_USER:
+                panic(HS_CORE, "mrs: a SPSR for user mode was requested but it doesn't exist.");
+                break;
+            case MODE_FIQ:
+                core->registers[rd] = core->spsr_fiq;
+                break;
+            case MODE_IRQ:
+                core->registers[rd] = core->spsr_irq;
+                break;
+            case MODE_SUPERVISOR:
+                core->registers[rd] = core->spsr_svc;
+                break;
+            case MODE_ABORT:
+                core->registers[rd] = core->spsr_abt;
+                break;
+            case MODE_UNDEFINED:
+                core->registers[rd] = core->spsr_und;
+                break;
+            case MODE_SYSTEM:
+                core->registers[rd] = core->spsr_sys;
+                break;
+        }
     } else { // Source PSR = CPSR
-        gba->core.registers[rd] = gba->core.cpsr.raw;
+        core->registers[rd] = gba->core.cpsr.raw;
     }
 }
 
@@ -44,7 +68,29 @@ core_arm_msr(
     rm = bitfield_get_range(op, 0, 4);
 
     if (bitfield_get(op, 22)) { // Dest PSR = SPSR_<current_mode>
-        unimplemented(HS_CORE, "MSR with a dest PSR different than the CPSR isn't implemented yet.");
+        switch (core->cpsr.mode) {
+            case MODE_USER:
+                panic(HS_CORE, "mrs: a SPSR for user mode was requested but it doesn't exist.");
+                break;
+            case MODE_FIQ:
+                core->spsr_fiq = core->registers[rm];
+                break;
+            case MODE_IRQ:
+                core->spsr_irq = core->registers[rm];
+                break;
+            case MODE_SUPERVISOR:
+                core->spsr_svc = core->registers[rm];
+                break;
+            case MODE_ABORT:
+                core->spsr_abt = core->registers[rm];
+                break;
+            case MODE_UNDEFINED:
+                core->spsr_und = core->registers[rm];
+                break;
+            case MODE_SYSTEM:
+                core->spsr_sys = core->registers[rm];
+                break;
+        }
     } else { // Dest PSR = CPSR
         uint32_t new_cpsr;
 
@@ -57,7 +103,7 @@ core_arm_msr(
 }
 
 /*
-** Execute the MSR instruction (transfer register contents or immediate value to PSR flag bits only)
+** Execute the MSRF instruction (transfer register contents or immediate value to PSR flag bits only)
 */
 void
 core_arm_msrf(
