@@ -186,7 +186,7 @@ static char const * const arm_modes_name[] = {
 void core_init(struct gba *gba, struct memory *memory);
 void core_run(struct gba *gba);
 void core_step(struct gba *gba);
-void core_reload_pipeline(struct core *core);
+void core_reload_pipeline(struct gba *gba);
 void core_switch_mode(struct core *core, enum arm_modes mode);
 uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool update_carry);
 bool core_compute_cond(struct core *core, uint32_t cond);

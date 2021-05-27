@@ -8,20 +8,64 @@
 \******************************************************************************/
 
 #include "memory.h"
+#include "gba.h"
 
 /*
-** Call the appropriate module linked to each IO register.
-** Only the address is given, the value can be fetched from memory.
+**
 */
-void
-mem_io_write(
-    struct memory *memory,
+char const *
+mem_io_reg_name(
     uint32_t addr
 ) {
-    //hs_logln(HS_IO, "IO write to %#08x: %#08x", addr, mem_read32(memory, addr));
+    switch (addr) {
+        case IO_REG_DISPCNT:
+            return ("REG_DISPCNT");
+        case IO_REG_GREENSWP:
+            return ("REG_GREENSWP");
+        case IO_REG_DISPSTAT:
+            return ("REG_DISPSTAT");
+        case IO_REG_VCOUNT:
+            return ("REG_VCOUNT");
+        default:
+            return ("UNKNOWN");
+    }
+};
+
+/*
+** Call the appropriate module linked to each IO register to build and
+** return the corresponding register value.
+*/
+uint16_t
+mem_io_read8(
+    struct gba const *gba,
+    uint32_t addr
+) {
+    hs_logln(HS_IO, "IO read to %s (%#08x)", mem_io_reg_name(addr & ~1), addr);
 
     switch (addr) {
-        case REG_DISPCNT:
+        case IO_REG_VCOUNT:
+            return (gba->video.h);
+        case IO_REG_DISPSTAT_0:
+            {
+                struct io_reg_dispstat dispstat;
+
+                dispstat.vblank = (gba->video.v >= 160);
+                dispstat.hblank = (gba->video.h >= 240);
+                return (dispstat.byte0);
+            }
             break;
     }
+    return (0);
+}
+
+/*
+** Write the given value to the internal data of the appropriate device.
+*/
+void
+mem_io_write8(
+    struct gba *gba,
+    uint32_t addr,
+    uint8_t val
+) {
+    hs_logln(HS_IO, "IO write to %s (%#08x)", mem_io_reg_name(addr & ~1), addr);
 }

@@ -74,16 +74,16 @@ core_arm_sdt(
     */
     switch ((bitfield_get(op, 20) << 1) | bitfield_get(op, 22)) {
         case 0b00: // Store word
-            mem_write32(core->memory, effective_addr, core->registers[rd]);
+            mem_write32(gba, effective_addr, core->registers[rd]);
             break;
         case 0b01: // Store byte
-            mem_write8(core->memory, effective_addr, core->registers[rd]);
+            mem_write8(gba, effective_addr, core->registers[rd]);
             break;
         case 0b10: // Load word
-            core->registers[rd] = mem_read32(core->memory, effective_addr);
+            core->registers[rd] = mem_read32(gba, effective_addr);
             break;
         case 0b11: // Load byte
-            core->registers[rd] = mem_read8(core->memory, effective_addr);
+            core->registers[rd] = mem_read8(gba, effective_addr);
             break;
     }
 
@@ -159,10 +159,10 @@ core_arm_hsdt(
     switch ((bitfield_get(op, 6) << 2) | (bitfield_get(op, 5) << 1) | bitfield_get(op, 20)) {
         //   0bSHL
         case 0b010: // Unsigned Halfword store
-            mem_write32(core->memory, effective_addr, core->registers[rd]);
+            mem_write16(gba, effective_addr, core->registers[rd]);
             break;
         case 0b011: // Unsigned Halfword load
-            core->registers[rd] = mem_read16(core->memory, effective_addr);
+            core->registers[rd] = mem_read16(gba, effective_addr);
             break;
         case 0b100:
         case 0b110:

@@ -48,12 +48,22 @@ core_init(
         core->bank_registers[i] = 0;
     }
 
+    /*
     core->r13_irq = 0x03007FA0;
     core->r13_svc = 0x03007FE0;
     core->sp = 0x03007F00;
     core->cpsr.mode = MODE_SYSTEM;
+    */
 
-    core_reload_pipeline(core);
+    core->r0 = 0x08000000;
+    core->r1 = 0x000000EA;
+
+    core->sp = 0x03007F00;      // Default SP for system mode
+    core->pc = 0x8000000;       // Entry point of the game
+    core->cpsr.raw = 0x6000001F;
+    core->cpsr.mode = MODE_SYSTEM;
+
+    core_reload_pipeline(gba);
 }
 
 /*
@@ -85,7 +95,7 @@ core_step(
         uint16_t op;
 
         op = core->prefetch;
-        core->prefetch = mem_read16(core->memory, core->pc);
+        core->prefetch = mem_read16(gba, core->pc);
         core->pc += 2;
 
         i = 0;
@@ -115,7 +125,7 @@ core_step(
         uint32_t op;
 
         op = core->prefetch;
-        core->prefetch = mem_read32(core->memory, core->pc);
+        core->prefetch = mem_read32(gba, core->pc);
         core->pc += 4;
 
         can_exec = core_compute_cond(core, op >> 28);
@@ -123,6 +133,13 @@ core_step(
         // Test if the conditions required to execute the instruction are met
         // Ignore instructions where the conditions aren't met.
         if (!can_exec) {
+            hs_logln(
+                HS_DEBUG,
+                "Skipping instruction %zu: (condition not met) (%#04x)",
+                ++count,
+                op
+            );
+
             return ;
         }
 
@@ -158,15 +175,18 @@ core_step(
 */
 void
 core_reload_pipeline(
-    struct core *core
+    struct gba *gba
 ) {
+    struct core *core;
+
+    core = &gba->core;
     if (core->cpsr.thumb) {
         core->pc &= 0xFFFFFFFE;
-        core->prefetch = mem_read16(core->memory, core->pc);
+        core->prefetch = mem_read16(gba, core->pc);
         core->pc += 2;
     } else {
         core->pc &= 0xFFFFFFFC;
-        core->prefetch = mem_read32(core->memory, core->pc);
+        core->prefetch = mem_read32(gba, core->pc);
         core->pc += 4;
     }
     hs_logln(HS_CORE, "Pipeline reloaded");
@@ -352,7 +372,7 @@ core_interrupt(
     core->cpsr.fiq_disable |= (vector == VEC_FIQ || VEC_RESET);
     core->cpsr.thumb = 0;
 
-    core_reload_pipeline(core);
+    core_reload_pipeline(gba);
 }
 
 /*

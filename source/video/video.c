@@ -38,14 +38,6 @@ video_build_framebuffer(
         gba->video.v = 0;
     }
 
-    mem_write16(&gba->memory, REG_VCOUNT, gba->video.h);
-
-    dispstat =
-          ((gba->video.h >= 240) << 0)
-        | ((gba->video.v >= 160) << 1)
-    ;
-    mem_write16(&gba->memory, REG_DISPSTAT, dispstat);
-
     pthread_mutex_lock(&gba->framebuffer_mutex);
 
     if (gba->video.h < 240 && gba->video.v < 160) {
@@ -56,8 +48,8 @@ video_build_framebuffer(
         uint8_t blue;
 
         i = 240 * gba->video.v + gba->video.h;
-        palette_idx = mem_read8(&gba->memory, VRAM_START + i);
-        c.raw = mem_read16(&gba->memory, PALRAM_START + palette_idx * sizeof(union color));
+        palette_idx = mem_read8(gba, VRAM_START + i);
+        c.raw = mem_read16(gba, PALRAM_START + palette_idx * sizeof(union color));
 
         red = (uint32_t)c.red * 255 / 31;
         blue = (uint32_t)c.blue * 255 / 31;

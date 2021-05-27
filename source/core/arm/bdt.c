@@ -66,10 +66,10 @@ core_arm_bdt(
         if (bitfield_get(op, reg)) {
             if (l) { // Load
                 hs_logln(HS_DEBUG, "Loading the content of %08x to r%i", base, reg);
-                core->registers[reg] = mem_read32(core->memory, base);
+                core->registers[reg] = mem_read32(gba, base);
             } else { // Store
                 hs_logln(HS_DEBUG, "Storing the content of r%i to %08x", reg, base);
-                mem_write32(core->memory, base, core->registers[reg]);
+                mem_write32(gba, base, core->registers[reg]);
             }
             base += base_step;
         }
@@ -87,6 +87,6 @@ core_arm_bdt(
     if (l && bitfield_get(op, 15)) { // Write to PC
         core->cpsr.thumb = core->pc & 0b1;
         core->pc = core->pc & 0xFFFFFFFE;
-        core_reload_pipeline(core);
+        core_reload_pipeline(gba);
     }
 }

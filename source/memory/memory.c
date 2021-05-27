@@ -12,6 +12,7 @@
 #include "memory.h"
 #include "hades.h"
 #include "core.h"
+#include "gba.h"
 
 void
 mem_init(
@@ -25,9 +26,12 @@ mem_init(
 */
 uint8_t
 mem_read8(
-    struct memory const *memory,
+    struct gba const *gba,
     uint32_t addr
 ) {
+    struct memory const *memory;
+
+    memory = &gba->memory;
     switch (addr >> 24) {
         case BIOS_REGION:
             return (memory->bios[addr & BIOS_MASK]);
@@ -36,7 +40,7 @@ mem_read8(
         case IWRAM_REGION:
             return (memory->iwram[addr & IWRAM_MASK]);
         case IO_REGION:
-            return (memory->io[addr & IO_MASK]);
+            return (mem_io_read8(gba, addr));
         case PALRAM_REGION:
             return (memory->palram[addr & PALRAM_MASK]);
         case VRAM_REGION:
@@ -58,14 +62,14 @@ mem_read8(
 }
 
 /*
-** Read the word at the given address, hiding all endianness conversions.
+** Read the word at the given address.
 **
 ** This function returns an `uint32_t` instead of an `uint16_t` to account for
 ** some of the shenanigans the ARM7TDMI does when supplied an unligned address.
 */
 uint32_t
 mem_read16(
-    struct memory const *memory,
+    struct gba const *gba,
     uint32_t addr
 ) {
     uint32_t rotate;
@@ -75,8 +79,8 @@ mem_read16(
     addr &= 0xFFFFFFFE;
 
     value =
-        (mem_read8(memory, addr + 0) << 0) |
-        (mem_read8(memory, addr + 1) << 8)
+        (mem_read8(gba, addr + 0) << 0) |
+        (mem_read8(gba, addr + 1) << 8)
     ;
 
     /* Unaligned 16-bits loads are supposed to be unpredictable, but in practise the GBA rotates them */
@@ -84,11 +88,11 @@ mem_read16(
 }
 
 /*
-** Read the double-word at the given address, hiding all endianness conversions.
+** Read the double-word at the given address.
 */
 uint32_t
 mem_read32(
-    struct memory const *memory,
+    struct gba const *gba,
     uint32_t addr
 ) {
     uint32_t rotate;
@@ -98,11 +102,17 @@ mem_read32(
     addr &= 0xFFFFFFFE;
 
     value =
-        (mem_read8(memory, addr + 0) << 0) |
-        (mem_read8(memory, addr + 1) << 8) |
-        (mem_read8(memory, addr + 2) << 16) |
-        (mem_read8(memory, addr + 3) << 24)
+        (mem_read8(gba, addr + 0) << 0) |
+        (mem_read8(gba, addr + 1) << 8) |
+        (mem_read8(gba, addr + 2) << 16) |
+        (mem_read8(gba, addr + 3) << 24)
     ;
+
+    if (addr == 0x4000004) {
+        printf("Returning %#08x\n",
+            ((value >> rotate) | (value << (32 - rotate)))
+        );
+    }
 
     /* Unaligned 32-bits loads are rotated */
     return ((value >> rotate) | (value << (32 - rotate)));
@@ -113,10 +123,13 @@ mem_read32(
 */
 void
 mem_write8(
-    struct memory *memory,
+    struct gba *gba,
     uint32_t addr,
     uint8_t val
 ) {
+    struct memory *memory;
+
+    memory = &gba->memory;
     switch (addr >> 24) {
         case BIOS_REGION:
             memory->bios[addr & BIOS_MASK] = val;
@@ -128,10 +141,7 @@ mem_write8(
             memory->iwram[addr & IWRAM_MASK] = val;
             break;
         case IO_REGION:
-            memory->io[addr & IO_MASK] = val;
-            if (addr % 4 == 3) {
-                mem_io_write(memory, addr - 3);
-            }
+            mem_io_write8(gba, addr, val);
             break;
         case PALRAM_REGION:
             memory->palram[addr & PALRAM_MASK] = val;
@@ -144,9 +154,6 @@ mem_write8(
             break;
         case CART_0_REGION_1:
         case CART_0_REGION_2:
-        case CART_1_REGION_1:
-        case CART_1_REGION_2:
-        case CART_2_REGION_1:
         case CART_2_REGION_2:
             memory->rom[addr & CART_MASK] = val;
             break;
@@ -159,29 +166,29 @@ mem_write8(
 }
 
 /*
-** Read the word at the given address, hiding all endianness conversions.
+** Read the word at the given address.
 */
 void
 mem_write16(
-    struct memory *memory,
+    struct gba *gba,
     uint32_t addr,
     uint16_t val
 ) {
-    mem_write8(memory, addr + 0, (uint8_t)(val >> 0));
-    mem_write8(memory, addr + 1, (uint8_t)(val >> 8));
+    mem_write8(gba, addr + 0, (uint8_t)(val >> 0));
+    mem_write8(gba, addr + 1, (uint8_t)(val >> 8));
 }
 
 /*
-** Read the double-word at the given address, hiding all endianness conversions.
+** Read the double-word at the given address.
 */
 void
 mem_write32(
-    struct memory *memory,
+    struct gba *gba,
     uint32_t addr,
     uint32_t val
 ) {
-    mem_write8(memory, addr + 0, (uint8_t)(val >>  0));
-    mem_write8(memory, addr + 1, (uint8_t)(val >>  8));
-    mem_write8(memory, addr + 2, (uint8_t)(val >> 16));
-    mem_write8(memory, addr + 3, (uint8_t)(val >> 24));
+    mem_write8(gba, addr + 0, (uint8_t)(val >>  0));
+    mem_write8(gba, addr + 1, (uint8_t)(val >>  8));
+    mem_write8(gba, addr + 2, (uint8_t)(val >> 16));
+    mem_write8(gba, addr + 3, (uint8_t)(val >> 24));
 }
