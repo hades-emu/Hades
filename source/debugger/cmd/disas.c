@@ -85,12 +85,14 @@ try_disas(
 static
 void
 debugger_cmd_disas_around(
-    struct core *core,
+    struct gba *gba,
     uint32_t ptr,
     size_t radius
 ) {
+    struct core const *core;
+    struct memory const *memory;
+    struct debugger *debugger;
     csh handle;
-    cs_mode mode;
     cs_insn *insn;
     size_t mnemonic_len;
     size_t count;
@@ -99,16 +101,12 @@ debugger_cmd_disas_around(
     uint32_t ptr_end;       // Where it ends
     size_t op_len;          // Size of an instruction
 
+    core = &gba->core;
+    debugger = &gba->debugger;
+    memory = &gba->memory;
+
     op_len = core->cpsr.thumb ? 2 : 4;
-
-    mode = 0;
-    mode |= (core->cpsr.thumb ? CS_MODE_THUMB : CS_MODE_ARM);
-    mode |= (core->big_endian ? CS_MODE_BIG_ENDIAN : CS_MODE_LITTLE_ENDIAN);
-
-    if (cs_open(CS_ARCH_ARM, mode, &handle) != CS_ERR_OK) {
-        printf("Failed to open capstone.\n");
-        return ;
-    }
+    handle = core->cpsr.thumb ? debugger->handle_thumb : debugger->handle_arm;
 
     /* Calculate the value of `ptr_start` */
     {
@@ -121,10 +119,10 @@ debugger_cmd_disas_around(
         while (i < radius && tmp > 0) {
             size_t count;
 
-            count = try_disas(handle, &insn, core->memory, tmp, op_len, 1);
+            count = try_disas(handle, &insn, memory, tmp, op_len, 1);
             if (count == 0 && core->cpsr.thumb) {
                 tmp -= op_len;
-                count = try_disas(handle, &insn, core->memory, tmp, op_len, 1);
+                count = try_disas(handle, &insn, memory, tmp, op_len, 1);
             }
             if (count == 0){
                 break;
@@ -143,7 +141,7 @@ debugger_cmd_disas_around(
         i = 0;
         ptr_end = ptr;
         while (i < radius) { // && ptr_end < MEMORY_RAW_SIZE) { TODO FIXME
-            if (try_disas(handle, &insn, core->memory, ptr_end, op_len, 1) != 1) {
+            if (try_disas(handle, &insn, memory, ptr_end, op_len, 1) != 1) {
                 break;
             }
             ptr_end += insn[0].size;
@@ -152,12 +150,10 @@ debugger_cmd_disas_around(
         }
     }
 
-    cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
-
     count = try_disas(
         handle,
         &insn,
-        core->memory,
+        memory,
         ptr_start,
         op_len,
         (ptr_end - ptr_start) / op_len
@@ -222,7 +218,6 @@ debugger_cmd_disas_around(
     if (count > 0) {
         cs_free(insn, count);
     }
-    cs_close(&handle);
 }
 
 void
@@ -253,7 +248,7 @@ debugger_cmd_disas(
     }
 
     debugger_cmd_disas_around(
-        core,
+        gba,
         ptr,
         5
     );

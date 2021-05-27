@@ -10,7 +10,7 @@
 #include "core/thumb.h"
 #include "gba.h"
 
-struct thumb_encoded_insn thumb_encoded_insns[] = {
+struct hs_thumb_encoded_insn thumb_encoded_insns[] = {
     // Move shifted register
     { "lsl",            "00000yyyyysssddd",          core_thumb_lsl},
     { "lsr",            "00001yyyyysssddd",          core_thumb_lsr},
@@ -111,7 +111,7 @@ struct thumb_encoded_insn thumb_encoded_insns[] = {
     { "bl_2",           "11111xxxxxxxxxxx",          core_thumb_branch_link},
 };
 
-struct thumb_insn thumb_insns[ARRAY_LEN(thumb_encoded_insns)] = { 0 };
+struct hs_thumb_insn thumb_insns[ARRAY_LEN(thumb_encoded_insns)] = { 0 };
 
 size_t thumb_insns_len = ARRAY_LEN(thumb_encoded_insns);
 
@@ -122,8 +122,8 @@ core_thumb_decode_insns(void)
 
     i = 0;
     while (i < thumb_insns_len) {
-        struct thumb_encoded_insn *encoded_insn;
-        struct thumb_insn *decoded_insn;
+        struct hs_thumb_encoded_insn *encoded_insn;
+        struct hs_thumb_insn *decoded_insn;
         size_t j;
         size_t k;
 

@@ -10,7 +10,7 @@
 #include "core/arm.h"
 #include "gba.h"
 
-static struct arm_encoded_insn arm_encoded_insns[] = {
+static struct hs_arm_encoded_insn arm_encoded_insns[] = {
 
     // Data processing
     { "and_reg1",   "xxxx_000_0000_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
@@ -123,7 +123,7 @@ static struct arm_encoded_insn arm_encoded_insns[] = {
     {"swi",         "xxxx_1111_xxxxxxxxxxxxxxxxxxxxxxxx",           core_arm_swi},
 };
 
-struct arm_insn arm_insns[ARRAY_LEN(arm_encoded_insns)] = { 0 };
+struct hs_arm_insn arm_insns[ARRAY_LEN(arm_encoded_insns)] = { 0 };
 
 size_t arm_insns_len = ARRAY_LEN(arm_encoded_insns);
 
@@ -134,8 +134,8 @@ core_arm_decode_insns(void)
 
     i = 0;
     while (i < arm_insns_len) {
-        struct arm_encoded_insn *encoded_insn;
-        struct arm_insn *decoded_insn;
+        struct hs_arm_encoded_insn *encoded_insn;
+        struct hs_arm_insn *decoded_insn;
         size_t j;
         size_t k;
 

@@ -39,8 +39,7 @@ debugger_cmd_set(
                     core_reload_pipeline(gba);
                     break;
                 case REGISTER_CPSR:
-                    core->cpsr.raw = reg_value;
-                    break;
+                    continue;
             }
             printf("%s set to 0x%08x.\n", reg_name, reg_value);
             return ;

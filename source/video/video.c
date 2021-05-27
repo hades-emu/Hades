@@ -26,7 +26,6 @@ video_build_framebuffer(
     struct gba *gba
 ) {
     size_t i;
-    uint16_t dispstat;
 
     gba->video.h += 1;
     if (gba->video.h >= 308) {

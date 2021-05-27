@@ -23,10 +23,6 @@
 struct gba;
 
 struct core {
-    struct debugger *debugger;      // The debugger this core is linked with.
-
-    struct memory *memory;          // The main memory
-
     union {
         struct {
             uint32_t r0;
@@ -116,8 +112,6 @@ struct core {
         };
         uint32_t raw;
     } cpsr __packed;
-
-    bool big_endian;
 };
 
 /*
@@ -183,7 +177,7 @@ static char const * const arm_modes_name[] = {
 };
 
 /* core/core.c */
-void core_init(struct gba *gba, struct memory *memory);
+void core_init(struct gba *gba);
 void core_run(struct gba *gba);
 void core_step(struct gba *gba);
 void core_reload_pipeline(struct gba *gba);

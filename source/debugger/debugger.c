@@ -101,6 +101,38 @@ struct dbg_command g_commands[] = {
     }
 };
 
+void
+debugger_init(
+    struct gba *gba
+) {
+    struct debugger *debugger;
+
+    debugger = &gba->debugger;
+    memset(debugger, 0, sizeof(*debugger));
+
+    if (
+        (cs_open(CS_ARCH_ARM, CS_MODE_ARM | CS_MODE_LITTLE_ENDIAN, &debugger->handle_arm) != CS_ERR_OK) ||
+        (cs_open(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_LITTLE_ENDIAN, &debugger->handle_thumb) != CS_ERR_OK) ||
+        (cs_option(debugger->handle_arm, CS_OPT_DETAIL, CS_OPT_ON) != CS_ERR_OK) ||
+        (cs_option(debugger->handle_thumb, CS_OPT_DETAIL, CS_OPT_ON) != CS_ERR_OK)
+    ) {
+        fprintf(stderr, "Failed to open capstone for ARM mode.\n");
+        exit(1);
+    }
+}
+
+void
+debugger_destroy(
+    struct gba *gba
+) {
+    struct debugger *debugger;
+
+    debugger = &gba->debugger;
+    cs_close(&debugger->handle_arm);
+    cs_close(&debugger->handle_thumb);
+}
+
+
 /*
 ** Enter a "Read/Evaluate/Print" loop.
 */
@@ -115,7 +147,7 @@ debugger_repl(
 
     debugger_dump_context(gba);
 
-    while ((input = readline("$ ")) != NULL) { // Unsafe TODO FIXME
+    while ((input = readline("$ ")) != NULL) {
         char **tokens;
         size_t tokens_length;
         struct dbg_command const *cmd;
