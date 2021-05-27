@@ -45,7 +45,7 @@ debugger_cmd_registers(
     /* Print the CPSR and all saved PSRs. */
 
     printf(
-        LIGHT_GREEN "CPSR" RESET ": " LIGHT_MAGENTA "%c%c%c%c%c%c%c" RESET ", %s, (" LIGHT_MAGENTA "0x%08x" RESET ") - %s\n",
+        LIGHT_GREEN "CPSR" RESET ": " LIGHT_MAGENTA "%c%c%c%c%c%c%c" RESET ", %s, (" LIGHT_MAGENTA "0x%08x" RESET ")\n",
         core->cpsr.negative ? 'n' : '-',
         core->cpsr.zero ? 'z' : '-',
         core->cpsr.carry ? 'c' : '-',
@@ -54,7 +54,6 @@ debugger_cmd_registers(
         core->cpsr.fiq_disable ? 'f' : '-',
         core->cpsr.thumb ? 't' : '-',
         arm_modes_name[core->cpsr.mode],
-        core->cpsr.raw,
-        core->big_endian ? "Big endian" : "Little endian"
+        core->cpsr.raw
     );
 }

@@ -29,8 +29,7 @@
 */
 void
 core_init(
-    struct gba *gba,
-    struct memory *memory
+    struct gba *gba
 ) {
     struct core *core;
     int i;
@@ -38,7 +37,6 @@ core_init(
     core = &gba->core;
 
     memset(core, 0, sizeof(*core));
-    core->memory = memory;
 
     for (i = 0; i < ARRAY_LEN(core->registers); ++i) {
         core->registers[i] = 0;
@@ -48,13 +46,12 @@ core_init(
         core->bank_registers[i] = 0;
     }
 
-    /*
     core->r13_irq = 0x03007FA0;
     core->r13_svc = 0x03007FE0;
     core->sp = 0x03007F00;
     core->cpsr.mode = MODE_SYSTEM;
-    */
 
+    /*
     core->r0 = 0x08000000;
     core->r1 = 0x000000EA;
 
@@ -62,6 +59,7 @@ core_init(
     core->pc = 0x8000000;       // Entry point of the game
     core->cpsr.raw = 0x6000001F;
     core->cpsr.mode = MODE_SYSTEM;
+    */
 
     core_reload_pipeline(gba);
 }
@@ -189,7 +187,6 @@ core_reload_pipeline(
         core->prefetch = mem_read32(gba, core->pc);
         core->pc += 4;
     }
-    hs_logln(HS_CORE, "Pipeline reloaded");
 }
 
 void

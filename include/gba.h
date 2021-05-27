@@ -13,6 +13,7 @@
 # include "core.h"
 # include "memory.h"
 # include "video.h"
+# include "debugger.h"
 
 struct gba
 {
@@ -21,6 +22,7 @@ struct gba
     struct core core;
     struct memory memory;
     struct video video;
+    struct debugger debugger;
 
     uint32_t framebuffer[240 * 160]; // The result of the video controller and used
                                      // by the renderer to print things on screen.

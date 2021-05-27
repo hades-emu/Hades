@@ -11,33 +11,23 @@
 # define DEBUGGER_H
 
 # include <stdbool.h>
+# include <capstone/capstone.h>
 # include "hades.h"
 # include "core.h"
+
+/*
+** A structure containing the internal state of the debugger.
+*/
+struct debugger {
+    csh handle_arm;         // Capstone handle for ARM mode
+    csh handle_thumb;       // Capstone handle for Thumb mode
+};
 
 struct gba;
 
 /*
-** The user-friendly name of all registers
+** An enumeration of all registers and
 */
-static char const * const registers_name[] = {
-    [0]     = "r0",
-    [1]     = "r1",
-    [2]     = "r2",
-    [3]     = "r3",
-    [4]     = "r4",
-    [5]     = "r5",
-    [6]     = "r6",
-    [7]     = "r7",
-    [8]     = "r8",
-    [9]     = "r9",
-    [10]    = "r10",
-    [11]    = "fp",
-    [12]    = "ip",
-    [13]    = "sp",
-    [14]    = "lr",
-    [15]    = "pc",
-};
-
 enum register_index {
     REGISTER_R0         = 0,
     REGISTER_R1         = 1,
@@ -56,6 +46,28 @@ enum register_index {
     REGISTER_R14        = 14,
     REGISTER_R15        = 15,
     REGISTER_CPSR,
+};
+
+/*
+** The user-friendly name of all registers
+*/
+static char const * const registers_name[] = {
+    [REGISTER_R0]     = "r0",
+    [REGISTER_R1]     = "r1",
+    [REGISTER_R2]     = "r2",
+    [REGISTER_R3]     = "r3",
+    [REGISTER_R4]     = "r4",
+    [REGISTER_R5]     = "r5",
+    [REGISTER_R6]     = "r6",
+    [REGISTER_R7]     = "r7",
+    [REGISTER_R8]     = "r8",
+    [REGISTER_R9]     = "r9",
+    [REGISTER_R10]    = "r10",
+    [REGISTER_R11]    = "fp",
+    [REGISTER_R12]    = "ip",
+    [REGISTER_R13]    = "sp",
+    [REGISTER_R14]    = "lr",
+    [REGISTER_R15]    = "pc",
 };
 
 struct register_alias {
@@ -121,6 +133,8 @@ enum dbg_commands {
 extern struct dbg_command g_commands[];
 
 /* debugger/debugger.c */
+void debugger_init(struct gba *gba);
+void debugger_destroy(struct gba *gba);
 void debugger_repl(struct gba *gba);
 uint32_t debugger_eval_expr(struct gba const *gba, char const *expr);
 
