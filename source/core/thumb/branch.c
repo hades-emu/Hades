@@ -23,7 +23,7 @@ core_thumb_branch(
     offset = sign_extend12(bitfield_get_range(op, 0, 11) << 1);
 
     gba->core.pc += offset;
-    core_reload_pipeline(&gba->core);
+    core_reload_pipeline(gba);
 }
 
 /*
@@ -51,7 +51,7 @@ core_thumb_branch_link(
 
         core->lr = (core->pc - 2) | 1;
         core->pc = lr;
-        core_reload_pipeline(core);
+        core_reload_pipeline(gba);
     }
 }
 
@@ -73,7 +73,7 @@ core_thumb_branch_cond(
 
     if (can_exec) {
         core->pc += label;
-        core_reload_pipeline(core);
+        core_reload_pipeline(gba);
     }
 }
 
@@ -103,5 +103,5 @@ core_thumb_branch_xchg(
     */
     core->pc = addr & 0xFFFFFFFE;
     core->cpsr.thumb = addr & 0b1;
-    core_reload_pipeline(core);
+    core_reload_pipeline(gba);
 }

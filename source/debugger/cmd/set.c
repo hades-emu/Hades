@@ -36,7 +36,7 @@ debugger_cmd_set(
                     break;
                 case REGISTER_R15:
                     core->pc = reg_value;
-                    core_reload_pipeline(core);
+                    core_reload_pipeline(gba);
                     break;
                 case REGISTER_CPSR:
                     core->cpsr.raw = reg_value;

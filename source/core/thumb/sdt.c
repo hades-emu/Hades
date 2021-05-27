@@ -26,14 +26,14 @@ core_thumb_push(
     /* Push LR */
     if (bitfield_get(op, 8)) {
         core->sp -= 4;
-        mem_write32(core->memory, core->sp, core->lr);
+        mem_write32(gba, core->sp, core->lr);
     }
 
     i = 7;
     while (i >= 0) {
         if (bitfield_get(op, i)) {
             core->sp -= 4;
-            mem_write32(core->memory, core->sp, core->registers[i]);
+            mem_write32(gba, core->sp, core->registers[i]);
         }
         --i;
     }
@@ -55,7 +55,7 @@ core_thumb_pop(
     i = 0;
     while (i < 8) {
         if (bitfield_get(op, i)) {
-            core->registers[i] = mem_read32(core->memory, core->sp);
+            core->registers[i] = mem_read32(gba, core->sp);
             core->sp += 4;
         }
         ++i;
@@ -63,8 +63,8 @@ core_thumb_pop(
 
     /* Pop PC */
     if (bitfield_get(op, 8)) {
-        core->pc = mem_read32(core->memory, core->sp);
-        core_reload_pipeline(core);
+        core->pc = mem_read32(gba, core->sp);
+        core_reload_pipeline(gba);
         core->sp += 4;
 
     }
@@ -102,7 +102,7 @@ core_thumb_stmia(
     i = 0;
     while (i < 8) {
         if (bitfield_get(op, i)) {
-            mem_write32(core->memory, addr, core->registers[i]);
+            mem_write32(gba, addr, core->registers[i]);
             addr += 4;
         }
         ++i;
@@ -141,7 +141,7 @@ core_thumb_ldmia(
     i = 0;
     while (i < 8) {
         if (bitfield_get(op, i)) {
-            core->registers[i] = mem_read32(core->memory, addr);
+            core->registers[i] = mem_read32(gba, addr);
             addr += 4;
         }
         ++i;
@@ -168,16 +168,16 @@ core_thumb_sdt_imm(
 
     switch ((bitfield_get(op, 11) << 1) | bitfield_get(op, 12)) {
         case 0b00: // Store word
-            mem_write32(core->memory, core->registers[rb] + (offset << 2), core->registers[rd]);
+            mem_write32(gba, core->registers[rb] + (offset << 2), core->registers[rd]);
             break;
         case 0b01: // Store byte
-            mem_write8(core->memory, core->registers[rb] + offset, core->registers[rd]);
+            mem_write8(gba, core->registers[rb] + offset, core->registers[rd]);
             break;
         case 0b10: // Load word
-            core->registers[rd] = mem_read32(core->memory, core->registers[rb] + (offset << 2));
+            core->registers[rd] = mem_read32(gba, core->registers[rb] + (offset << 2));
             break;
         case 0b11: // Load byte
-            core->registers[rd] = mem_read8(core->memory, core->registers[rb] + offset);
+            core->registers[rd] = mem_read8(gba, core->registers[rb] + offset);
             break;
     }
 }
@@ -202,16 +202,16 @@ core_thumb_sdt_wb_reg(
 
     switch ((bitfield_get(op, 11) << 1) | bitfield_get(op, 10)) {
         case 0b00: // Store word
-            mem_write32(core->memory, core->registers[rb] + core->registers[ro], core->registers[rd]);
+            mem_write32(gba, core->registers[rb] + core->registers[ro], core->registers[rd]);
             break;
         case 0b01: // Store byte
-            mem_write8(core->memory, core->registers[rb] + core->registers[ro], core->registers[rd]);
+            mem_write8(gba, core->registers[rb] + core->registers[ro], core->registers[rd]);
             break;
         case 0b10: // Load word
-            core->registers[rd] = mem_read32(core->memory, core->registers[rb] + core->registers[ro]);
+            core->registers[rd] = mem_read32(gba, core->registers[rb] + core->registers[ro]);
             break;
         case 0b11: // Load byte
-            core->registers[rd] = mem_read8(core->memory, core->registers[rb] + core->registers[ro]);
+            core->registers[rd] = mem_read8(gba, core->registers[rb] + core->registers[ro]);
             break;
     }
 }
@@ -238,10 +238,10 @@ core_thumb_sdt_h_imm(
 
     if (l) {
         // LDRH
-        core->registers[rd] = mem_read16(core->memory, core->registers[rb] + offset);
+        core->registers[rd] = mem_read16(gba, core->registers[rb] + offset);
     } else {
         // STRH
-        mem_write16(core->memory, core->registers[rb] + offset, (uint16_t)core->registers[rd]);
+        mem_write16(gba, core->registers[rb] + offset, (uint16_t)core->registers[rd]);
     }
 }
 
@@ -269,24 +269,24 @@ core_thumb_sdt_sbh_reg(
     switch ((bitfield_get(op, 10) << 1) | bitfield_get(op, 11)) {
         case 0b00:
             // Store halfword
-            mem_write16(core->memory, addr, core->registers[rd]);
+            mem_write16(gba, addr, core->registers[rd]);
             break;
         case 0b01:
             // Load halfword
-            core->registers[rd] = mem_read16(core->memory, addr);
+            core->registers[rd] = mem_read16(gba, addr);
             break;
         case 0b10:
             // Load sign-extended byte
-            core->registers[rd] = (int32_t)(int8_t)mem_read8(core->memory, addr);
+            core->registers[rd] = (int32_t)(int8_t)mem_read8(gba, addr);
             break;
         case 0b11:
             // Load sign-extended halfword
 
             // (Unligned addresses are a bitch)
             if (bitfield_get(addr, 0)) {
-                core->registers[rd] = (int32_t)(int8_t)(uint8_t)mem_read16(core->memory, addr);
+                core->registers[rd] = (int32_t)(int8_t)(uint8_t)mem_read16(gba, addr);
             } else {
-                core->registers[rd] = (int32_t)(int16_t)(uint16_t)mem_read16(core->memory, addr);
+                core->registers[rd] = (int32_t)(int16_t)(uint16_t)mem_read16(gba, addr);
             }
             break;
     }
@@ -308,7 +308,7 @@ core_thumb_ldr_pc(
     offset = bitfield_get_range(op, 0, 8) << 2;
 
     core = &gba->core;
-    core->registers[rd] = mem_read32(core->memory, (core->pc & 0xFFFFFFFC) + offset);
+    core->registers[rd] = mem_read32(gba, (core->pc & 0xFFFFFFFC) + offset);
 }
 
 /*
@@ -331,9 +331,9 @@ core_thumb_sdt_sp(
 
     if (l) {
         // LDR
-        core->registers[rd] = mem_read32(core->memory, core->sp + offset);
+        core->registers[rd] = mem_read32(gba, core->sp + offset);
     } else {
         // STR
-        mem_write32(core->memory,  core->sp + offset, core->registers[rd]);
+        mem_write32(gba,  core->sp + offset, core->registers[rd]);
     }
 }

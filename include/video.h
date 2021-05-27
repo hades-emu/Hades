@@ -16,6 +16,7 @@ struct video
     uint v;
 };
 
+/* video/video.c */
 void video_build_framebuffer(struct gba *gba);
 
 #endif /* !VIDEO_H */

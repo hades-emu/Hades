@@ -142,8 +142,6 @@ core_arm_decode_insns(void)
         encoded_insn = arm_encoded_insns + i;
         decoded_insn = arm_insns + i;
 
-        hs_logln(HS_DEBUG, "Adding ARM instruction \"%s\"", encoded_insn->name);
-
         decoded_insn->name = encoded_insn->name;
         decoded_insn->op = encoded_insn->op;
 

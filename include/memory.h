@@ -13,13 +13,14 @@
 # include <stdint.h>
 # include "hades.h"
 
-struct memory
-{
+/*
+** The overall memory of the Gameboy Advance.
+*/
+struct memory {
     // General Internal Memory
     uint8_t bios[0x4000];
     uint8_t ewram[0x40000];
     uint8_t iwram[0x8000];
-    uint8_t io[0x400];
 
     // Internal Display Memory
     uint8_t palram[0x400];
@@ -31,6 +32,10 @@ struct memory
     uint8_t sram[0x10000];
 } __packed;
 
+/*
+** An enumeration of the different memory regions
+** and other informations associated with them.
+*/
 enum memory_regions {
     BIOS_START          = 0x00000000,
     BIOS_END            = 0x00003FFF,
@@ -90,26 +95,91 @@ enum memory_regions {
     CART_SRAM_MASK      = CART_SRAM_END - CART_SRAM_START,
 };
 
-enum io_regs
-{
-    REG_DISPCNT     = 0x04000000,
-    REG_DISPSTAT    = 0x04000004,
-    REG_VCOUNT      = 0x04000006,
+/*
+** An enumeration of all IO registers.
+*/
+enum io_regs {
+    IO_REG_START        = 0x04000000,
+
+    IO_REG_DISPCNT      = 0x04000000,
+    IO_REG_DISPCNT_0    = 0x04000000,
+    IO_REG_DISPCNT_1    = 0x04000001,
+
+    IO_REG_GREENSWP     = 0x04000002,
+    IO_REG_GREENSWP_0   = 0x04000002,
+    IO_REG_GREENSWP_1   = 0x04000003,
+
+    IO_REG_DISPSTAT     = 0x04000004,
+    IO_REG_DISPSTAT_0   = 0x04000004,
+    IO_REG_DISPSTAT_1   = 0x04000005,
+
+    IO_REG_VCOUNT       = 0x04000006,
+
+    IO_REG_END
 };
 
+struct io_reg_dispcnt {
+    union {
+        struct {
+            uint8_t bg_mode: 3;         // Background Mode
+            uint8_t cbg_mode: 1;        // Can be set only by BIOS opcodes
+            uint8_t frame: 1;           // Frame 0-1 (BG mode 4/5 only)
+            uint8_t hblank_int_free: 1; // Allow access to OAM during H-Blank
+            uint8_t obj_dim: 1;         // OBJ Character VRAM Mapping (0=Two dimensional, 1=One dimensional)
+            uint8_t blank : 1;          // Allow FAST access to VRAM,Palette,OAM
+        };
+        uint8_t byte0;
+    };
+    union {
+        struct {
+            uint8_t bg0: 1;
+            uint8_t bg1: 1;
+            uint8_t bg2: 1;
+            uint8_t bg3: 1;
+            uint8_t obj: 1;
+            uint8_t win0: 1;
+            uint8_t win1: 1;
+            uint8_t obj_win: 1;
+        };
+        uint8_t byte1;
+    };
+};
+
+static_assert(sizeof(struct io_reg_dispcnt) == sizeof(uint16_t));
+
+struct io_reg_dispstat {
+    union {
+        struct {
+            uint8_t vblank: 1;          // Set if rendering the vblank
+            uint8_t hblank: 1;          // Set if rendering the hblank
+            uint8_t vcount: 1;          // Set if vcount_stg == vcount
+            uint8_t vblank_irq: 1;      // Enable to IRQ when vblank
+            uint8_t hblank_irq: 1;      // Enable to IRQ when hblank
+            uint8_t vcount_irq: 1;      // Enable to IRQ when vcount_stg == vcount
+            uint8_t : 2;
+        };
+        uint8_t byte0;
+    };
+    uint8_t vcount_stg;
+};
+
+static_assert(sizeof(struct io_reg_dispstat) == sizeof(uint16_t));
+
 struct core;
+struct gba;
 
 /* memory/io.c */
-void mem_io_write(struct memory *memory, uint32_t addr);
+uint16_t mem_io_read8(struct gba const *gba, uint32_t addr);
+void mem_io_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /* memory/memory.c */
 void mem_init(struct memory *memory);
-uint8_t mem_read8(struct memory const *memory, uint32_t addr);
-uint32_t mem_read16(struct memory const *memory, uint32_t addr);
-uint32_t mem_read32(struct memory const *memory, uint32_t addr);
-void mem_write8(struct memory *memory, uint32_t addr, uint8_t val);
-void mem_write16(struct memory *memory, uint32_t addr, uint16_t val);
-void mem_write32(struct memory *memory, uint32_t addr, uint32_t val);
+uint8_t mem_read8(struct gba const *gba, uint32_t addr);
+uint32_t mem_read16(struct gba const *gba, uint32_t addr);
+uint32_t mem_read32(struct gba const *gba, uint32_t addr);
+void mem_write8(struct gba *gba, uint32_t addr, uint8_t val);
+void mem_write16(struct gba *gba, uint32_t addr, uint16_t val);
+void mem_write32(struct gba *gba, uint32_t addr, uint32_t val);
 
 /* memory/rom.c */
 int mem_load_bios(struct memory *memory, char const *filename);

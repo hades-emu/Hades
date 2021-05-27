@@ -25,7 +25,7 @@ debugger_cmd_print_str(
 
     i = 0;
     while (true) {
-        c = mem_read8(&gba->memory, addr + i);
+        c = mem_read8(gba, addr + i);
         if (!isprint(c)) {
             break;
         }
@@ -56,7 +56,7 @@ debugger_cmd_print_char(
     while (i < len) {
         char c;
 
-        c = mem_read8(&gba->memory, addr + i);
+        c = mem_read8(gba, addr + i);
         if (i % align == 0) {
             printf("%08x: " LIGHT_MAGENTA, addr + i);
         }
@@ -102,7 +102,7 @@ debugger_cmd_print_u8(
 
         i = 0;
         while (i < len) {
-            printf("%02x ", mem_read8(&gba->memory, start + i));
+            printf("%02x ", mem_read8(gba, start + i));
             ++i;
         }
         while (i < align) {
@@ -116,7 +116,7 @@ debugger_cmd_print_u8(
         while (i < len) {
             char c;
 
-            c = mem_read8(&gba->memory, start + i);
+            c = mem_read8(gba, start + i);
             printf("%c", isprint(c) ? c : '.');
 
             ++i;
@@ -163,7 +163,7 @@ debugger_cmd_print_u16(
 
         i = 0;
         while (i < len) {
-            printf("%04x ", mem_read16(&gba->memory, start + i * 2)),
+            printf("%04x ", mem_read16(gba, start + i * 2)),
             ++i;
         }
         while (i < align) {
@@ -177,7 +177,7 @@ debugger_cmd_print_u16(
         while (i < len * 2) {
             char c;
 
-            c = mem_read8(&gba->memory, start + i);
+            c = mem_read8(gba, start + i);
             printf("%c", isprint(c) ? c : '.');
             ++i;
         }
@@ -223,7 +223,7 @@ debugger_cmd_print_u32(
 
         i = 0;
         while (i < len) {
-            printf("%08x ", mem_read32(&gba->memory, start + i * 4)),
+            printf("%08x ", mem_read32(gba, start + i * 4)),
             ++i;
         }
         while (i < align) {
@@ -237,7 +237,7 @@ debugger_cmd_print_u32(
         while (i < len * 4) {
             char c;
 
-            c = mem_read8(&gba->memory, start + i);
+            c = mem_read8(gba, start + i);
             printf("%c", isprint(c) ? c : '.');
 
             ++i;

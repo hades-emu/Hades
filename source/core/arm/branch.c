@@ -39,7 +39,7 @@ core_arm_branch(
     ** and our resulting value is the correct one.
     */
     core->pc += offset;
-    core_reload_pipeline(core);
+    core_reload_pipeline(gba);
 }
 
 /*
@@ -63,5 +63,5 @@ core_arm_branch_xchg(
     */
     core->pc = addr & 0xFFFFFFFE;
     core->cpsr.thumb = addr & 0b1;
-    core_reload_pipeline(core);
+    core_reload_pipeline(gba);
 }

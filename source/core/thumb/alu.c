@@ -197,7 +197,7 @@ core_thumb_hi_add(
     core->registers[rd] = core->registers[rd] + core->registers[rs];
 
     if (rd == 15) {
-        core_reload_pipeline(core);
+        core_reload_pipeline(gba);
     }
 }
 
@@ -260,7 +260,7 @@ core_thumb_hi_mov(
 
     if (rd == 15) {
         core->pc &= 0xfffffffe;
-        core_reload_pipeline(core);
+        core_reload_pipeline(gba);
     }
 }
 
