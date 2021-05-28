@@ -14,6 +14,42 @@
 # include "hades.h"
 
 /*
+** A DMA channel and the content of the different IO registers associated with it.
+*/
+struct dma_channel {
+    union {
+        uint32_t raw;
+        uint8_t bytes[4];
+    } src;
+    union {
+        uint32_t raw;
+        uint8_t bytes[4];
+    } dst;
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } count;
+    union {
+        struct {
+            uint16_t : 5;
+            uint16_t dst_ctl: 2;
+            uint16_t src_ctl: 2;
+            uint16_t repeat: 1;
+            uint16_t type: 1;
+            uint16_t gamepak_drq: 1;
+            uint16_t timing: 2;
+            uint16_t irq_end: 1;
+            uint16_t enable: 1;
+        } __packed;
+        uint8_t bytes[2];
+        uint16_t raw;
+    } control;
+} __packed;
+
+
+static_assert(sizeof(struct dma_channel) == 3 * sizeof(uint32_t));
+
+/*
 ** The overall memory of the Gameboy Advance.
 */
 struct memory {
@@ -30,6 +66,9 @@ struct memory {
     // External Memory (Game Pak)
     uint8_t rom[0x2000000];
     uint8_t sram[0x10000];
+
+    // DMA Channels
+    struct dma_channel dma_channels[4];
 } __packed;
 
 /*
@@ -101,6 +140,8 @@ enum memory_regions {
 enum io_regs {
     IO_REG_START        = 0x04000000,
 
+    /* Video */
+
     IO_REG_DISPCNT      = 0x04000000,
     IO_REG_DISPCNT_0    = 0x04000000,
     IO_REG_DISPCNT_1    = 0x04000001,
@@ -114,8 +155,96 @@ enum io_regs {
     IO_REG_DISPSTAT_1   = 0x04000005,
 
     IO_REG_VCOUNT       = 0x04000006,
+    IO_REG_VCOUNT_0     = 0x04000006,
+    IO_REG_VCOUNT_1     = 0x04000007,
 
-    IO_REG_END
+    /* DMA Transfer Channels */
+
+    IO_REG_DMA0SAD_LO   = 0x40000B0,
+    IO_REG_DMA0SAD_0    = 0x40000B0,
+    IO_REG_DMA0SAD_1    = 0x40000B1,
+    IO_REG_DMA0SAD_HI   = 0x40000B2,
+    IO_REG_DMA0SAD_2    = 0x40000B2,
+    IO_REG_DMA0SAD_3    = 0x40000B3,
+
+    IO_REG_DMA0DAD_LO   = 0x40000B4,
+    IO_REG_DMA0DAD_0    = 0x40000B4,
+    IO_REG_DMA0DAD_1    = 0x40000B5,
+    IO_REG_DMA0DAD_HI   = 0x40000B6,
+    IO_REG_DMA0DAD_2    = 0x40000B6,
+    IO_REG_DMA0DAD_3    = 0x40000B7,
+
+    IO_REG_DMA0CNT      = 0x40000B8,
+    IO_REG_DMA0CNT_0    = 0x40000B8,
+    IO_REG_DMA0CNT_1    = 0x40000B9,
+    IO_REG_DMA0CTL      = 0x40000BA,
+    IO_REG_DMA0CTL_0    = 0x40000BA,
+    IO_REG_DMA0CTL_1    = 0x40000BB,
+
+    IO_REG_DMA1SAD_LO   = 0x40000BC,
+    IO_REG_DMA1SAD_0    = 0x40000BC,
+    IO_REG_DMA1SAD_1    = 0x40000BD,
+    IO_REG_DMA1SAD_HI   = 0x40000BE,
+    IO_REG_DMA1SAD_2    = 0x40000BE,
+    IO_REG_DMA1SAD_3    = 0x40000BF,
+
+    IO_REG_DMA1DAD_HI   = 0x40000C0,
+    IO_REG_DMA1DAD_0    = 0x40000C0,
+    IO_REG_DMA1DAD_1    = 0x40000C1,
+    IO_REG_DMA1DAD_LO   = 0x40000C2,
+    IO_REG_DMA1DAD_2    = 0x40000C2,
+    IO_REG_DMA1DAD_3    = 0x40000C3,
+
+    IO_REG_DMA1CNT   = 0x40000C4,
+    IO_REG_DMA1CNT_0    = 0x40000C4,
+    IO_REG_DMA1CNT_1    = 0x40000C5,
+    IO_REG_DMA1CTL   = 0x40000C6,
+    IO_REG_DMA1CTL_0    = 0x40000C6,
+    IO_REG_DMA1CTL_1    = 0x40000C7,
+
+    IO_REG_DMA2SAD_HI   = 0x40000C8,
+    IO_REG_DMA2SAD_0    = 0x40000C8,
+    IO_REG_DMA2SAD_1    = 0x40000C9,
+    IO_REG_DMA2SAD_LO   = 0x40000CA,
+    IO_REG_DMA2SAD_2    = 0x40000CA,
+    IO_REG_DMA2SAD_3    = 0x40000CB,
+
+    IO_REG_DMA2DAD_HI   = 0x40000CC,
+    IO_REG_DMA2DAD_0    = 0x40000CC,
+    IO_REG_DMA2DAD_1    = 0x40000CD,
+    IO_REG_DMA2DAD_LO   = 0x40000CE,
+    IO_REG_DMA2DAD_2    = 0x40000CE,
+    IO_REG_DMA2DAD_3    = 0x40000CF,
+
+    IO_REG_DMA2CNT   = 0x40000D0,
+    IO_REG_DMA2CNT_0    = 0x40000D0,
+    IO_REG_DMA2CNT_1    = 0x40000D1,
+    IO_REG_DMA2CTL   = 0x40000D2,
+    IO_REG_DMA2CTL_0    = 0x40000D2,
+    IO_REG_DMA2CTL_1    = 0x40000D3,
+
+    IO_REG_DMA3SAD_HI   = 0x40000D4,
+    IO_REG_DMA3SAD_0    = 0x40000D4,
+    IO_REG_DMA3SAD_1    = 0x40000D5,
+    IO_REG_DMA3SAD_LO   = 0x40000D6,
+    IO_REG_DMA3SAD_2    = 0x40000D6,
+    IO_REG_DMA3SAD_3    = 0x40000D7,
+
+    IO_REG_DMA3DAD_HI   = 0x40000D8,
+    IO_REG_DMA3DAD_0    = 0x40000D8,
+    IO_REG_DMA3DAD_1    = 0x40000D9,
+    IO_REG_DMA3DAD_LO   = 0x40000DA,
+    IO_REG_DMA3DAD_2    = 0x40000DA,
+    IO_REG_DMA3DAD_3    = 0x40000DB,
+
+    IO_REG_DMA3CNT      = 0x40000DC,
+    IO_REG_DMA3CNT_0    = 0x40000DC,
+    IO_REG_DMA3CNT_1    = 0x40000DD,
+    IO_REG_DMA3CTL      = 0x40000DE,
+    IO_REG_DMA3CTL_0    = 0x40000DE,
+    IO_REG_DMA3CTL_1    = 0x40000DF,
+
+    IO_REG_END,
 };
 
 struct io_reg_dispcnt {
@@ -167,6 +296,9 @@ static_assert(sizeof(struct io_reg_dispstat) == sizeof(uint16_t));
 
 struct core;
 struct gba;
+
+/* memory/dma.c */
+void mem_dma_transfer(struct gba *gba);
 
 /* memory/io.c */
 uint16_t mem_io_read8(struct gba const *gba, uint32_t addr);
