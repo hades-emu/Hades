@@ -45,6 +45,7 @@ executable(
     'source/debugger/cmd/set.c',
     'source/debugger/cmd/step.c',
     'source/debugger/debugger.c',
+    'source/memory/dma.c',
     'source/memory/io.c',
     'source/memory/memory.c',
     'source/memory/rom.c',
