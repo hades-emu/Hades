@@ -10,21 +10,22 @@
 #ifndef GBA_H
 # define GBA_H
 
+# include <stdatomic.h>
 # include "core.h"
 # include "memory.h"
 # include "video.h"
 # include "debugger.h"
 
+extern atomic_bool stop;
+
 struct gba
 {
-    bool stop;
-
     struct core core;
     struct memory memory;
     struct video video;
     struct debugger debugger;
 
-    uint32_t framebuffer[240 * 160]; // The result of the video controller and used
+    uint32_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT]; // The result of the video controller and used
                                      // by the renderer to print things on screen.
                                      // Can be accessed by both the logic and render thread.
     pthread_mutex_t framebuffer_mutex;

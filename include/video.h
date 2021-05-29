@@ -10,6 +10,9 @@
 #ifndef VIDEO_H
 # define VIDEO_H
 
+# define SCREEN_WIDTH       240
+# define SCREEN_HEIGHT      160
+
 struct video
 {
     uint h;
@@ -18,5 +21,8 @@ struct video
 
 /* video/video.c */
 void video_build_framebuffer(struct gba *gba);
+
+/* render/sdl.c */
+void *sdl_render_loop(struct gba *gba);
 
 #endif /* !VIDEO_H */

@@ -7,6 +7,8 @@
 **
 \******************************************************************************/
 
+#include <stdatomic.h>
+#include <signal.h>
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
@@ -17,13 +19,30 @@
 #include "memory.h"
 #include "debugger.h"
 
-void *sdl_render_loop(struct gba *gba);
+/*
+** A global, atomic variable used to signal other threads it is time to stop and exit.
+*/
+atomic_bool stop;
+
+/*
+** The signal handler, used to set `stop` to true and signal
+** all threads it is time to stop and exit.
+*/
+static
+void
+sighandler(
+    int signal
+) {
+    stop = true;
+}
 
 int
 main(
     int argc,
     char *argv[]
 ) {
+    signal(SIGINT, &sighandler);
+
     if (argc == 2) {
         pthread_t render_thread;
         struct gba *gba;
@@ -71,6 +90,8 @@ main(
         /* Then enter the debugger's REPL. */
 
         debugger_repl(gba);
+
+        stop = true;
 
         free(gba);
 

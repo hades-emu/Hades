@@ -147,7 +147,7 @@ debugger_repl(
 
     debugger_dump_context(gba);
 
-    while ((input = readline("$ ")) != NULL) {
+    while (!stop && (input = readline("$ ")) != NULL) {
         char **tokens;
         size_t tokens_length;
         struct dbg_command const *cmd;
