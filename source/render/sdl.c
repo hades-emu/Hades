@@ -78,6 +78,7 @@ sdl_handle_inputs(
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_QUIT:
+                stop = true;
                 kill(getpid(), SIGTERM);        // Ask readline to stop waiting for user input
                 pthread_exit(NULL);
                 break;
@@ -95,7 +96,7 @@ sdl_render_loop(
 
     sdl_init(&app);
 
-    while (true) { // UNSAFE TODO FIXME
+    while (!stop) {
         SDL_SetRenderDrawColor(app.renderer, 96, 128, 255, 255);
         SDL_RenderClear(app.renderer);
 

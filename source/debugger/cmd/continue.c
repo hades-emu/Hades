@@ -7,6 +7,7 @@
 **
 \******************************************************************************/
 
+#include "gba.h"
 #include "hades.h"
 #include "debugger.h"
 
@@ -16,8 +17,7 @@ debugger_cmd_continue(
     size_t argc __unused,
     char const * const *argv __unused
 ) {
-    while (true) {
-        // TODO stop on break point
+    while (!stop) {
         core_step(gba);
     }
 }
