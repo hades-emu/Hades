@@ -45,7 +45,11 @@ mem_dma_transfer(
             count = (i == 3 ? 0x10000 : 0x4000);
         }
 
-        panic(HS_IO, "DMA transfer from %#08x to %#08x (len=%#08x)\n", src, dst, count);
+        if (dst == 0x040000A0 || dst == 0x040000A4) {
+            hs_logln(HS_IO, "FIFO DMA transfer from 0x%08x to 0x%08x (len=%#08x, channel %u)\n", src, dst, count, i);
+        } else {
+            panic(HS_IO, "DMA transfer from 0x%08x to 0x%08x (len=%#08x, channel %u)\n", src, dst, count, i);
+        }
 
         channel->control.enable = false;
 

@@ -155,7 +155,6 @@ core_arm_hsdt(
     /*
     ** Bit 20 indicates if it is a load or a store, bit 5 and 6 indicate the operation.
     */
-    hs_logln(HS_CORE, "SHL=%i%i%i", bitfield_get(op, 6), bitfield_get(op, 5), bitfield_get(op, 20));
     switch ((bitfield_get(op, 6) << 2) | (bitfield_get(op, 5) << 1) | bitfield_get(op, 20)) {
         //   0bSHL
         case 0b010: // Unsigned Halfword store
