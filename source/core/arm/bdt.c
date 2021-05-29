@@ -65,10 +65,8 @@ core_arm_bdt(
         // Transfer register
         if (bitfield_get(op, reg)) {
             if (l) { // Load
-                hs_logln(HS_DEBUG, "Loading the content of %08x to r%i", base, reg);
                 core->registers[reg] = mem_read32(gba, base);
             } else { // Store
-                hs_logln(HS_DEBUG, "Storing the content of r%i to %08x", reg, base);
                 mem_write32(gba, base, core->registers[reg]);
             }
             base += base_step;

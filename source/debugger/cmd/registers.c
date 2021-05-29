@@ -25,10 +25,10 @@ debugger_cmd_registers(
     core = &gba->core;
     for (i = 0; i < 4; ++i) {
         printf(
-            LIGHT_GREEN "%3s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
-            LIGHT_GREEN "%3s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
-            LIGHT_GREEN "%3s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
-            LIGHT_GREEN "%3s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET "\n",
+            LIGHT_GREEN "%2s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
+            LIGHT_GREEN "%2s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
+            LIGHT_GREEN "%2s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
+            LIGHT_GREEN "%2s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET "\n",
             registers_name[i * 4],
             core->registers[i * 4],
             registers_name[i * 4 + 1],
