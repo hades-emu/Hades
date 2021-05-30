@@ -22,7 +22,7 @@
 /*
 ** A global, atomic variable used to signal other threads it is time to stop and exit.
 */
-atomic_bool stop;
+atomic_bool g_stop;
 
 /*
 ** The signal handler, used to set `stop` to true and signal
@@ -33,7 +33,7 @@ void
 sighandler(
     int signal
 ) {
-    stop = true;
+    g_stop = true;
 }
 
 int
@@ -60,6 +60,7 @@ main(
         core_thumb_decode_insns();
 
         mem_init(&gba->memory);
+        io_init(&gba->io);
 
         /* Load the BIOS */
         if (mem_load_bios(&gba->memory, "gba_bios.gba") < 0) {
@@ -91,7 +92,7 @@ main(
 
         debugger_repl(gba);
 
-        stop = true;
+        g_stop = true;
 
         free(gba);
 
