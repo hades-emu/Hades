@@ -95,11 +95,21 @@ enum memory_regions {
     CART_SRAM_MASK      = CART_SRAM_END - CART_SRAM_START,
 };
 
+/*
+** The different timings at which a DMA transfer can occur.
+*/
+enum dma_timings {
+    DMA_TIMING_NOW              = 0,
+    DMA_TIMING_VBLANK           = 1,
+    DMA_TIMING_HBLANK           = 2,
+    DMA_TIMING_SPECIAL          = 3,
+};
+
 struct core;
 struct gba;
 
 /* memory/dma.c */
-void mem_dma_transfer(struct gba *gba);
+void mem_dma_transfer(struct gba *gba, enum dma_timings timing);
 
 /* memory/io.c */
 uint8_t mem_io_read8(struct gba const *gba, uint32_t addr);

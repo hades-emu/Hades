@@ -73,6 +73,8 @@ enum modules {
     HS_ERROR,
     HS_CORE,
     HS_IO,
+    HS_VIDEO,
+    HS_DMA,
     HS_DEBUG,
 };
 
@@ -80,8 +82,10 @@ static char const * const modules_str[] = {
     [HS_GLOBAL]     = "       ",
     [HS_ERROR]      = " ERROR ",
     [HS_CORE]       = " CORE  ",
-    [HS_DEBUG]      = " DEBUG ",
     [HS_IO]         = " IO    ",
+    [HS_VIDEO]      = " VIDEO ",
+    [HS_DMA]        = " DMA   ",
+    [HS_DEBUG]      = " DEBUG ",
 };
 
 /* Panic if the given constant expression evaluates to `false`. */
