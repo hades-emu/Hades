@@ -28,41 +28,68 @@ void
 video_step(
     struct gba *gba
 ) {
-    size_t i;
+    struct io *io;
+    size_t fb_idx;
+    union color c;
+
+
+    io = &gba->io;
 
     gba->video.h += 1;
-    if (gba->video.h >= 308) {
+    if (gba->video.h >= SCREEN_REAL_WIDTH) {
         gba->video.h = 0;
         gba->video.v += 1;
     }
 
-    if (gba->video.v >= 228) {
+    if (gba->video.v >= SCREEN_REAL_HEIGHT) {
         gba->video.v = 0;
     }
 
+    fb_idx = SCREEN_WIDTH * gba->video.v + gba->video.h;
+
     pthread_mutex_lock(&gba->framebuffer_mutex);
 
-    if (gba->video.h < 240 && gba->video.v < 160) {
-        uint8_t palette_idx;
-        union color c;
-        uint8_t red;
-        uint8_t green;
-        uint8_t blue;
+    if (gba->video.h < SCREEN_WIDTH && gba->video.v < SCREEN_HEIGHT) {
 
-        i = 240 * gba->video.v + gba->video.h;
-        palette_idx = mem_read8(gba, VRAM_START + i);
-        c.raw = mem_read16(gba, PALRAM_START + palette_idx * sizeof(union color));
+        c.raw = 0x0;
 
-        red = (uint32_t)c.red * 255 / 31;
-        blue = (uint32_t)c.blue * 255 / 31;
-        green = (uint32_t)c.green * 255 / 31;
+        switch (io->dispcnt.bg_mode) {
+            // BG Mode 3: Bitmap without palette
+            case 3:
+                {
+                    uint8_t palette_idx;
 
-        gba->framebuffer[i] = 0
-            | (red   << 16)
-            | (green <<  8)
-            | (blue  <<  0)
+                    c.raw = mem_read16(gba, VRAM_START + fb_idx * sizeof(union color));
+                }
+                break;
+            // BG Mode 4: Bitmap with palette
+            case 4:
+                {
+                    uint8_t palette_idx;
+
+                    if (!io->dispcnt.frame) { // Frame 0
+                        palette_idx = mem_read8(gba, VRAM_START + fb_idx);
+                    } else { // Frame 1
+                        palette_idx = mem_read8(gba, VRAM_START + 0xA000 + fb_idx);
+                    }
+                    c.raw = mem_read16(gba, PALRAM_START + palette_idx * sizeof(union color));
+                }
+                break;
+        }
+
+        // Set the calculated color in the framebuffer;
+
+        gba->framebuffer[fb_idx] = 0
+            | (((uint32_t)c.red * 255 / 31)     << 16)
+            | (((uint32_t)c.green * 255 / 31)   << 8)
+            | (((uint32_t)c.blue * 255 / 31)    << 0)
         ;
+
     }
+
+    /* Update the REG_DISPSTAT register */
+    io->dispstat.vblank = (gba->video.v >= SCREEN_HEIGHT);
+    io->dispstat.hblank = (gba->video.h >= SCREEN_WIDTH);
 
     pthread_mutex_unlock(&gba->framebuffer_mutex);
 }
