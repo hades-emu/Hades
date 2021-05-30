@@ -28,7 +28,7 @@ mem_dma_transfer(
         int32_t dst_step;
         uint32_t count;
 
-        channel = gba->io.dma_channels + i;
+        channel = &gba->io.dma[i];
 
         // Skip channels that aren't enabled
         if (!channel->control.enable) {

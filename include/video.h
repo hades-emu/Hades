@@ -10,8 +10,10 @@
 #ifndef VIDEO_H
 # define VIDEO_H
 
-# define SCREEN_WIDTH       240
-# define SCREEN_HEIGHT      160
+# define SCREEN_WIDTH           240
+# define SCREEN_HEIGHT          160
+# define SCREEN_REAL_WIDTH      308
+# define SCREEN_REAL_HEIGHT     228
 
 struct video
 {

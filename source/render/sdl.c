@@ -82,37 +82,37 @@ sdl_handle_inputs(
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym) {
                     case SDLK_UP:
-                    case SDLK_z:                gba->io.input.up = false; break;
+                    case SDLK_z:                gba->io.keyinput.up = false; break;
                     case SDLK_DOWN:
-                    case SDLK_s:                gba->io.input.down = false; break;
+                    case SDLK_s:                gba->io.keyinput.down = false; break;
                     case SDLK_LEFT:
-                    case SDLK_q:                gba->io.input.left = false; break;
+                    case SDLK_q:                gba->io.keyinput.left = false; break;
                     case SDLK_RIGHT:
-                    case SDLK_d:                gba->io.input.right = false; break;
-                    case SDLK_r:                gba->io.input.a = false; break;
-                    case SDLK_f:                gba->io.input.b = false; break;
-                    case SDLK_a:                gba->io.input.l = false; break;
-                    case SDLK_e:                gba->io.input.r = false; break;
-                    case SDLK_BACKSPACE:        gba->io.input.select = false; break;
-                    case SDLK_RETURN:           gba->io.input.start = false; break;
+                    case SDLK_d:                gba->io.keyinput.right = false; break;
+                    case SDLK_r:                gba->io.keyinput.a = false; break;
+                    case SDLK_f:                gba->io.keyinput.b = false; break;
+                    case SDLK_a:                gba->io.keyinput.l = false; break;
+                    case SDLK_e:                gba->io.keyinput.r = false; break;
+                    case SDLK_BACKSPACE:        gba->io.keyinput.select = false; break;
+                    case SDLK_RETURN:           gba->io.keyinput.start = false; break;
                 }
                 break;
             case SDL_KEYUP:
                 switch (event.key.keysym.sym) {
                     case SDLK_UP:
-                    case SDLK_z:                gba->io.input.up = true; break;
+                    case SDLK_z:                gba->io.keyinput.up = true; break;
                     case SDLK_DOWN:
-                    case SDLK_s:                gba->io.input.down = true; break;
+                    case SDLK_s:                gba->io.keyinput.down = true; break;
                     case SDLK_LEFT:
-                    case SDLK_q:                gba->io.input.left = true; break;
+                    case SDLK_q:                gba->io.keyinput.left = true; break;
                     case SDLK_RIGHT:
-                    case SDLK_d:                gba->io.input.right = true; break;
-                    case SDLK_r:                gba->io.input.a = true; break;
-                    case SDLK_f:                gba->io.input.b = true; break;
-                    case SDLK_a:                gba->io.input.l = true; break;
-                    case SDLK_e:                gba->io.input.r = true; break;
-                    case SDLK_BACKSPACE:        gba->io.input.select = true; break;
-                    case SDLK_RETURN:           gba->io.input.start = true; break;
+                    case SDLK_d:                gba->io.keyinput.right = true; break;
+                    case SDLK_r:                gba->io.keyinput.a = true; break;
+                    case SDLK_f:                gba->io.keyinput.b = true; break;
+                    case SDLK_a:                gba->io.keyinput.l = true; break;
+                    case SDLK_e:                gba->io.keyinput.r = true; break;
+                    case SDLK_BACKSPACE:        gba->io.keyinput.select = true; break;
+                    case SDLK_RETURN:           gba->io.keyinput.start = true; break;
                     default:                                  break;
                 }
                 break;
