@@ -20,7 +20,7 @@ struct video
 };
 
 /* video/video.c */
-void video_build_framebuffer(struct gba *gba);
+void video_step(struct gba *gba);
 
 /* render/sdl.c */
 void *sdl_render_loop(struct gba *gba);
