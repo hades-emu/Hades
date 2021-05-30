@@ -59,6 +59,9 @@ struct dma_channel {
 
 static_assert(sizeof(struct dma_channel) == 3 * sizeof(uint32_t));
 
+/*
+** A structure containing all the value of all the different IO registers.
+*/
 struct io {
     // Input
     union {
@@ -151,6 +154,14 @@ enum io_regs {
     IO_REG_END,
 };
 
+/*
+** Most LCD-related IO registers aren't stored in `struct io` but generated on the fly when read/written to.
+** The following structures represent their layout to facilitate their (de)construction.
+*/
+
+/*
+** The LCD Display Control (IO_REG_DISPCNT) register layout.
+*/
 struct io_reg_dispcnt {
     union {
         struct {
@@ -180,6 +191,9 @@ struct io_reg_dispcnt {
 
 static_assert(sizeof(struct io_reg_dispcnt) == sizeof(uint16_t));
 
+/*
+** The LCD Display Status (IO_REG_DISPSTAT) register layout.
+*/
 struct io_reg_dispstat {
     union {
         struct {
