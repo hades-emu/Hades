@@ -7,11 +7,20 @@
 **
 \******************************************************************************/
 
+#include <string.h>
 #include "memory.h"
 #include "gba.h"
 
+void
+io_init(
+    struct io *io
+) {
+    memset(io, 0, sizeof(*io));
+    io->input.raw = 0x3FF; // Every button set to "released"
+}
+
 /*
-**
+** Return the name of the given IO register.
 */
 char const *
 mem_io_reg_name(
@@ -47,6 +56,10 @@ mem_io_reg_name(
         case IO_REG_DMA3DAD_HI:     return ("REG_DMA3DAD_HI");
         case IO_REG_DMA3CNT:        return ("REG_DMA3CNT");
         case IO_REG_DMA3CTL:        return ("REG_DMA3CTL");
+        case IO_REG_KEYINPUT:       return ("REG_KEYINPUT");
+        case IO_REG_IE:             return ("REG_IE");
+        case IO_REG_IF:             return ("REG_IF");
+        case IO_REG_IME:            return ("REG_IME");
         default:                    return ("UNKNOWN");
     }
 };
@@ -82,20 +95,24 @@ mem_io_read8(
         case IO_REG_SOUNDBIAS + 1:          return (0b10);
 
         /* DMA - Channel 0 */
-        case IO_REG_DMA0CTL:                return (gba->memory.dma_channels[0].control.bytes[0]);
-        case IO_REG_DMA0CTL + 1:            return (gba->memory.dma_channels[0].control.bytes[1]);
+        case IO_REG_DMA0CTL:                return (gba->io.dma_channels[0].control.bytes[0]);
+        case IO_REG_DMA0CTL + 1:            return (gba->io.dma_channels[0].control.bytes[1]);
 
         /* DMA - Channel 1 */
-        case IO_REG_DMA1CTL:                return (gba->memory.dma_channels[1].control.bytes[0]);
-        case IO_REG_DMA1CTL + 1:            return (gba->memory.dma_channels[1].control.bytes[1]);
+        case IO_REG_DMA1CTL:                return (gba->io.dma_channels[1].control.bytes[0]);
+        case IO_REG_DMA1CTL + 1:            return (gba->io.dma_channels[1].control.bytes[1]);
 
         /* DMA - Channel 2 */
-        case IO_REG_DMA2CTL:                return (gba->memory.dma_channels[2].control.bytes[0]);
-        case IO_REG_DMA2CTL + 1:            return (gba->memory.dma_channels[2].control.bytes[1]);
+        case IO_REG_DMA2CTL:                return (gba->io.dma_channels[2].control.bytes[0]);
+        case IO_REG_DMA2CTL + 1:            return (gba->io.dma_channels[2].control.bytes[1]);
 
         /* DMA - Channel 3 */
-        case IO_REG_DMA3CTL:                return (gba->memory.dma_channels[3].control.bytes[0]);
-        case IO_REG_DMA3CTL + 1:            return (gba->memory.dma_channels[3].control.bytes[1]);
+        case IO_REG_DMA3CTL:                return (gba->io.dma_channels[3].control.bytes[0]);
+        case IO_REG_DMA3CTL + 1:            return (gba->io.dma_channels[3].control.bytes[1]);
+
+        /* Inputs */
+        case IO_REG_KEYINPUT:               return (gba->io.input.bytes[0]);
+        case IO_REG_KEYINPUT + 1:           return (gba->io.input.bytes[1]);
     }
     return (0);
 }
@@ -113,70 +130,70 @@ mem_io_write8(
     switch (addr) {
 
         /* DMA - Channel 0 */
-        case IO_REG_DMA0SAD:                gba->memory.dma_channels[0].src.bytes[0] = val; break;
-        case IO_REG_DMA0SAD + 1:            gba->memory.dma_channels[0].src.bytes[1] = val; break;
-        case IO_REG_DMA0SAD + 2:            gba->memory.dma_channels[0].src.bytes[2] = val; break;
-        case IO_REG_DMA0SAD + 3:            gba->memory.dma_channels[0].src.bytes[3] = val; break;
-        case IO_REG_DMA0DAD:                gba->memory.dma_channels[0].dst.bytes[0] = val; break;
-        case IO_REG_DMA0DAD + 1:            gba->memory.dma_channels[0].dst.bytes[1] = val; break;
-        case IO_REG_DMA0DAD + 2:            gba->memory.dma_channels[0].dst.bytes[2] = val; break;
-        case IO_REG_DMA0DAD + 3:            gba->memory.dma_channels[0].dst.bytes[3] = val; break;
-        case IO_REG_DMA0CNT:                gba->memory.dma_channels[0].count.bytes[0] = val; break;
-        case IO_REG_DMA0CNT + 1:            gba->memory.dma_channels[0].count.bytes[1] = val; break;
-        case IO_REG_DMA0CTL:                gba->memory.dma_channels[0].control.bytes[0] = val; break;
+        case IO_REG_DMA0SAD:                gba->io.dma_channels[0].src.bytes[0] = val; break;
+        case IO_REG_DMA0SAD + 1:            gba->io.dma_channels[0].src.bytes[1] = val; break;
+        case IO_REG_DMA0SAD + 2:            gba->io.dma_channels[0].src.bytes[2] = val; break;
+        case IO_REG_DMA0SAD + 3:            gba->io.dma_channels[0].src.bytes[3] = val; break;
+        case IO_REG_DMA0DAD:                gba->io.dma_channels[0].dst.bytes[0] = val; break;
+        case IO_REG_DMA0DAD + 1:            gba->io.dma_channels[0].dst.bytes[1] = val; break;
+        case IO_REG_DMA0DAD + 2:            gba->io.dma_channels[0].dst.bytes[2] = val; break;
+        case IO_REG_DMA0DAD + 3:            gba->io.dma_channels[0].dst.bytes[3] = val; break;
+        case IO_REG_DMA0CNT:                gba->io.dma_channels[0].count.bytes[0] = val; break;
+        case IO_REG_DMA0CNT + 1:            gba->io.dma_channels[0].count.bytes[1] = val; break;
+        case IO_REG_DMA0CTL:                gba->io.dma_channels[0].control.bytes[0] = val; break;
         case IO_REG_DMA0CTL + 1:
-            gba->memory.dma_channels[0].control.bytes[1] = val;
+            gba->io.dma_channels[0].control.bytes[1] = val;
             mem_dma_transfer(gba);
             break;
 
         /* DMA - Channel 1 */
-        case IO_REG_DMA1SAD:                gba->memory.dma_channels[1].src.bytes[0] = val; break;
-        case IO_REG_DMA1SAD + 1:            gba->memory.dma_channels[1].src.bytes[1] = val; break;
-        case IO_REG_DMA1SAD + 2:            gba->memory.dma_channels[1].src.bytes[2] = val; break;
-        case IO_REG_DMA1SAD + 3:            gba->memory.dma_channels[1].src.bytes[3] = val; break;
-        case IO_REG_DMA1DAD:                gba->memory.dma_channels[1].dst.bytes[0] = val; break;
-        case IO_REG_DMA1DAD + 1:            gba->memory.dma_channels[1].dst.bytes[1] = val; break;
-        case IO_REG_DMA1DAD + 2:            gba->memory.dma_channels[1].dst.bytes[2] = val; break;
-        case IO_REG_DMA1DAD + 3:            gba->memory.dma_channels[1].dst.bytes[3] = val; break;
-        case IO_REG_DMA1CNT:                gba->memory.dma_channels[1].count.bytes[0] = val; break;
-        case IO_REG_DMA1CNT + 1:            gba->memory.dma_channels[1].count.bytes[1] = val; break;
-        case IO_REG_DMA1CTL:                gba->memory.dma_channels[1].control.bytes[0] = val; break;
+        case IO_REG_DMA1SAD:                gba->io.dma_channels[1].src.bytes[0] = val; break;
+        case IO_REG_DMA1SAD + 1:            gba->io.dma_channels[1].src.bytes[1] = val; break;
+        case IO_REG_DMA1SAD + 2:            gba->io.dma_channels[1].src.bytes[2] = val; break;
+        case IO_REG_DMA1SAD + 3:            gba->io.dma_channels[1].src.bytes[3] = val; break;
+        case IO_REG_DMA1DAD:                gba->io.dma_channels[1].dst.bytes[0] = val; break;
+        case IO_REG_DMA1DAD + 1:            gba->io.dma_channels[1].dst.bytes[1] = val; break;
+        case IO_REG_DMA1DAD + 2:            gba->io.dma_channels[1].dst.bytes[2] = val; break;
+        case IO_REG_DMA1DAD + 3:            gba->io.dma_channels[1].dst.bytes[3] = val; break;
+        case IO_REG_DMA1CNT:                gba->io.dma_channels[1].count.bytes[0] = val; break;
+        case IO_REG_DMA1CNT + 1:            gba->io.dma_channels[1].count.bytes[1] = val; break;
+        case IO_REG_DMA1CTL:                gba->io.dma_channels[1].control.bytes[0] = val; break;
         case IO_REG_DMA1CTL + 1:
-            gba->memory.dma_channels[1].control.bytes[1] = val;
+            gba->io.dma_channels[1].control.bytes[1] = val;
             mem_dma_transfer(gba);
             break;
 
         /* DMA - Channel 2 */
-        case IO_REG_DMA2SAD:                gba->memory.dma_channels[2].src.bytes[0] = val; break;
-        case IO_REG_DMA2SAD + 1:            gba->memory.dma_channels[2].src.bytes[1] = val; break;
-        case IO_REG_DMA2SAD + 2:            gba->memory.dma_channels[2].src.bytes[2] = val; break;
-        case IO_REG_DMA2SAD + 3:            gba->memory.dma_channels[2].src.bytes[3] = val; break;
-        case IO_REG_DMA2DAD:                gba->memory.dma_channels[2].dst.bytes[0] = val; break;
-        case IO_REG_DMA2DAD + 1:            gba->memory.dma_channels[2].dst.bytes[1] = val; break;
-        case IO_REG_DMA2DAD + 2:            gba->memory.dma_channels[2].dst.bytes[2] = val; break;
-        case IO_REG_DMA2DAD + 3:            gba->memory.dma_channels[2].dst.bytes[3] = val; break;
-        case IO_REG_DMA2CNT:                gba->memory.dma_channels[2].count.bytes[0] = val; break;
-        case IO_REG_DMA2CNT + 1:            gba->memory.dma_channels[2].count.bytes[1] = val; break;
-        case IO_REG_DMA2CTL:                gba->memory.dma_channels[2].control.bytes[0] = val; break;
+        case IO_REG_DMA2SAD:                gba->io.dma_channels[2].src.bytes[0] = val; break;
+        case IO_REG_DMA2SAD + 1:            gba->io.dma_channels[2].src.bytes[1] = val; break;
+        case IO_REG_DMA2SAD + 2:            gba->io.dma_channels[2].src.bytes[2] = val; break;
+        case IO_REG_DMA2SAD + 3:            gba->io.dma_channels[2].src.bytes[3] = val; break;
+        case IO_REG_DMA2DAD:                gba->io.dma_channels[2].dst.bytes[0] = val; break;
+        case IO_REG_DMA2DAD + 1:            gba->io.dma_channels[2].dst.bytes[1] = val; break;
+        case IO_REG_DMA2DAD + 2:            gba->io.dma_channels[2].dst.bytes[2] = val; break;
+        case IO_REG_DMA2DAD + 3:            gba->io.dma_channels[2].dst.bytes[3] = val; break;
+        case IO_REG_DMA2CNT:                gba->io.dma_channels[2].count.bytes[0] = val; break;
+        case IO_REG_DMA2CNT + 1:            gba->io.dma_channels[2].count.bytes[1] = val; break;
+        case IO_REG_DMA2CTL:                gba->io.dma_channels[2].control.bytes[0] = val; break;
         case IO_REG_DMA2CTL + 1:
-            gba->memory.dma_channels[2].control.bytes[1] = val;
+            gba->io.dma_channels[2].control.bytes[1] = val;
             mem_dma_transfer(gba);
             break;
 
         /* DMA - Channel 3 */
-        case IO_REG_DMA3SAD:                gba->memory.dma_channels[3].src.bytes[0] = val; break;
-        case IO_REG_DMA3SAD + 1:            gba->memory.dma_channels[3].src.bytes[1] = val; break;
-        case IO_REG_DMA3SAD + 2:            gba->memory.dma_channels[3].src.bytes[2] = val; break;
-        case IO_REG_DMA3SAD + 3:            gba->memory.dma_channels[3].src.bytes[3] = val; break;
-        case IO_REG_DMA3DAD:                gba->memory.dma_channels[3].dst.bytes[0] = val; break;
-        case IO_REG_DMA3DAD + 1:            gba->memory.dma_channels[3].dst.bytes[1] = val; break;
-        case IO_REG_DMA3DAD + 2:            gba->memory.dma_channels[3].dst.bytes[2] = val; break;
-        case IO_REG_DMA3DAD + 3:            gba->memory.dma_channels[3].dst.bytes[3] = val; break;
-        case IO_REG_DMA3CNT:                gba->memory.dma_channels[3].count.bytes[0] = val; break;
-        case IO_REG_DMA3CNT + 1:            gba->memory.dma_channels[3].count.bytes[1] = val; break;
-        case IO_REG_DMA3CTL:                gba->memory.dma_channels[3].control.bytes[0] = val; break;
+        case IO_REG_DMA3SAD:                gba->io.dma_channels[3].src.bytes[0] = val; break;
+        case IO_REG_DMA3SAD + 1:            gba->io.dma_channels[3].src.bytes[1] = val; break;
+        case IO_REG_DMA3SAD + 2:            gba->io.dma_channels[3].src.bytes[2] = val; break;
+        case IO_REG_DMA3SAD + 3:            gba->io.dma_channels[3].src.bytes[3] = val; break;
+        case IO_REG_DMA3DAD:                gba->io.dma_channels[3].dst.bytes[0] = val; break;
+        case IO_REG_DMA3DAD + 1:            gba->io.dma_channels[3].dst.bytes[1] = val; break;
+        case IO_REG_DMA3DAD + 2:            gba->io.dma_channels[3].dst.bytes[2] = val; break;
+        case IO_REG_DMA3DAD + 3:            gba->io.dma_channels[3].dst.bytes[3] = val; break;
+        case IO_REG_DMA3CNT:                gba->io.dma_channels[3].count.bytes[0] = val; break;
+        case IO_REG_DMA3CNT + 1:            gba->io.dma_channels[3].count.bytes[1] = val; break;
+        case IO_REG_DMA3CTL:                gba->io.dma_channels[3].control.bytes[0] = val; break;
         case IO_REG_DMA3CTL + 1:
-            gba->memory.dma_channels[3].control.bytes[1] = val;
+            gba->io.dma_channels[3].control.bytes[1] = val;
             mem_dma_transfer(gba);
             break;
     }

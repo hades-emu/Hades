@@ -15,8 +15,9 @@
 # include "memory.h"
 # include "video.h"
 # include "debugger.h"
+# include "io.h"
 
-extern atomic_bool stop;
+extern atomic_bool g_stop;
 
 struct gba
 {
@@ -24,6 +25,7 @@ struct gba
     struct memory memory;
     struct video video;
     struct debugger debugger;
+    struct io io;
 
     uint32_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT]; // The result of the video controller and used
                                      // by the renderer to print things on screen.
