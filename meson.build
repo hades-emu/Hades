@@ -39,6 +39,7 @@ executable(
     'source/debugger/cmd/continue.c',
     'source/debugger/cmd/disas.c',
     'source/debugger/cmd/help.c',
+    'source/debugger/cmd/main.c',
     'source/debugger/cmd/next.c',
     'source/debugger/cmd/print.c',
     'source/debugger/cmd/registers.c',

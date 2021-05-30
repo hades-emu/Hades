@@ -125,6 +125,7 @@ enum dbg_commands {
     CMD_SET,
     CMD_CONTEXT,
     CMD_PRINT,
+    CMD_MAIN,
 };
 
 /*
@@ -150,6 +151,9 @@ void debugger_cmd_disas(struct gba *, size_t, char const * const *);
 
 /* debugger/cmd/help.c */
 void debugger_cmd_help(struct gba *, size_t, char const * const *);
+
+/* debugger/cmd/main.c */
+void debugger_cmd_main(struct gba *, size_t, char const * const *);
 
 /* debugger/cmd/next.c */
 void debugger_cmd_next(struct gba *, size_t, char const * const *);

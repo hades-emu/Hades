@@ -21,8 +21,11 @@ union color {
 
 static_assert(sizeof(union color) == sizeof(uint16_t));
 
+/*
+** Build the next pixel, stored in the framebuffer pointed to by `gba->framebuffer`.
+*/
 void
-video_build_framebuffer(
+video_step(
     struct gba *gba
 ) {
     size_t i;

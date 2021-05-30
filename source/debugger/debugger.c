@@ -96,6 +96,14 @@ struct dbg_command g_commands[] = {
         .nargs = 4,
         .func = debugger_cmd_print,
     },
+    [CMD_MAIN] = {
+        .name = "main",
+        .alias = "m",
+        .usage = "main",
+        .desc = "Continue until pc isn't 0x08000000 (Temporary)",
+        .nargs = 0,
+        .func = debugger_cmd_main,
+    },
     {
         .name = NULL,
     }

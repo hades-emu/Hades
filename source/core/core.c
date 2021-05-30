@@ -111,8 +111,8 @@ core_step(
                     unimplemented(HS_CORE, "thumb instruction \"%s\" isn't implemented.", thumb_insns[i].name);
                 }
                 thumb_insns[i].op(gba, op);
-                video_build_framebuffer(gba);
-                video_build_framebuffer(gba);
+                video_step(gba);
+                video_step(gba);
                 return ;
             }
             ++i;
@@ -156,8 +156,8 @@ core_step(
                     unimplemented(HS_CORE, "ARM instruction \"%s\" isn't implemented.", arm_insns[i].name);
                 }
                 arm_insns[i].op(gba, op);
-                video_build_framebuffer(gba);
-                video_build_framebuffer(gba);
+                video_step(gba);
+                video_step(gba);
                 return ;
             }
             ++i;
