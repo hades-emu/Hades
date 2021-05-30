@@ -163,7 +163,7 @@ core_step(
             ++i;
         }
 
-        panic(HS_CORE, "Unknown ARM op-code %#08x.", op);
+        panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x, count=%u).", op, core->pc, count);
     }
 }
 

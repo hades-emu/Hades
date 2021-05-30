@@ -105,7 +105,7 @@ struct dma_channel {
             uint16_t dst_ctl: 2;
             uint16_t src_ctl: 2;
             uint16_t repeat: 1;
-            uint16_t type: 1;
+            uint16_t unit_size: 1;
             uint16_t gamepak_drq: 1;
             uint16_t timing: 2;
             uint16_t irq_end: 1;

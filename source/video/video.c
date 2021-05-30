@@ -45,11 +45,37 @@ video_step(
         gba->video.v = 0;
     }
 
+    /* Update the REG_DISPSTAT register */
+    io->dispstat.vblank = (gba->video.v >= SCREEN_HEIGHT);
+    io->dispstat.hblank = (gba->video.h >= SCREEN_WIDTH);
+
+    /* Trigger the VBLANK DMA transfer */
+    if (gba->video.v == SCREEN_HEIGHT) {
+        mem_dma_transfer(gba, DMA_TIMING_VBLANK);
+    }
+
+    /* Trigger the HBLANK DMA transfer */
+    if (gba->video.h == SCREEN_WIDTH) {
+        mem_dma_transfer(gba, DMA_TIMING_HBLANK);
+    }
+
     fb_idx = SCREEN_WIDTH * gba->video.v + gba->video.h;
 
     pthread_mutex_lock(&gba->framebuffer_mutex);
 
     if (gba->video.h < SCREEN_WIDTH && gba->video.v < SCREEN_HEIGHT) {
+
+        if (gba->video.h == 0 && gba->video.v == 0) {
+            hs_logln(HS_VIDEO, "Video mode: %u", io->dispcnt.bg_mode);
+            hs_logln(HS_VIDEO,
+                "Video layout: BG0=%u BG1=%u BG2=%u BG3=%u OBJ=%u",
+                io->dispcnt.bg0,
+                io->dispcnt.bg1,
+                io->dispcnt.bg2,
+                io->dispcnt.bg3,
+                io->dispcnt.obj
+            );
+        }
 
         c.raw = 0x0;
 
@@ -82,10 +108,6 @@ video_step(
         ;
 
     }
-
-    /* Update the REG_DISPSTAT register */
-    io->dispstat.vblank = (gba->video.v >= SCREEN_HEIGHT);
-    io->dispstat.hblank = (gba->video.h >= SCREEN_WIDTH);
 
     pthread_mutex_unlock(&gba->framebuffer_mutex);
 }
