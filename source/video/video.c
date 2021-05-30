@@ -56,11 +56,7 @@ video_step(
         switch (io->dispcnt.bg_mode) {
             // BG Mode 3: Bitmap without palette
             case 3:
-                {
-                    uint8_t palette_idx;
-
-                    c.raw = mem_read16(gba, VRAM_START + fb_idx * sizeof(union color));
-                }
+                c.raw = mem_read16(gba, VRAM_START + fb_idx * sizeof(union color));
                 break;
             // BG Mode 4: Bitmap with palette
             case 4:
