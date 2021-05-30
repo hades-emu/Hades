@@ -13,80 +13,6 @@
 # include "hades.h"
 
 /*
-** An union of a `uint32_t` and the four bytes it is made of.
-*/
-union split_uint32 {
-    uint32_t raw;
-    uint8_t  bytes[4];
-};
-
-static_assert(sizeof(union split_uint32) == sizeof(uint32_t));
-
-/*
-** An union of a `uint16_t` and the two bytes it is made of.
-*/
-union split_uint16 {
-    uint16_t raw;
-    uint8_t  bytes[2];
-};
-
-static_assert(sizeof(union split_uint16) == sizeof(uint16_t));
-
-/*
-** A DMA channel and the content of the different IO registers associated with it.
-*/
-struct dma_channel {
-    union split_uint32 src;
-    union split_uint32 dst;
-    union split_uint16 count;
-
-    union {
-        struct {
-            uint16_t : 5;
-            uint16_t dst_ctl: 2;
-            uint16_t src_ctl: 2;
-            uint16_t repeat: 1;
-            uint16_t type: 1;
-            uint16_t gamepak_drq: 1;
-            uint16_t timing: 2;
-            uint16_t irq_end: 1;
-            uint16_t enable: 1;
-        } __packed;
-        uint16_t raw;
-        uint8_t bytes[2];
-    } control;
-} __packed;
-
-static_assert(sizeof(struct dma_channel) == 3 * sizeof(uint32_t));
-
-/*
-** A structure containing all the value of all the different IO registers.
-*/
-struct io {
-    // Input
-    union {
-        struct {
-            uint16_t a: 1;
-            uint16_t b: 1;
-            uint16_t select: 1;
-            uint16_t start: 1;
-            uint16_t right: 1;
-            uint16_t left: 1;
-            uint16_t up: 1;
-            uint16_t down: 1;
-            uint16_t r: 1;
-            uint16_t l: 1;
-            uint16_t : 6;
-        } __packed;
-        uint16_t raw;
-        uint8_t bytes[2];
-    } input;
-
-    // DMA Channels
-    struct dma_channel dma_channels[4];
-};
-
-/*
 ** An enumeration of all IO registers.
 */
 enum io_regs {
@@ -155,14 +81,48 @@ enum io_regs {
 };
 
 /*
-** Most LCD-related IO registers aren't stored in `struct io` but generated on the fly when read/written to.
-** The following structures represent their layout to facilitate their (de)construction.
+** A DMA channel and the content of the different IO registers associated with it.
 */
+struct dma_channel {
+    union {
+        uint32_t raw;
+        uint8_t  bytes[4];
+    } src;
+
+    union {
+        uint32_t raw;
+        uint8_t  bytes[4];
+    } dst;
+
+    union {
+        uint16_t raw;
+        uint8_t  bytes[2];
+    } count;
+
+    union {
+        struct {
+            uint16_t : 5;
+            uint16_t dst_ctl: 2;
+            uint16_t src_ctl: 2;
+            uint16_t repeat: 1;
+            uint16_t type: 1;
+            uint16_t gamepak_drq: 1;
+            uint16_t timing: 2;
+            uint16_t irq_end: 1;
+            uint16_t enable: 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } control;
+} __packed;
+
+static_assert(sizeof(struct dma_channel) == 3 * sizeof(uint32_t));
 
 /*
-** The LCD Display Control (IO_REG_DISPCNT) register layout.
+** A structure containing all the value of all the different IO registers.
 */
-struct io_reg_dispcnt {
+struct io {
+    // REG_DISPCNT (LCD Control, Read/Write)
     union {
         struct {
             uint8_t bg_mode: 3;         // Background Mode
@@ -171,11 +131,6 @@ struct io_reg_dispcnt {
             uint8_t hblank_int_free: 1; // Allow access to OAM during H-Blank
             uint8_t obj_dim: 1;         // OBJ Character VRAM Mapping (0=Two dimensional, 1=One dimensional)
             uint8_t blank : 1;          // Allow FAST access to VRAM,Palette,OAM
-        };
-        uint8_t byte0;
-    };
-    union {
-        struct {
             uint8_t bg0: 1;
             uint8_t bg1: 1;
             uint8_t bg2: 1;
@@ -184,33 +139,55 @@ struct io_reg_dispcnt {
             uint8_t win0: 1;
             uint8_t win1: 1;
             uint8_t obj_win: 1;
-        };
-        uint8_t byte1;
-    };
-};
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } dispcnt;
 
-static_assert(sizeof(struct io_reg_dispcnt) == sizeof(uint16_t));
-
-/*
-** The LCD Display Status (IO_REG_DISPSTAT) register layout.
-*/
-struct io_reg_dispstat {
+    // REG_DISPSTAT (General LCD Status, Read/Write)
     union {
         struct {
             uint8_t vblank: 1;          // Set if rendering the vblank
             uint8_t hblank: 1;          // Set if rendering the hblank
-            uint8_t vcount: 1;          // Set if vcount_stg == vcount
+            uint8_t vcount_eq: 1;       // Set if vcount_stg == vcount
             uint8_t vblank_irq: 1;      // Enable to IRQ when vblank
             uint8_t hblank_irq: 1;      // Enable to IRQ when hblank
             uint8_t vcount_irq: 1;      // Enable to IRQ when vcount_stg == vcount
             uint8_t : 2;
-        };
-        uint8_t byte0;
-    };
-    uint8_t vcount_stg;
+            uint8_t vcount_val: 8;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } dispstat;
+
+    // REG_VCOUNT (Vertical Counter, Read only)
+    uint16_t vcount;
+
+    // DMA Channels
+    struct dma_channel dma[4];
+
+    // REG_KEYINPUT (Key Status, Read only)
+    union {
+        struct {
+            uint16_t a: 1;
+            uint16_t b: 1;
+            uint16_t select: 1;
+            uint16_t start: 1;
+            uint16_t right: 1;
+            uint16_t left: 1;
+            uint16_t up: 1;
+            uint16_t down: 1;
+            uint16_t r: 1;
+            uint16_t l: 1;
+            uint16_t : 6;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } keyinput;
 };
 
-static_assert(sizeof(struct io_reg_dispstat) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->dispcnt) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->dispstat) == sizeof(uint16_t));
 
 /* io/io.c */
 void io_init(struct io *io);
