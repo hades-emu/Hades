@@ -84,7 +84,7 @@ mem_io_read8(
         case IO_REG_DISPCNT + 1:            return (io->dispcnt.bytes[1]);
         case IO_REG_DISPSTAT:               return (io->dispstat.bytes[0]);
         case IO_REG_DISPSTAT + 1:           return (io->dispstat.bytes[1]);
-        case IO_REG_VCOUNT:                 return (gba->video.h);
+        case IO_REG_VCOUNT:                 return (gba->video.v);
 
         /* Sound */
         case IO_REG_SOUNDBIAS:              return (0x0);
@@ -202,5 +202,12 @@ mem_io_write8(
             io->dma[3].control.bytes[1] = val;
             mem_dma_transfer(gba, DMA_TIMING_NOW);
             break;
+
+        /* Interrupt */
+        case IO_REG_IE:                     io->int_enabled.bytes[0] = val; break;
+        case IO_REG_IE + 1:                 io->int_enabled.bytes[1] = val; break;
+        case IO_REG_IF:                     io->int_flag.bytes[0] = val; break;
+        case IO_REG_IF + 1:                 io->int_flag.bytes[1] = val; break;
+        case IO_REG_IME:                    io->ime = val; break;
     }
 }

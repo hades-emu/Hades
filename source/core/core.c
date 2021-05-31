@@ -373,6 +373,43 @@ core_interrupt(
 }
 
 /*
+** Try to trigger the given IRQ.
+*/
+void
+core_trigger_irq(
+    struct gba *gba,
+    enum arm_irq irq
+) {
+    gba->io.int_flag.raw |= irq;
+    core_scan_irq(gba);
+}
+
+/*
+** Ensure all the conditions to trigger any IRQ are met, and if they are, fire that interrupt.
+*/
+void
+core_scan_irq(
+    struct gba *gba
+) {
+    // To trigger any interrupt, we need:
+    //   * The CPSR.I flag set to 0
+    //   * The bit 0 of the IME IO register set to 1
+    //   * That interrupt enabled in both REG_IE and REG_IF
+    if (
+           !gba->core.cpsr.irq_disable
+        && (gba->io.ime & 0b1)
+        && (gba->io.int_enabled.raw & gba->io.int_flag.raw)
+    ) {
+        hs_logln(
+            HS_IRQ,
+            "IRQ signal sent (0x%08x)",
+            gba->io.int_flag.raw
+        );
+        core_interrupt(gba, VEC_IRQ, MODE_IRQ);
+    }
+}
+
+/*
 ** Compute the operand of an instruction that uses an encoded shift register.
 ** If `update_carry` is true, this will set the carry flag of the CPSR to its
 ** correct value.

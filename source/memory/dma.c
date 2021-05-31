@@ -76,21 +76,19 @@ mem_dma_transfer(
             unit_size,
             i
         );
+
         if (dst == 0x040000A0 || dst == 0x040000A4) {
             hs_logln(HS_DMA, "FIFO transfer -- Ignored");
         } else {
             while (count > 0) {
-                switch (unit_size) {
-                    case 4:
-                        mem_write32(gba, dst, mem_read32(gba, src));
-                        dst += dst_step;
-                        src += src_step;
-                        break;
-                    case 2:
-                        mem_write16(gba, dst, mem_read16(gba, src));
-                        dst += dst_step;
-                        src += src_step;
-                        break;
+                if (unit_size == 4) {
+                    mem_write32(gba, dst, mem_read32(gba, src));
+                    src += src_step;
+                    dst += dst_step;
+                } else { // unit_size == 2
+                    mem_write16(gba, dst, mem_read16(gba, src));
+                    src += src_step;
+                    dst += dst_step;
                 }
                 --count;
             }
