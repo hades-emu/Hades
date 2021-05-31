@@ -48,15 +48,27 @@ video_step(
     /* Update the REG_DISPSTAT register */
     io->dispstat.vblank = (gba->video.v >= SCREEN_HEIGHT);
     io->dispstat.hblank = (gba->video.h >= SCREEN_WIDTH);
+    io->dispstat.vcount_eq = (gba->video.v == io->dispstat.vcount_val);
 
     /* Trigger the VBLANK DMA transfer */
     if (gba->video.v == SCREEN_HEIGHT) {
+        if (io->dispstat.vblank_irq) {
+            core_trigger_irq(gba, IRQ_VBLANK);
+        }
         mem_dma_transfer(gba, DMA_TIMING_VBLANK);
     }
 
     /* Trigger the HBLANK DMA transfer */
     if (gba->video.h == SCREEN_WIDTH) {
+        if (io->dispstat.hblank_irq) {
+            core_trigger_irq(gba, IRQ_HBLANK);
+        }
         mem_dma_transfer(gba, DMA_TIMING_HBLANK);
+    }
+
+    /* Trigger the VCOUNT IRQ */
+    if (io->dispstat.vcount_eq && io->dispstat.vcount_irq) {
+        core_trigger_irq(gba, IRQ_VCOUNTER);
     }
 
     fb_idx = SCREEN_WIDTH * gba->video.v + gba->video.h;

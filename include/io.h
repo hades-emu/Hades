@@ -184,6 +184,55 @@ struct io {
         uint16_t raw;
         uint8_t bytes[2];
     } keyinput;
+
+    // REG_IME
+    uint16_t ime;
+
+    // REG_IE
+    union {
+        struct {
+            uint16_t vblank: 1;
+            uint16_t hblank: 1;
+            uint16_t vcounter: 1;
+            uint16_t timer0: 1;
+            uint16_t timer1: 1;
+            uint16_t timer2: 1;
+            uint16_t timer3: 1;
+            uint16_t serial: 1;
+            uint16_t dma0: 1;
+            uint16_t dma1: 1;
+            uint16_t dma2: 1;
+            uint16_t dma3: 1;
+            uint16_t keypad: 1;
+            uint16_t gamepak: 1;
+            uint16_t : 2;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } int_enabled;
+
+    // REG_IF
+    union {
+        struct {
+            uint16_t vblank: 1;
+            uint16_t hblank: 1;
+            uint16_t vcounter: 1;
+            uint16_t timer0: 1;
+            uint16_t timer1: 1;
+            uint16_t timer2: 1;
+            uint16_t timer3: 1;
+            uint16_t serial: 1;
+            uint16_t dma0: 1;
+            uint16_t dma1: 1;
+            uint16_t dma2: 1;
+            uint16_t dma3: 1;
+            uint16_t keypad: 1;
+            uint16_t gamepak: 1;
+            uint16_t : 2;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } int_flag;
 };
 
 static_assert(sizeof(((struct io *)NULL)->dispcnt) == sizeof(uint16_t));

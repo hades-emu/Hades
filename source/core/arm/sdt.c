@@ -126,10 +126,7 @@ core_arm_hsdt(
     if (bitfield_get(op, 22)) {
         offset = (bitfield_get_range(op, 8, 12) << 4) | bitfield_get_range(op, 0, 4);
     } else {
-        uint32_t rm;
-
-        rm = op & 0xF;
-        offset = core->registers[rm];
+        offset = core->registers[bitfield_get_range(op, 0, 4)];
     }
 
     /*
@@ -160,12 +157,15 @@ core_arm_hsdt(
         case 0b010: // Unsigned Halfword store
             mem_write16(gba, effective_addr, core->registers[rd]);
             break;
-        case 0b011: // Unsigned Halfword load
+        case 0b011: // Unsigned Halfword Load
             core->registers[rd] = mem_read16(gba, effective_addr);
             break;
+        case 0b111: // Signed Halfword Load
+            core->registers[rd] = (int32_t)(int16_t)(uint16_t)mem_read16(gba, effective_addr);
+           break;
         case 0b100:
         case 0b110:
-            panic(HS_CORE, "Halfword and Signed Data Transfer: the sign-bit and the load bit are both set.");
+            panic(HS_CORE, "Halfword and Signed Data Transfer: cannot store signed bytes.");
             break;
         default:
             unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented");

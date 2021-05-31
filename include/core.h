@@ -148,7 +148,6 @@ enum arm_modes {
     MODE_SYSTEM         = 0b11111,
 };
 
-
 /*
 ** An enumartion of all the interrupt vectors the ARM7TDMI supports.
 */
@@ -161,6 +160,26 @@ enum arm_vectors {
     VEC_ADDR26          = 0x14, // Address exceeds 26 bits (legacy)
     VEC_IRQ             = 0x18, // Normal Interrupt
     VEC_FIQ             = 0x1c, // Fast Interrupt
+};
+
+/*
+** An enumeration of all
+*/
+enum arm_irq {
+    IRQ_VBLANK          = 0x0,
+    IRQ_HBLANK          = 0x1,
+    IRQ_VCOUNTER        = 0x2,
+    IRQ_TIMER0          = 0x3,
+    IRQ_TIMER1          = 0x4,
+    IRQ_TIMER2          = 0x5,
+    IRQ_TIMER3          = 0x6,
+    IRQ_SERIAL          = 0x7,
+    IRQ_DMA0            = 0x8,
+    IRQ_DMA1            = 0x9,
+    IRQ_DMA2            = 0xA,
+    IRQ_DMA3            = 0xB,
+    IRQ_KEYPAD          = 0xC,
+    IRQ_GAMEPAK         = 0xD,
 };
 
 /*
@@ -184,6 +203,8 @@ void core_reload_pipeline(struct gba *gba);
 void core_switch_mode(struct core *core, enum arm_modes mode);
 uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool update_carry);
 bool core_compute_cond(struct core *core, uint32_t cond);
+void core_trigger_irq(struct gba *gba, enum arm_irq irq);
+void core_scan_irq(struct gba *gba);
 
 /* core/interrupt.c */
 void core_interrupt(struct gba *gba, enum arm_vectors vector, enum arm_modes mode);
