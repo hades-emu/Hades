@@ -89,8 +89,8 @@ sdl_handle_inputs(
                     case SDLK_q:                gba->io.keyinput.left = false; break;
                     case SDLK_RIGHT:
                     case SDLK_d:                gba->io.keyinput.right = false; break;
-                    case SDLK_r:                gba->io.keyinput.a = false; break;
-                    case SDLK_f:                gba->io.keyinput.b = false; break;
+                    case SDLK_p:                gba->io.keyinput.a = false; break;
+                    case SDLK_l:                gba->io.keyinput.b = false; break;
                     case SDLK_a:                gba->io.keyinput.l = false; break;
                     case SDLK_e:                gba->io.keyinput.r = false; break;
                     case SDLK_BACKSPACE:        gba->io.keyinput.select = false; break;
@@ -107,8 +107,8 @@ sdl_handle_inputs(
                     case SDLK_q:                gba->io.keyinput.left = true; break;
                     case SDLK_RIGHT:
                     case SDLK_d:                gba->io.keyinput.right = true; break;
-                    case SDLK_r:                gba->io.keyinput.a = true; break;
-                    case SDLK_f:                gba->io.keyinput.b = true; break;
+                    case SDLK_p:                gba->io.keyinput.a = true; break;
+                    case SDLK_l:                gba->io.keyinput.b = true; break;
                     case SDLK_a:                gba->io.keyinput.l = true; break;
                     case SDLK_e:                gba->io.keyinput.r = true; break;
                     case SDLK_BACKSPACE:        gba->io.keyinput.select = true; break;
