@@ -24,6 +24,18 @@ enum io_regs {
     IO_REG_GREENSWP     = 0x04000002,
     IO_REG_DISPSTAT     = 0x04000004,
     IO_REG_VCOUNT       = 0x04000006,
+    IO_REG_BG0CNT       = 0x04000008,
+    IO_REG_BG1CNT       = 0x0400000A,
+    IO_REG_BG2CNT       = 0x0400000C,
+    IO_REG_BG3CNT       = 0x0400000E,
+    IO_REG_BG0HOFS      = 0x04000010,
+    IO_REG_BG0VOFS      = 0x04000012,
+    IO_REG_BG1HOFS      = 0x04000014,
+    IO_REG_BG1VOFS      = 0x04000016,
+    IO_REG_BG2HOFS      = 0x04000018,
+    IO_REG_BG2VOFS      = 0x0400001A,
+    IO_REG_BG3HOFS      = 0x0400001C,
+    IO_REG_BG3VOFS      = 0x0400001E,
 
     /* Sound */
 
@@ -131,10 +143,7 @@ struct io {
             uint8_t hblank_int_free: 1; // Allow access to OAM during H-Blank
             uint8_t obj_dim: 1;         // OBJ Character VRAM Mapping (0=Two dimensional, 1=One dimensional)
             uint8_t blank : 1;          // Allow FAST access to VRAM,Palette,OAM
-            uint8_t bg0: 1;
-            uint8_t bg1: 1;
-            uint8_t bg2: 1;
-            uint8_t bg3: 1;
+            uint8_t bg: 4;
             uint8_t obj: 1;
             uint8_t win0: 1;
             uint8_t win1: 1;
@@ -162,6 +171,32 @@ struct io {
 
     // REG_VCOUNT (Vertical Counter, Read only)
     uint16_t vcount;
+
+    // REG_BG{0,1,2,3}CNT
+    union {
+        struct {
+            uint16_t priority: 2;
+            uint16_t character_base: 2;
+            uint16_t : 2;
+            uint16_t mosaic: 1;
+            uint16_t palette_type: 1;  // 0: 16/16, 1: 256/1
+            uint16_t screen_base: 5;
+            uint16_t overflow: 1;
+            uint16_t screen_size: 2;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bgcnt[4];
+
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bg_hoffset[4];
+
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bg_voffset[4];
 
     // DMA Channels
     struct dma_channel dma[4];

@@ -44,7 +44,7 @@ mem_read8(
         case PALRAM_REGION:
             return (memory->palram[addr & PALRAM_MASK]);
         case VRAM_REGION:
-            return (memory->vram[addr & VRAM_MASK]);
+            return (memory->vram[addr & ((addr & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2)]);
         case OAM_REGION:
             return (memory->oam[addr & OAM_MASK]);
         case CART_0_REGION_1:
@@ -108,12 +108,6 @@ mem_read32(
         (mem_read8(gba, addr + 3) << 24)
     ;
 
-    if (addr == 0x4000004) {
-        printf("Returning %#08x\n",
-            ((value >> rotate) | (value << (32 - rotate)))
-        );
-    }
-
     /* Unaligned 32-bits loads are rotated */
     return ((value >> rotate) | (value << (32 - rotate)));
 }
@@ -147,7 +141,7 @@ mem_write8(
             memory->palram[addr & PALRAM_MASK] = val;
             break;
         case VRAM_REGION:
-            memory->vram[addr & VRAM_MASK] = val;
+            memory->vram[addr & ((addr & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2)] = val;
             break;
         case OAM_REGION:
             memory->oam[addr & OAM_MASK] = val;
