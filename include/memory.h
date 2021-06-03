@@ -65,7 +65,8 @@ enum memory_regions {
     VRAM_START          = 0x06000000,
     VRAM_END            = 0x06017FFF,
     VRAM_REGION         = VRAM_START >> 24,
-    VRAM_MASK           = VRAM_END - VRAM_START,
+    VRAM_MASK_1         = 0x00017FFF,
+    VRAM_MASK_2         = 0x0001FFFF,
 
     OAM_START           = 0x07000000,
     OAM_END             = 0x070003FF,

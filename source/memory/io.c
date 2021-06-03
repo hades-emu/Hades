@@ -11,6 +11,10 @@
 #include "memory.h"
 #include "gba.h"
 
+/*
+** Initialize the IO structure, giving the different IO registers their
+** default value.
+*/
 void
 io_init(
     struct io *io
@@ -31,6 +35,18 @@ mem_io_reg_name(
         case IO_REG_GREENSWP:       return ("REG_GREENSWP");
         case IO_REG_DISPSTAT:       return ("REG_DISPSTAT");
         case IO_REG_VCOUNT:         return ("REG_VCOUNT");
+        case IO_REG_BG0CNT:         return ("REG_BG0CNT");
+        case IO_REG_BG1CNT:         return ("REG_BG1CNT");
+        case IO_REG_BG2CNT:         return ("REG_BG2CNT");
+        case IO_REG_BG3CNT:         return ("REG_BG3CNT");
+        case IO_REG_BG0VOFS:        return ("REG_BG0VOFS");
+        case IO_REG_BG1VOFS:        return ("REG_BG1VOFS");
+        case IO_REG_BG2VOFS:        return ("REG_BG2VOFS");
+        case IO_REG_BG3VOFS:        return ("REG_BG3VOFS");
+        case IO_REG_BG0HOFS:        return ("REG_BG0HOFS");
+        case IO_REG_BG1HOFS:        return ("REG_BG1HOFS");
+        case IO_REG_BG2HOFS:        return ("REG_BG2HOFS");
+        case IO_REG_BG3HOFS:        return ("REG_BG3HOFS");
         case IO_REG_SOUNDBIAS:      return ("REG_SOUNDBIAS");
         case IO_REG_DMA0SAD_LO:     return ("REG_DMA0SAD_LO");
         case IO_REG_DMA0SAD_HI:     return ("REG_DMA0SAD_HI");
@@ -85,6 +101,30 @@ mem_io_read8(
         case IO_REG_DISPSTAT:               return (io->dispstat.bytes[0]);
         case IO_REG_DISPSTAT + 1:           return (io->dispstat.bytes[1]);
         case IO_REG_VCOUNT:                 return (gba->video.v);
+        case IO_REG_BG0CNT:                 return (io->bgcnt[0].bytes[0]);
+        case IO_REG_BG0CNT + 1:             return (io->bgcnt[0].bytes[1]);
+        case IO_REG_BG1CNT:                 return (io->bgcnt[1].bytes[0]);
+        case IO_REG_BG1CNT + 1:             return (io->bgcnt[1].bytes[1]);
+        case IO_REG_BG2CNT:                 return (io->bgcnt[2].bytes[0]);
+        case IO_REG_BG2CNT + 1:             return (io->bgcnt[2].bytes[1]);
+        case IO_REG_BG3CNT:                 return (io->bgcnt[3].bytes[0]);
+        case IO_REG_BG3CNT + 1:             return (io->bgcnt[3].bytes[1]);
+        case IO_REG_BG0HOFS:                return (io->bg_hoffset[0].bytes[0]);
+        case IO_REG_BG0HOFS + 1:            return (io->bg_hoffset[0].bytes[1]);
+        case IO_REG_BG0VOFS:                return (io->bg_voffset[0].bytes[0]);
+        case IO_REG_BG0VOFS + 1:            return (io->bg_voffset[0].bytes[1]);
+        case IO_REG_BG1HOFS:                return (io->bg_hoffset[1].bytes[0]);
+        case IO_REG_BG1HOFS + 1:            return (io->bg_hoffset[1].bytes[1]);
+        case IO_REG_BG1VOFS:                return (io->bg_voffset[1].bytes[0]);
+        case IO_REG_BG1VOFS + 1:            return (io->bg_voffset[1].bytes[1]);
+        case IO_REG_BG2HOFS:                return (io->bg_hoffset[2].bytes[0]);
+        case IO_REG_BG2HOFS + 1:            return (io->bg_hoffset[2].bytes[1]);
+        case IO_REG_BG2VOFS:                return (io->bg_voffset[2].bytes[0]);
+        case IO_REG_BG2VOFS + 1:            return (io->bg_voffset[2].bytes[1]);
+        case IO_REG_BG3HOFS:                return (io->bg_hoffset[3].bytes[0]);
+        case IO_REG_BG3HOFS + 1:            return (io->bg_hoffset[3].bytes[1]);
+        case IO_REG_BG3VOFS:                return (io->bg_voffset[3].bytes[0]);
+        case IO_REG_BG3VOFS + 1:            return (io->bg_voffset[3].bytes[1]);
 
         /* Sound */
         case IO_REG_SOUNDBIAS:              return (0x0);
@@ -134,6 +174,14 @@ mem_io_write8(
         case IO_REG_DISPCNT + 1:            io->dispcnt.bytes[1] = val; break;
         case IO_REG_DISPSTAT:               io->dispstat.bytes[0] = val; break;
         case IO_REG_DISPSTAT + 1:           io->dispstat.bytes[1] = val; break;
+        case IO_REG_BG0CNT:                 io->bgcnt[0].bytes[0] = val; break;
+        case IO_REG_BG0CNT + 1:             io->bgcnt[0].bytes[1] = val; break;
+        case IO_REG_BG1CNT:                 io->bgcnt[1].bytes[0] = val; break;
+        case IO_REG_BG1CNT + 1:             io->bgcnt[1].bytes[1] = val; break;
+        case IO_REG_BG2CNT:                 io->bgcnt[2].bytes[0] = val; break;
+        case IO_REG_BG2CNT + 1:             io->bgcnt[2].bytes[1] = val; break;
+        case IO_REG_BG3CNT:                 io->bgcnt[3].bytes[0] = val; break;
+        case IO_REG_BG3CNT + 1:             io->bgcnt[3].bytes[1] = val; break;
 
         /* DMA - Channel 0 */
         case IO_REG_DMA0SAD:                io->dma[0].src.bytes[0] = val; break;
