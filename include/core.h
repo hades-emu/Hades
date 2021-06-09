@@ -22,6 +22,35 @@
 
 struct gba;
 
+struct psr {
+    union {
+        struct {
+#ifdef __BIG_ENDIAN__
+            uint32_t negative: 1;
+            uint32_t zero: 1;
+            uint32_t carry: 1;
+            uint32_t overflow: 1;
+            uint32_t : 20;
+            uint32_t irq_disable: 1;
+            uint32_t fiq_disable: 1;
+            uint32_t state: 1;
+            uint32_t mode: 5;
+#else
+            uint32_t mode: 5;
+            uint32_t thumb: 1;
+            uint32_t fiq_disable: 1;
+            uint32_t irq_disable: 1;
+            uint32_t : 20;
+            uint32_t overflow: 1;
+            uint32_t carry: 1;
+            uint32_t zero: 1;
+            uint32_t negative: 1;
+#endif
+        };
+        uint32_t raw;
+    };
+} __packed;
+
 struct core {
     union {
         struct {
@@ -54,7 +83,7 @@ struct core {
             uint32_t r12_sys;
             uint32_t r13_sys;
             uint32_t r14_sys;
-            uint32_t spsr_sys;
+            struct psr spsr_sys;
 
             uint32_t r8_fiq;
             uint32_t r9_fiq;
@@ -63,55 +92,30 @@ struct core {
             uint32_t r12_fiq;
             uint32_t r13_fiq;
             uint32_t r14_fiq;
-            uint32_t spsr_fiq;
+            struct psr spsr_fiq;
 
             uint32_t r13_svc;
             uint32_t r14_svc;
-            uint32_t spsr_svc;
+            struct psr spsr_svc;
 
             uint32_t r13_abt;
             uint32_t r14_abt;
-            uint32_t spsr_abt;
+            struct psr spsr_abt;
 
             uint32_t r13_irq;
             uint32_t r14_irq;
-            uint32_t spsr_irq;
+            struct psr spsr_irq;
 
             uint32_t r13_und;
             uint32_t r14_und;
-            uint32_t spsr_und;
+            struct psr spsr_und;
         } __packed;
         uint32_t bank_registers[28];
     };
 
     uint32_t prefetch;              // The next instruction to be executed
 
-    union {
-        struct {
-#ifdef __BIG_ENDIAN__
-            uint32_t negative: 1;
-            uint32_t zero: 1;
-            uint32_t carry: 1;
-            uint32_t overflow: 1;
-            uint32_t : 20;
-            uint32_t irq_disable: 1;
-            uint32_t fiq_disable: 1;
-            uint32_t state: 1;
-            uint32_t mode: 5;
-#else
-            uint32_t mode: 5;
-            uint32_t thumb: 1;
-            uint32_t fiq_disable: 1;
-            uint32_t irq_disable: 1;
-            uint32_t : 20;
-            uint32_t overflow: 1;
-            uint32_t carry: 1;
-            uint32_t zero: 1;
-            uint32_t negative: 1;
-#endif
-        };
-        uint32_t raw;
-    } cpsr __packed;
+    struct psr cpsr;
 };
 
 /*
@@ -136,16 +140,16 @@ enum arm_conds {
 };
 
 /*
-** An enumeration of all the modes the processor can be in.
+** An enumeration of all the different modes.
 */
 enum arm_modes {
-    MODE_USER           = 0b10000,
+    MODE_USR            = 0b10000,
     MODE_FIQ            = 0b10001,
     MODE_IRQ            = 0b10010,
-    MODE_SUPERVISOR     = 0b10011,
-    MODE_ABORT          = 0b10111,
-    MODE_UNDEFINED      = 0b11011,
-    MODE_SYSTEM         = 0b11111,
+    MODE_SVC            = 0b10011,
+    MODE_ABT            = 0b10111,
+    MODE_UND            = 0b11011,
+    MODE_SYS            = 0b11111,
 };
 
 /*
@@ -186,13 +190,13 @@ enum arm_irq {
 ** The user-friendly name of all modes.
 */
 static char const * const arm_modes_name[] = {
-    [MODE_USER]         = "usr",
+    [MODE_USR]          = "usr",
     [MODE_FIQ]          = "fiq",
     [MODE_IRQ]          = "irq",
-    [MODE_SUPERVISOR]   = "svc",
-    [MODE_ABORT]        = "abt",
-    [MODE_UNDEFINED]    = "und",
-    [MODE_SYSTEM]       = "sys"
+    [MODE_SVC]          = "svc",
+    [MODE_ABT]          = "abt",
+    [MODE_UND]          = "und",
+    [MODE_SYS]          = "sys"
 };
 
 /* core/core.c */
@@ -200,6 +204,8 @@ void core_init(struct gba *gba);
 void core_run(struct gba *gba);
 void core_step(struct gba *gba);
 void core_reload_pipeline(struct gba *gba);
+struct psr core_spsr_get(struct core const *core, enum arm_modes mode);
+void core_spsr_set(struct core *core, enum arm_modes mode, struct psr psr);
 void core_switch_mode(struct core *core, enum arm_modes mode);
 uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool update_carry);
 bool core_compute_cond(struct core *core, uint32_t cond);

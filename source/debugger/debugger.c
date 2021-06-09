@@ -15,6 +15,8 @@
 #include "debugger.h"
 #include "gba.h"
 
+atomic_bool g_breakpoint_hit = false;
+
 struct dbg_command g_commands[] = {
     [CMD_HELP] = {
         .name = "help",
@@ -96,12 +98,20 @@ struct dbg_command g_commands[] = {
         .nargs = 4,
         .func = debugger_cmd_print,
     },
+    [CMD_BREAK] = {
+        .name = "break",
+        .alias = "b",
+        .usage = "break <ADDR>",
+        .desc = "Add a breakpoint at address ADDR.",
+        .nargs = 2,
+        .func = debugger_cmd_break,
+    },
     [CMD_MAIN] = {
         .name = "main",
         .alias = "m",
         .usage = "main",
         .desc = "Continue until pc isn't 0x08000000 (Temporary)",
-        .nargs = 0,
+        .nargs = 1,
         .func = debugger_cmd_main,
     },
     {
@@ -165,6 +175,9 @@ debugger_repl(
             free(input);
             continue;
         }
+
+        /* Reset the g_breakpoint_hit global variable */
+        g_breakpoint_hit = false;
 
         add_history(input);
         append_history(1, ".hades-dbg.history");

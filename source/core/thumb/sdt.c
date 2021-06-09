@@ -23,6 +23,13 @@ core_thumb_push(
 
     core = &gba->core;
 
+    /* Edge case: if rlist is empty, sp is decreased by 0x40 and r15 is stored instead */
+    if (!bitfield_get_range(op, 0, 8)) {
+        core->sp -= 0x40;
+        mem_write32(gba, core->sp, core->pc + 2);
+        return ;
+    }
+
     /* Push LR */
     if (bitfield_get(op, 8)) {
         core->sp -= 4;
@@ -52,6 +59,14 @@ core_thumb_pop(
 
     core = &gba->core;
 
+    /* Edge case: if rlist is empty, r15 is loaded instead and sp is increased by 0x40 */
+    if (!bitfield_get_range(op, 0, 8)) {
+        core->pc = mem_read32(gba, core->sp);
+        core_reload_pipeline(gba);
+        core->sp += 0x40;
+        return ;
+    }
+
     i = 0;
     while (i < 8) {
         if (bitfield_get(op, i)) {
@@ -78,6 +93,7 @@ core_thumb_stmia(
     struct gba *gba,
     uint16_t op
 ) {
+    bool first;
     struct core *core;
     uint32_t count;
     uint32_t addr;
@@ -88,6 +104,13 @@ core_thumb_stmia(
     core = &gba->core;
     rb = bitfield_get_range(op, 8, 11);
 
+    /* Edge case: if rlist is empty, r15 is stored instead and rb is increased by 0x40 */
+    if (!bitfield_get_range(op, 0, 8)) {
+        mem_write32(gba, core->registers[rb], core->pc + 2);
+        core->registers[rb] += 0x40;
+        return ;
+    }
+
     i = 0;
     while (i < 8) {
         if (bitfield_get(op, i)) {
@@ -96,14 +119,25 @@ core_thumb_stmia(
         ++i;
     }
 
+    first = true;
     addr = core->registers[rb];
-    core->registers[rb] += count;
+
+    /*
+    ** Edge case if Rb is included in the rlist:
+    ** We must store the OLD base if Rb is the FIRST entry in Rlist
+    ** and otherwise store the NEW base.
+    */
 
     i = 0;
     while (i < 8) {
         if (bitfield_get(op, i)) {
             mem_write32(gba, addr, core->registers[i]);
             addr += 4;
+
+            if (first) {
+                core->registers[rb] += count;
+                first = false;
+            }
         }
         ++i;
     }
@@ -126,6 +160,14 @@ core_thumb_ldmia(
     count = 0;
     core = &gba->core;
     rb = bitfield_get_range(op, 8, 11);
+
+    /* Edge case: if rlist is empty, r15 is loaded instead and rb is increased by 0x40 */
+    if (!bitfield_get_range(op, 0, 8)) {
+        core->pc = mem_read32(gba, core->registers[rb]);
+        core_reload_pipeline(gba);
+        core->registers[rb] += 0x40;
+        return ;
+    }
 
     i = 0;
     while (i < 8) {

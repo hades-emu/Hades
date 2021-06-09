@@ -49,17 +49,7 @@ core_init(
     core->r13_irq = 0x03007FA0;
     core->r13_svc = 0x03007FE0;
     core->sp = 0x03007F00;
-    core->cpsr.mode = MODE_SYSTEM;
-
-    /*
-    core->r0 = 0x08000000;
-    core->r1 = 0x000000EA;
-
-    core->sp = 0x03007F00;      // Default SP for system mode
-    core->pc = 0x8000000;       // Entry point of the game
-    core->cpsr.raw = 0x6000001F;
-    core->cpsr.mode = MODE_SYSTEM;
-    */
+    core->cpsr.mode = MODE_SYS;
 
     core_reload_pipeline(gba);
 }
@@ -111,9 +101,7 @@ core_step(
                     unimplemented(HS_CORE, "thumb instruction \"%s\" isn't implemented.", thumb_insns[i].name);
                 }
                 thumb_insns[i].op(gba, op);
-                video_step(gba);
-                video_step(gba);
-                return ;
+                goto end;
             }
             ++i;
         }
@@ -137,8 +125,7 @@ core_step(
                 ++count,
                 op
             );
-
-            return ;
+            goto end;
         }
 
         i = 0;
@@ -156,15 +143,18 @@ core_step(
                     unimplemented(HS_CORE, "ARM instruction \"%s\" isn't implemented.", arm_insns[i].name);
                 }
                 arm_insns[i].op(gba, op);
-                video_step(gba);
-                video_step(gba);
-                return ;
+                goto end;
             }
             ++i;
         }
 
         panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x, count=%u).", op, core->pc, count);
     }
+
+end:
+    video_step(gba);
+    video_step(gba);
+    debugger_eval_breakpoints(gba);
 }
 
 /*
@@ -189,6 +179,75 @@ core_reload_pipeline(
     }
 }
 
+/*
+** Get the SPSR of the given mode.
+*/
+struct psr
+core_spsr_get(
+    struct core const *core,
+    enum arm_modes mode
+) {
+    switch (mode) {
+        case MODE_USR:
+        case MODE_SYS:
+            return (core->cpsr);
+        case MODE_FIQ:
+            return (core->spsr_fiq);
+        case MODE_IRQ:
+            return (core->spsr_irq);
+        case MODE_SVC:
+            return (core->spsr_svc);
+        case MODE_ABT:
+            return (core->spsr_abt);
+        case MODE_UND:
+            return (core->spsr_und);
+        default:
+            panic(HS_CORE, "core_spsr_get(): unsupported mode (%u)", mode);
+            break;
+    }
+}
+
+/*
+** Set the SPSR of the given mode to the given value.
+*/
+void
+core_spsr_set(
+    struct core *core,
+    enum arm_modes mode,
+    struct psr psr
+) {
+    switch (mode) {
+        case MODE_FIQ:
+            core->spsr_fiq.raw = psr.raw;
+            break;
+        case MODE_IRQ:
+            core->spsr_irq.raw = psr.raw;
+            break;
+        case MODE_SVC:
+            core->spsr_svc.raw = psr.raw;
+            break;
+        case MODE_ABT:
+            core->spsr_abt.raw = psr.raw;
+            break;
+        case MODE_UND:
+            core->spsr_und.raw = psr.raw;
+            break;
+        default:
+            panic(HS_CORE, "core_spsr_set(): unsupported mode (%u)", mode);
+            break;
+    }
+}
+
+/*
+** Switch from the current mode to the given one.
+**
+** In practice, this function saves the content of the registers
+** to the current mode's bank and replace their value with the
+** ones from the new mode's bank. It also sets the CPSR's mode bits\
+** to the given mode.
+**
+** No SPSRs are updated.
+*/
 void
 core_switch_mode(
     struct core *core,
@@ -205,8 +264,8 @@ core_switch_mode(
 
         /* Save current registers to their bank */
         switch (core->cpsr.mode) {
-            case MODE_SYSTEM:
-            case MODE_USER:
+            case MODE_SYS:
+            case MODE_USR:
                 core->r8_sys = core->r8;
                 core->r9_sys = core->r9;
                 core->r10_sys = core->r10;
@@ -214,7 +273,6 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_sys = core->sp;
                 core->r14_sys = core->lr;
-                //core->spsr_sys = core->cpsr.raw;
                 break;
             case MODE_FIQ:
                 core->r8_fiq = core->r8;
@@ -224,7 +282,6 @@ core_switch_mode(
                 core->r12_fiq = core->ip;
                 core->r13_fiq = core->sp;
                 core->r14_fiq = core->lr;
-                //core->spsr_fiq = core->cpsr.raw;
                 break;
             case MODE_IRQ:
                 core->r8_sys = core->r8;
@@ -234,9 +291,8 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_irq = core->sp;
                 core->r14_irq = core->lr;
-                //core->spsr_irq = core->cpsr.raw;
                 break;
-            case MODE_SUPERVISOR:
+            case MODE_SVC:
                 core->r8_sys = core->r8;
                 core->r9_sys = core->r9;
                 core->r10_sys = core->r10;
@@ -244,9 +300,8 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_svc = core->sp;
                 core->r14_svc = core->lr;
-                //core->spsr_svc = core->cpsr.raw;
                 break;
-            case MODE_ABORT:
+            case MODE_ABT:
                 core->r8_sys = core->r8;
                 core->r9_sys = core->r9;
                 core->r10_sys = core->r10;
@@ -254,9 +309,8 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_abt = core->sp;
                 core->r14_abt = core->lr;
-                //core->spsr_abt = core->cpsr.raw;
                 break;
-            case MODE_UNDEFINED:
+            case MODE_UND:
                 core->r8_sys = core->r8;
                 core->r9_sys = core->r9;
                 core->r10_sys = core->r10;
@@ -264,17 +318,18 @@ core_switch_mode(
                 core->r12_sys = core->ip;
                 core->r13_und = core->sp;
                 core->r14_und = core->lr;
-                //core->spsr_und = core->cpsr.raw;
                 break;
             default:
-                panic(HS_CORE, "core_switch_mode: unsupported mode (%u)", mode);
+                panic(HS_CORE, "core_switch_mode(): unsupported mode (%u)", mode);
                 break;
         }
 
+        core->cpsr.mode = mode;
+
         /* Restore the registers based on the bank's content */
         switch (mode) {
-            case MODE_SYSTEM:
-            case MODE_USER:
+            case MODE_SYS:
+            case MODE_USR:
                 core->r8 = core->r8_sys;
                 core->r9 = core->r9_sys;
                 core->r10 = core->r10_sys;
@@ -282,8 +337,6 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_sys;
                 core->lr = core->r14_sys;
-                //core->cpsr.raw = core->spsr_sys;
-                core->spsr_sys = core->cpsr.raw;
                 break;
             case MODE_FIQ:
                 core->r8 = core->r8_fiq;
@@ -293,8 +346,6 @@ core_switch_mode(
                 core->ip = core->r12_fiq;
                 core->sp = core->r13_fiq;
                 core->lr = core->r14_fiq;
-                //core->cpsr.raw = core->spsr_fiq;
-                core->spsr_fiq = core->cpsr.raw;
                 break;
             case MODE_IRQ:
                 core->r8 = core->r8_sys;
@@ -304,10 +355,8 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_irq;
                 core->lr = core->r14_irq;
-                //core->cpsr.raw = core->spsr_irq;
-                core->spsr_irq = core->cpsr.raw;
                 break;
-            case MODE_SUPERVISOR:
+            case MODE_SVC:
                 core->r8 = core->r8_sys;
                 core->r9 = core->r9_sys;
                 core->r10 = core->r10_sys;
@@ -315,10 +364,8 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_svc;
                 core->lr = core->r14_svc;
-                //core->cpsr.raw = core->spsr_svc;
-                core->spsr_svc = core->cpsr.raw;
                 break;
-            case MODE_ABORT:
+            case MODE_ABT:
                 core->r8 = core->r8_sys;
                 core->r9 = core->r9_sys;
                 core->r10 = core->r10_sys;
@@ -326,10 +373,8 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_abt;
                 core->lr = core->r14_abt;
-                //core->cpsr.raw = core->spsr_abt;
-                core->spsr_abt = core->cpsr.raw;
                 break;
-            case MODE_UNDEFINED:
+            case MODE_UND:
                 core->r8 = core->r8_sys;
                 core->r9 = core->r9_sys;
                 core->r10 = core->r10_sys;
@@ -337,14 +382,11 @@ core_switch_mode(
                 core->ip = core->r12_sys;
                 core->sp = core->r13_und;
                 core->lr = core->r14_und;
-                //core->cpsr.raw = core->spsr_und;
-                core->spsr_und = core->cpsr.raw;
                 break;
             default:
-                panic(HS_CORE, "core_switch_mode: unsupported mode (%u)", mode);
+                panic(HS_CORE, "core_switch_mode(): unsupported mode (%u)", mode);
                 break;
         }
-        core->cpsr.mode = mode;
     }
 }
 
@@ -358,16 +400,19 @@ core_interrupt(
     enum arm_modes mode
 ) {
     struct core *core;
+    struct psr cpsr;
 
     core = &gba->core;
+    cpsr = core->cpsr;
 
     core_switch_mode(core, mode);
+    core_spsr_set(core, mode, cpsr);
 
     core->lr = core->pc - (core->cpsr.thumb ? 2 : 4);
     core->pc = vector;
     core->cpsr.irq_disable = true;
     core->cpsr.fiq_disable |= (vector == VEC_FIQ || VEC_RESET);
-    core->cpsr.thumb = 0;
+    core->cpsr.thumb = false;
 
     core_reload_pipeline(gba);
 }

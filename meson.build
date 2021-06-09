@@ -35,6 +35,7 @@ executable(
     'source/core/thumb/sdt.c',
     'source/core/thumb/swi.c',
     'source/core/core.c',
+    'source/debugger/cmd/break.c',
     'source/debugger/cmd/context.c',
     'source/debugger/cmd/continue.c',
     'source/debugger/cmd/disas.c',
