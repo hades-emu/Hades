@@ -79,8 +79,8 @@ static struct hs_arm_encoded_insn arm_encoded_insns[] = {
 
     // PSR Transfers
     { "mrs",        "xxxx_00010_p_001111_dddd_000000000000",         core_arm_mrs},
-    { "msrf_imm",   "xxxx_00110_p_10_xxxx_1111_rrrr_iiiiiiii",       core_arm_msrf},
-    { "msrf_reg",   "xxxx_00010_p_10_xxxx_1111_00000000_mmmm",       core_arm_msrf},
+    { "msr_imm",    "xxxx_00110_p_10_xxxx_1111_rrrr_iiiiiiii",       core_arm_msr},
+    { "msr_reg",    "xxxx_00010_p_10_xxxx_1111_00000000_mmmm",       core_arm_msr},
 
     // Multiply and Multiply-Accumulate (MUL, MLA)
     { "mul",        "xxxx_000000_0_s_ddddnnnnssss_1001_mmmm",         core_arm_mul},
