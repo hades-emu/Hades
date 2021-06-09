@@ -17,7 +17,7 @@ debugger_cmd_continue(
     size_t argc __unused,
     char const * const *argv __unused
 ) {
-    while (!g_stop) {
+    while (!g_stop && !g_breakpoint_hit) {
         core_step(gba);
     }
 }

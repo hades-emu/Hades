@@ -42,8 +42,7 @@ core_arm_alu(
         uint32_t rot;
 
         imm = op & 0xFF;
-        rot = (op >> 8) & 0xF;
-        rot *= 2;
+        rot = ((op >> 8) & 0xF) * 2;
         op2 = (imm >> rot) | (imm << (32 - rot));
     } else { // Register
         uint32_t rm;
@@ -190,5 +189,17 @@ core_arm_alu(
             break;
         default:
             break;
+    }
+
+    /*
+    ** When Rd is R15 and the S flag is set the result of the operation is placed
+    ** in R15 and the SPSR corresponding to the current mode is moved to the CPSR.
+    */
+    if (rd == 15 && cond) {
+        struct psr new_cpsr;
+
+        new_cpsr = core_spsr_get(core, core->cpsr.mode);
+        core_switch_mode(core, new_cpsr.mode);
+        core->cpsr = new_cpsr;
     }
 }

@@ -21,6 +21,9 @@
 struct debugger {
     csh handle_arm;         // Capstone handle for ARM mode
     csh handle_thumb;       // Capstone handle for Thumb mode
+
+    uint32_t *breakpoints;
+    size_t breakpoints_len;
 };
 
 struct gba;
@@ -125,6 +128,7 @@ enum dbg_commands {
     CMD_SET,
     CMD_CONTEXT,
     CMD_PRINT,
+    CMD_BREAK,
     CMD_MAIN,
 };
 
@@ -132,6 +136,10 @@ enum dbg_commands {
 ** A global variable of all the commands supported by the debugger.
 */
 extern struct dbg_command g_commands[];
+
+/* debugger/cmd/break.c */
+void debugger_cmd_break(struct gba *, size_t, char const * const *);
+void debugger_eval_breakpoints(struct gba *gba);
 
 /* debugger/debugger.c */
 void debugger_init(struct gba *gba);

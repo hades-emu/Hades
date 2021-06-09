@@ -25,29 +25,7 @@ core_arm_mrs(
     rd = bitfield_get_range(op, 12, 16);
 
     if (bitfield_get(op, 22)) { // Source PSR = SPSR_<current_mode>
-        switch (core->cpsr.mode) {
-            case MODE_USER:
-                panic(HS_CORE, "mrs: a SPSR for user mode was requested but it doesn't exist.");
-                break;
-            case MODE_FIQ:
-                core->registers[rd] = core->spsr_fiq;
-                break;
-            case MODE_IRQ:
-                core->registers[rd] = core->spsr_irq;
-                break;
-            case MODE_SUPERVISOR:
-                core->registers[rd] = core->spsr_svc;
-                break;
-            case MODE_ABORT:
-                core->registers[rd] = core->spsr_abt;
-                break;
-            case MODE_UNDEFINED:
-                core->registers[rd] = core->spsr_und;
-                break;
-            case MODE_SYSTEM:
-                core->registers[rd] = core->spsr_sys;
-                break;
-        }
+        core->registers[rd] = core_spsr_get(core, core->cpsr.mode).raw;
     } else { // Source PSR = CPSR
         core->registers[rd] = gba->core.cpsr.raw;
     }
@@ -68,37 +46,16 @@ core_arm_msr(
     rm = bitfield_get_range(op, 0, 4);
 
     if (bitfield_get(op, 22)) { // Dest PSR = SPSR_<current_mode>
-        switch (core->cpsr.mode) {
-            case MODE_USER:
-                panic(HS_CORE, "mrs: a SPSR for user mode was requested but it doesn't exist.");
-                break;
-            case MODE_FIQ:
-                core->spsr_fiq = core->registers[rm];
-                break;
-            case MODE_IRQ:
-                core->spsr_irq = core->registers[rm];
-                break;
-            case MODE_SUPERVISOR:
-                core->spsr_svc = core->registers[rm];
-                break;
-            case MODE_ABORT:
-                core->spsr_abt = core->registers[rm];
-                break;
-            case MODE_UNDEFINED:
-                core->spsr_und = core->registers[rm];
-                break;
-            case MODE_SYSTEM:
-                core->spsr_sys = core->registers[rm];
-                break;
-        }
+        struct psr new_psr;
+
+        new_psr.raw = core->registers[rm];
+        core_spsr_set(core, core->cpsr.mode, new_psr);
     } else { // Dest PSR = CPSR
-        uint32_t new_cpsr;
+        struct psr new_cpsr;
 
-        new_cpsr = core->registers[rm];
-
-        core_switch_mode(core, new_cpsr & 0x1F);
-
-        core->cpsr.raw = new_cpsr;
+        new_cpsr.raw = core->registers[rm];
+        core_switch_mode(core, new_cpsr.mode);
+        core->cpsr = new_cpsr;
     }
 }
 
@@ -107,8 +64,53 @@ core_arm_msr(
 */
 void
 core_arm_msrf(
-    struct core *core,
+    struct gba *gba,
     uint32_t op
 ) {
-    unimplemented(HS_CORE, "The MSR instruction with flag bits is not implemented yet.");
+    struct core *core;
+    uint32_t val;
+    uint32_t mask;
+
+    core = &gba->core;
+    if (bitfield_get(op, 25)) { // Immediate
+        uint32_t shift;
+        uint32_t imm;
+
+        imm = bitfield_get_range(op, 0, 8);
+        shift = bitfield_get_range(op, 8, 12) * 2;
+
+        val = (imm >> shift) | (imm << (32 - shift));
+    } else { // Reg
+        val = core->registers[bitfield_get_range(op, 0, 4)];
+    }
+
+    /* Build the mask */
+
+    mask = 0;
+    mask |= (0x000000FF) * bitfield_get(op, 16);
+    mask |= (0x0000FF00) * bitfield_get(op, 17);
+    mask |= (0x00FF0000) * bitfield_get(op, 18);
+    mask |= (0xFF000000) * bitfield_get(op, 19);
+
+    if (bitfield_get(op, 22)) { // Set SPSR_<mode>
+        struct psr spsr;
+
+        spsr = core_spsr_get(core, core->cpsr.mode);
+        spsr.raw = (spsr.raw & ~mask) | (val & mask);
+        core_spsr_set(core, core->cpsr.mode, spsr);
+    } else { // Set CPSR
+        struct psr new_cpsr;
+
+        // In user mode, only the condition flags can be set, not the control flags.
+        if  (core->cpsr.mode == MODE_USR) {
+            mask &= 0xFF000000;
+        }
+
+        new_cpsr = core->cpsr;
+        new_cpsr.raw = (new_cpsr.raw & ~mask) | (val & mask);
+        if (new_cpsr.mode != core->cpsr.mode) {
+            core_switch_mode(core, new_cpsr.mode);
+        }
+        core->cpsr = new_cpsr;
+    }
 }
