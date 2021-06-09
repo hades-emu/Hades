@@ -32,38 +32,10 @@ core_arm_mrs(
 }
 
 /*
-** Execute the MSR instruction (general-purpose register to PSR)
-*/
-void
-core_arm_msr(
-    struct gba *gba,
-    uint32_t op
-) {
-    struct core *core;
-    uint32_t rm;
-
-    core = &gba->core;
-    rm = bitfield_get_range(op, 0, 4);
-
-    if (bitfield_get(op, 22)) { // Dest PSR = SPSR_<current_mode>
-        struct psr new_psr;
-
-        new_psr.raw = core->registers[rm];
-        core_spsr_set(core, core->cpsr.mode, new_psr);
-    } else { // Dest PSR = CPSR
-        struct psr new_cpsr;
-
-        new_cpsr.raw = core->registers[rm];
-        core_switch_mode(core, new_cpsr.mode);
-        core->cpsr = new_cpsr;
-    }
-}
-
-/*
 ** Execute the MSRF instruction (transfer register contents or immediate value to PSR flag bits only)
 */
 void
-core_arm_msrf(
+core_arm_msr(
     struct gba *gba,
     uint32_t op
 ) {

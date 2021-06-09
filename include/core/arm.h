@@ -47,7 +47,6 @@ void core_arm_mul(struct gba *gba, uint32_t op);
 /* core/arm/psr.c */
 void core_arm_mrs(struct gba *gba, uint32_t op);
 void core_arm_msr(struct gba *gba, uint32_t op);
-void core_arm_msrf(struct gba *gba, uint32_t op);
 
 /* core/arm/sdt.c */
 void core_arm_sdt(struct gba *gba, uint32_t op);
