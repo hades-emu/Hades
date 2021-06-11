@@ -189,7 +189,12 @@ core_arm_hsdt(
             core->registers[rd] = (int32_t)(int8_t)mem_read8(gba, effective_addr);
             break;
         case 0b111: // Signed Halfword Load
-            core->registers[rd] = (int32_t)(int16_t)(uint16_t)mem_read16(gba, effective_addr);
+            // (Unligned addresses are a bitch)
+            if (bitfield_get(addr, 0)) {
+                core->registers[rd] = (int32_t)(int8_t)(uint8_t)mem_read16(gba, effective_addr);
+            } else {
+                core->registers[rd] = (int32_t)(int16_t)(uint16_t)mem_read16(gba, effective_addr);
+            }
            break;
         case 0b100:
         case 0b110:
