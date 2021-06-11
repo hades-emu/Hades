@@ -87,31 +87,37 @@ core_arm_sdt(
     ** Bit 20 indicates if it is a load or a store, bit 22 if it is
     ** a byte or word transfer
     */
-    switch ((bitfield_get(op, 20) << 1) | bitfield_get(op, 22)) {
-        case 0b00: // Store word
-            mem_write32(gba, effective_addr, core->registers[rd] + (rd == 15) * 4); // TODO FIXME Idle
-            break;
-        case 0b01: // Store byte
+    if (bitfield_get(op, 20)) { // Load
+        uint32_t val;
+
+        if (bitfield_get(op, 22)) { // Load Byte
+            val = mem_read8(gba, effective_addr);
+        } else { // Load Word
+            val = mem_read32(gba, effective_addr);
+        }
+
+        if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
+            core->registers[rn] = addr;
+        }
+
+        core->registers[rd] = val;
+
+        // Reload the pipeline of rd is pc
+        if (rd == 15) {
+            core_reload_pipeline(gba);
+        }
+
+    } else { // Store
+
+        if (bitfield_get(op, 22)) { // Store Byte
             mem_write8(gba, effective_addr, core->registers[rd] + (rd == 15) * 4); // TODO FIXME Idle
-            break;
-        case 0b10: // Load word
-            core->registers[rd] = mem_read32(gba, effective_addr);
-            break;
-        case 0b11: // Load byte
-            core->registers[rd] = mem_read8(gba, effective_addr);
-            break;
-    }
+        } else { // Store word
+            mem_write32(gba, effective_addr, core->registers[rd] + (rd == 15) * 4); // TODO FIXME Idle
+        }
 
-    /*
-    ** If bit 24 or bit 21 is set (post-indexing modification or write-through),
-    ** we must update the base register with the calculated address.
-    */
-    if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
-        core->registers[rn] = addr;
-    }
-
-    if (bitfield_get(op, 20) && rd == 15) {
-        core_reload_pipeline(gba);
+        if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
+            core->registers[rn] = addr;
+        }
     }
 }
 
