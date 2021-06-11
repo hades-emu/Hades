@@ -38,12 +38,27 @@ core_arm_sdt(
     ** Otherwise, it is derived from a register shifted by a certain amount.
     */
     if (bitfield_get(op, 25)) {
+        uint32_t val;
         uint32_t rm;
         uint32_t shift;
 
         rm = op & 0xF;
         shift = bitfield_get_range(op, 4, 12);
-        offset = core_compute_shift(core, shift, core->registers[rm], false);
+        val = core->registers[rm];
+
+        /*
+        ** If R15 (the PC) is used as an operand in a data processing instruction the register is used directly.
+        ** The PC value will be the address of the instruction, plus 8 or 12 bytes due to instruction prefetching.
+        **   - If the shift amount is specified in the instruction, the PC will be 8 bytes ahead.
+        **   - If a register is used to specify the shift amount the PC will be 12 bytes ahead
+        */
+
+        if (bitfield_get(shift, 0)) {
+            val += (rm == 15) * 4;
+            base += (rn == 15) * 4;
+        }
+
+        offset = core_compute_shift(core, shift, val, false);
     } else {
         offset = bitfield_get_range(op, 0, 12);
     }
