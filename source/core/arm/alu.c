@@ -24,12 +24,14 @@ core_arm_alu(
     uint32_t op1;
     uint32_t op2;
     bool cond;
+    bool shift_carry;
 
     rd = (op >> 12) & 0xF;
     rn = (op >> 16) & 0xF;
     cond = bitfield_get(op, 20);
 
     core = &gba->core;
+    shift_carry = core->cpsr.carry;
     op1 = core->registers[rn];
     op2 = 0;
 
@@ -38,19 +40,42 @@ core_arm_alu(
     ** anoter register, possible shifted.
     */
     if (bitfield_get(op, 25)) { // Immediate
-        uint32_t imm;
+        bool carry_out;
         uint32_t rot;
 
-        imm = op & 0xFF;
-        rot = ((op >> 8) & 0xF) * 2;
-        op2 = (imm >> rot) | (imm << (32 - rot));
+        op2 = bitfield_get_range(op, 0, 8);
+        rot = bitfield_get_range(op, 8, 12) * 2;
+        if (rot > 0) {
+            carry_out = (op2 >> (rot - 1)) & 0b1;
+            op2 = (op2 >> rot) | (op2 << (32 - rot));
+
+            // Update the carry flag
+            if (cond && rd != 15) {
+                shift_carry = carry_out;
+            }
+        }
     } else { // Register
+        uint32_t val;
         uint32_t rm;
         uint32_t shift;
 
         rm = op & 0xF;
         shift = (op >> 4) & 0xFF;
-        op2 = core_compute_shift(core, shift, core->registers[rm], cond && rd != 15);
+        val = core->registers[rm];
+
+        /*
+        ** If R15 (the PC) is used as an operand in a data processing instruction the register is used directly.
+        ** The PC value will be the address of the instruction, plus 8 or 12 bytes due to instruction prefetching.
+        **   - If the shift amount is specified in the instruction, the PC will be 8 bytes ahead.
+        **   - If a register is used to specify the shift amount the PC will be 12 bytes ahead
+        */
+
+        if (bitfield_get(shift, 0)) {
+            val += (rm == 15) * 4;
+            op1 += (rn == 15) * 4;
+        }
+
+        op2 = core_compute_shift(core, shift, val, (cond && rd != 15 ? &shift_carry : NULL));
     }
 
     /*
@@ -62,6 +87,7 @@ core_arm_alu(
             if (cond && rd != 15) {
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+                core->cpsr.carry = shift_carry;
             }
             break;
         case 1: // EOR (op1 XOR op2)
@@ -69,6 +95,7 @@ core_arm_alu(
             if (cond && rd != 15) {
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+                core->cpsr.carry = shift_carry;
             }
             break;
         case 2: // SUB (op1 - op2)
@@ -76,8 +103,8 @@ core_arm_alu(
             if (cond && rd != 15) {
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
-                core->cpsr.carry = usub32(op1, op2);
-                core->cpsr.overflow = isub32(op1, op2);
+                core->cpsr.carry = usub32(op1, op2, 0);
+                core->cpsr.overflow = isub32(op1, op2, 0);
             }
             break;
         case 3: // RSB (op2 - op1)
@@ -85,8 +112,8 @@ core_arm_alu(
             if (cond && rd != 15) {
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
-                core->cpsr.carry = usub32(op2, op1);
-                core->cpsr.overflow = isub32(op2, op1);
+                core->cpsr.carry = usub32(op2, op1, 0);
+                core->cpsr.overflow = isub32(op2, op1, 0);
             }
             break;
         case 4: // ADD (op1 + op2)
@@ -94,69 +121,70 @@ core_arm_alu(
             if (cond && rd != 15) {
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
-                core->cpsr.carry = uadd32(op1, op2);
-                core->cpsr.overflow = iadd32(op1, op2);
+                core->cpsr.carry = uadd32(op1, op2, 0);
+                core->cpsr.overflow = iadd32(op1, op2, 0);
             }
             break;
         case 5: // ADC (op1 + op2 + carry)
             core->registers[rd] = op1 + op2 + core->cpsr.carry;
             if (cond && rd != 15) {
+                bool carry;
+
+                carry = core->cpsr.carry;
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
-                core->cpsr.carry = uadd32(op1, op2);
-                core->cpsr.carry |= uadd32(op1 + op2, core->cpsr.carry);
-                core->cpsr.overflow = iadd32(op1, op2);
-                core->cpsr.overflow = iadd32(op1 + op2, core->cpsr.carry);
+                core->cpsr.carry = uadd32(op1, op2, carry);
+                core->cpsr.overflow = iadd32(op1, op2, carry);
             }
             break;
-        case 6: // SBC (op1 - op2 + carry - 1)
-            core->registers[rd] = op1 - op2 + core->cpsr.carry - 1;
+        case 6: // SBC (op1 - op2 - !carry)
+            core->registers[rd] = op1 - op2 - !core->cpsr.carry;
             if (cond && rd != 15) {
+                bool carry;
+
+                carry = core->cpsr.carry;
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
-                core->cpsr.carry = usub32(op1, op2);
-                core->cpsr.carry |= uadd32(op1 - op2, core->cpsr.carry);
-                core->cpsr.carry |= usub32(op1 - op2 + core->cpsr.carry, 1);
-                core->cpsr.overflow = isub32(op1, op2);
-                core->cpsr.overflow = iadd32(op1 - op2, core->cpsr.carry);
-                core->cpsr.overflow |= isub32(op1 - op2 + core->cpsr.carry, 1);
+                core->cpsr.carry = usub32(op1, op2, !carry);
+                core->cpsr.overflow = isub32(op1, op2, !carry);
             }
             break;
-        case 7: // RSC (op2 - op1 + carry - 1)
-            core->registers[rd] = op2 - op1 + core->cpsr.carry - 1;
+        case 7: // RSC (op2 - op1 - !carry)
+            core->registers[rd] = op2 - op1 - !core->cpsr.carry;
             if (cond && rd != 15) {
+                bool carry;
+
+                carry = core->cpsr.carry;
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
-                core->cpsr.carry = usub32(op2, op1);
-                core->cpsr.carry |= uadd32(op2 - op1, core->cpsr.carry);
-                core->cpsr.carry |= usub32(op2 - op1 + core->cpsr.carry, 1);
-                core->cpsr.overflow = isub32(op2, op1);
-                core->cpsr.overflow = iadd32(op2 - op1, core->cpsr.carry);
-                core->cpsr.overflow |= isub32(op2 - op1 + core->cpsr.carry, 1);
+                core->cpsr.carry = usub32(op2, op1, !carry);
+                core->cpsr.overflow = isub32(op2, op1, !carry);
             }
             break;
         case 8: // TST (as AND, but result is not written)
             core->cpsr.zero = !(op1 & op2);
             core->cpsr.negative = bitfield_get(op1 & op2, 31);
+            core->cpsr.carry = shift_carry;
             break;
         case 9: // TEQ (as EOR, but result is not written)
             core->cpsr.zero = !(op1 ^ op2);
             core->cpsr.negative = bitfield_get(op1 ^ op2, 31);
+            core->cpsr.carry = shift_carry;
             break;
         case 10: // CMP (as SUB, but result is not written)
             if (cond && rd != 15) {
                 core->cpsr.zero = !(op1 - op2);
                 core->cpsr.negative = bitfield_get(op1 - op2, 31);
-                core->cpsr.carry = usub32(op1, op2);
-                core->cpsr.overflow = isub32(op1, op2);
+                core->cpsr.carry = usub32(op1, op2, 0);
+                core->cpsr.overflow = isub32(op1, op2, 0);
             }
             break;
         case 11: // CMN (as ADD, but result is not written)
             if (cond && rd != 15) {
                 core->cpsr.zero = !(op1 + op2);
                 core->cpsr.negative = bitfield_get(op1 + op2, 31);
-                core->cpsr.carry = uadd32(op1, op2);
-                core->cpsr.overflow = iadd32(op1, op2);
+                core->cpsr.carry = uadd32(op1, op2, 0);
+                core->cpsr.overflow = iadd32(op1, op2, 0);
             }
             break;
         case 12: // ORR (op1 OR op2)
@@ -164,6 +192,7 @@ core_arm_alu(
             if (cond && rd != 15) {
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+                core->cpsr.carry = shift_carry;
             }
             break;
         case 13: // MOV (op2, op1 is ignored)
@@ -171,6 +200,7 @@ core_arm_alu(
             if (cond && rd != 15) {
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+                core->cpsr.carry = shift_carry;
             }
             break;
         case 14: // BIC (op1 AND NOT op2)
@@ -178,6 +208,7 @@ core_arm_alu(
             if (cond && rd != 15) {
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+                core->cpsr.carry = shift_carry;
             }
             break;
         case 15: // MVN (NOT op2, op1 is ignored)
@@ -185,6 +216,7 @@ core_arm_alu(
             if (cond && rd != 15) {
                 core->cpsr.zero = !(core->registers[rd]);
                 core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+                core->cpsr.carry = shift_carry;
             }
             break;
         default:

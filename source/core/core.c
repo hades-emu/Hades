@@ -217,6 +217,10 @@ core_spsr_set(
     struct psr psr
 ) {
     switch (mode) {
+        case MODE_USR:
+        case MODE_SYS:
+            core->cpsr.raw = psr.raw;
+            break;
         case MODE_FIQ:
             core->spsr_fiq.raw = psr.raw;
             break;
@@ -456,15 +460,15 @@ core_scan_irq(
 
 /*
 ** Compute the operand of an instruction that uses an encoded shift register.
-** If `update_carry` is true, this will set the carry flag of the CPSR to its
-** correct value.
+** If `carry` is not NULL, this will set the value pointed by `carry` to the
+** shifter carry output.
 */
 uint32_t
 core_compute_shift(
     struct core *core,
     uint32_t encoded_shift,
     uint32_t value,
-    bool update_carry
+    bool *carry
 ){
     uint32_t type;
     uint32_t bits;
@@ -487,16 +491,13 @@ core_compute_shift(
 
         if (bits == 0) {
             return (value);
-        } else if (bits >= 32) {
-            unimplemented(HS_CORE, "unsupported shifts of more than 32 bits");
         }
-
     } else {                                // Immediate value
         bits = (encoded_shift >> 3) & 0x1F;
     }
 
     type = (encoded_shift >> 1) & 0b11;
-    carry_out = 0;
+    carry_out = false;
 
     /*
     ** There's four kind of shifts: logical left, logicial right, arithmetic
@@ -508,27 +509,41 @@ core_compute_shift(
             /*
             ** If LSL#0 then the carry bit is the old content of the CPSR C flag
             ** and the value is left untouched.
+            ** LSL by 32 has result zero, carry out equal to bit 0 of Rm.
+            ** LSL by more than 32 has result zero, carry out zero.
             */
             if (bits == 0) {
                 carry_out = core->cpsr.carry;
-            } else {
+            } else if (bits <= 32) {
                 value <<= bits - 1;
-                carry_out = value >> 31;                    // Save the carry
+                carry_out = (value >> 31) & 0b1;                    // Save the carry
                 value <<= 1;
+            } else {
+                value = 0;
+                carry_out = false;
             }
             break;
         // Logical right
         case 1:
             // LSR#0 is used to encode LSR#32
-            if (bits == 0) {
-                bits = 32;
+            if (bits <= 32) {
+                if (bits == 0) {
+                    bits = 32;
+                }
+                value >>= bits - 1;
+                carry_out = value & 0b1;                        // Save the carry
+                value >>= 1;
+            } else {
+                value = 0;
+                carry_out = false;
             }
-            value >>= bits - 1;
-            carry_out = value & 0b1;                        // Save the carry
-            value >>= 1;
             break;
         // Arithmetic right
         case 2:
+            if (bits > 32) {
+                unimplemented(HS_CORE, "ASR of more than 32 bits is not implemented");
+            }
+
             // ASR#0 is used to encode ASR#32
             if (bits == 0) {
                 bits = 32;
@@ -539,6 +554,16 @@ core_compute_shift(
             break;
         // Rotate right
         case 3:
+
+            /*
+            ** ROR by n where n is greater than 32 will give the same result and carry out
+            ** as ROR by n-32; therefore repeatedly subtract 32 from n until the amount is
+            ** in the range 1 to 32 and see above
+            */
+            if (bits > 32) {
+                bits = ((bits - 1) % 32) + 1;
+            }
+
             // ROR#0 is used to encode RRX
             if (bits == 0) {
                 carry_out = value & 0b1;
@@ -551,8 +576,8 @@ core_compute_shift(
             break;
     }
 
-    if (update_carry) {
-        core->cpsr.carry = carry_out;
+    if (carry) {
+        *carry = carry_out;
     }
 
     return (value);

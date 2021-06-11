@@ -188,57 +188,67 @@ sign_extend24(
 }
 
 /*
-** Return the value of the carry bit when performing `a + b`.
+** Return the value of the carry bit when performing `a + b + c`.
 */
 static inline
 bool
 uadd32(
     uint32_t a,
-    uint32_t b
+    uint32_t b,
+    uint32_t c
 ) {
-    return (bitfield_get(a, 31) + bitfield_get(b, 31) > bitfield_get(a + b, 31));
+    uint64_t r;
+
+    r = (uint64_t)a + (uint64_t)b + (uint64_t)c;
+    return (r > UINT32_MAX);
 }
 
 /*
-** Return the value of the overflow bit when performing `a + b`.
+** Return the value of the overflow bit when performing `a + b + c`.
 */
 static inline
 bool
 iadd32(
     int32_t a,
-    int32_t b
+    int32_t b,
+    int32_t c
 ) {
-    uint32_t res;
+    int64_t r;
 
-    res = (uint32_t)a + (uint32_t)b;
-    return (!bitfield_get(a ^ b, 31) && bitfield_get(a ^ res, 31));
+    r = (int64_t)a + (int64_t)b + (int64_t)c;
+    return ((r < INT32_MIN) | (r > INT32_MAX));
 }
 
 /*
-** Return the value of the borrow bit when performing `a - b`.
+** Return the value of the borrow bit when performing `a - b - c`.
 */
 static inline
 bool
 usub32(
     uint32_t a,
-    uint32_t b
+    uint32_t b,
+    uint32_t c
 ) {
-    return (a >= b);
+    uint64_t r;
+
+    r = (uint64_t)a - (uint64_t)b -(uint64_t)c;
+    return (r <= UINT32_MAX);
 }
 
 /*
-** Return the value of the overflow bit when performing `a - b`.
+** Return the value of the overflow bit when performing `a - b - c`.
 */
 static inline
 bool
 isub32(
     int32_t a,
-    int32_t b
+    int32_t b,
+    int32_t c
 ) {
-    uint32_t res;
+    int64_t r;
 
-    res = (uint32_t)a - (uint32_t)b;
-    return (bitfield_get(a ^ b, 31) && bitfield_get(a ^ res, 31));
+    r = (int64_t)a - (int64_t)b - (int64_t)c;
+    return ((r < INT32_MIN) | (r > INT32_MAX));
 }
 
 /* utils.c */
