@@ -76,6 +76,7 @@ enum modules {
     HS_VIDEO,
     HS_DMA,
     HS_IRQ,
+    HS_MEMORY,
     HS_DEBUG,
 };
 
@@ -87,6 +88,7 @@ static char const * const modules_str[] = {
     [HS_VIDEO]      = " VIDEO ",
     [HS_DMA]        = " DMA   ",
     [HS_IRQ]        = " IRQ   ",
+    [HS_MEMORY]     = " MEM   ",
     [HS_DEBUG]      = " DEBUG ",
 };
 
