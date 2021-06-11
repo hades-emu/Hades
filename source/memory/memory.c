@@ -76,7 +76,7 @@ mem_read16(
     uint32_t value;
 
     rotate = (addr % 2) << 3;
-    addr &= 0xFFFFFFFE;
+    addr &= ~(sizeof(uint16_t) - 1);
 
     value =
         (mem_read8(gba, addr + 0) << 0) |
@@ -99,7 +99,7 @@ mem_read32(
     uint32_t value;
 
     rotate = (addr % 4) << 3;
-    addr &= 0xFFFFFFFE;
+    addr &= ~(sizeof(uint32_t) - 1);
 
     value =
         (mem_read8(gba, addr + 0) << 0) |
@@ -168,6 +168,7 @@ mem_write16(
     uint32_t addr,
     uint16_t val
 ) {
+    addr &= ~(sizeof(uint16_t) - 1);
     mem_write8(gba, addr + 0, (uint8_t)(val >> 0));
     mem_write8(gba, addr + 1, (uint8_t)(val >> 8));
 }
@@ -181,6 +182,7 @@ mem_write32(
     uint32_t addr,
     uint32_t val
 ) {
+    addr &= ~(sizeof(uint32_t) - 1);
     mem_write8(gba, addr + 0, (uint8_t)(val >>  0));
     mem_write8(gba, addr + 1, (uint8_t)(val >>  8));
     mem_write8(gba, addr + 2, (uint8_t)(val >> 16));
