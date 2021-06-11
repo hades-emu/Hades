@@ -185,6 +185,9 @@ core_arm_hsdt(
         case 0b011: // Unsigned Halfword Load
             core->registers[rd] = mem_read16(gba, effective_addr);
             break;
+        case 0b101: // Signed Byte Load
+            core->registers[rd] = (int32_t)(int8_t)mem_read8(gba, effective_addr);
+            break;
         case 0b111: // Signed Halfword Load
             core->registers[rd] = (int32_t)(int16_t)(uint16_t)mem_read16(gba, effective_addr);
            break;
