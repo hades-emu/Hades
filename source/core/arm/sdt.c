@@ -89,10 +89,10 @@ core_arm_sdt(
     */
     switch ((bitfield_get(op, 20) << 1) | bitfield_get(op, 22)) {
         case 0b00: // Store word
-            mem_write32(gba, effective_addr, core->registers[rd]);
+            mem_write32(gba, effective_addr, core->registers[rd] + (rd == 15) * 4); // TODO FIXME Idle
             break;
         case 0b01: // Store byte
-            mem_write8(gba, effective_addr, core->registers[rd]);
+            mem_write8(gba, effective_addr, core->registers[rd] + (rd == 15) * 4); // TODO FIXME Idle
             break;
         case 0b10: // Load word
             core->registers[rd] = mem_read32(gba, effective_addr);
@@ -108,6 +108,10 @@ core_arm_sdt(
     */
     if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
         core->registers[rn] = addr;
+    }
+
+    if (bitfield_get(op, 20) && rd == 15) {
+        core_reload_pipeline(gba);
     }
 }
 
