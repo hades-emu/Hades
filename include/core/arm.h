@@ -43,6 +43,7 @@ void core_arm_decode_insns(void);
 
 /* core/arm/mul.c */
 void core_arm_mul(struct gba *gba, uint32_t op);
+void core_arm_mull(struct gba *gba, uint32_t op);
 
 /* core/arm/psr.c */
 void core_arm_mrs(struct gba *gba, uint32_t op);

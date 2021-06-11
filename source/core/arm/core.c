@@ -13,113 +13,119 @@
 static struct hs_arm_encoded_insn arm_encoded_insns[] = {
 
     // Data processing
-    { "and_reg1",   "xxxx_000_0000_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "and_reg2",   "xxxx_000_0000_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "and_val",    "xxxx_001_0000_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "and_reg1",   "xxxx_000_0000_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "and_reg2",   "xxxx_000_0000_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "and_val",    "xxxx_001_0000_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "eor_reg1",   "xxxx_000_0001_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "eor_reg2",   "xxxx_000_0001_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "eor_val",    "xxxx_001_0001_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "eor_reg1",   "xxxx_000_0001_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "eor_reg2",   "xxxx_000_0001_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "eor_val",    "xxxx_001_0001_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "sub_reg1",   "xxxx_000_0010_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "sub_reg2",   "xxxx_000_0010_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "sub_val",    "xxxx_001_0010_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "sub_reg1",   "xxxx_000_0010_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "sub_reg2",   "xxxx_000_0010_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "sub_val",    "xxxx_001_0010_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "rsb_reg1",   "xxxx_000_0011_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "rsb_reg2",   "xxxx_000_0011_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "rsb_val",    "xxxx_001_0011_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "rsb_reg1",   "xxxx_000_0011_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "rsb_reg2",   "xxxx_000_0011_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "rsb_val",    "xxxx_001_0011_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "add_reg1",   "xxxx_000_0100_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "add_reg2",   "xxxx_000_0100_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "add_val",    "xxxx_001_0100_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "add_reg1",   "xxxx_000_0100_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "add_reg2",   "xxxx_000_0100_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "add_val",    "xxxx_001_0100_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "adc_reg1",   "xxxx_000_0101_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "adc_reg2",   "xxxx_000_0101_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "adc_val",    "xxxx_001_0101_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "adc_reg1",   "xxxx_000_0101_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "adc_reg2",   "xxxx_000_0101_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "adc_val",    "xxxx_001_0101_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "sbc_reg1",   "xxxx_000_0110_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "sbc_reg2",   "xxxx_000_0110_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "sbc_val",    "xxxx_001_0110_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "sbc_reg1",   "xxxx_000_0110_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "sbc_reg2",   "xxxx_000_0110_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "sbc_val",    "xxxx_001_0110_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "rsc_reg1",   "xxxx_000_0111_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "rsc_reg2",   "xxxx_000_0111_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "rsc_val",    "xxxx_001_0111_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "rsc_reg1",   "xxxx_000_0111_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "rsc_reg2",   "xxxx_000_0111_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "rsc_val",    "xxxx_001_0111_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "tst_reg1",   "xxxx_000_1000_1_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "tst_reg2",   "xxxx_000_1000_1_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "tst_val",    "xxxx_001_1000_1_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "tst_reg1",   "xxxx_000_1000_1_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "tst_reg2",   "xxxx_000_1000_1_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "tst_val",    "xxxx_001_1000_1_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "teq_reg1",   "xxxx_000_1001_1_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "teq_reg2",   "xxxx_000_1001_1_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "teq_val",    "xxxx_001_1001_1_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "teq_reg1",   "xxxx_000_1001_1_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "teq_reg2",   "xxxx_000_1001_1_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "teq_val",    "xxxx_001_1001_1_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "cmp_reg1",   "xxxx_000_1010_1_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "cmp_reg2",   "xxxx_000_1010_1_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "cmp_val",    "xxxx_001_1010_1_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "cmp_reg1",   "xxxx_000_1010_1_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "cmp_reg2",   "xxxx_000_1010_1_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "cmp_val",    "xxxx_001_1010_1_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "cmn_reg1",   "xxxx_000_1011_1_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "cmn_reg2",   "xxxx_000_1011_1_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "cmn_val",    "xxxx_001_1011_1_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "cmn_reg1",   "xxxx_000_1011_1_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "cmn_reg2",   "xxxx_000_1011_1_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "cmn_val",    "xxxx_001_1011_1_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "orr_reg1",   "xxxx_000_1100_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "orr_reg2",   "xxxx_000_1100_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "orr_val",    "xxxx_001_1100_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "orr_reg1",   "xxxx_000_1100_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "orr_reg2",   "xxxx_000_1100_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "orr_val",    "xxxx_001_1100_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "mov_reg1",   "xxxx_000_1101_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "mov_reg2",   "xxxx_000_1101_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "mov_val",    "xxxx_001_1101_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "mov_reg1",   "xxxx_000_1101_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "mov_reg2",   "xxxx_000_1101_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "mov_val",    "xxxx_001_1101_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "bic_reg1",   "xxxx_000_1110_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "bic_reg2",   "xxxx_000_1110_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "bic_val",    "xxxx_001_1110_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "bic_reg1",   "xxxx_000_1110_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "bic_reg2",   "xxxx_000_1110_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "bic_val",    "xxxx_001_1110_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
-    { "mvn_reg1",   "xxxx_000_1111_s_xxxxxxxxxxxxxxx0xxxx",          core_arm_alu},
-    { "mvn_reg2",   "xxxx_000_1111_s_xxxxxxxxxxxx0xx1xxxx",          core_arm_alu},
-    { "mvn_val",    "xxxx_001_1111_s_xxxxxxxxxxxxxxxxxxxx",          core_arm_alu},
+    { "mvn_reg1",   "xxxx_000_1111_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
+    { "mvn_reg2",   "xxxx_000_1111_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
+    { "mvn_val",    "xxxx_001_1111_s_xxxxxxxxxxxxxxxxxxxx",             core_arm_alu},
 
     // PSR Transfers
-    { "mrs",        "xxxx_00010_p_001111_dddd_000000000000",         core_arm_mrs},
-    { "msr_imm",    "xxxx_00110_p_10_xxxx_1111_rrrr_iiiiiiii",       core_arm_msr},
-    { "msr_reg",    "xxxx_00010_p_10_xxxx_1111_00000000_mmmm",       core_arm_msr},
+    { "mrs",        "xxxx_00010_p_001111_dddd_000000000000",            core_arm_mrs},
+    { "msr_imm",    "xxxx_00110_p_10_xxxx_1111_rrrr_iiiiiiii",          core_arm_msr},
+    { "msr_reg",    "xxxx_00010_p_10_xxxx_1111_00000000_mmmm",          core_arm_msr},
 
     // Multiply and Multiply-Accumulate (MUL, MLA)
-    { "mul",        "xxxx_000000_0_s_ddddnnnnssss_1001_mmmm",         core_arm_mul},
-    { "mla",        "xxxx_000000_1_s_ddddnnnnssss_1001_mmmm",         core_arm_mul},
+    { "mul",        "xxxx_000000_0_s_ddddnnnnssss_1001_mmmm",           core_arm_mul},
+    { "mla",        "xxxx_000000_1_s_ddddnnnnssss_1001_mmmm",           core_arm_mul},
+
+    // Multiply Long and Multiply-Accumulate Long ({U,I}MULL, {U,I}MLAL)
+    { "umull",       "xxxx_00001_00_s_ddddnnnnssss_1001_mmmm",          core_arm_mull},
+    { "umlal",       "xxxx_00001_01_s_ddddnnnnssss_1001_mmmm",          core_arm_mull},
+    { "imull",       "xxxx_00001_10_s_ddddnnnnssss_1001_mmmm",          core_arm_mull},
+    { "imlal",       "xxxx_00001_11_s_ddddnnnnssss_1001_mmmm",          core_arm_mull},
 
     // Branch
-    {"b",           "xxxx_101_0_xxxxxxxxxxxxxxxxxxxxxxxx",           core_arm_branch},
-    {"bl",          "xxxx_101_1_xxxxxxxxxxxxxxxxxxxxxxxx",           core_arm_branch},
-    {"bx",          "xxxx_0001_0010_1111_1111_1111_0001_xxxx",       core_arm_branch_xchg},
+    {"b",           "xxxx_101_0_xxxxxxxxxxxxxxxxxxxxxxxx",              core_arm_branch},
+    {"bl",          "xxxx_101_1_xxxxxxxxxxxxxxxxxxxxxxxx",              core_arm_branch},
+    {"bx",          "xxxx_0001_0010_1111_1111_1111_0001_xxxx",          core_arm_branch_xchg},
 
     // Block data transfer
-    {"push",         "xxxx_100_pusw0_xxxx_xxxxxxxxxxxxxxxx",         core_arm_bdt},
-    {"pop",         "xxxx_100_pusw1_xxxx_xxxxxxxxxxxxxxxx",          core_arm_bdt},
+    {"push",         "xxxx_100_pusw0_xxxx_xxxxxxxxxxxxxxxx",            core_arm_bdt},
+    {"pop",         "xxxx_100_pusw1_xxxx_xxxxxxxxxxxxxxxx",             core_arm_bdt},
 
     // Single Data Transfer
-    {"str",         "xxxx_01_ipubw0_xxxx_xxxx_xxxxxxxxxxxx",         core_arm_sdt},
-    {"ldr",         "xxxx_01_ipubw1_xxxx_xxxx_xxxxxxxxxxxx",         core_arm_sdt},
+    {"str",         "xxxx_01_ipubw0_xxxx_xxxx_xxxxxxxxxxxx",            core_arm_sdt},
+    {"ldr",         "xxxx_01_ipubw1_xxxx_xxxx_xxxxxxxxxxxx",            core_arm_sdt},
 
     // Halfword and Signed Data Transfer
-    {"strh_imm",    "xxxx_000_pu0w0_xxxx_xxxx_0000_1011xxxx",         core_arm_hsdt},
-    {"strh_reg",    "xxxx_000_pu1w0_xxxx_xxxx_xxxx_1011xxxx",         core_arm_hsdt},
+    {"strh_imm",    "xxxx_000_pu0w0_xxxx_xxxx_0000_1011xxxx",           core_arm_hsdt},
+    {"strh_reg",    "xxxx_000_pu1w0_xxxx_xxxx_xxxx_1011xxxx",           core_arm_hsdt},
 
-    {"strsb_imm",   "xxxx_000_pu0w0_xxxx_xxxx_0000_1101xxxx",         core_arm_hsdt},
-    {"strsb_reg",   "xxxx_000_pu1w0_xxxx_xxxx_xxxx_1101xxxx",         core_arm_hsdt},
+    {"strsb_imm",   "xxxx_000_pu0w0_xxxx_xxxx_0000_1101xxxx",           core_arm_hsdt},
+    {"strsb_reg",   "xxxx_000_pu1w0_xxxx_xxxx_xxxx_1101xxxx",           core_arm_hsdt},
 
-    {"strsh_imm",   "xxxx_000_pu0w0_xxxx_xxxx_0000_1111xxxx",         core_arm_hsdt},
-    {"strsh_reg",   "xxxx_000_pu1w0_xxxx_xxxx_xxxx_1111xxxx",         core_arm_hsdt},
+    {"strsh_imm",   "xxxx_000_pu0w0_xxxx_xxxx_0000_1111xxxx",           core_arm_hsdt},
+    {"strsh_reg",   "xxxx_000_pu1w0_xxxx_xxxx_xxxx_1111xxxx",           core_arm_hsdt},
 
-    {"ldrh_imm",    "xxxx_000_pu0w1_xxxx_xxxx_0000_1011xxxx",         core_arm_hsdt},
-    {"ldrh_reg",    "xxxx_000_pu1w1_xxxx_xxxx_xxxx_1011xxxx",         core_arm_hsdt},
+    {"ldrh_imm",    "xxxx_000_pu0w1_xxxx_xxxx_0000_1011xxxx",           core_arm_hsdt},
+    {"ldrh_reg",    "xxxx_000_pu1w1_xxxx_xxxx_xxxx_1011xxxx",           core_arm_hsdt},
 
-    {"ldrsb_imm",   "xxxx_000_pu0w1_xxxx_xxxx_0000_1101xxxx",         core_arm_hsdt},
-    {"ldrsb_reg",   "xxxx_000_pu1w1_xxxx_xxxx_xxxx_1101xxxx",         core_arm_hsdt},
+    {"ldrsb_imm",   "xxxx_000_pu0w1_xxxx_xxxx_0000_1101xxxx",           core_arm_hsdt},
+    {"ldrsb_reg",   "xxxx_000_pu1w1_xxxx_xxxx_xxxx_1101xxxx",           core_arm_hsdt},
 
-    {"ldrsh_imm",   "xxxx_000_pu0w1_xxxx_xxxx_0000_1111xxxx",         core_arm_hsdt},
-    {"ldrsh_reg",   "xxxx_000_pu1w1_xxxx_xxxx_xxxx_1111xxxx",         core_arm_hsdt},
+    {"ldrsh_imm",   "xxxx_000_pu0w1_xxxx_xxxx_0000_1111xxxx",           core_arm_hsdt},
+    {"ldrsh_reg",   "xxxx_000_pu1w1_xxxx_xxxx_xxxx_1111xxxx",           core_arm_hsdt},
 
     // Software Interrupt
-    {"swi",         "xxxx_1111_xxxxxxxxxxxxxxxxxxxxxxxx",           core_arm_swi},
+    {"swi",         "xxxx_1111_xxxxxxxxxxxxxxxxxxxxxxxx",               core_arm_swi},
 };
 
 struct hs_arm_insn arm_insns[ARRAY_LEN(arm_encoded_insns)] = { 0 };
