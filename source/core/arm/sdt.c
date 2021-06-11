@@ -177,39 +177,57 @@ core_arm_hsdt(
     /*
     ** Bit 20 indicates if it is a load or a store, bit 5 and 6 indicate the operation.
     */
-    switch ((bitfield_get(op, 6) << 2) | (bitfield_get(op, 5) << 1) | bitfield_get(op, 20)) {
-        //   0bSHL
-        case 0b010: // Unsigned Halfword store
-            mem_write16(gba, effective_addr, core->registers[rd]);
-            break;
-        case 0b011: // Unsigned Halfword Load
-            core->registers[rd] = mem_read16(gba, effective_addr);
-            break;
-        case 0b101: // Signed Byte Load
-            core->registers[rd] = (int32_t)(int8_t)mem_read8(gba, effective_addr);
-            break;
-        case 0b111: // Signed Halfword Load
-            // (Unligned addresses are a bitch)
-            if (bitfield_get(addr, 0)) {
-                core->registers[rd] = (int32_t)(int8_t)(uint8_t)mem_read16(gba, effective_addr);
-            } else {
-                core->registers[rd] = (int32_t)(int16_t)(uint16_t)mem_read16(gba, effective_addr);
-            }
-           break;
-        case 0b100:
-        case 0b110:
-            panic(HS_CORE, "Halfword and Signed Data Transfer: cannot store signed bytes.");
-            break;
-        default:
-            unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented");
-            break;
-    }
+    if (bitfield_get(op, 20)) { // Load
+        uint32_t val;
 
-    /*
-    ** If bit 24 or bit 21 is set (post-indexing modification or write-through),
-    ** we must update the base register with the calculated address.
-    */
-    if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
-        core->registers[rn] = addr;
+        switch ((bitfield_get(op, 6) << 1) | bitfield_get(op, 5)) {
+            //   0bSH
+            case 0b01: // Unsigned Halfword Load
+                val = mem_read16(gba, effective_addr);
+                break;
+            case 0b10: // Signed Byte Load
+                val = (int32_t)(int8_t)mem_read8(gba, effective_addr);
+                break;
+            case 0b11: // Signed Halfword Load
+                // (Unligned addresses are a bitch)
+                if (bitfield_get(addr, 0)) {
+                    val = (int32_t)(int8_t)(uint8_t)mem_read16(gba, effective_addr);
+                } else {
+                    val = (int32_t)(int16_t)(uint16_t)mem_read16(gba, effective_addr);
+                }
+               break;
+            default:
+                unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented");
+                break;
+        }
+
+        /*
+        ** if bit 24 or bit 21 is set (post-indexing modification or write-through),
+        ** we must update the base register with the calculated address.
+        */
+        if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
+            core->registers[rn] = addr;
+        }
+
+        core->registers[rd] = val;
+
+    } else { // Store
+        switch ((bitfield_get(op, 6) << 1) | bitfield_get(op, 5)) {
+            //   0bSH
+            case 0b01: // Unsigned Halfword Store
+                mem_write16(gba, effective_addr, core->registers[rd]);
+                break;
+            default:
+                unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented");
+                break;
+        }
+
+        /*
+        ** if bit 24 or bit 21 is set (post-indexing modification or write-through),
+        ** we must update the base register with the calculated address.
+        */
+        if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
+            core->registers[rn] = addr;
+        }
     }
 }
