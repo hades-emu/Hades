@@ -24,7 +24,7 @@ core_thumb_push(
     core = &gba->core;
 
     /* Edge case: if rlist is empty, sp is decreased by 0x40 and r15 is stored instead */
-    if (!bitfield_get_range(op, 0, 8)) {
+    if (!bitfield_get_range(op, 0, 9)) {
         core->sp -= 0x40;
         mem_write32(gba, core->sp, core->pc + 2);
         return ;
@@ -60,7 +60,7 @@ core_thumb_pop(
     core = &gba->core;
 
     /* Edge case: if rlist is empty, r15 is loaded instead and sp is increased by 0x40 */
-    if (!bitfield_get_range(op, 0, 8)) {
+    if (!bitfield_get_range(op, 0, 9)) {
         core->pc = mem_read32_ror(gba, core->sp);
         core_reload_pipeline(gba);
         core->sp += 0x40;
