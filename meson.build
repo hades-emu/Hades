@@ -28,6 +28,7 @@ executable(
     'source/core/arm/mul.c',
     'source/core/arm/psr.c',
     'source/core/arm/swi.c',
+    'source/core/arm/swp.c',
     'source/core/thumb/alu.c',
     'source/core/thumb/branch.c',
     'source/core/thumb/core.c',

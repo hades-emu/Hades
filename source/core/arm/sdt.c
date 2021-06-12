@@ -197,7 +197,7 @@ core_arm_hsdt(
                 }
                break;
             default:
-                unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented");
+                unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented (op=%08x)", op);
                 break;
         }
 
@@ -218,7 +218,7 @@ core_arm_hsdt(
                 mem_write16(gba, effective_addr, core->registers[rd]);
                 break;
             default:
-                unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented");
+                unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented (op=%08x)", op);
                 break;
         }
 

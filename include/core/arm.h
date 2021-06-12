@@ -56,6 +56,9 @@ void core_arm_hsdt(struct gba *gba, uint32_t op);
 /* core/arm/swi.c */
 void core_arm_swi(struct gba *gba, uint32_t op);
 
+/* core/arm/swp.c */
+void core_arm_swp(struct gba *gba, uint32_t op);
+
 extern struct hs_arm_insn arm_insns[];
 extern size_t arm_insns_len;
 

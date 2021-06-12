@@ -126,6 +126,9 @@ static struct hs_arm_encoded_insn arm_encoded_insns[] = {
 
     // Software Interrupt
     {"swi",         "xxxx_1111_xxxxxxxxxxxxxxxxxxxxxxxx",               core_arm_swi},
+
+    // Single Data Swap
+    {"swp",         "xxxx_00010_b_00nnnndddd00001001mmmm",              core_arm_swp},
 };
 
 struct hs_arm_insn arm_insns[ARRAY_LEN(arm_encoded_insns)] = { 0 };
