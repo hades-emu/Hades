@@ -223,15 +223,30 @@ core_arm_alu(
             break;
     }
 
-    /*
-    ** When Rd is R15 and the S flag is set the result of the operation is placed
-    ** in R15 and the SPSR corresponding to the current mode is moved to the CPSR.
-    */
-    if (rd == 15 && cond) {
-        struct psr new_cpsr;
+    if (rd == 15) {
 
-        new_cpsr = core_spsr_get(core, core->cpsr.mode);
-        core_switch_mode(core, new_cpsr.mode);
-        core->cpsr = new_cpsr;
+        /*
+        ** When Rd is R15 and the S flag is set the result of the operation is placed
+        ** in R15 and the SPSR corresponding to the current mode is moved to the CPSR.
+        */
+        if (cond) {
+            struct psr new_cpsr;
+
+            new_cpsr = core_spsr_get(core, core->cpsr.mode);
+            core_switch_mode(core, new_cpsr.mode);
+            core->cpsr = new_cpsr;
+        }
+
+        // Read-Only operations do not flush the pipeline
+        switch ((op >> 21) & 0xF) {
+            case 8: // TST
+            case 9: // TEQ
+            case 10: // CMP
+            case 11: // CMN
+                break;
+            default:
+                core_reload_pipeline(gba);
+                break;
+        }
     }
 }
