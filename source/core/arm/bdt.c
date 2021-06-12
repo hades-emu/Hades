@@ -96,17 +96,23 @@ core_arm_bdt(
             base += pre ? 4 : 0; // Pre-increment
 
             if (load) {
+                if (first && wb) { // Write back before data is read
+                    core->registers[rn] = base_new;
+                    first = false;
+                }
+
                 core->registers[i] = mem_read32(gba, base);
             } else {
                 mem_write32(gba, base, core->registers[i] + (i == 15) * 4);
+
+                if (first && wb) { // Write back after data is stored
+                    core->registers[rn] = base_new;
+                    first = false;
+                }
             }
 
             base += pre ? 0 : 4; // Post-increment
 
-            if (first && wb) { // Write back
-                core->registers[rn] = base_new;
-                first = false;
-            }
         }
         ++i;
     }
