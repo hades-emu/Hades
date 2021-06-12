@@ -259,7 +259,6 @@ core_thumb_hi_mov(
     core->registers[rd] = core->registers[rs];
 
     if (rd == 15) {
-        core->pc &= 0xfffffffe;
         core_reload_pipeline(gba);
     }
 }
