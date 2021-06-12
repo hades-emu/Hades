@@ -85,7 +85,7 @@ mem_read16(
     ;
 
     /* Unaligned 16-bits loads are supposed to be unpredictable, but in practise the GBA rotates them */
-    return ((value >> rotate) | (value << (32 - rotate)));
+    return (ror32(value, rotate));
 }
 
 /*
@@ -93,6 +93,30 @@ mem_read16(
 */
 uint32_t
 mem_read32(
+    struct gba const *gba,
+    uint32_t addr
+) {
+    uint32_t value;
+
+    addr &= ~(sizeof(uint32_t) - 1);
+
+    value =
+        (mem_read8(gba, addr + 0) << 0) |
+        (mem_read8(gba, addr + 1) << 8) |
+        (mem_read8(gba, addr + 2) << 16) |
+        (mem_read8(gba, addr + 3) << 24)
+    ;
+
+    /* Unaligned 32-bits loads are rotated */
+    return (value);
+}
+
+/*
+** Read the double-word at the given address and ROR it if the
+** address isn't aligned.
+*/
+uint32_t
+mem_read32_ror(
     struct gba const *gba,
     uint32_t addr
 ) {
@@ -110,7 +134,7 @@ mem_read32(
     ;
 
     /* Unaligned 32-bits loads are rotated */
-    return ((value >> rotate) | (value << (32 - rotate)));
+    return (ror32(value, rotate));
 }
 
 /*

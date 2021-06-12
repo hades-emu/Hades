@@ -121,6 +121,7 @@ void mem_init(struct memory *memory);
 uint8_t mem_read8(struct gba const *gba, uint32_t addr);
 uint32_t mem_read16(struct gba const *gba, uint32_t addr);
 uint32_t mem_read32(struct gba const *gba, uint32_t addr);
+uint32_t mem_read32_ror(struct gba const *gba, uint32_t addr);
 void mem_write8(struct gba *gba, uint32_t addr, uint8_t val);
 void mem_write16(struct gba *gba, uint32_t addr, uint16_t val);
 void mem_write32(struct gba *gba, uint32_t addr, uint32_t val);

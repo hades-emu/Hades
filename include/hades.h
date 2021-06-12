@@ -253,6 +253,15 @@ isub32(
     return ((r < INT32_MIN) | (r > INT32_MAX));
 }
 
+static inline
+uint32_t
+ror32(
+    uint32_t value,
+    uint32_t shift
+) {
+    return ((value >> shift) | (value << (32 - shift)));
+}
+
 /* utils.c */
 char **strsplit(char *str, size_t *size);
 #ifdef DEBUG

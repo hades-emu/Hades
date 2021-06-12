@@ -480,7 +480,7 @@ core_thumb_alu(
                     break;
                 case 1 ... 31:
                     carry_out = (op1 >> (op2 - 1)) & 0b1;
-                    op1 = (op1 >> op2) | (op1 << (32 - op2));
+                    op1 = ror32(op1, op2);
                     break;
                 case 32:
                     carry_out = (op1 >> 31) & 0b1;

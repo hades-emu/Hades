@@ -61,7 +61,7 @@ core_thumb_pop(
 
     /* Edge case: if rlist is empty, r15 is loaded instead and sp is increased by 0x40 */
     if (!bitfield_get_range(op, 0, 8)) {
-        core->pc = mem_read32(gba, core->sp);
+        core->pc = mem_read32_ror(gba, core->sp);
         core_reload_pipeline(gba);
         core->sp += 0x40;
         return ;
@@ -70,7 +70,7 @@ core_thumb_pop(
     i = 0;
     while (i < 8) {
         if (bitfield_get(op, i)) {
-            core->registers[i] = mem_read32(gba, core->sp);
+            core->registers[i] = mem_read32_ror(gba, core->sp);
             core->sp += 4;
         }
         ++i;
@@ -78,7 +78,7 @@ core_thumb_pop(
 
     /* Pop PC */
     if (bitfield_get(op, 8)) {
-        core->pc = mem_read32(gba, core->sp);
+        core->pc = mem_read32_ror(gba, core->sp);
         core_reload_pipeline(gba);
         core->sp += 4;
 
@@ -104,7 +104,10 @@ core_thumb_stmia(
     core = &gba->core;
     rb = bitfield_get_range(op, 8, 11);
 
-    /* Edge case: if rlist is empty, r15 is stored instead and rb is increased by 0x40 */
+    /*
+    ** Edge case: if rlist is empty, r15 is stored instead and rb is increased by 0x40
+    ** (as if all registered were pushed).
+    */
     if (!bitfield_get_range(op, 0, 8)) {
         mem_write32(gba, core->registers[rb], core->pc + 2);
         core->registers[rb] += 0x40;
@@ -161,9 +164,12 @@ core_thumb_ldmia(
     core = &gba->core;
     rb = bitfield_get_range(op, 8, 11);
 
-    /* Edge case: if rlist is empty, r15 is loaded instead and rb is increased by 0x40 */
+    /*
+    ** Edge case: if rlist is empty, r15 is loaded instead and rb is increased by 0x40
+    ** (as if all registered were pushed).
+    */
     if (!bitfield_get_range(op, 0, 8)) {
-        core->pc = mem_read32(gba, core->registers[rb]);
+        core->pc = mem_read32_ror(gba, core->registers[rb]);
         core_reload_pipeline(gba);
         core->registers[rb] += 0x40;
         return ;
@@ -183,7 +189,7 @@ core_thumb_ldmia(
     i = 0;
     while (i < 8) {
         if (bitfield_get(op, i)) {
-            core->registers[i] = mem_read32(gba, addr);
+            core->registers[i] = mem_read32_ror(gba, addr);
             addr += 4;
         }
         ++i;
@@ -216,7 +222,7 @@ core_thumb_sdt_imm(
             mem_write8(gba, core->registers[rb] + offset, core->registers[rd]);
             break;
         case 0b10: // Load word
-            core->registers[rd] = mem_read32(gba, core->registers[rb] + (offset << 2));
+            core->registers[rd] = mem_read32_ror(gba, core->registers[rb] + (offset << 2));
             break;
         case 0b11: // Load byte
             core->registers[rd] = mem_read8(gba, core->registers[rb] + offset);
@@ -250,7 +256,7 @@ core_thumb_sdt_wb_reg(
             mem_write8(gba, core->registers[rb] + core->registers[ro], core->registers[rd]);
             break;
         case 0b10: // Load word
-            core->registers[rd] = mem_read32(gba, core->registers[rb] + core->registers[ro]);
+            core->registers[rd] = mem_read32_ror(gba, core->registers[rb] + core->registers[ro]);
             break;
         case 0b11: // Load byte
             core->registers[rd] = mem_read8(gba, core->registers[rb] + core->registers[ro]);
@@ -350,7 +356,7 @@ core_thumb_ldr_pc(
     offset = bitfield_get_range(op, 0, 8) << 2;
 
     core = &gba->core;
-    core->registers[rd] = mem_read32(gba, (core->pc & 0xFFFFFFFC) + offset);
+    core->registers[rd] = mem_read32_ror(gba, (core->pc & 0xFFFFFFFC) + offset);
 }
 
 /*
@@ -373,7 +379,7 @@ core_thumb_sdt_sp(
 
     if (l) {
         // LDR
-        core->registers[rd] = mem_read32(gba, core->sp + offset);
+        core->registers[rd] = mem_read32_ror(gba, core->sp + offset);
     } else {
         // STR
         mem_write32(gba,  core->sp + offset, core->registers[rd]);

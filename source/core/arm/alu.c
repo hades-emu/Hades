@@ -47,7 +47,7 @@ core_arm_alu(
         rot = bitfield_get_range(op, 8, 12) * 2;
         if (rot > 0) {
             carry_out = (op2 >> (rot - 1)) & 0b1;
-            op2 = (op2 >> rot) | (op2 << (32 - rot));
+            op2 = ror32(op2, rot);
 
             // Update the carry flag
             if (cond && rd != 15) {
