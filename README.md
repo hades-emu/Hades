@@ -8,6 +8,6 @@ Special thanks to some really good reading/projects that are truely helping me o
   - [GBATEK](https://problemkaputt.de/gbatek.htm)
   - [Tonc](https://www.coranac.com/tonc/text/toc.htm)
   - [gba-tests](https://github.com/jsmolka/gba-tests)
+  - [NanoBoyAdvance](https://github.com/fleroviux/NanoBoyAdvance/)
   - [mGBA](https://mgba.io/)
-  - [chocolateARM](https://github.com/gdkchan/ChocolateARM/)
   - [gdkGBA](https://github.com/gdkchan/gdkGBA/)
