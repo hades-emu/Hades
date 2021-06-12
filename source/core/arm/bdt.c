@@ -41,7 +41,7 @@ core_arm_bdt(
     rn = bitfield_get_range(op, 16, 20);
 
     if (s) {
-        unimplemented(HS_CORE, "Block Data Transfer does not support the PSR & force user bit.");
+        unimplemented(HS_CORE, "the current implementation of Block Data Transfer instructions does not support the PSR & force user bit.");
     }
 
     base = core->registers[rn];

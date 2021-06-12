@@ -149,6 +149,13 @@ mem_io_read8(
         /* Inputs */
         case IO_REG_KEYINPUT:               return (io->keyinput.bytes[0]);
         case IO_REG_KEYINPUT + 1:           return (io->keyinput.bytes[1]);
+
+        /* Interrupts */
+        case IO_REG_IE:                     return (io->int_enabled.bytes[0]);
+        case IO_REG_IE + 1:                 return (io->int_enabled.bytes[1]);
+        case IO_REG_IF:                     return (io->int_flag.bytes[0]);
+        case IO_REG_IF + 1:                 return (io->int_flag.bytes[1]);
+        case IO_REG_IME:                    return (io->ime);
     }
     return (0);
 }
