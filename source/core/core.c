@@ -407,15 +407,15 @@ core_interrupt(
     struct psr cpsr;
 
     core = &gba->core;
-    cpsr = core->cpsr;
 
+    cpsr = core->cpsr;
     core_switch_mode(core, mode);
     core_spsr_set(core, mode, cpsr);
 
     core->lr = core->pc - (core->cpsr.thumb ? 2 : 4);
     core->pc = vector;
     core->cpsr.irq_disable = true;
-    core->cpsr.fiq_disable |= (vector == VEC_FIQ || VEC_RESET);
+    //core->cpsr.fiq_disable |= (vector == VEC_FIQ || VEC_RESET); TODO FIXME
     core->cpsr.thumb = false;
 
     core_reload_pipeline(gba);
