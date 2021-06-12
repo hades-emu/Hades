@@ -28,6 +28,8 @@ debugger_cmd_main(
         ++i;
     }
 
+    gba->core.r4 = 0x0;
+
     gba->core.pc = 0x08000000;
     core_reload_pipeline(gba);
 }
