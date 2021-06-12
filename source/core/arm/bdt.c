@@ -10,81 +10,84 @@
 #include "hades.h"
 #include "gba.h"
 
-/*
-** Execute the Block Data Transfer kind of instructions (push/pop).
-*/
 void
 core_arm_bdt(
     struct gba *gba,
     uint32_t op
 ) {
     struct core *core;
-    bool p; // Pre-indexing
-    bool u; // Up
-    bool s; // Force PSR/User-mode
-    bool w; // Write-back
-    bool l; // Load
+    uint32_t i;
     uint32_t rn;
     uint32_t base;
-    int32_t base_step;
-    int32_t reg;
-    int32_t reg_start;
-    int32_t reg_step;
+    uint32_t base_new;
+    int32_t count;
+    bool reload_pipeline;
+    bool first;
+    bool load;
+    bool pre;
+    bool wb;
 
     core = &gba->core;
-
-    p = bitfield_get(op, 24);
-    u = bitfield_get(op, 23);
-    s = bitfield_get(op, 22);
-    w = bitfield_get(op, 21);
-    l = bitfield_get(op, 20);
+    reload_pipeline = false;
     rn = bitfield_get_range(op, 16, 20);
+    load = bitfield_get(op, 20);
+    pre = bitfield_get(op, 24);
+    wb = bitfield_get(op, 21);
 
-    if (s) {
-        unimplemented(HS_CORE, "the current implementation of Block Data Transfer instructions does not support the PSR & force user bit.");
+    /*
+    ** Count how many registers we are going to transfer
+    */
+
+    i = 0;
+    count = 0;
+    while (i < 16) {
+        count += (bitfield_get(op, i));
+        ++i;
     }
 
     base = core->registers[rn];
 
-    if (u) { // Upward
-        base_step = 4;
-        reg_start = 0;
-        reg_step = 1;
-    } else { // Downard
-        base_step = -4;
-        reg_start = 15;
-        reg_step = -1;
+    /*
+    ** Pre-calculate the end address and go incrementally from
+    ** there.
+    **
+    ** This part is inspired by Fleroviux's NanoBoyAdvance implementation.
+    ** Thank you for your amazing work!
+    */
+    if (bitfield_get(op, 23)) { // Up
+        base_new = base + count * 4;
+    } else { // Down
+        pre = !pre;
+        base -= count * 4;
+        base_new = base;
     }
 
-    if (p) { // Pre-indexing
-        base += base_step;
-    }
+    i = 0;
+    first = true;
+    while (i < 16) {
+        if (bitfield_get(op, i)) {
+            base += pre ? 4 : 0; // Pre-increment
 
-    reg = reg_start;
-    while (reg < 16 && reg >= 0) {
-        // Transfer register
-        if (bitfield_get(op, reg)) {
-            if (l) { // Load
-                core->registers[reg] = mem_read32(gba, base);
-            } else { // Store
-                mem_write32(gba, base, core->registers[reg]);
+            if (load) {
+                core->registers[i] = mem_read32(gba, base);
+                printf("Loading [%08x] %08x to r%u\n", base, core->registers[i], i);
+                reload_pipeline |= (i == 15);
+            } else {
+                mem_write32(gba, base, core->registers[i] + (i == 15) * 4);
+                printf("Storing r%u %08x to [%08x]\n", i, core->registers[i], base);
             }
-            base += base_step;
+
+            base += pre ? 0 : 4; // Post-increment
+
+            if (first && wb) { // Write back
+                core->registers[rn] = base_new;
+                first = false;
+            }
         }
-        reg += reg_step;
+        ++i;
     }
 
-    if (w) {
-        if (p) {
-            base -= base_step;
-        }
-        core->registers[rn] = base;
-    }
-
-    // Reload pipeline if we write to r15 (FIXME)
-    if (l && bitfield_get(op, 15)) { // Write to PC
-        core->cpsr.thumb = core->pc & 0b1;
-        core->pc = core->pc & 0xFFFFFFFE;
+    if (reload_pipeline) {
         core_reload_pipeline(gba);
     }
 }

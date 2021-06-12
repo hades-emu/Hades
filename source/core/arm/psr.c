@@ -51,7 +51,7 @@ core_arm_msr(
         imm = bitfield_get_range(op, 0, 8);
         shift = bitfield_get_range(op, 8, 12) * 2;
 
-        val = (imm >> shift) | (imm << (32 - shift));
+        val = ror32(imm, shift);
     } else { // Reg
         val = core->registers[bitfield_get_range(op, 0, 4)];
     }

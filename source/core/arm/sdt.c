@@ -93,7 +93,7 @@ core_arm_sdt(
         if (bitfield_get(op, 22)) { // Load Byte
             val = mem_read8(gba, effective_addr);
         } else { // Load Word
-            val = mem_read32(gba, effective_addr);
+            val = mem_read32_ror(gba, effective_addr);
         }
 
         if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {

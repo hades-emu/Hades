@@ -34,7 +34,7 @@ core_arm_swp(
         mem_write8(gba, core->registers[rn], core->registers[rm]);
         core->registers[rd] = tmp;
     } else { // Swap word quantity
-        tmp = mem_read32(gba, core->registers[rn]);
+        tmp = mem_read32_ror(gba, core->registers[rn]);
         mem_write32(gba, core->registers[rn], core->registers[rm]);
         core->registers[rd] = tmp;
     }

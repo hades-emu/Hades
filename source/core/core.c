@@ -571,7 +571,7 @@ core_compute_shift(
                 value |= core->cpsr.carry << 31;
             } else {
                 carry_out = (value >> (bits - 1)) & 0b1;    // Save the carry
-                value = (value >> bits) | (value << (32 - bits));
+                value = ror32(value, bits);
             }
             break;
     }
