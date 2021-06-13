@@ -126,6 +126,9 @@ debugger_init(
     debugger = &gba->debugger;
     memset(debugger, 0, sizeof(*debugger));
 
+    read_history(".hades-dbg.history");
+    write_history(".hades-dbg.history");
+
     if (
         (cs_open(CS_ARCH_ARM, CS_MODE_ARM | CS_MODE_LITTLE_ENDIAN, &debugger->handle_arm) != CS_ERR_OK) ||
         (cs_open(CS_ARCH_ARM, CS_MODE_THUMB | CS_MODE_LITTLE_ENDIAN, &debugger->handle_thumb) != CS_ERR_OK) ||
@@ -148,7 +151,6 @@ debugger_destroy(
     cs_close(&debugger->handle_thumb);
 }
 
-
 /*
 ** Enter a "Read/Evaluate/Print" loop.
 */
@@ -161,7 +163,7 @@ debugger_repl(
     hs_logln(HS_GLOBAL, "Welcome to Hades");
     hs_logln(HS_GLOBAL, "----------------");
 
-    debugger_dump_context(gba);
+    debugger_dump_context(gba, false);
 
     while (!g_stop && (input = readline("$ ")) != NULL) {
         char **tokens;
@@ -174,11 +176,13 @@ debugger_repl(
             continue;
         }
 
+        /* Add input to history */
+        add_history(input);
+        append_history(1, ".hades-dbg.history");
+
         /* Reset the g_interrupt global variable */
         g_interrupt = false;
 
-        add_history(input);
-        append_history(1, ".hades-dbg.history");
         tokens = strsplit(input, &tokens_length);
         if (tokens_length == 0) {
             goto next;

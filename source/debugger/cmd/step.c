@@ -19,7 +19,7 @@ debugger_cmd_step(
 ) {
     if (argc == 1) {
         core_step(gba);
-        debugger_dump_context(gba);
+        debugger_dump_context(gba, false);
     } else if (argc == 2) {
         unsigned long nb;
 
@@ -28,7 +28,7 @@ debugger_cmd_step(
             core_step(gba);
             --nb;
         }
-        debugger_dump_context(gba);
+        debugger_dump_context(gba, false);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP].usage);
     }
