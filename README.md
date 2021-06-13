@@ -10,13 +10,14 @@ To build Hades, you need:
   - `meson`
   - `ninja`
   - `SDL2`
+  - `GCC`
   - `readline`
   - `capstone`
 
 On Ubuntu, you can install all the dependecies by running:
 
 ```bash
-$ apt install meson ninja-build libsdl2-dev libreadline-dev libcapstone-dev
+$ apt install meson ninja-build gcc libsdl2-dev libreadline-dev libcapstone-dev
 ```
 
 To build the project, run:
