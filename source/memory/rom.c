@@ -58,7 +58,7 @@ mem_load_rom(
     char const *path
 ) {
     FILE *file;
-    size_t len __unused; // Used to silent the "Unused result" warning
+    size_t len __unused; // Used to silence the "Unused result" warning
 
     file = fopen(path, "rb");
     if (!file) {
