@@ -24,6 +24,11 @@
 atomic_bool g_stop;
 
 /*
+** A global, atomic variable used to signal other threads the execution should be interrupted.
+*/
+atomic_bool g_interrupt;
+
+/*
 ** The signal handler, used to set `stop` to true and signal
 ** all threads it is time to stop and exit.
 */
@@ -32,7 +37,7 @@ void
 sighandler(
     int signal
 ) {
-    g_stop = true;
+    g_interrupt = true;
 }
 
 int

@@ -27,7 +27,7 @@ debugger_eval_breakpoints(
         if (debugger->breakpoints[i] == pc) {
             printf(">>>> Breakpoint hit (%zu) at " LIGHT_MAGENTA "0x%08x" RESET " <<<<\n", i, pc);
             debugger_dump_context(gba);
-            g_breakpoint_hit = true;
+            g_interrupt = true;
         }
         ++i;
     }
