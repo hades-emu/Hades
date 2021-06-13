@@ -13,6 +13,6 @@ jobs:
           sudo apt-get install -y meson ninja-build libsdl2-dev libreadline-dev libcapstone-dev
       - name: Build Hades
         run: |
-          meson build --buildtype=release
+          meson build --buildtype=release --werror
           cd build
           ninja
