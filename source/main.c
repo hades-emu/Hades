@@ -9,9 +9,8 @@
 
 #include <stdatomic.h>
 #include <signal.h>
-#include <string.h>
-#include <errno.h>
 #include <pthread.h>
+#include <string.h>
 #include "hades.h"
 #include "gba.h"
 #include "core/arm.h"
@@ -62,17 +61,11 @@ main(
         mem_init(&gba->memory);
         io_init(&gba->io);
 
-        /* Load the BIOS */
-        if (mem_load_bios(&gba->memory, "gba_bios.gba") < 0) {
-            fprintf(stderr, "hades: gba_bios.gba: %s.\n", strerror(errno));
-            return (EXIT_FAILURE);
-        }
+        /* Load the BIOS. NOTE: this function exits on failure. */
+        mem_load_bios(&gba->memory, "gba_bios.gba");
 
-        /* Load the given ROM */
-        if (mem_load_rom(&gba->memory, argv[1]) < 0) {
-            fprintf(stderr, "hades: can't load %s: %s\n", argv[1], strerror(errno));
-            return (EXIT_FAILURE);
-        }
+        /* Load the given ROM. NOTE: this function exits on failure. */
+        mem_load_rom(&gba->memory, argv[1]);
 
         core_init(gba);
 
