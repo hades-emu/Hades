@@ -78,6 +78,7 @@ core_step(
     bool can_exec;
     static size_t count = 0;
 
+    ++count;
     core = &gba->core;
     if (core->cpsr.thumb) {
         uint16_t op;
@@ -92,7 +93,7 @@ core_step(
                 hs_logln(
                     HS_DEBUG,
                     "Executing instruction %zu: %s (%#02x)",
-                    ++count,
+                    count,
                     thumb_insns[i].name,
                     op
                 );
@@ -122,7 +123,7 @@ core_step(
             hs_logln(
                 HS_DEBUG,
                 "Skipping instruction %zu: (condition not met) (%#04x)",
-                ++count,
+                count,
                 op
             );
             goto end;
@@ -134,7 +135,7 @@ core_step(
                 hs_logln(
                     HS_DEBUG,
                     "Executing instruction %zu: %s (%#04x)",
-                    ++count,
+                    count,
                     arm_insns[i].name,
                     op
                 );
@@ -540,12 +541,8 @@ core_compute_shift(
             break;
         // Arithmetic right
         case 2:
-            if (bits > 32) {
-                unimplemented(HS_CORE, "ASR of more than 32 bits is not implemented");
-            }
-
             // ASR#0 is used to encode ASR#32
-            if (bits == 0) {
+            if (bits == 0 || bits > 32) {
                 bits = 32;
             }
             value = (int32_t)value >> (bits - 1);
