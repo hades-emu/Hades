@@ -19,6 +19,7 @@ core_thumb_lo_add(
     uint16_t op
 ) {
     struct core *core;
+    uint32_t res;
     uint32_t rd;
     uint32_t rs;
     uint32_t rhs;
@@ -35,12 +36,14 @@ core_thumb_lo_add(
         rhs = core->registers[bitfield_get_range(op, 6, 9)];
     }
 
-    core->registers[rd] = core->registers[rs] + rhs;
+    res = core->registers[rs] + rhs;
 
-    core->cpsr.zero = !(core->registers[rd]);
-    core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+    core->cpsr.zero = !res;
+    core->cpsr.negative = bitfield_get(res, 31);
     core->cpsr.carry = uadd32(core->registers[rs], rhs, 0);
     core->cpsr.overflow = iadd32(core->registers[rs], rhs, 0);
+
+    core->registers[rd] = res;
 }
 
 /*
@@ -52,6 +55,7 @@ core_thumb_lo_sub(
     uint16_t op
 ) {
     struct core *core;
+    uint32_t res;
     uint32_t rd;
     uint32_t rs;
     uint32_t rhs;
@@ -68,12 +72,14 @@ core_thumb_lo_sub(
         rhs = core->registers[bitfield_get_range(op, 6, 9)];
     }
 
-    core->registers[rd] = core->registers[rs] - rhs;
+    res = core->registers[rs] - rhs;
 
-    core->cpsr.zero = !(core->registers[rd]);
-    core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+    core->cpsr.zero = !res;
+    core->cpsr.negative = bitfield_get(res, 31);
     core->cpsr.carry = usub32(core->registers[rs], rhs, 0);
     core->cpsr.overflow = isub32(core->registers[rs], rhs, 0);
+
+    core->registers[rd] = res;
 }
 
 /*
@@ -467,23 +473,16 @@ core_thumb_alu(
             break;
         case 0b0111:
             // ROR (Rotate Right)
-            op2 &= 0xFF; // Keep only one byte
 
             if (op2 > 32) {
-                op2 %= 32;
+                op2 = ((op2 - 1) % 32) + 1;
             }
 
-            switch (op2) {
-                case 0:
-                    carry_out = core->cpsr.carry;
-                    break;
-                case 1 ... 31:
-                    carry_out = (op1 >> (op2 - 1)) & 0b1;
-                    op1 = ror32(op1, op2);
-                    break;
-                case 32:
-                    carry_out = (op1 >> 31) & 0b1;
-                    break;
+            if (op2 == 0) {
+                carry_out = core->cpsr.carry;
+            } else {
+              carry_out = (op1 >> (op2 - 1)) & 0b1;    // Save the carry
+              op1 = ror32(op1, op2);
             }
 
             core->cpsr.carry = carry_out;
