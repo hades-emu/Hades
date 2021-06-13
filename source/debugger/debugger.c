@@ -166,10 +166,8 @@ debugger_repl(
     debugger_dump_context(gba, false);
 
     while (!g_stop && (input = readline("$ ")) != NULL) {
-        char **tokens;
-        size_t tokens_length;
-        struct dbg_command const *cmd;
-
+        char *saveptr;
+        char *cmd_str;
         /* Skip blank lines */
         if (!*input) {
             free(input);
@@ -180,35 +178,45 @@ debugger_repl(
         add_history(input);
         append_history(1, ".hades-dbg.history");
 
-        /* Reset the g_interrupt global variable */
-        g_interrupt = false;
+        cmd_str = strtok_r(input, ";", &saveptr);
 
-        tokens = strsplit(input, &tokens_length);
-        if (tokens_length == 0) {
-            goto next;
-        }
+        while (cmd_str) {
+            char **tokens;
+            size_t tokens_length;
+            struct dbg_command const *cmd;
 
-        cmd = g_commands;
-        while (cmd->name) {
-            if (!strcmp(cmd->name, tokens[0]) || (cmd-> alias && !strcmp(cmd->alias, tokens[0]))) {
-                if (cmd->nargs > 0 && cmd->nargs != tokens_length) {
-                    printf("Usage: %s\n", cmd->usage);
-                } else if (cmd->func) {
-                    cmd->func(gba, tokens_length, (char const * const *)tokens);
-                } else {
-                    free((void *)tokens);
-                    free(input);
-                    return ;
-                }
+            /* Reset the g_interrupt global variable */
+            g_interrupt = false;
+
+            tokens = strsplit(cmd_str, &tokens_length);
+            if (tokens_length == 0) {
                 goto next;
             }
-            ++cmd;
+
+            cmd = g_commands;
+            while (cmd->name) {
+                if (!strcmp(cmd->name, tokens[0]) || (cmd-> alias && !strcmp(cmd->alias, tokens[0]))) {
+                    if (cmd->nargs > 0 && cmd->nargs != tokens_length) {
+                        printf("Usage: %s\n", cmd->usage);
+                    } else if (cmd->func) {
+                        cmd->func(gba, tokens_length, (char const * const *)tokens);
+                    } else {
+                        free((void *)tokens);
+                        free(input);
+                        printf("command \"%s\" isn't implemented yet.\n", tokens[0]);
+                        return ;
+                    }
+                    goto next;
+                }
+                ++cmd;
+            }
+            printf("Unknown command \"%s\". Type \"help\" for a list of commands.\n", tokens[0]);
+
+            next:
+            free((void *)tokens);
+            cmd_str = strtok_r(NULL, ";", &saveptr);
         }
 
-        printf("Unknown command \"%s\". Type \"help\" for a list of commands.\n", tokens[0]);
-
-next:
-        free((void *)tokens);
         free(input);
     }
 
