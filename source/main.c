@@ -92,6 +92,8 @@ main(
 
         g_stop = true;
 
+        debugger_destroy(gba);
+
         free(gba);
 
         return (EXIT_SUCCESS);
