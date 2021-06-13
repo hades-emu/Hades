@@ -66,7 +66,7 @@ mem_load_rom(
         exit(EXIT_FAILURE);
     }
 
-    len = fread(memory->bios, 1, 0x2000000, file);
+    len = fread(memory->rom, 1, 0x2000000, file);
 
     if (!feof(file)) {
         fprintf(stderr, "hades: failed to read %s: %s.\n", path, strerror(errno));
