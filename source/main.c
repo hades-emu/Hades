@@ -92,6 +92,8 @@ main(
 
         g_stop = true;
 
+        pthread_join(render_thread, NULL);
+
         debugger_destroy(gba);
 
         free(gba);
