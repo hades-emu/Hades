@@ -7,14 +7,20 @@
 **
 \******************************************************************************/
 
+#include <unistd.h>
 #include "hades.h"
 #include "debugger.h"
 #include "gba.h"
 
 void
 debugger_dump_context(
-    struct gba *gba
+    struct gba *gba,
+    bool force
 ) {
+    if (!force && !isatty(STDIN_FILENO)) {
+        return ;
+    }
+
     printf("---------------------------------Registers----------------------------------\n");
     debugger_cmd_registers(
         gba,
@@ -43,5 +49,5 @@ debugger_cmd_context(
     size_t argc __unused,
     char const * const *argv __unused
 ) {
-    debugger_dump_context(gba);
+    debugger_dump_context(gba, true);
 }

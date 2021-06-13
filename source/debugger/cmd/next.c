@@ -31,7 +31,7 @@ debugger_cmd_next(
             core_step(gba);
         }
 
-        debugger_dump_context(gba);
+        debugger_dump_context(gba, false);
     } else if (argc == 2) {
         uint32_t next_pc;
 
@@ -40,7 +40,7 @@ debugger_cmd_next(
             core_step(gba);
         }
 
-        debugger_dump_context(gba);
+        debugger_dump_context(gba, false);
     } else {
         printf("Usage: %s\n", g_commands[CMD_NEXT].usage);
     }

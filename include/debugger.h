@@ -148,7 +148,7 @@ void debugger_repl(struct gba *gba);
 uint32_t debugger_eval_expr(struct gba const *gba, char const *expr);
 
 /* debugger/cmd/context.c */
-void debugger_dump_context(struct gba *);
+void debugger_dump_context(struct gba *, bool);
 void debugger_cmd_context(struct gba *, size_t, char const * const *);
 
 /* debugger/cmd/continue.c */
