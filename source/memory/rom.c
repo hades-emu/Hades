@@ -7,19 +7,16 @@
 **
 \******************************************************************************/
 
-/*
-** References:
-**   * GBATEK
-**      https://problemkaputt.de/gbatek.htm
-**
-*/
-
+#include <string.h>
+#include <errno.h>
 #include <stdio.h>
 #include "memory.h"
 #include "hades.h"
 
 /*
 ** Load the BIOS into the emulator's memory.
+**
+** This function exits on failure.
 */
 int
 mem_load_bios(
@@ -30,15 +27,30 @@ mem_load_bios(
 
     file = fopen(path, "rb");
     if (!file) {
-        return (-1);
+        fprintf(stderr, "hades: can't open gba_bios.gba: %s.\n", strerror(errno));
+        exit(EXIT_FAILURE);
     }
 
-    fread(memory->bios, 1, 0x4000, file);
+    fseek(file, 0, SEEK_END);
+    if (ftell(file) != 0x4000) {
+        fprintf(stderr, "hades: invalid bios given.\n");
+        exit(EXIT_FAILURE);
+        return (-1);
+    }
+    rewind(file);
+
+    if (fread(memory->bios, 1, 0x4000, file) != 0x4000) {
+        fprintf(stderr, "hades: failed to read gba_bios.gba: %s.\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
     return (0);
 }
 
 /*
 ** Load the ROM into the emulator's memory.
+**
+** This function exits on failure.
 */
 int
 mem_load_rom(
@@ -46,12 +58,20 @@ mem_load_rom(
     char const *path
 ) {
     FILE *file;
+    size_t len __unused; // Used to silent the "Unused result" warning
 
     file = fopen(path, "rb");
     if (!file) {
-        return (-1);
+        fprintf(stderr, "hades: can't open %s: %s.\n", path, strerror(errno));
+        exit(EXIT_FAILURE);
     }
 
-    fread(memory->rom, 1, 0x2000000, file);
+    len = fread(memory->bios, 1, 0x2000000, file);
+
+    if (!feof(file)) {
+        fprintf(stderr, "hades: failed to read %s: %s.\n", path, strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
     return (0);
 }

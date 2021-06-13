@@ -11,7 +11,8 @@
 ** References:
 **   * ARM7TDMI-S Data Sheet
 **      https://www.dwedit.org/files/ARM7TDMI.pdf
-**
+**   * GBATEK
+**      https://problemkaputt.de/gbatek.htm
 */
 
 #include <string.h>
