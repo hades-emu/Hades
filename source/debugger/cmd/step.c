@@ -24,7 +24,7 @@ debugger_cmd_step(
         unsigned long nb;
 
         nb = strtoul(argv[1], NULL, 0);
-        while (!g_stop && !g_breakpoint_hit && nb > 0) {
+        while (!g_interrupt && nb > 0) {
             core_step(gba);
             --nb;
         }

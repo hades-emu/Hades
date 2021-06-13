@@ -15,8 +15,6 @@
 #include "debugger.h"
 #include "gba.h"
 
-atomic_bool g_breakpoint_hit = false;
-
 struct dbg_command g_commands[] = {
     [CMD_HELP] = {
         .name = "help",
@@ -176,8 +174,8 @@ debugger_repl(
             continue;
         }
 
-        /* Reset the g_breakpoint_hit global variable */
-        g_breakpoint_hit = false;
+        /* Reset the g_interrupt global variable */
+        g_interrupt = false;
 
         add_history(input);
         append_history(1, ".hades-dbg.history");

@@ -118,6 +118,7 @@ sdl_handle_inputs(
                 break;
             case SDL_QUIT:
                 g_stop = true;
+                g_interrupt = true;
                 kill(getpid(), SIGTERM);        // Ask readline to stop waiting for user input
                 pthread_exit(NULL);
                 break;

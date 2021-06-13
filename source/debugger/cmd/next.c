@@ -27,7 +27,7 @@ debugger_cmd_next(
         uint32_t next_pc;
 
         next_pc = core->pc + op_len;
-        while (!g_stop && !g_breakpoint_hit && core->pc != next_pc) {
+        while (!g_interrupt && core->pc != next_pc) {
             core_step(gba);
         }
 
@@ -36,7 +36,7 @@ debugger_cmd_next(
         uint32_t next_pc;
 
         next_pc = core->pc + strtoul(argv[1], NULL, 0) * op_len;
-        while (!g_stop && !g_breakpoint_hit && core->pc != next_pc) {
+        while (!g_interrupt && core->pc != next_pc) {
             core_step(gba);
         }
 

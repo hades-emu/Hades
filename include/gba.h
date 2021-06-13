@@ -18,7 +18,7 @@
 # include "io.h"
 
 extern atomic_bool g_stop;
-extern atomic_bool g_breakpoint_hit;
+extern atomic_bool g_interrupt;
 
 struct gba
 {
