@@ -10,15 +10,11 @@
 #ifndef GBA_H
 # define GBA_H
 
-# include <stdatomic.h>
 # include "core.h"
 # include "memory.h"
 # include "video.h"
 # include "debugger.h"
 # include "io.h"
-
-extern atomic_bool g_stop;
-extern atomic_bool g_interrupt;
 
 struct gba
 {
@@ -28,10 +24,43 @@ struct gba
     struct debugger debugger;
     struct io io;
 
-    uint32_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT]; // The result of the video controller and used
-                                     // by the renderer to print things on screen.
-                                     // Can be accessed by both the logic and render thread.
+    /*
+    ** The result of the video controller, used by the renderer to
+    ** print things on screen.
+    **
+    ** Can be accessed by both the logic and render thread.
+    */
+    uint32_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
     pthread_mutex_t framebuffer_mutex;
+
+    /*
+    ** The state of each input buttons.
+    **
+    ** Can be accessed by both the logic and render thread.
+    */
+    pthread_mutex_t input_mutex;
+    union {
+        struct {
+            uint16_t a: 1;
+            uint16_t b: 1;
+            uint16_t select: 1;
+            uint16_t start: 1;
+            uint16_t right: 1;
+            uint16_t left: 1;
+            uint16_t up: 1;
+            uint16_t down: 1;
+            uint16_t r: 1;
+            uint16_t l: 1;
+            uint16_t : 6;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } input;
+
+    /*
+    **Amount of frames elapsed since the beginning of the execution.
+    */
+    atomic_uint frame_counter;
 };
 
 #endif /* GBA_H */

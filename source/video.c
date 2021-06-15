@@ -36,10 +36,10 @@ video_step(
     /* Update the REG_DISPSTAT register */
     io->dispstat.vblank = (gba->video.v >= SCREEN_HEIGHT);
     io->dispstat.hblank = (gba->video.h >= SCREEN_WIDTH);
-    io->dispstat.vcount_eq = (gba->video.v == io->dispstat.vcount_val);
+    io->dispstat.vcount_eq = (gba->video.v == io->dispstat.vcount_val );
 
     /* Trigger the VBLANK DMA transfer */
-    if (gba->video.v == SCREEN_HEIGHT) {
+    if (gba->video.v == SCREEN_HEIGHT && gba->video.h == 0) {
         if (io->dispstat.vblank_irq) {
             core_trigger_irq(gba, IRQ_VBLANK);
         }
@@ -55,7 +55,7 @@ video_step(
     }
 
     /* Trigger the VCOUNT IRQ */
-    if (io->dispstat.vcount_eq && io->dispstat.vcount_irq) {
+    if (io->dispstat.vcount_eq && io->dispstat.vcount_irq && gba->video.h == 0) {
         core_trigger_irq(gba, IRQ_VCOUNTER);
     }
 
@@ -66,8 +66,10 @@ video_step(
     if (gba->video.h < SCREEN_WIDTH && gba->video.v < SCREEN_HEIGHT) {
 
         if (gba->video.h == 0 && gba->video.v == 0) {
-            hs_logln(HS_VIDEO, "Video mode: %u", io->dispcnt.bg_mode);
-            hs_logln(HS_VIDEO,
+            gba->frame_counter++; // New frame, wouhou!
+
+            logln(HS_VIDEO, "Video mode: %u", io->dispcnt.bg_mode);
+            logln(HS_VIDEO,
                 "Video layout: BG0=%u BG1=%u BG2=%u BG3=%u OBJ=%u",
                 io->dispcnt.bg >> 0,
                 io->dispcnt.bg >> 1,

@@ -66,7 +66,7 @@ struct dbg_command g_commands[] = {
     },
     [CMD_DISAS] = {
         .name = "disas",
-        .alias = "d",
+        .alias = NULL,
         .usage = "disas [ADDR=r15]",
         .desc = "Disassemble the instructions around \"ADDR\".",
         .nargs = 0,
@@ -82,11 +82,19 @@ struct dbg_command g_commands[] = {
     },
     [CMD_CONTEXT] = {
         .name = "context",
-        .alias = "v",
+        .alias = "d",
         .usage = "context",
         .desc = "Show the most important information of the current context (registers, stack, instructions, etc.).",
         .nargs = 1,
         .func = debugger_cmd_context,
+    },
+    [CMD_CONTEXT_COMPACT] = {
+        .name = "compact",
+        .alias = "vc",
+        .usage = "compact",
+        .desc = "Show the most important information of the current context (registers, current instruction, etc.) in a compact form.",
+        .nargs = 1,
+        .func = debugger_cmd_context_compact,
     },
     [CMD_PRINT] = {
         .name = "print",
@@ -103,6 +111,22 @@ struct dbg_command g_commands[] = {
         .desc = "Add a breakpoint at address ADDR.",
         .nargs = 2,
         .func = debugger_cmd_break,
+    },
+    [CMD_TRACE] = {
+        .name = "trace",
+        .alias = "t",
+        .usage = "trace [N=1]",
+        .desc = "Execute the next N instructions, dumping the content of all registers in between them.",
+        .nargs = 0,
+        .func = debugger_cmd_trace,
+    },
+    [CMD_VERBOSE] = {
+        .name = "verbose",
+        .alias = "v",
+        .usage = "verbose [NAME]",
+        .desc = "Inverse the verbosity of module NAME",
+        .nargs = 0,
+        .func = debugger_cmd_verbose,
     },
     [CMD_MAIN] = {
         .name = "main",
@@ -160,8 +184,8 @@ debugger_repl(
 ) {
     char *input;
 
-    hs_logln(HS_GLOBAL, "Welcome to Hades");
-    hs_logln(HS_GLOBAL, "----------------");
+    logln(HS_GLOBAL, "Welcome to Hades");
+    logln(HS_GLOBAL, "----------------");
 
     debugger_dump_context(gba, false);
 

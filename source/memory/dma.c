@@ -65,7 +65,7 @@ mem_dma_transfer(
             count = (i == 3 ? 0x10000 : 0x4000);
         }
 
-        hs_logln(
+        logln(
             HS_DMA,
             "DMA transfer from 0x%08x%c to 0x%08x%c (len=%#08x, unit_size=%u, channel %u)",
             src,
@@ -78,7 +78,7 @@ mem_dma_transfer(
         );
 
         if (dst == 0x040000A0 || dst == 0x040000A4) {
-            hs_logln(HS_DMA, "FIFO transfer -- Ignored");
+            logln(HS_DMA, "FIFO transfer -- Ignored");
         } else {
             while (count > 0) {
                 if (unit_size == 4) {

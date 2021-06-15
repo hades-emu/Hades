@@ -47,6 +47,7 @@ try_disas(
     size_t op_len,
     size_t count
 ) {
+    // TODO FIXME use mem_read instead of this ugly shit.
     switch (addr) {
         case BIOS_START ... BIOS_END:
             if (addr + count * op_len >= BIOS_END) {
@@ -54,19 +55,45 @@ try_disas(
             }
             return (cs_disasm(
                 handle,
-                (uint8_t *)memory->bios + addr,
+                (uint8_t *)memory->bios + (addr & BIOS_MASK),
+                op_len * count,
+                addr,
+                count,
+                insn_ptr
+            ));
+        case EWRAM_START ... EWRAM_END:
+            if (addr + count * op_len >= EWRAM_END) {
+                return (0);
+            }
+            return (cs_disasm(
+                handle,
+                (uint8_t *)memory->ewram + (addr & EWRAM_MASK),
+                op_len * count,
+                addr,
+                count,
+                insn_ptr
+            ));
+        case IWRAM_START ... IWRAM_END:
+            if (addr + count * op_len >= IWRAM_END) {
+                return (0);
+            }
+            return (cs_disasm(
+                handle,
+                (uint8_t *)memory->iwram + (addr & IWRAM_MASK),
                 op_len * count,
                 addr,
                 count,
                 insn_ptr
             ));
         case CART_0_START ... CART_0_END:
+        case CART_1_START ... CART_1_END:
+        case CART_2_START ... CART_2_END:
             if (addr + count * op_len >= CART_0_END) {
                 return (0);
             }
             return (cs_disasm(
                 handle,
-                (uint8_t *)memory->rom + (addr & 0x1FFFFFF),
+                (uint8_t *)memory->rom + (addr & CART_MASK),
                 op_len * count,
                 addr,
                 count,
@@ -74,6 +101,37 @@ try_disas(
             ));
         default:
             return (0);
+    }
+}
+
+void
+debugger_cmd_disas_at(
+    struct gba *gba,
+    uint32_t ptr
+) {
+    struct core const *core;
+    struct memory const *memory;
+    struct debugger *debugger;
+    cs_insn *insn;
+    csh handle;
+    size_t count;
+    size_t op_len;
+
+    core = &gba->core;
+    memory = &gba->memory;
+    debugger = &gba->debugger;
+
+    op_len = core->cpsr.thumb ? 2 : 4;
+    handle = core->cpsr.thumb ? debugger->handle_thumb : debugger->handle_arm;
+    count = try_disas(handle, &insn, memory, ptr, op_len, 1);
+    if (count == 0) {
+        printf(LIGHT_MAGENTA "<bad>" RESET);
+    } else {
+        printf(
+            LIGHT_GREEN "%s" LIGHT_MAGENTA " %s" RESET,
+            insn[0].mnemonic,
+            insn[0].op_str
+        );
     }
 }
 
@@ -172,12 +230,11 @@ debugger_cmd_disas_around(
         p = ptr - (radius - 1) * op_len;
         while (p < ptr_start) {
             printf(
-                " %c %08x" RESET ": " LIGHT_GREEN "%-*s" LIGHT_MAGENTA " %s" RESET "\n",
+                " %c %08x" RESET ": " LIGHT_GREEN "%-*s" RESET "\n",
                 p == ptr ? '>' : ' ',
                 p,
                 (int)mnemonic_len,
-                "<bad>",
-                ""
+                "<bad>"
             );
             p += op_len;
         }

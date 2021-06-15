@@ -79,6 +79,20 @@ enum io_regs {
     IO_REG_DMA3CNT      = 0x040000DC,
     IO_REG_DMA3CTL      = 0x040000DE,
 
+    /* Timer */
+    IO_REG_TM0CNT       = 0x04000100,
+    IO_REG_TM0CNT_LO    = 0x04000100,
+    IO_REG_TM0CNT_HI    = 0x04000102,
+    IO_REG_TM1CNT       = 0x04000104,
+    IO_REG_TM1CNT_LO    = 0x04000104,
+    IO_REG_TM1CNT_HI    = 0x04000106,
+    IO_REG_TM2CNT       = 0x04000108,
+    IO_REG_TM2CNT_LO    = 0x04000108,
+    IO_REG_TM2CNT_HI    = 0x0400010A,
+    IO_REG_TM3CNT       = 0x0400010C,
+    IO_REG_TM3CNT_LO    = 0x0400010C,
+    IO_REG_TM3CNT_HI    = 0x0400010E,
+
     /* Input */
 
     IO_REG_KEYINPUT     = 0x04000130,
@@ -88,6 +102,11 @@ enum io_regs {
     IO_REG_IE           = 0x04000200,
     IO_REG_IF           = 0x04000202,
     IO_REG_IME          = 0x04000208,
+
+    /* System */
+
+    IO_REG_POSTFLG      = 0x04000300,
+    IO_REG_HALTCNT      = 0x04000301,
 
     IO_REG_END,
 };
@@ -129,6 +148,32 @@ struct dma_channel {
 } __packed;
 
 static_assert(sizeof(struct dma_channel) == 3 * sizeof(uint32_t));
+
+struct timer {
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } counter;
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } reload;
+
+    union {
+        struct {
+            uint16_t prescaler: 2;
+            uint16_t count_up: 1;
+            uint16_t : 3;
+            uint16_t irq: 1;
+            uint16_t enable: 1;
+            uint16_t : 8;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } control;
+
+    uint64_t real_counter;
+};
 
 /*
 ** A structure containing all the value of all the different IO registers.
@@ -201,24 +246,8 @@ struct io {
     // DMA Channels
     struct dma_channel dma[4];
 
-    // REG_KEYINPUT (Key Status, Read only)
-    union {
-        struct {
-            uint16_t a: 1;
-            uint16_t b: 1;
-            uint16_t select: 1;
-            uint16_t start: 1;
-            uint16_t right: 1;
-            uint16_t left: 1;
-            uint16_t up: 1;
-            uint16_t down: 1;
-            uint16_t r: 1;
-            uint16_t l: 1;
-            uint16_t : 6;
-        } __packed;
-        uint16_t raw;
-        uint8_t bytes[2];
-    } keyinput;
+    // Timers
+    struct timer timers[4];
 
     // REG_IME
     uint16_t ime;
@@ -268,12 +297,18 @@ struct io {
         uint16_t raw;
         uint8_t bytes[2];
     } int_flag;
+
+    // REG_POSTFLG
+    uint8_t postflg;
 };
 
 static_assert(sizeof(((struct io *)NULL)->dispcnt) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->dispstat) == sizeof(uint16_t));
 
-/* io/io.c */
+/* memory/io.c */
 void io_init(struct io *io);
+
+/* timer.c */
+void timer_tick(struct gba *, uint32_t cycles);
 
 #endif /* IO_H */

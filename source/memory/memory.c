@@ -57,7 +57,7 @@ mem_read8(
         case CART_SRAM_REGION:
             return (memory->sram[addr & CART_SRAM_MASK]);
         default:
-            hs_logln(HS_MEMORY, "Invalid read at address %#08x", addr);
+            logln(HS_MEMORY, "Invalid read at address %#08x", addr);
             return (0);
     }
 }

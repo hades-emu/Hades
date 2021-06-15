@@ -10,6 +10,7 @@
 #ifndef HADES_H
 # define HADES_H
 
+# include <stdatomic.h>
 # include <stdio.h>
 # include <stdint.h>
 # include <stdbool.h>
@@ -70,25 +71,34 @@
 
 enum modules {
     HS_GLOBAL      = 0,
+
     HS_ERROR,
+    HS_WARNING,
+
     HS_CORE,
     HS_IO,
     HS_VIDEO,
     HS_DMA,
     HS_IRQ,
     HS_MEMORY,
+    HS_TIMER,
+
     HS_DEBUG,
+
+    HS_END,
 };
 
 static char const * const modules_str[] = {
     [HS_GLOBAL]     = "       ",
     [HS_ERROR]      = " ERROR ",
+    [HS_WARNING]    = " WARN  ",
     [HS_CORE]       = " CORE  ",
     [HS_IO]         = " IO    ",
     [HS_VIDEO]      = " VIDEO ",
     [HS_DMA]        = " DMA   ",
     [HS_IRQ]        = " IRQ   ",
     [HS_MEMORY]     = " MEM   ",
+    [HS_TIMER]      = " TIMER ",
     [HS_DEBUG]      = " DEBUG ",
 };
 
@@ -142,7 +152,6 @@ bitfield_update(
     uint32_t nth,
     bool b
 ) {
-
     *val &= ~(1 << nth);     // Clear the bit
     *val |= (b << nth);      // Set the bit
 }
@@ -155,10 +164,11 @@ int32_t
 sign_extend11(
     uint32_t value
 ) {
-     if ((value & 0x400) != 0)
-         return ((int32_t)(value | 0xFFFFF800));
-     else
-         return ((int32_t)value);
+    if ((value & 0x400) != 0) {
+        return ((int32_t)(value | 0xFFFFF800));
+    } else {
+        return ((int32_t)value);
+    }
 }
 
 /*
@@ -169,10 +179,11 @@ int32_t
 sign_extend12(
     uint32_t value
 ) {
-     if ((value & 0x800) != 0)
-         return ((int32_t)(value | 0xFFFFF000));
-     else
-         return ((int32_t)value);
+    if ((value & 0x800) != 0) {
+        return ((int32_t)(value | 0xFFFFF000));
+    } else {
+        return ((int32_t)value);
+    }
 }
 
 /*
@@ -183,10 +194,11 @@ int32_t
 sign_extend24(
     uint32_t value
 ) {
-    if ((value & 0x800000) != 0)
+    if ((value & 0x800000) != 0) {
         return ((int32_t)(value | 0xFF000000));
-    else
+    } else {
         return ((int32_t)value);
+    }
 }
 
 /*
@@ -264,16 +276,13 @@ ror32(
 
 /* utils.c */
 char **strsplit(char *str, size_t *size);
-#ifdef DEBUG
-void hs_loga(char const *fmt, ...);
-void hs_log(enum modules module, char const *fmt, ...);
-void hs_logln(enum modules module, char const *fmt, ...);
-#else
-static inline void hs_loga(char const *fmt __unused, ...) { }
-static inline void hs_log(enum modules module __unused, char const *fmt __unused, ...) { }
-static inline void hs_logln(enum modules module __unused, char const *fmt __unused, ...) { }
-#endif
+void logln(enum modules module, char const *fmt, ...);
 void panic(enum modules module, char const *fmt, ...) __attribute__((noreturn));
 void unimplemented(enum modules module, char const *fmt, ...) __attribute__((noreturn));
+
+extern atomic_bool g_stop;
+extern atomic_bool g_interrupt;
+extern bool g_verbose[HS_END];
+extern bool g_verbose_global;
 
 #endif /* !HADES_H */
