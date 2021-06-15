@@ -29,6 +29,12 @@ atomic_bool g_stop;
 atomic_bool g_interrupt;
 
 /*
+** A global variable used to indicate the verbosity of all the different log levels.
+** Restricted to the logic thread only.
+*/
+bool g_verbose[HS_END];
+bool g_verbose_global;
+/*
 ** The signal handler, used to set `stop` to true and signal
 ** all threads it is time to stop and exit.
 */
@@ -47,6 +53,18 @@ main(
 ) {
     signal(SIGINT, &sighandler);
 
+    g_verbose[HS_GLOBAL] = true;
+    g_verbose[HS_WARNING] = true;
+    g_verbose[HS_ERROR] = true;
+
+    g_verbose[HS_CORE] = true;
+    g_verbose[HS_IO] = true;
+    g_verbose[HS_VIDEO] = true;
+    g_verbose[HS_DMA] = true;
+    g_verbose[HS_IRQ] = true;
+    g_verbose[HS_MEMORY] = true;
+    g_verbose[HS_TIMER] = true;
+
     if (argc == 2) {
         pthread_t render_thread;
         struct gba *gba;
@@ -57,8 +75,10 @@ main(
         hs_assert(gba != NULL);
 
         memset(gba, 0, sizeof(*gba));
+        gba->input.raw = 0x3FF; // Every button set to "released"
 
         pthread_mutex_init(&gba->framebuffer_mutex, NULL);
+        pthread_mutex_init(&gba->input_mutex, NULL);
 
         core_arm_decode_insns();
         core_thumb_decode_insns();

@@ -77,86 +77,76 @@ core_step(
     struct core *core;
     size_t i;
     bool can_exec;
-    static size_t count = 0;
 
-    ++count;
     core = &gba->core;
-    if (core->cpsr.thumb) {
-        uint16_t op;
+    switch (core->halt) {
+        case 0: // Run
+            if (core->cpsr.thumb) {
+                uint16_t op;
 
-        op = core->prefetch;
-        core->prefetch = mem_read16(gba, core->pc);
-        core->pc += 2;
+                op = core->prefetch;
+                core->prefetch = mem_read16(gba, core->pc);
+                core->pc += 2;
 
-        i = 0;
-        while (i < thumb_insns_len) {
-            if ((op & thumb_insns[i].mask) == thumb_insns[i].value) {
-                hs_logln(
-                    HS_DEBUG,
-                    "Executing instruction %zu: %s (%#02x)",
-                    count,
-                    thumb_insns[i].name,
-                    op
-                );
-
-                if (!thumb_insns[i].op) {
-                    unimplemented(HS_CORE, "thumb instruction \"%s\" isn't implemented.", thumb_insns[i].name);
+                i = 0;
+                while (i < thumb_insns_len) {
+                    if ((op & thumb_insns[i].mask) == thumb_insns[i].value) {
+                        if (!thumb_insns[i].op) {
+                            unimplemented(HS_CORE, "thumb instruction \"%s\" isn't implemented.", thumb_insns[i].name);
+                        }
+                        thumb_insns[i].op(gba, op);
+                        goto end;
+                    }
+                    ++i;
                 }
-                thumb_insns[i].op(gba, op);
-                goto end;
-            }
-            ++i;
-        }
 
-        panic(HS_CORE, "Unknown thumb op-code %#04x.", op);
-    } else {
-        uint32_t op;
+                panic(HS_CORE, "Unknown thumb op-code %#04x.", op);
+            } else {
+                uint32_t op;
 
-        op = core->prefetch;
-        core->prefetch = mem_read32(gba, core->pc);
-        core->pc += 4;
+                op = core->prefetch;
+                core->prefetch = mem_read32(gba, core->pc);
+                core->pc += 4;
 
-        can_exec = core_compute_cond(core, op >> 28);
+                can_exec = core_compute_cond(core, op >> 28);
 
-        // Test if the conditions required to execute the instruction are met
-        // Ignore instructions where the conditions aren't met.
-        if (!can_exec) {
-            hs_logln(
-                HS_DEBUG,
-                "Skipping instruction %zu: (condition not met) (%#04x)",
-                count,
-                op
-            );
-            goto end;
-        }
-
-        i = 0;
-        while (i < arm_insns_len) {
-            if ((op & arm_insns[i].mask) == arm_insns[i].value) {
-                hs_logln(
-                    HS_DEBUG,
-                    "Executing instruction %zu: %s (%#04x)",
-                    count,
-                    arm_insns[i].name,
-                    op
-                );
-
-                if (!arm_insns[i].op) {
-                    unimplemented(HS_CORE, "ARM instruction \"%s\" isn't implemented.", arm_insns[i].name);
+                // Test if the conditions required to execute the instruction are met
+                // Ignore instructions where the conditions aren't met.
+                if (!can_exec) {
+                    goto end;
                 }
-                arm_insns[i].op(gba, op);
-                goto end;
-            }
-            ++i;
-        }
 
-        panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x, count=%u).", op, core->pc, count);
+                i = 0;
+                while (i < arm_insns_len) {
+                    if ((op & arm_insns[i].mask) == arm_insns[i].value) {
+                        if (!arm_insns[i].op) {
+                            unimplemented(HS_CORE, "ARM instruction \"%s\" isn't implemented.", arm_insns[i].name);
+                        }
+                        arm_insns[i].op(gba, op);
+                        goto end;
+                    }
+                    ++i;
+                }
+
+                panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
+            }
+            end:
+            ++core->count;
+            debugger_eval_breakpoints(gba);
+            break;
+        case 1: // Halt
+        case 2: // Stop
+            core_scan_irq(gba);
+            break;
     }
 
-end:
+    /*
+    ** We don't have cycle counting yet, so we kinda arbitrarily assume
+    ** that 8 cycles were spent running the previous instruction (FIXME).
+    */
     video_step(gba);
     video_step(gba);
-    debugger_eval_breakpoints(gba);
+    timer_tick(gba, 8);
 }
 
 /*
@@ -261,7 +251,7 @@ core_switch_mode(
 ) {
     if (mode != core->cpsr.mode) {
 
-        hs_logln(
+        logln(
             HS_CORE,
             "Switching from %s to %s mode.",
             arm_modes_name[core->cpsr.mode],
@@ -417,7 +407,7 @@ core_interrupt(
     core->lr = core->pc - (core->cpsr.thumb ? 2 : 4);
     core->pc = vector;
     core->cpsr.irq_disable = true;
-    //core->cpsr.fiq_disable |= (vector == VEC_FIQ || VEC_RESET); TODO FIXME
+    //core->cpsr.fiq_disable |= (vector == VEC_FIQ || VEC_RESET); // TODO FIXME
     core->cpsr.thumb = false;
 
     core_reload_pipeline(gba);
@@ -432,6 +422,7 @@ core_trigger_irq(
     enum arm_irq irq
 ) {
     gba->io.int_flag.raw |= irq;
+    gba->core.halt = 0;
     core_scan_irq(gba);
 }
 
@@ -451,9 +442,9 @@ core_scan_irq(
         && (gba->io.ime & 0b1)
         && (gba->io.int_enabled.raw & gba->io.int_flag.raw)
     ) {
-        hs_logln(
+        logln(
             HS_IRQ,
-            "IRQ signal sent (0x%08x)",
+            "IRQ signal sent (0x%04x)",
             gba->io.int_flag.raw
         );
         core_interrupt(gba, VEC_IRQ, MODE_IRQ);

@@ -127,8 +127,11 @@ enum dbg_commands {
     CMD_DISAS,
     CMD_SET,
     CMD_CONTEXT,
+    CMD_CONTEXT_COMPACT,
     CMD_PRINT,
     CMD_BREAK,
+    CMD_TRACE,
+    CMD_VERBOSE,
     CMD_MAIN,
 };
 
@@ -149,13 +152,17 @@ uint32_t debugger_eval_expr(struct gba const *gba, char const *expr);
 
 /* debugger/cmd/context.c */
 void debugger_dump_context(struct gba *, bool);
+void debugger_dump_context_compact(struct gba *);
+void debugger_dump_context_compact_header(void);
 void debugger_cmd_context(struct gba *, size_t, char const * const *);
+void debugger_cmd_context_compact(struct gba *, size_t, char const * const *);
 
 /* debugger/cmd/continue.c */
 void debugger_cmd_continue(struct gba *, size_t, char const * const *);
 
 /* debugger/cmd/disas.c */
 void debugger_cmd_disas(struct gba *, size_t, char const * const *);
+void debugger_cmd_disas_at(struct gba *gba, uint32_t ptr);
 
 /* debugger/cmd/help.c */
 void debugger_cmd_help(struct gba *, size_t, char const * const *);
@@ -180,5 +187,11 @@ void debugger_cmd_set(struct gba *, size_t, char const * const *);
 
 /* debugger/cmd/step.c */
 void debugger_cmd_step(struct gba *, size_t, char const * const *);
+
+/* debugger/cmd/trace.c */
+void debugger_cmd_trace(struct gba *, size_t, char const * const *);
+
+/* debugger/cmd/verbose.c */
+void debugger_cmd_verbose(struct gba *, size_t, char const * const *);
 
 #endif /* !DEBUGGER_H */

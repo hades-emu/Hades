@@ -7,8 +7,8 @@
 **
 \******************************************************************************/
 
-#ifndef VIDEO_H
-# define VIDEO_H
+#ifndef TIMER_H
+# define TIMER_H
 
 # define SCREEN_WIDTH           240
 # define SCREEN_HEIGHT          160
@@ -42,10 +42,10 @@ union tile {
 
 static_assert(sizeof(union color) == sizeof(uint16_t));
 
-/* video/video.c */
+/* video.c */
 void video_step(struct gba *gba);
 
-/* render/sdl.c */
+/* sdl.c */
 void *sdl_render_loop(struct gba *gba);
 
-#endif /* !VIDEO_H */
+#endif /* !TIMER_H */

@@ -11,6 +11,9 @@
 #include "debugger.h"
 #include "gba.h"
 
+/*
+** Print the general purpose registers and the CPSR.
+*/
 void
 debugger_cmd_registers(
     struct gba *gba,
@@ -19,8 +22,6 @@ debugger_cmd_registers(
 ) {
     size_t i;
     struct core *core;
-
-    /* Print the general purpose registers. */
 
     core = &gba->core;
     for (i = 0; i < 4; ++i) {
@@ -42,10 +43,8 @@ debugger_cmd_registers(
 
     printf("\n");
 
-    /* Print the CPSR and all saved PSRs. */
-
     printf(
-        LIGHT_GREEN "CPSR" RESET ": " LIGHT_MAGENTA "%c%c%c%c%c%c%c" RESET ", %s, (" LIGHT_MAGENTA "0x%08x" RESET ")\n",
+        LIGHT_GREEN "CPSR" RESET ": " LIGHT_MAGENTA "%c%c%c%c%c%c%c" RESET ", %s, (" LIGHT_MAGENTA "0x%08x" RESET ")",
         core->cpsr.negative ? 'n' : '-',
         core->cpsr.zero ? 'z' : '-',
         core->cpsr.carry ? 'c' : '-',
@@ -56,4 +55,9 @@ debugger_cmd_registers(
         arm_modes_name[core->cpsr.mode],
         core->cpsr.raw
     );
+
+    if (core->halt) {
+        printf(" > " LIGHT_RED BOLD "HALTED" RESET " <");
+    }
+    printf("\n");
 }

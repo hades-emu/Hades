@@ -20,7 +20,6 @@ io_init(
     struct io *io
 ) {
     memset(io, 0, sizeof(*io));
-    io->keyinput.raw = 0x3FF; // Every button set to "released"
 }
 
 /*
@@ -76,6 +75,8 @@ mem_io_reg_name(
         case IO_REG_IE:             return ("REG_IE");
         case IO_REG_IF:             return ("REG_IF");
         case IO_REG_IME:            return ("REG_IME");
+        case IO_REG_POSTFLG:        return ("REG_POSTFLG");
+        case IO_REG_HALTCNT:        return ("REG_HALTCNT");
         default:                    return ("UNKNOWN");
     }
 };
@@ -90,7 +91,7 @@ mem_io_read8(
 ) {
     struct io const *io;
 
-    hs_logln(HS_IO, "IO read to %s (%#08x)", mem_io_reg_name(addr), addr);
+    logln(HS_IO, "IO read to %s (%#08x)", mem_io_reg_name(addr), addr);
 
     io = &gba->io;
     switch (addr) {
@@ -146,9 +147,43 @@ mem_io_read8(
         case IO_REG_DMA3CTL:                return (io->dma[3].control.bytes[0]);
         case IO_REG_DMA3CTL + 1:            return (io->dma[3].control.bytes[1]);
 
+        /* Timer 0 */
+        case IO_REG_TM0CNT_LO:              return (io->timers[0].counter.bytes[0]);
+        case IO_REG_TM0CNT_LO + 1:          return (io->timers[0].counter.bytes[1]);
+        case IO_REG_TM0CNT_HI:              return (io->timers[0].control.bytes[0]);
+        case IO_REG_TM0CNT_HI + 1:          return (io->timers[0].control.bytes[1]);
+
+        /* Timer 1 */
+        case IO_REG_TM1CNT_LO:              return (io->timers[1].counter.bytes[0]);
+        case IO_REG_TM1CNT_LO + 1:          return (io->timers[1].counter.bytes[1]);
+        case IO_REG_TM1CNT_HI:              return (io->timers[1].control.bytes[0]);
+        case IO_REG_TM1CNT_HI + 1:          return (io->timers[1].control.bytes[1]);
+
+        /* Timer 2 */
+        case IO_REG_TM2CNT_LO:              return (io->timers[2].counter.bytes[0]);
+        case IO_REG_TM2CNT_LO + 1:          return (io->timers[2].counter.bytes[1]);
+        case IO_REG_TM2CNT_HI:              return (io->timers[2].control.bytes[0]);
+        case IO_REG_TM2CNT_HI + 1:          return (io->timers[2].control.bytes[1]);
+
+        /* Timer 3 */
+        case IO_REG_TM3CNT_LO:              return (io->timers[3].counter.bytes[0]);
+        case IO_REG_TM3CNT_LO + 1:          return (io->timers[3].counter.bytes[1]);
+        case IO_REG_TM3CNT_HI:              return (io->timers[3].control.bytes[0]);
+        case IO_REG_TM3CNT_HI + 1:          return (io->timers[3].control.bytes[1]);
+
         /* Inputs */
-        case IO_REG_KEYINPUT:               return (io->keyinput.bytes[0]);
-        case IO_REG_KEYINPUT + 1:           return (io->keyinput.bytes[1]);
+        case IO_REG_KEYINPUT:
+        case IO_REG_KEYINPUT + 1:
+            {
+                uint8_t out;
+                pthread_mutex_t *mutex;
+
+                mutex = (pthread_mutex_t *)&gba->input_mutex; //
+                pthread_mutex_lock(mutex);
+                out = gba->input.bytes[addr - IO_REG_KEYINPUT];
+                pthread_mutex_unlock(mutex);
+                return (out);
+            }
 
         /* Interrupts */
         case IO_REG_IE:                     return (io->int_enabled.bytes[0]);
@@ -156,6 +191,9 @@ mem_io_read8(
         case IO_REG_IF:                     return (io->int_flag.bytes[0]);
         case IO_REG_IF + 1:                 return (io->int_flag.bytes[1]);
         case IO_REG_IME:                    return (io->ime);
+
+        /* System */
+        case IO_REG_POSTFLG:                return (io->postflg);
     }
     return (0);
 }
@@ -171,7 +209,7 @@ mem_io_write8(
 ) {
     struct io *io;
 
-    hs_logln(HS_IO, "IO write to %s (%#08x) (%x)", mem_io_reg_name(addr), addr, val);
+    logln(HS_IO, "IO write to %s (%#08x) (%x)", mem_io_reg_name(addr), addr, val);
 
     io = &gba->io;
     switch (addr) {
@@ -258,11 +296,71 @@ mem_io_write8(
             mem_dma_transfer(gba, DMA_TIMING_NOW);
             break;
 
+        /* Timer 0 */
+        case IO_REG_TM0CNT_LO:              io->timers[0].reload.bytes[0] = val; break;
+        case IO_REG_TM0CNT_LO + 1:          io->timers[0].reload.bytes[1] = val; break;
+        case IO_REG_TM0CNT_HI:
+            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
+            if (!io->timers[0].control.enable && (val & (1 << 7))) {
+                io->timers[0].real_counter = io->timers[0].reload.raw;
+                io->timers[0].counter.raw = io->timers[0].reload.raw;
+                logln(HS_TIMER, "Timer 0 started with initial value %04x", io->timers[0].reload.raw);
+            }
+            io->timers[0].control.bytes[0] = val;
+            break;
+        case IO_REG_TM0CNT_HI + 1:          io->timers[0].control.bytes[1] = val; break;
+
+        /* Timer 1 */
+        case IO_REG_TM1CNT_LO:              io->timers[1].reload.bytes[0] = val; break;
+        case IO_REG_TM1CNT_LO + 1:          io->timers[1].reload.bytes[1] = val; break;
+        case IO_REG_TM1CNT_HI:
+            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
+            if (!io->timers[1].control.enable && (val & (1 << 7))) {
+                io->timers[1].real_counter = io->timers[1].reload.raw;
+                io->timers[1].counter.raw = io->timers[1].reload.raw;
+                logln(HS_TIMER, "Timer 1 started with initial value %04x", io->timers[1].reload.raw);
+            }
+            io->timers[1].control.bytes[0] = val;
+            break;
+        case IO_REG_TM1CNT_HI + 1:          io->timers[1].control.bytes[1] = val; break;
+
+        /* Timer 2 */
+        case IO_REG_TM2CNT_LO:              io->timers[2].reload.bytes[0] = val; break;
+        case IO_REG_TM2CNT_LO + 1:          io->timers[2].reload.bytes[1] = val; break;
+        case IO_REG_TM2CNT_HI:
+            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
+            if (!io->timers[2].control.enable && (val & (1 << 7))) {
+                io->timers[2].real_counter = io->timers[2].reload.raw;
+                io->timers[2].counter.raw = io->timers[2].reload.raw;
+                logln(HS_TIMER, "Timer 2 started with initial value %04x", io->timers[2].reload.raw);
+            }
+            io->timers[2].control.bytes[0] = val;
+            break;
+        case IO_REG_TM2CNT_HI + 1:          io->timers[2].control.bytes[1] = val; break;
+
+        /* Timer 3 */
+        case IO_REG_TM3CNT_LO:              io->timers[3].reload.bytes[0] = val; break;
+        case IO_REG_TM3CNT_LO + 1:          io->timers[3].reload.bytes[1] = val; break;
+        case IO_REG_TM3CNT_HI:
+            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
+            if (!io->timers[3].control.enable && (val & (1 << 7))) {
+                io->timers[3].real_counter = io->timers[3].reload.raw;
+                io->timers[3].counter.raw = io->timers[3].reload.raw;
+                logln(HS_TIMER, "Timer 3 started with initial value %04x", io->timers[3].reload.raw);
+            }
+            io->timers[3].control.bytes[0] = val;
+            break;
+        case IO_REG_TM3CNT_HI + 1:          io->timers[3].control.bytes[1] = val; break;
+
         /* Interrupt */
         case IO_REG_IE:                     io->int_enabled.bytes[0] = val; break;
         case IO_REG_IE + 1:                 io->int_enabled.bytes[1] = val; break;
-        case IO_REG_IF:                     io->int_flag.bytes[0] = val; break;
-        case IO_REG_IF + 1:                 io->int_flag.bytes[1] = val; break;
+        case IO_REG_IF:                     io->int_flag.bytes[0] &= ~val; break;
+        case IO_REG_IF + 1:                 io->int_flag.bytes[1] &= ~val; break;
         case IO_REG_IME:                    io->ime = val; break;
+
+        /* System */
+        case IO_REG_POSTFLG:                io->postflg = val; break;
+        case IO_REG_HALTCNT:                gba->core.halt = val + 1; break;
     }
 }

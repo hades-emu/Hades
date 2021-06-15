@@ -116,6 +116,10 @@ struct core {
     uint32_t prefetch;              // The next instruction to be executed
 
     struct psr cpsr;
+
+    uint32_t halt;                  // 0=Run, 1=Halt, 2=Stop
+
+    uint64_t count;                 // An instruction counter, incremented each time core_step() is called.
 };
 
 /*

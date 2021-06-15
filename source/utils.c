@@ -10,59 +10,25 @@
 #include <ctype.h>
 #include "hades.h"
 
-#ifdef DEBUG
-
-/*
-** Append to the log the given formatted string.
-*/
-void
-hs_loga(
-    char const *fmt,
-    ...
-) {
-    va_list va;
-
-    va_start(va, fmt);
-    vprintf(fmt, va);
-    va_end(va);
-}
-
 /*
 ** Log the given formatted string, followed by a `\n`.
 */
 void
-hs_log(
+logln(
     enum modules module,
     char const *fmt,
     ...
 ) {
     va_list va;
 
-    va_start(va, fmt);
-    printf("[%s] ", modules_str[module]);
-    vprintf(fmt, va);
-    va_end(va);
+    if (g_verbose_global && g_verbose[module]) {
+        va_start(va, fmt);
+        printf("[%s] ", modules_str[module]);
+        vprintf(fmt, va);
+        printf("\n");
+        va_end(va);
+    }
 }
-
-/*
-** Log the given formatted string, followed by a `\n`.
-*/
-void
-hs_logln(
-    enum modules module,
-    char const *fmt,
-    ...
-) {
-    va_list va;
-
-    va_start(va, fmt);
-    printf("[%s] ", modules_str[module]);
-    vprintf(fmt, va);
-    printf("\n");
-    va_end(va);
-}
-
-#endif
 
 /*
 ** Print the given formatted string to stderr, followed by a `\n`, and then
