@@ -71,6 +71,14 @@ mem_io_reg_name(
         case IO_REG_DMA3DAD_HI:     return ("REG_DMA3DAD_HI");
         case IO_REG_DMA3CNT:        return ("REG_DMA3CNT");
         case IO_REG_DMA3CTL:        return ("REG_DMA3CTL");
+        case IO_REG_TM0CNT_LO:      return ("REG_TM0CNT_LO");
+        case IO_REG_TM0CNT_HI:      return ("REG_TM0CNT_HI");
+        case IO_REG_TM1CNT_LO:      return ("REG_TM1CNT_LO");
+        case IO_REG_TM1CNT_HI:      return ("REG_TM1CNT_HI");
+        case IO_REG_TM2CNT_LO:      return ("REG_TM2CNT_LO");
+        case IO_REG_TM2CNT_HI:      return ("REG_TM2CNT_HI");
+        case IO_REG_TM3CNT_LO:      return ("REG_TM3CNT_LO");
+        case IO_REG_TM3CNT_HI:      return ("REG_TM3CNT_HI");
         case IO_REG_KEYINPUT:       return ("REG_KEYINPUT");
         case IO_REG_IE:             return ("REG_IE");
         case IO_REG_IF:             return ("REG_IF");
@@ -99,6 +107,8 @@ mem_io_read8(
         /* Display */
         case IO_REG_DISPCNT:                return (io->dispcnt.bytes[0]);
         case IO_REG_DISPCNT + 1:            return (io->dispcnt.bytes[1]);
+        case IO_REG_GREENSWP:               return (io->greenswp.bytes[0]);
+        case IO_REG_GREENSWP + 1:           return (io->greenswp.bytes[1]);
         case IO_REG_DISPSTAT:               return (io->dispstat.bytes[0]);
         case IO_REG_DISPSTAT + 1:           return (io->dispstat.bytes[1]);
         case IO_REG_VCOUNT:                 return (gba->video.v);
@@ -190,7 +200,8 @@ mem_io_read8(
         case IO_REG_IE + 1:                 return (io->int_enabled.bytes[1]);
         case IO_REG_IF:                     return (io->int_flag.bytes[0]);
         case IO_REG_IF + 1:                 return (io->int_flag.bytes[1]);
-        case IO_REG_IME:                    return (io->ime);
+        case IO_REG_IME:                    return (io->ime.bytes[0]);
+        case IO_REG_IME + 1:                return (io->ime.bytes[1]);
 
         /* System */
         case IO_REG_POSTFLG:                return (io->postflg);
@@ -217,6 +228,8 @@ mem_io_write8(
         /* Display */
         case IO_REG_DISPCNT:                io->dispcnt.bytes[0] = val; break;
         case IO_REG_DISPCNT + 1:            io->dispcnt.bytes[1] = val; break;
+        case IO_REG_GREENSWP:               io->greenswp.bytes[0] = val; break;
+        case IO_REG_GREENSWP + 1:           io->greenswp.bytes[1] = val; break;
         case IO_REG_DISPSTAT:               io->dispstat.bytes[0] = val; break;
         case IO_REG_DISPSTAT + 1:           io->dispstat.bytes[1] = val; break;
         case IO_REG_BG0CNT:                 io->bgcnt[0].bytes[0] = val; break;
@@ -353,11 +366,18 @@ mem_io_write8(
         case IO_REG_TM3CNT_HI + 1:          io->timers[3].control.bytes[1] = val; break;
 
         /* Interrupt */
-        case IO_REG_IE:                     io->int_enabled.bytes[0] = val; break;
-        case IO_REG_IE + 1:                 io->int_enabled.bytes[1] = val; break;
+        case IO_REG_IE:
+        case IO_REG_IE + 1:
+            io->int_enabled.bytes[addr - IO_REG_IE] = val;
+            core_scan_irq(gba);
+            break;
         case IO_REG_IF:                     io->int_flag.bytes[0] &= ~val; break;
         case IO_REG_IF + 1:                 io->int_flag.bytes[1] &= ~val; break;
-        case IO_REG_IME:                    io->ime = val; break;
+        case IO_REG_IME:
+        case IO_REG_IME + 1:
+            io->ime.bytes[addr - IO_REG_IME] = val;
+            core_scan_irq(gba);
+            break;
 
         /* System */
         case IO_REG_POSTFLG:                io->postflg = val; break;

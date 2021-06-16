@@ -25,6 +25,7 @@ core_arm_swp(
     uint32_t rd;
 
     core = &gba->core;
+
     rm = bitfield_get_range(op, 0, 4);
     rd = bitfield_get_range(op, 12, 16);
     rn = bitfield_get_range(op, 16, 20);
@@ -37,5 +38,11 @@ core_arm_swp(
         tmp = mem_read32_ror(gba, core->registers[rn]);
         mem_write32(gba, core->registers[rn], core->registers[rm]);
         core->registers[rd] = tmp;
+    }
+
+    if (rd == 15) {
+        core_reload_pipeline(gba);
+    } else {
+        core->pc += 4;
     }
 }

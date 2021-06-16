@@ -29,6 +29,8 @@ core_arm_mrs(
     } else { // Source PSR = CPSR
         core->registers[rd] = gba->core.cpsr.raw;
     }
+
+    core->pc += 4;
 }
 
 /*
@@ -85,4 +87,6 @@ core_arm_msr(
         }
         core->cpsr = new_cpsr;
     }
+
+    core->pc += 4;
 }

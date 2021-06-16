@@ -75,6 +75,8 @@ core_arm_bdt(
         base_new = base;
     }
 
+    core->pc += 4;
+
     /*
     ** User bank transfer:
     **
@@ -103,7 +105,7 @@ core_arm_bdt(
 
                 core->registers[i] = mem_read32(gba, base);
             } else {
-                mem_write32(gba, base, core->registers[i] + (i == 15) * 4);
+                mem_write32(gba, base, core->registers[i]);
 
                 if (first && wb) { // Write back after data is stored
                     core->registers[rn] = base_new;

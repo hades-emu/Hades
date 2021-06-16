@@ -71,10 +71,10 @@ video_step(
             logln(HS_VIDEO, "Video mode: %u", io->dispcnt.bg_mode);
             logln(HS_VIDEO,
                 "Video layout: BG0=%u BG1=%u BG2=%u BG3=%u OBJ=%u",
-                io->dispcnt.bg >> 0,
-                io->dispcnt.bg >> 1,
-                io->dispcnt.bg >> 2,
-                io->dispcnt.bg >> 3,
+                (io->dispcnt.bg >> 0) & 1,
+                (io->dispcnt.bg >> 1) & 1,
+                (io->dispcnt.bg >> 2) & 1,
+                (io->dispcnt.bg >> 3) & 1,
                 io->dispcnt.obj
             );
         }

@@ -198,6 +198,12 @@ struct io {
         uint8_t bytes[2];
     } dispcnt;
 
+    // REG_GREENSWP
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } greenswp;
+
     // REG_DISPSTAT (General LCD Status, Read/Write)
     union {
         struct {
@@ -213,9 +219,6 @@ struct io {
         uint16_t raw;
         uint8_t bytes[2];
     } dispstat;
-
-    // REG_VCOUNT (Vertical Counter, Read only)
-    uint16_t vcount;
 
     // REG_BG{0,1,2,3}CNT
     union {
@@ -250,7 +253,10 @@ struct io {
     struct timer timers[4];
 
     // REG_IME
-    uint16_t ime;
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } ime;
 
     // REG_IE
     union {

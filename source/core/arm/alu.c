@@ -24,25 +24,26 @@ core_arm_alu(
     uint32_t op1;
     uint32_t op2;
     bool cond;
+    bool early_pc_inc;
     bool shift_carry;
 
+    early_pc_inc = false;
     rd = (op >> 12) & 0xF;
     rn = (op >> 16) & 0xF;
     cond = bitfield_get(op, 20);
 
     core = &gba->core;
     shift_carry = core->cpsr.carry;
-    op1 = core->registers[rn];
-    op2 = 0;
 
     /*
     ** The second operand is either an immediate value or obtained through
-    ** anoter register, possible shifted.
+    ** anoter register, possibly shifted.
     */
     if (bitfield_get(op, 25)) { // Immediate
         bool carry_out;
         uint32_t rot;
 
+        op1 = core->registers[rn];
         op2 = bitfield_get_range(op, 0, 8);
         rot = bitfield_get_range(op, 8, 12) * 2;
         if (rot > 0) {
@@ -55,13 +56,11 @@ core_arm_alu(
             }
         }
     } else { // Register
-        uint32_t val;
         uint32_t rm;
         uint32_t shift;
 
         rm = op & 0xF;
         shift = (op >> 4) & 0xFF;
-        val = core->registers[rm];
 
         /*
         ** If R15 (the PC) is used as an operand in a data processing instruction the register is used directly.
@@ -69,14 +68,15 @@ core_arm_alu(
         **   - If the shift amount is specified in the instruction, the PC will be 8 bytes ahead.
         **   - If a register is used to specify the shift amount the PC will be 12 bytes ahead
         */
-
         if (bitfield_get(shift, 0)) {
-            val += (rm == 15) * 4;
-            op1 += (rn == 15) * 4;
+            early_pc_inc = true;
+            core->pc += 4;
         }
 
-        op2 = core_compute_shift(core, shift, val, (cond && rd != 15 ? &shift_carry : NULL));
+        op1 = core->registers[rn];
+        op2 = core_compute_shift(core, shift, core->registers[rm], (cond && rd != 15 ? &shift_carry : NULL));
     }
+
 
     /*
     ** Execute the correct data processing instruction.
@@ -243,10 +243,15 @@ core_arm_alu(
             case 9: // TEQ
             case 10: // CMP
             case 11: // CMN
+                if (!early_pc_inc) {
+                    core->pc += 4;
+                }
                 break;
             default:
                 core_reload_pipeline(gba);
                 break;
         }
+    } else if (!early_pc_inc) {
+        core->pc += 4;
     }
 }

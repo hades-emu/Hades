@@ -113,7 +113,7 @@ struct core {
         uint32_t bank_registers[28];
     };
 
-    uint32_t prefetch;              // The next instruction to be executed
+    uint32_t prefetch[2];              // The next instruction to be executed
 
     struct psr cpsr;
 

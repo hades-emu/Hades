@@ -43,6 +43,8 @@ core_thumb_lsl(
     core->cpsr.negative = bitfield_get(value, 31);
 
     core->registers[rd] = value;
+
+    core->pc += 2;
 }
 
 /*
@@ -80,6 +82,8 @@ core_thumb_lsr(
     core->cpsr.negative = bitfield_get(value, 31);
 
     core->registers[rd] = value;
+
+    core->pc += 2;
 }
 
 /*
@@ -117,4 +121,6 @@ core_thumb_asr(
     core->cpsr.negative = bitfield_get(value, 31);
 
     core->registers[rd] = value;
+
+    core->pc += 2;
 }

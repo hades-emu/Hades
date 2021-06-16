@@ -59,11 +59,9 @@ main(
 
     g_verbose[HS_CORE] = true;
     g_verbose[HS_IO] = true;
-    g_verbose[HS_VIDEO] = true;
     g_verbose[HS_DMA] = true;
     g_verbose[HS_IRQ] = true;
     g_verbose[HS_MEMORY] = true;
-    g_verbose[HS_TIMER] = true;
 
     if (argc == 2) {
         pthread_t render_thread;

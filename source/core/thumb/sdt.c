@@ -22,11 +22,12 @@ core_thumb_push(
     ssize_t i;
 
     core = &gba->core;
+    core->pc += 2;
 
     /* Edge case: if rlist is empty, sp is decreased by 0x40 and r15 is stored instead */
     if (!bitfield_get_range(op, 0, 9)) {
         core->sp -= 0x40;
-        mem_write32(gba, core->sp, core->pc + 2);
+        mem_write32(gba, core->sp, core->pc);
         return ;
     }
 
@@ -36,13 +37,11 @@ core_thumb_push(
         mem_write32(gba, core->sp, core->lr);
     }
 
-    i = 7;
-    while (i >= 0) {
+    for (i = 7; i >= 0; --i) {
         if (bitfield_get(op, i)) {
             core->sp -= 4;
             mem_write32(gba, core->sp, core->registers[i]);
         }
-        --i;
     }
 }
 
@@ -58,6 +57,7 @@ core_thumb_pop(
     ssize_t i;
 
     core = &gba->core;
+    core->pc += 2;
 
     /* Edge case: if rlist is empty, r15 is loaded instead and sp is increased by 0x40 */
     if (!bitfield_get_range(op, 0, 9)) {
@@ -67,13 +67,11 @@ core_thumb_pop(
         return ;
     }
 
-    i = 0;
-    while (i < 8) {
+    for (i = 0; i < 8; ++i) {
         if (bitfield_get(op, i)) {
             core->registers[i] = mem_read32_ror(gba, core->sp);
             core->sp += 4;
         }
-        ++i;
     }
 
     /* Pop PC */
@@ -81,8 +79,8 @@ core_thumb_pop(
         core->pc = mem_read32_ror(gba, core->sp);
         core_reload_pipeline(gba);
         core->sp += 4;
-
     }
+
 }
 
 /*
@@ -101,25 +99,24 @@ core_thumb_stmia(
     ssize_t i;
 
     count = 0;
-    core = &gba->core;
     rb = bitfield_get_range(op, 8, 11);
+    core = &gba->core;
+    core->pc += 2;
 
     /*
     ** Edge case: if rlist is empty, r15 is stored instead and rb is increased by 0x40
     ** (as if all registered were pushed).
     */
     if (!bitfield_get_range(op, 0, 8)) {
-        mem_write32(gba, core->registers[rb], core->pc + 2);
+        mem_write32(gba, core->registers[rb], core->pc);
         core->registers[rb] += 0x40;
         return ;
     }
 
-    i = 0;
-    while (i < 8) {
+    for (i = 0; i < 8; ++i) {
         if (bitfield_get(op, i)) {
             count += 4;
         }
-        ++i;
     }
 
     first = true;
@@ -131,8 +128,7 @@ core_thumb_stmia(
     ** and otherwise store the NEW base.
     */
 
-    i = 0;
-    while (i < 8) {
+    for (i = 0; i < 8; ++i) {
         if (bitfield_get(op, i)) {
             mem_write32(gba, addr, core->registers[i]);
             addr += 4;
@@ -142,7 +138,6 @@ core_thumb_stmia(
                 first = false;
             }
         }
-        ++i;
     }
 }
 
@@ -162,6 +157,7 @@ core_thumb_ldmia(
 
     count = 0;
     core = &gba->core;
+    core->pc += 2;
     rb = bitfield_get_range(op, 8, 11);
 
     /*
@@ -175,24 +171,20 @@ core_thumb_ldmia(
         return ;
     }
 
-    i = 0;
-    while (i < 8) {
+    for (i = 0; i < 8; ++i) {
         if (bitfield_get(op, i)) {
             count += 4;
         }
-        ++i;
     }
 
     addr = core->registers[rb];
     core->registers[rb] += count;
 
-    i = 0;
-    while (i < 8) {
+    for (i = 0; i < 8; ++i) {
         if (bitfield_get(op, i)) {
             core->registers[i] = mem_read32_ror(gba, addr);
             addr += 4;
         }
-        ++i;
     }
 }
 
@@ -209,10 +201,10 @@ core_thumb_sdt_imm(
     uint32_t rb;
     uint32_t offset;
 
+    core = &gba->core;
     rd = bitfield_get_range(op, 0, 3);
     rb = bitfield_get_range(op, 3, 6);
     offset = bitfield_get_range(op, 6, 11);
-    core = &gba->core;
 
     switch ((bitfield_get(op, 11) << 1) | bitfield_get(op, 12)) {
         case 0b00: // Store word
@@ -228,6 +220,8 @@ core_thumb_sdt_imm(
             core->registers[rd] = mem_read8(gba, core->registers[rb] + offset);
             break;
     }
+
+    core->pc += 2;
 }
 
 /*
@@ -243,10 +237,10 @@ core_thumb_sdt_wb_reg(
     uint32_t rb;
     uint32_t ro;
 
+    core = &gba->core;
     rd = bitfield_get_range(op, 0, 3);
     rb = bitfield_get_range(op, 3, 6);
     ro = bitfield_get_range(op, 6, 9);
-    core = &gba->core;
 
     switch ((bitfield_get(op, 11) << 1) | bitfield_get(op, 10)) {
         case 0b00: // Store word
@@ -262,6 +256,8 @@ core_thumb_sdt_wb_reg(
             core->registers[rd] = mem_read8(gba, core->registers[rb] + core->registers[ro]);
             break;
     }
+
+    core->pc += 2;
 }
 
 /*
@@ -278,11 +274,11 @@ core_thumb_sdt_h_imm(
     uint32_t rb;
     bool l;
 
+    core = &gba->core;
     rd = bitfield_get_range(op, 0, 3);
     rb = bitfield_get_range(op, 3, 6);
     offset = bitfield_get_range(op, 6, 11) << 1;
     l = bitfield_get(op, 11);
-    core = &gba->core;
 
     if (l) {
         // LDRH
@@ -291,6 +287,8 @@ core_thumb_sdt_h_imm(
         // STRH
         mem_write16(gba, core->registers[rb] + offset, (uint16_t)core->registers[rd]);
     }
+
+    core->pc += 2;
 }
 
 /*
@@ -338,6 +336,7 @@ core_thumb_sdt_sbh_reg(
             }
             break;
     }
+    core->pc += 2;
 }
 
 /*
@@ -357,6 +356,7 @@ core_thumb_ldr_pc(
 
     core = &gba->core;
     core->registers[rd] = mem_read32_ror(gba, (core->pc & 0xFFFFFFFC) + offset);
+    core->pc += 2;
 }
 
 /*
@@ -377,11 +377,11 @@ core_thumb_sdt_sp(
     l = bitfield_get(op, 11);
     core = &gba->core;
 
-    if (l) {
-        // LDR
+    if (l) { // LDR
         core->registers[rd] = mem_read32_ror(gba, core->sp + offset);
-    } else {
-        // STR
+    } else { // STR
         mem_write32(gba,  core->sp + offset, core->registers[rd]);
     }
+
+    core->pc += 2;
 }
