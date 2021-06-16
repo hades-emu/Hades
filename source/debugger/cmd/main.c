@@ -7,6 +7,7 @@
 **
 \******************************************************************************/
 
+#include <string.h>
 #include "hades.h"
 #include "debugger.h"
 #include "gba.h"
@@ -17,19 +18,16 @@ debugger_cmd_main(
     size_t argc __unused,
     char const * const *argv __unused
 ) {
-    size_t i;
+    struct core *core;
 
-    gba->core.pc = 0x0;
-    core_reload_pipeline(gba);
+    core = &gba->core;
 
-    i = 0;
-    while (i < 27) {
-        core_step(gba);
-        ++i;
-    }
+    memset(core->registers, 0, sizeof(core->registers));
 
-    gba->core.r4 = 0x0;
+    core->sp = 0x03007F00;
+    core->lr = 0x08000000;
+    core->pc = 0x08000000;
+    core->cpsr.raw = 0x1F;
 
-    gba->core.pc = 0x08000000;
     core_reload_pipeline(gba);
 }

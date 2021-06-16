@@ -26,6 +26,7 @@ core_thumb_lo_add(
     bool immediate;
 
     core = &gba->core;
+
     rd = bitfield_get_range(op, 0, 3);
     rs = bitfield_get_range(op, 3, 6);
     immediate = bitfield_get(op, 10);
@@ -44,6 +45,7 @@ core_thumb_lo_add(
     core->cpsr.overflow = iadd32(core->registers[rs], rhs, 0);
 
     core->registers[rd] = res;
+    core->pc += 2;
 }
 
 /*
@@ -62,6 +64,7 @@ core_thumb_lo_sub(
     bool immediate;
 
     core = &gba->core;
+
     rd = bitfield_get_range(op, 0, 3);
     rs = bitfield_get_range(op, 3, 6);
     immediate = bitfield_get(op, 10);
@@ -80,6 +83,7 @@ core_thumb_lo_sub(
     core->cpsr.overflow = isub32(core->registers[rs], rhs, 0);
 
     core->registers[rd] = res;
+    core->pc += 2;
 }
 
 /*
@@ -94,13 +98,15 @@ core_thumb_mov_imm(
     uint16_t rd;
     uint32_t imm;
 
+    core = &gba->core;
+
     rd = bitfield_get_range(op, 8, 11);
     imm = bitfield_get_range(op, 0, 8);
 
-    core = &gba->core;
     core->registers[rd] = imm;
     core->cpsr.zero = !(core->registers[rd]);
     core->cpsr.negative = bitfield_get(core->registers[rd], 31); // Useless ?
+    core->pc += 2;
 }
 
 /*
@@ -116,16 +122,17 @@ core_thumb_cmp_imm(
     uint32_t imm;
     uint32_t tmp;
 
+    core = &gba->core;
+
     rd = bitfield_get_range(op, 8, 11);
     imm = bitfield_get_range(op, 0, 8);
-
-    core = &gba->core;
     tmp = core->registers[rd] - imm;
 
     core->cpsr.zero = !tmp;
     core->cpsr.negative = bitfield_get(tmp, 31);
     core->cpsr.carry = usub32(core->registers[rd], imm, 0);
     core->cpsr.overflow = isub32(core->registers[rd], imm, 0);
+    core->pc += 2;
 }
 
 /*
@@ -140,10 +147,10 @@ core_thumb_add_imm(
     uint16_t rd;
     uint32_t imm;
 
+    core = &gba->core;
     rd = bitfield_get_range(op, 8, 11);
     imm = bitfield_get_range(op, 0, 8);
 
-    core = &gba->core;
     core->cpsr.carry = uadd32(core->registers[rd], imm, 0);
     core->cpsr.overflow = iadd32(core->registers[rd], imm, 0);
 
@@ -151,6 +158,7 @@ core_thumb_add_imm(
 
     core->cpsr.zero = !(core->registers[rd]);
     core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+    core->pc += 2;
 }
 
 /*
@@ -165,10 +173,11 @@ core_thumb_sub_imm(
     uint16_t rd;
     uint32_t imm;
 
+    core = &gba->core;
+
     rd = bitfield_get_range(op, 8, 11);
     imm = bitfield_get_range(op, 0, 8);
 
-    core = &gba->core;
     core->cpsr.carry = usub32(core->registers[rd], imm, 0);
     core->cpsr.overflow = isub32(core->registers[rd], imm, 0);
 
@@ -176,6 +185,7 @@ core_thumb_sub_imm(
 
     core->cpsr.zero = !(core->registers[rd]);
     core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+    core->pc += 2;
 }
 
 /*
@@ -204,6 +214,8 @@ core_thumb_hi_add(
 
     if (rd == 15) {
         core_reload_pipeline(gba);
+    } else {
+        core->pc += 2;
     }
 }
 
@@ -229,6 +241,7 @@ core_thumb_hi_cmp(
     rs = bitfield_get_range(op, 3, 6) + h2 * 8;
 
     core = &gba->core;
+
     op1 = core->registers[rd];
     op2 = core->registers[rs];
 
@@ -238,6 +251,7 @@ core_thumb_hi_cmp(
     core->cpsr.negative = bitfield_get(op1 - op2, 31);
     core->cpsr.carry = usub32(op1, op2, 0);
     core->cpsr.overflow = isub32(op1, op2, 0);
+    core->pc += 2;
 }
 
 /*
@@ -266,6 +280,8 @@ core_thumb_hi_mov(
 
     if (rd == 15) {
         core_reload_pipeline(gba);
+    } else {
+        core->pc += 2;
     }
 }
 
@@ -286,6 +302,7 @@ core_thumb_add_sp_imm(
 
     core = &gba->core;
     core->registers[rd] = core->sp + offset;
+    core->pc += 2;
 }
 
 /*
@@ -305,6 +322,7 @@ core_thumb_add_pc_imm(
 
     core = &gba->core;
     core->registers[rd] = (core->pc & 0xFFFFFFFC) + offset;
+    core->pc += 2;
 }
 
 /*
@@ -323,13 +341,13 @@ core_thumb_add_sp_s_imm(
     sign = bitfield_get(op, 7);
     offset = bitfield_get_range(op, 0, 7) << 2;
 
-    if (sign) {
-        // Offset is negative
+    if (sign) { // Offset is negative
         core->sp -= offset;
-    } else {
-        // Offset is positive
+    } else { // Offset is positive
         core->sp += offset;
     }
+
+    core->pc += 2;
 }
 
 /*
@@ -542,4 +560,5 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(core->registers[rd], 31);
             break;
     }
+    core->pc += 2;
 }

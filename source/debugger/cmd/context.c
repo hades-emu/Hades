@@ -103,7 +103,7 @@ debugger_dump_context_compact(
         arm_modes_name[core->cpsr.mode]
     );
 
-    debugger_cmd_disas_at(gba, core->pc - op_len);
+    debugger_cmd_disas_at(gba, core->pc - op_len * 2);
     printf("\n");
 }
 

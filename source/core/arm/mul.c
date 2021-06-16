@@ -26,13 +26,13 @@ core_arm_mul(
     bool s;
     bool a;
 
+    core = &gba->core;
     rm = bitfield_get_range(op, 0, 4);
     rs = bitfield_get_range(op, 8, 12);
     rn = bitfield_get_range(op, 12, 16);
     rd = bitfield_get_range(op, 16, 20);
     s = bitfield_get(op, 20);
     a = bitfield_get(op, 21);
-    core = &gba->core;
 
     if (a) {
         core->registers[rd] = core->registers[rm] * core->registers[rs] + core->registers[rn];
@@ -44,6 +44,8 @@ core_arm_mul(
         core->cpsr.zero = !(core->registers[rd]);
         core->cpsr.negative = bitfield_get(core->registers[rd], 31);
     }
+
+    core->pc += 4;
 }
 
 /*
@@ -65,6 +67,8 @@ core_arm_mull(
     bool a;
     bool u;
 
+    core = &gba->core;
+
     rm = bitfield_get_range(op, 0, 4);
     rs = bitfield_get_range(op, 8, 12);
     rd_lo = bitfield_get_range(op, 12, 16);
@@ -72,7 +76,6 @@ core_arm_mull(
     s = bitfield_get(op, 20);
     a = bitfield_get(op, 21);
     u = bitfield_get(op, 22);
-    core = &gba->core;
 
     switch ((u << 1) | a) {
         // UMULL
@@ -105,4 +108,6 @@ core_arm_mull(
         core->cpsr.zero = !(core->registers[rd_hi]) && !(core->registers[rd_lo]);
         core->cpsr.negative = bitfield_get(core->registers[rd_hi], 31);
     }
+
+    core->pc += 4;
 }

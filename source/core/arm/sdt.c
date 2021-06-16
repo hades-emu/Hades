@@ -38,30 +38,21 @@ core_arm_sdt(
     ** Otherwise, it is derived from a register shifted by a certain amount.
     */
     if (bitfield_get(op, 25)) {
-        uint32_t val;
         uint32_t rm;
         uint32_t shift;
 
         rm = op & 0xF;
         shift = bitfield_get_range(op, 4, 12);
-        val = core->registers[rm];
-
-        /*
-        ** If R15 (the PC) is used as an operand in a data processing instruction the register is used directly.
-        ** The PC value will be the address of the instruction, plus 8 or 12 bytes due to instruction prefetching.
-        **   - If the shift amount is specified in the instruction, the PC will be 8 bytes ahead.
-        **   - If a register is used to specify the shift amount the PC will be 12 bytes ahead
-        */
-
-        if (bitfield_get(shift, 0)) {
-            val += (rm == 15) * 4;
-            base += (rn == 15) * 4;
-        }
-
-        offset = core_compute_shift(core, shift, val, false);
+        offset = core_compute_shift(core, shift, core->registers[rm], NULL);
     } else {
         offset = bitfield_get_range(op, 0, 12);
     }
+
+    /*
+    ** When R15 is the source register (Rd) of a register store (STR) instruction,
+    ** the stored value will be address of the instruction plus 12
+    */
+    core->pc += 4;
 
     /*
     ** If bit 23 is set, the offset must be added to the base.
@@ -110,9 +101,9 @@ core_arm_sdt(
     } else { // Store
 
         if (bitfield_get(op, 22)) { // Store Byte
-            mem_write8(gba, effective_addr, core->registers[rd] + (rd == 15) * 4); // TODO FIXME Idle
+            mem_write8(gba, effective_addr, core->registers[rd]);
         } else { // Store word
-            mem_write32(gba, effective_addr, core->registers[rd] + (rd == 15) * 4); // TODO FIXME Idle
+            mem_write32(gba, effective_addr, core->registers[rd]);
         }
 
         if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
@@ -137,10 +128,11 @@ core_arm_hsdt(
     uint32_t rd;
     uint32_t rn;
 
+    core = &gba->core;
+    core->pc += 4;
+
     rd = bitfield_get_range(op, 12, 16);
     rn = bitfield_get_range(op, 16, 20);
-
-    core = &gba->core;
     base = core->registers[rn];
     offset = 0;
 

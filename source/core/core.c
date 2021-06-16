@@ -51,8 +51,7 @@ core_init(
     core->r13_svc = 0x03007FE0;
     core->sp = 0x03007F00;
     core->cpsr.mode = MODE_SYS;
-
-    core_reload_pipeline(gba);
+    core_interrupt(gba, VEC_RESET, MODE_SVC);
 }
 
 /*
@@ -84,12 +83,11 @@ core_step(
             if (core->cpsr.thumb) {
                 uint16_t op;
 
-                op = core->prefetch;
-                core->prefetch = mem_read16(gba, core->pc);
-                core->pc += 2;
+                op = core->prefetch[0];
+                core->prefetch[0] = core->prefetch[1];
+                core->prefetch[1] = mem_read16(gba, core->pc);
 
-                i = 0;
-                while (i < thumb_insns_len) {
+                for (i = 0; i < thumb_insns_len; ++i) {
                     if ((op & thumb_insns[i].mask) == thumb_insns[i].value) {
                         if (!thumb_insns[i].op) {
                             unimplemented(HS_CORE, "thumb instruction \"%s\" isn't implemented.", thumb_insns[i].name);
@@ -97,27 +95,26 @@ core_step(
                         thumb_insns[i].op(gba, op);
                         goto end;
                     }
-                    ++i;
                 }
 
                 panic(HS_CORE, "Unknown thumb op-code %#04x.", op);
             } else {
                 uint32_t op;
 
-                op = core->prefetch;
-                core->prefetch = mem_read32(gba, core->pc);
-                core->pc += 4;
+                op = core->prefetch[0];
+                core->prefetch[0] = core->prefetch[1];
+                core->prefetch[1] = mem_read32(gba, core->pc);
 
                 can_exec = core_compute_cond(core, op >> 28);
 
                 // Test if the conditions required to execute the instruction are met
                 // Ignore instructions where the conditions aren't met.
                 if (!can_exec) {
+                    core->pc += 4;
                     goto end;
                 }
 
-                i = 0;
-                while (i < arm_insns_len) {
+                for (i = 0; i < arm_insns_len; ++i) {
                     if ((op & arm_insns[i].mask) == arm_insns[i].value) {
                         if (!arm_insns[i].op) {
                             unimplemented(HS_CORE, "ARM instruction \"%s\" isn't implemented.", arm_insns[i].name);
@@ -125,7 +122,6 @@ core_step(
                         arm_insns[i].op(gba, op);
                         goto end;
                     }
-                    ++i;
                 }
 
                 panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
@@ -143,6 +139,8 @@ core_step(
     /*
     ** We don't have cycle counting yet, so we kinda arbitrarily assume
     ** that 8 cycles were spent running the previous instruction (FIXME).
+    **
+    ** (Not having cycle counting at that stage is a meme ngl :')
     */
     video_step(gba);
     video_step(gba);
@@ -162,11 +160,15 @@ core_reload_pipeline(
     core = &gba->core;
     if (core->cpsr.thumb) {
         core->pc &= 0xFFFFFFFE;
-        core->prefetch = mem_read16(gba, core->pc);
+        core->prefetch[0] = mem_read16(gba, core->pc);
+        core->pc += 2;
+        core->prefetch[1] = mem_read16(gba, core->pc);
         core->pc += 2;
     } else {
         core->pc &= 0xFFFFFFFC;
-        core->prefetch = mem_read32(gba, core->pc);
+        core->prefetch[0] = mem_read32(gba, core->pc);
+        core->pc += 4;
+        core->prefetch[1] = mem_read32(gba, core->pc);
         core->pc += 4;
     }
 }
@@ -404,10 +406,15 @@ core_interrupt(
     core_switch_mode(core, mode);
     core_spsr_set(core, mode, cpsr);
 
-    core->lr = core->pc - (core->cpsr.thumb ? 2 : 4);
+    // TODO FIXME What if `vector` isn't SVC/SWI/RESET?
+    if (vector == VEC_SVC) {
+        core->lr = core->pc - (core->cpsr.thumb ? 2 : 4);
+    } else if (vector != VEC_RESET) {
+        core->lr = core->pc - (core->cpsr.thumb ? 0 : 4);
+    }
+
     core->pc = vector;
     core->cpsr.irq_disable = true;
-    //core->cpsr.fiq_disable |= (vector == VEC_FIQ || VEC_RESET); // TODO FIXME
     core->cpsr.thumb = false;
 
     core_reload_pipeline(gba);
@@ -421,7 +428,7 @@ core_trigger_irq(
     struct gba *gba,
     enum arm_irq irq
 ) {
-    gba->io.int_flag.raw |= irq;
+    gba->io.int_flag.raw |= (1 << irq);
     gba->core.halt = 0;
     core_scan_irq(gba);
 }
@@ -439,7 +446,7 @@ core_scan_irq(
     //   * That interrupt enabled in both REG_IE and REG_IF
     if (
            !gba->core.cpsr.irq_disable
-        && (gba->io.ime & 0b1)
+        && (gba->io.ime.raw & 0b1)
         && (gba->io.int_enabled.raw & gba->io.int_flag.raw)
     ) {
         logln(

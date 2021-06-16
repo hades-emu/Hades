@@ -20,26 +20,24 @@ mem_dma_transfer(
 ) {
     size_t i;
 
-    i = 0;
-    while (i < 4) {
+    for (i = 0; i < 4; ++i) {
         struct dma_channel *channel;
         uint32_t src;
         int32_t src_step;
         uint32_t dst;
         int32_t dst_step;
         uint32_t count;
-        uint32_t unit_size;
+        int32_t unit_size;
 
         channel = &gba->io.dma[i];
 
-        // Skip channels that aren't enabled or that shouldn't happen at the given timing
-        if (!channel->control.enable || channel->control.timing != timing) {
-            ++i;
-            continue;
+        if (channel->control.enable && channel->control.timing == 3) {
+            logln(HS_WARNING, "Unsupported special timing for DMA request");
         }
 
-        if (channel->control.timing == DMA_TIMING_SPECIAL) {
-            unimplemented(HS_DMA, "DMA transfers with \"SPECIAL\" timings aren't implemented yet (channel=%u).", i);
+        // Skip channels that aren't enabled or that shouldn't happen at the given timing
+        if (!channel->control.enable || channel->control.timing != timing) {
+            continue;
         }
 
         src = channel->src.raw;
@@ -47,10 +45,10 @@ mem_dma_transfer(
         count = channel->count.raw;
         unit_size = channel->control.unit_size ? 4 : 2; // In  bytes
 
-        dst_step = 0;
         switch (channel->control.dst_ctl) {
             case 0b00:      dst_step = unit_size; break;
             case 0b01:      dst_step = -unit_size; break;
+            case 0b10:      dst_step = 0; break;
             case 0b11:      unimplemented(HS_DMA, "DMA transfers with increment+reload dest address isn't implemented."); break;
         }
 
@@ -58,6 +56,8 @@ mem_dma_transfer(
         switch (channel->control.src_ctl) {
             case 0b00:      src_step = unit_size; break;
             case 0b01:      src_step = -unit_size; break;
+            case 0b10:      src_step = 0; break;
+            case 0b11:      src_step = 0; break;
         }
 
         // A count of 0 is treated as max length.
@@ -83,13 +83,11 @@ mem_dma_transfer(
             while (count > 0) {
                 if (unit_size == 4) {
                     mem_write32(gba, dst, mem_read32(gba, src));
-                    src += src_step;
-                    dst += dst_step;
                 } else { // unit_size == 2
                     mem_write16(gba, dst, mem_read16(gba, src));
-                    src += src_step;
-                    dst += dst_step;
                 }
+                src += src_step;
+                dst += dst_step;
                 --count;
             }
         }
@@ -98,10 +96,10 @@ mem_dma_transfer(
             unimplemented(HS_DMA, "IRQ at the end of DMA transfers isn't implemented yet.");
         }
 
-        if (!channel->control.repeat) {
+        if (channel->control.repeat) {
+            unimplemented(HS_DMA, "Repeat bit unimplemented");
+        } else {
             channel->control.enable = false;
         }
-
-        ++i;
     }
 }

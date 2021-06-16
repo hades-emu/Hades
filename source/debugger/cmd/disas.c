@@ -291,7 +291,7 @@ debugger_cmd_disas(
     op_len = core->cpsr.thumb ? 2 : 4;
 
     if (argc == 1) {
-        ptr = core->pc - op_len;
+        ptr = core->pc - op_len * 2;
     } else if (argc == 2) {
         ptr = debugger_eval_expr(gba, argv[1]);
     } else {

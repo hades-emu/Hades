@@ -51,7 +51,6 @@ timer_tick(
             );
 
             if (timer->control.irq) {
-                printf("IRQ Wizzaaaard\n");
                 core_trigger_irq(gba, IRQ_TIMER0 + i);
             }
         }
