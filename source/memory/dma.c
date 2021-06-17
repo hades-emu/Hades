@@ -40,8 +40,8 @@ mem_dma_transfer(
             continue;
         }
 
-        src = channel->src.raw;
-        dst = channel->dst.raw;
+        src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
+        dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
         count = channel->count.raw;
         unit_size = channel->control.unit_size ? 4 : 2; // In  bytes
 
