@@ -240,6 +240,23 @@ mem_io_write8(
         case IO_REG_BG2CNT + 1:             io->bgcnt[2].bytes[1] = val; break;
         case IO_REG_BG3CNT:                 io->bgcnt[3].bytes[0] = val; break;
         case IO_REG_BG3CNT + 1:             io->bgcnt[3].bytes[1] = val; break;
+        case IO_REG_BG0HOFS:                io->bg_hoffset[0].bytes[0] = val; break;
+        case IO_REG_BG0HOFS + 1:            io->bg_hoffset[0].bytes[1] = val; break;
+        case IO_REG_BG0VOFS:                io->bg_voffset[0].bytes[0] = val; break;
+        case IO_REG_BG0VOFS + 1:            io->bg_voffset[0].bytes[1] = val; break;
+        case IO_REG_BG1HOFS:                io->bg_hoffset[1].bytes[0] = val; break;
+        case IO_REG_BG1HOFS + 1:            io->bg_hoffset[1].bytes[1] = val; break;
+        case IO_REG_BG1VOFS:                io->bg_voffset[1].bytes[0] = val; break;
+        case IO_REG_BG1VOFS + 1:            io->bg_voffset[1].bytes[1] = val; break;
+        case IO_REG_BG2HOFS:                io->bg_hoffset[2].bytes[0] = val; break;
+        case IO_REG_BG2HOFS + 1:            io->bg_hoffset[2].bytes[1] = val; break;
+        case IO_REG_BG2VOFS:                io->bg_voffset[2].bytes[0] = val; break;
+        case IO_REG_BG2VOFS + 1:            io->bg_voffset[2].bytes[1] = val; break;
+        case IO_REG_BG3HOFS:                io->bg_hoffset[3].bytes[0] = val; break;
+        case IO_REG_BG3HOFS + 1:            io->bg_hoffset[3].bytes[1] = val; break;
+        case IO_REG_BG3VOFS:                io->bg_voffset[3].bytes[0] = val; break;
+        case IO_REG_BG3VOFS + 1:            io->bg_voffset[3].bytes[1] = val; break;
+
 
         /* DMA - Channel 0 */
         case IO_REG_DMA0SAD:                io->dma[0].src.bytes[0] = val; break;
