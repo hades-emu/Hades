@@ -55,7 +55,7 @@ executable(
     'source/memory/memory.c',
     'source/memory/rom.c',
     'source/main.c',
-    'source/sdl.c',
+    'source/platform/sdl.c',
     'source/timer.c',
     'source/utils.c',
     'source/video.c',
