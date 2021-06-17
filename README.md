@@ -30,7 +30,7 @@ ninja
 
 To run Hades, you need a game ROM and a legitimate GameBoy Advance BIOS or a replacement BIOS.
 
-Place your BIOS in the same folder than the executable and name it `gba_bios.gba`.
+Place your BIOS in the same folder than the executable and name it `bios.bin`.
 
 You can then run:
 

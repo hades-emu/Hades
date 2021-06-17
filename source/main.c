@@ -85,7 +85,7 @@ main(
         io_init(&gba->io);
 
         /* Load the BIOS. NOTE: this function exits on failure. */
-        mem_load_bios(&gba->memory, "gba_bios.gba");
+        mem_load_bios(&gba->memory, "bios.bin");
 
         /* Load the given ROM. NOTE: this function exits on failure. */
         mem_load_rom(&gba->memory, argv[1]);

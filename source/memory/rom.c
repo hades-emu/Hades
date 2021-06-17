@@ -33,14 +33,14 @@ mem_load_bios(
 
     fseek(file, 0, SEEK_END);
     if (ftell(file) != 0x4000) {
-        fprintf(stderr, "hades: invalid bios given.\n");
+        fprintf(stderr, "hades: invalid bios.\n");
         exit(EXIT_FAILURE);
         return (-1);
     }
     rewind(file);
 
     if (fread(memory->bios, 1, 0x4000, file) != 0x4000) {
-        fprintf(stderr, "hades: failed to read gba_bios.gba: %s.\n", strerror(errno));
+        fprintf(stderr, "hades: failed to read bios.bin: %s.\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -58,7 +58,8 @@ mem_load_rom(
     char const *path
 ) {
     FILE *file;
-    size_t len __unused; // Used to silence the "Unused result" warning
+    long file_len;
+    size_t len;
 
     file = fopen(path, "rb");
     if (!file) {
@@ -66,9 +67,17 @@ mem_load_rom(
         exit(EXIT_FAILURE);
     }
 
+    fseek(file, 0, SEEK_END);
+    file_len = ftell(file);
+    if (file_len > 0x2000000) {
+        fprintf(stderr, "hades: %s: invalid game.\n", path);
+        exit(EXIT_FAILURE);
+    }
+    rewind(file);
+
     len = fread(memory->rom, 1, 0x2000000, file);
 
-    if (!feof(file)) {
+    if (len != file_len) {
         fprintf(stderr, "hades: failed to read %s: %s.\n", path, strerror(errno));
         exit(EXIT_FAILURE);
     }
