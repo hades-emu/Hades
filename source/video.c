@@ -101,13 +101,19 @@ video_step(
                             uint32_t chrs_addr;
                             uint8_t palette_idx;
                             union tile tile;
+                            bool up_x;
+                            bool up_y;
 
                             if (!(io->dispcnt.bg & (1 << bg_idx)) || io->bgcnt[bg_idx].priority != prio) {
                                 continue;
                             }
 
-                            tile_x = ((gba->video.h + io->bg_hoffset[bg_idx].raw) / 8 & 0x1f);
-                            tile_y = ((gba->video.v + io->bg_voffset[bg_idx].raw) / 8 & 0x1f);
+                            tile_x = ((gba->video.h + io->bg_hoffset[bg_idx].raw) / 8);
+                            tile_y = ((gba->video.v + io->bg_voffset[bg_idx].raw) / 8);
+                            up_x = (tile_x >> 5) & 1;
+                            up_y = (tile_y >> 5) & 1;
+                            tile_x %= 32;
+                            tile_y %= 32;
                             chr_x  = (gba->video.h + io->bg_hoffset[bg_idx].raw) % 8;
                             chr_y  = (gba->video.v + io->bg_voffset[bg_idx].raw) % 8;
 
@@ -116,16 +122,16 @@ video_step(
 
                             switch (io->bgcnt[bg_idx].screen_size) {
                                 case 0b00: // 256x256 (32x32)
-                                    screen_idx = tile_y * 32 + tile_x; // OK
+                                    screen_idx = tile_y * 32 + tile_x;
                                     break;
                                 case 0b01: // 512x256 (64x32)
-                                    unimplemented(HS_VIDEO, "512x256 tile mode not implemented yet");
+                                    screen_idx = tile_y * 32 + tile_x + up_x * 1024;
                                     break;
                                 case 0b10: // 256x512 (32x64)
-                                    screen_idx = tile_y * 32 + tile_x; // OK
+                                    screen_idx = tile_y * 32 + tile_x + up_y * 1024;
                                     break;
                                 case 0b11: // 512x512 (64x64)
-                                    unimplemented(HS_VIDEO, "512x512 tile mode not implemented yet");
+                                    screen_idx = tile_y * 32 + tile_x + up_x * 1024 + up_y * 2048;
                                     break;
                             }
 
@@ -155,7 +161,7 @@ video_step(
                             if (palette_idx) {
                                 c.raw = mem_read16(
                                     gba,
-                                    PALRAM_START + (tile.palette * 16 + palette_idx) * sizeof(union color)
+                                    PALRAM_START + (tile.palette * 16 * !io->bgcnt[bg_idx].palette_type + palette_idx) * sizeof(union color)
                                 );
                             }
                         }
