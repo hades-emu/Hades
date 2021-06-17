@@ -14,8 +14,6 @@
 #include "hades.h"
 #include "gba.h"
 
-#include <stdio.h> // FIXME
-
 struct sdl
 {
     SDL_Renderer *renderer;
@@ -37,8 +35,8 @@ sdl_init(
         "Hades",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        480,
-        320,
+        240 * 2,
+        160 * 2,
         0
     );
 
