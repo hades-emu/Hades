@@ -88,12 +88,10 @@ video_step(
                 {
                     int32_t prio;
 
-                    prio = 3;
-                    while (prio >= 0) {
+                    for (prio = 3; prio >= 0; --prio) {
                         int32_t bg_idx;
 
-                        bg_idx = 3;
-                        while (bg_idx >= 0) {
+                        for (bg_idx = 3; bg_idx >= 0; --bg_idx) {
                             uint32_t tile_x; // X coord of the tile in the tilemap
                             uint32_t tile_y; // Y coord of the tile in the tilemap
                             uint32_t chr_x; // X coord of the pixel we want to render within the tile
@@ -105,14 +103,13 @@ video_step(
                             union tile tile;
 
                             if (!(io->dispcnt.bg & (1 << bg_idx)) || io->bgcnt[bg_idx].priority != prio) {
-                                --bg_idx;
                                 continue;
                             }
 
-                            tile_x = (gba->video.h + io->bg_hoffset[bg_idx].raw) / 8;
-                            tile_y = (gba->video.v + io->bg_voffset[bg_idx].raw) / 8;
-                            chr_x =  (gba->video.h + io->bg_hoffset[bg_idx].raw) % 8;
-                            chr_y =  (gba->video.v + io->bg_voffset[bg_idx].raw) % 8;
+                            tile_x = ((gba->video.h + io->bg_hoffset[bg_idx].raw) / 8 & 0x1f);
+                            tile_y = ((gba->video.v + io->bg_voffset[bg_idx].raw) / 8 & 0x1f);
+                            chr_x  = (gba->video.h + io->bg_hoffset[bg_idx].raw) % 8;
+                            chr_y  = (gba->video.v + io->bg_voffset[bg_idx].raw) % 8;
 
                             screen_addr = (uint32_t)io->bgcnt[bg_idx].screen_base * 0x800;
                             chrs_addr = (uint32_t)io->bgcnt[bg_idx].character_base * 0x4000;
@@ -133,6 +130,8 @@ video_step(
                             }
 
                             tile.raw = mem_read16(gba, VRAM_START + screen_addr + screen_idx * sizeof(union tile));
+                            chr_y = tile.vflip ? 7 - chr_y : chr_y;
+                            chr_x = tile.hflip ? 7 - chr_x : chr_x;
 
                             if (io->bgcnt[bg_idx].palette_type) { // 256 colors, 1 palette
                                 palette_idx = mem_read8(gba,
@@ -159,10 +158,7 @@ video_step(
                                     PALRAM_START + (tile.palette * 16 + palette_idx) * sizeof(union color)
                                 );
                             }
-
-                            --bg_idx;
                         }
-                        --prio;
                     }
                 }
                 break;
