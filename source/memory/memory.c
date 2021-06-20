@@ -96,19 +96,14 @@ mem_read32(
     struct gba const *gba,
     uint32_t addr
 ) {
-    uint32_t value;
-
     addr &= ~(sizeof(uint32_t) - 1);
 
-    value =
+    return (
         (mem_read8(gba, addr + 0) << 0) |
         (mem_read8(gba, addr + 1) << 8) |
         (mem_read8(gba, addr + 2) << 16) |
         (mem_read8(gba, addr + 3) << 24)
-    ;
-
-    /* Unaligned 32-bits loads are rotated */
-    return (value);
+    );
 }
 
 /*
