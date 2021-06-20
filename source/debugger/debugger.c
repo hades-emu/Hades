@@ -128,6 +128,14 @@ struct dbg_command g_commands[] = {
         .nargs = 0,
         .func = debugger_cmd_verbose,
     },
+    [CMD_FRAME] = {
+        .name = "frame",
+        .alias = "f",
+        .usage = "frame",
+        .desc = "Continue until the current frame is fully drawn.",
+        .nargs = 1,
+        .func = debugger_cmd_frame,
+    },
     [CMD_MAIN] = {
         .name = "main",
         .alias = "m",

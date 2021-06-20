@@ -61,4 +61,3 @@ debugger_cmd_break(
         printf("Usage: %s\n", g_commands[CMD_BREAK].usage);
     }
 }
-
