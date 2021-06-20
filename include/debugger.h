@@ -132,6 +132,7 @@ enum dbg_commands {
     CMD_BREAK,
     CMD_TRACE,
     CMD_VERBOSE,
+    CMD_FRAME,
     CMD_MAIN,
 };
 
@@ -163,6 +164,9 @@ void debugger_cmd_continue(struct gba *, size_t, char const * const *);
 /* debugger/cmd/disas.c */
 void debugger_cmd_disas(struct gba *, size_t, char const * const *);
 void debugger_cmd_disas_at(struct gba *gba, uint32_t ptr);
+
+/* debugger/cmd/frame.c */
+void debugger_cmd_frame(struct gba *, size_t, char const * const *);
 
 /* debugger/cmd/help.c */
 void debugger_cmd_help(struct gba *, size_t, char const * const *);
