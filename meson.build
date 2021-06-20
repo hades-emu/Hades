@@ -14,10 +14,6 @@ project(
     default_options: ['c_std=gnu11'],
 )
 
-if get_option('buildtype').startswith('debug')
-    add_project_arguments('-DDEBUG', language : 'c')
-endif
-
 executable(
     'hades',
     'source/core/arm/alu.c',

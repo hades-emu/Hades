@@ -16,6 +16,13 @@
 # include "debugger.h"
 # include "io.h"
 
+struct options
+{
+    bool debugger;
+    uint32_t scale;
+    bool headless;
+};
+
 struct gba
 {
     struct core core;
@@ -23,6 +30,7 @@ struct gba
     struct video video;
     struct debugger debugger;
     struct io io;
+    struct options options;         // Read-only past initialization. Can therefore be used by all threads.
 
     /*
     ** The result of the video controller, used by the renderer to
