@@ -128,7 +128,9 @@ core_step(
             }
             end:
             ++core->count;
-            debugger_eval_breakpoints(gba);
+            if (gba->options.debugger) {
+                debugger_eval_breakpoints(gba);
+            }
             break;
         case 1: // Halt
         case 2: // Stop

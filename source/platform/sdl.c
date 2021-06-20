@@ -24,6 +24,7 @@ struct sdl
 static
 void
 sdl_init(
+    struct gba const *gba,
     struct sdl *app
 ) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -35,8 +36,8 @@ sdl_init(
         "Hades",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        240 * 2,
-        160 * 2,
+        240 * gba->options.scale,
+        160 * gba->options.scale,
         0
     );
 
@@ -143,7 +144,7 @@ sdl_render_loop(
     uint sdl_count;
     struct sdl app;
 
-    sdl_init(&app);
+    sdl_init(gba, &app);
 
     sdl_count = 0;
     while (!g_stop) {

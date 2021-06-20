@@ -10,6 +10,8 @@
 #include <stdatomic.h>
 #include <signal.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <getopt.h>
 #include <string.h>
 #include "hades.h"
 #include "gba.h"
@@ -32,11 +34,22 @@ atomic_bool g_interrupt;
 ** A global variable used to indicate the verbosity of all the different log levels.
 ** Restricted to the logic thread only.
 */
-bool g_verbose[HS_END];
 bool g_verbose_global;
+bool g_verbose[HS_END] = {
+    [HS_GLOBAL] = true,
+    [HS_WARNING] = true,
+    [HS_ERROR] = true,
+
+    [HS_CORE] = true,
+    [HS_IO] = true,
+    [HS_DMA] = true,
+    [HS_IRQ] = true,
+    [HS_MEMORY] = true,
+};
+
 /*
-** The signal handler, used to set `stop` to true and signal
-** all threads it is time to stop and exit.
+** The signal handler, used to set `g_interrupt` to true and go back to
+** the debugger.
 */
 static
 void
@@ -46,56 +59,149 @@ sighandler(
     g_interrupt = true;
 }
 
+static
+void
+print_usage(
+    FILE *file,
+    char const *name
+) {
+    fprintf(
+        file,
+        "Usage: %s [OPTION]... ROM\n"
+        "\n"
+        "Options:\n"
+        "    -d, --debugger                    enable the debugger\n"
+        "        --headless                    disable any graphical output\n"
+        "    -s, --scale=SIZE                  scale the window by SIZE\n"
+        "\n"
+        "    -h, --help                        print this help and exit\n"
+        "        --version                     print the version information and exit\n"
+        "",
+        name
+    );
+}
+
+static
+char const *
+args_parse(
+    int argc,
+    char *argv[],
+    struct options *options
+) {
+    char const *name;
+
+    name = argv[0];
+    while (true) {
+        int c;
+        int option_index;
+
+        static struct option long_options[] = {
+            [0] = { "debugger",     no_argument,        0,  0 },
+            [1] = { "help",         no_argument,        0,  0 },
+            [2] = { "scale",        required_argument,  0,  0 },
+            [3] = { "version",      no_argument,        0,  0 },
+            [4] = { "headless",     no_argument,        0,  0 },
+                  { 0,              0,                  0,  0 }
+        };
+
+        c = getopt_long(
+            argc,
+            argv,
+            "dhs:",
+            long_options,
+            &option_index
+        );
+
+        if (c == -1) {
+            break;
+        }
+
+        switch (c) {
+            case 0:
+                switch (option_index) {
+                    case 0: // --debugger
+                        options->debugger = true;
+                        break;
+                    case 1: // --help
+                        print_usage(stdout, name);
+                        exit(EXIT_SUCCESS);
+                    case 2: // --scale
+                        options->scale = strtoul(optarg, NULL, 10);
+                        break;
+                    case 3: // --version
+                        printf("Hades v0.0.1\n");
+                        exit(EXIT_SUCCESS);
+                        break;
+                    case 4: // --headless
+                        options->headless = true;
+                        break;
+                }
+                break;
+            case 'd':
+                options->debugger = true;
+                break;
+            case 'h':
+                print_usage(stdout, name);
+                exit(EXIT_SUCCESS);
+                break;
+            case 's':
+                options->scale = strtoul(optarg, NULL, 10);
+                break;
+        }
+    }
+
+    if (argc - optind != 1) {
+        print_usage(stderr, name);
+        exit(EXIT_FAILURE);
+    }
+
+    if (options->scale < 1 || options->scale > 15) {
+        fprintf(stderr, "Error: the UI scale must be between 1 and 15.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return (argv[optind]);
+}
+
 int
 main(
     int argc,
     char *argv[]
 ) {
-    signal(SIGINT, &sighandler);
+    char const *rom;
+    struct gba *gba;
+    pthread_t render_thread;
 
-    g_verbose[HS_GLOBAL] = true;
-    g_verbose[HS_WARNING] = true;
-    g_verbose[HS_ERROR] = true;
+    /* First, initialize the GBA system */
 
-    g_verbose[HS_CORE] = true;
-    g_verbose[HS_IO] = true;
-    g_verbose[HS_DMA] = true;
-    g_verbose[HS_IRQ] = true;
-    g_verbose[HS_MEMORY] = true;
+    gba = malloc(sizeof(*gba));
+    hs_assert(gba != NULL);
 
-    if (argc == 2) {
-        pthread_t render_thread;
-        struct gba *gba;
+    memset(gba, 0, sizeof(*gba));
+    gba->input.raw = 0x3FF; // Every button set to "released"
+    gba->options.scale = 2; // Default window is scaled by two.
 
-        /* First, initialize the GBA system */
+    rom = args_parse(argc, argv, &gba->options); /* Parse arguments. NOTE: this function exits on failure. */
 
-        gba = malloc(sizeof(*gba));
-        hs_assert(gba != NULL);
+    pthread_mutex_init(&gba->framebuffer_mutex, NULL);
+    pthread_mutex_init(&gba->input_mutex, NULL);
 
-        memset(gba, 0, sizeof(*gba));
-        gba->input.raw = 0x3FF; // Every button set to "released"
+    core_arm_decode_insns();
+    core_thumb_decode_insns();
 
-        pthread_mutex_init(&gba->framebuffer_mutex, NULL);
-        pthread_mutex_init(&gba->input_mutex, NULL);
+    mem_init(&gba->memory);
+    io_init(&gba->io);
 
-        core_arm_decode_insns();
-        core_thumb_decode_insns();
+    /* Load the BIOS. NOTE: this function exits on failure. */
+    mem_load_bios(&gba->memory, "bios.bin");
 
-        mem_init(&gba->memory);
-        io_init(&gba->io);
+    /* Load the given ROM. NOTE: this function exits on failure. */
+    mem_load_rom(&gba->memory, rom);
 
-        /* Load the BIOS. NOTE: this function exits on failure. */
-        mem_load_bios(&gba->memory, "bios.bin");
+    core_init(gba);
 
-        /* Load the given ROM. NOTE: this function exits on failure. */
-        mem_load_rom(&gba->memory, argv[1]);
-
-        core_init(gba);
-
-        debugger_init(gba);
-
-        /* Create the render thread */
-
+    /* Create the render thread */
+    if (!gba->options.headless) {
         pthread_create(
             &render_thread,
             NULL,
@@ -103,23 +209,30 @@ main(
             sdl_render_loop,
             gba
         );
-
-        /* Then enter the debugger's REPL. */
-
-        debugger_repl(gba);
-
-        g_stop = true;
-
-        pthread_join(render_thread, NULL);
-
-        debugger_destroy(gba);
-
-        free(gba);
-
-        return (EXIT_SUCCESS);
-    } else {
-        fprintf(stderr, "Usage: %s <rom>\n", argv[0]);
-        return (EXIT_FAILURE);
     }
-    return (0);
+
+    /*
+    ** If we use a debugger, iniialize it and enter the debugger's REPL.
+    ** Otherwise, loop until the application is closed.
+    */
+    if (gba->options.debugger) {
+        signal(SIGINT, &sighandler);
+        debugger_init(gba);
+        debugger_repl(gba);
+        debugger_destroy(gba);
+    } else {
+        while (!g_stop) {
+            core_step(gba);
+        }
+    }
+
+    g_stop = true;
+
+    if (!gba->options.headless) {
+        pthread_join(render_thread, NULL);
+    }
+
+    free(gba);
+
+    return (EXIT_SUCCESS);
 }

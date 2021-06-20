@@ -4,7 +4,7 @@ A GBA emulator,
 
 This project is under heavy development and can't properly run any game yet.
 
-![](https://imgur.com/d0lAJJD.png)
+![](https://imgur.com/5Emu3CE.png)
 
 ## Running
 
@@ -16,6 +16,19 @@ You can then run:
 
 ```bash
 hades <path/to/game.gba>
+```
+
+**Usage:**
+
+```
+Usage: ./hades [OPTION]... ROM
+Options:
+    -d, --debugger                    enable the debugger
+        --headless                    use Hades without any graphical output
+    -s, --scale=SIZE                  scale the window by SIZE
+
+    -h, --help                        print this help and exit
+        --version                     print the version information and exit
 ```
 
 ## Building
@@ -45,7 +58,7 @@ ninja
 
 ## Thanks
 
-Special thanks to some insanely good reading/projects that act as a documentation when writing Hades:
+Special thanks to some insanely good reading/projects that act as documentation when writing Hades:
 
   - [GBATEK](https://problemkaputt.de/gbatek.htm)
   - [Tonc](https://www.coranac.com/tonc/text/toc.htm)

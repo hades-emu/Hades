@@ -181,7 +181,6 @@ core_arm_decode_insns(void)
             );
         }
 
-#if DEBUG
         /*
         ** Ensure we don't have a collision with an existing instruction.
         **
@@ -203,7 +202,6 @@ core_arm_decode_insns(void)
             }
             ++j;
         }
-#endif
 
         ++i;
     }
