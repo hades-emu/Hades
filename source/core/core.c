@@ -140,13 +140,12 @@ core_step(
 
     /*
     ** We don't have cycle counting yet, so we kinda arbitrarily assume
-    ** that 8 cycles were spent running the previous instruction (FIXME).
+    ** that 4 cycles were spent running the previous instruction (FIXME).
     **
-    ** (Not having cycle counting at that stage is a meme ngl :')
+    ** (Not having cycle counting at this stage is a meme ngl :')
     */
     video_step(gba);
-    video_step(gba);
-    timer_tick(gba, 8);
+    timer_tick(gba, 4);
 }
 
 /*
