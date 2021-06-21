@@ -46,7 +46,7 @@ debugger_cmd_verbose(
 
         for (i = 0; verbosities[i].name; ++i) {
             if (!strcmp(verbosities[i].name, argv[1])) {
-                *verbosities[i].flag = !(*verbosities[i].flag);
+                *verbosities[i].flag ^= 1;
                 printf(
                     LIGHT_GREEN "%s" RESET " verbosity set to " LIGHT_MAGENTA "%s" RESET "\n",
                     verbosities[i].name,
