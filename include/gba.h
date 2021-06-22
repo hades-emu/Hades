@@ -12,9 +12,10 @@
 
 # include "core.h"
 # include "memory.h"
-# include "video.h"
+# include "ppu.h"
 # include "debugger.h"
 # include "io.h"
+# include "scheduler.h"
 
 struct options
 {
@@ -27,10 +28,16 @@ struct gba
 {
     struct core core;
     struct memory memory;
-    struct video video;
+    struct ppu ppu;
     struct debugger debugger;
     struct io io;
-    struct options options;         // Read-only past initialization. Can therefore be used by all threads.
+    struct scheduler scheduler;
+
+    /*
+    ** Read-only past initialization.
+    ** Can therefore be used by all threads.
+    */
+    struct options options;
 
     /*
     ** The result of the video controller, used by the renderer to

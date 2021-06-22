@@ -18,14 +18,14 @@ debugger_cmd_step(
     char const * const *argv
 ) {
     if (argc == 1) {
-        core_step(gba);
+        sched_run_for(gba, 1);
         debugger_dump_context(gba, false);
     } else if (argc == 2) {
         unsigned long nb;
 
         nb = strtoul(argv[1], NULL, 0);
         while (!g_interrupt && nb > 0) {
-            core_step(gba);
+            sched_run_for(gba, 1);
             --nb;
         }
         debugger_dump_context(gba, false);

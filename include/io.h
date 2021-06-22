@@ -220,6 +220,11 @@ struct io {
         uint8_t bytes[2];
     } dispstat;
 
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } vcount;
+
     // REG_BG{0,1,2,3}CNT
     union {
         struct {

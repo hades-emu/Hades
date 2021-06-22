@@ -30,7 +30,7 @@ struct memory {
     // External Memory (Game Pak)
     uint8_t rom[0x2000000];
     uint8_t sram[0x10000];
-} __packed;
+};
 
 /*
 ** An enumeration of the different memory regions

@@ -115,7 +115,7 @@ static char const * const modules_str[] = {
         if (unlikely(!(expr))) {                            \
             panic(                                          \
                 HS_ERROR,                                   \
-                "assert(%s) failed (in %s at line %u).\n",  \
+                "assert(%s) failed (in %s at line %u).",  \
                 #expr,                                      \
                 __FILE__,                                   \
                 __LINE__                                    \

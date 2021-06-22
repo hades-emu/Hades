@@ -111,7 +111,8 @@ mem_io_read8(
         case IO_REG_GREENSWP + 1:           return (io->greenswp.bytes[1]);
         case IO_REG_DISPSTAT:               return (io->dispstat.bytes[0]);
         case IO_REG_DISPSTAT + 1:           return (io->dispstat.bytes[1]);
-        case IO_REG_VCOUNT:                 return (gba->video.v);
+        case IO_REG_VCOUNT:                 return (io->vcount.bytes[0]);
+        case IO_REG_VCOUNT + 1:             return (io->vcount.bytes[1]);
         case IO_REG_BG0CNT:                 return (io->bgcnt[0].bytes[0]);
         case IO_REG_BG0CNT + 1:             return (io->bgcnt[0].bytes[1]);
         case IO_REG_BG1CNT:                 return (io->bgcnt[1].bytes[0]);
