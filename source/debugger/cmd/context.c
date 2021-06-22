@@ -52,7 +52,7 @@ debugger_dump_context_compact_header(void)
 {
     size_t i;
 
-    printf(LIGHT_GREEN "  Insn Counter   " RESET);
+    printf(LIGHT_GREEN "  Cycle Counter  " RESET);
 
     for (i = 0; i < 16; ++i) {
         printf(
@@ -81,7 +81,7 @@ debugger_dump_context_compact(
 
     printf(
         "%016lx ",
-        core->count
+        gba->scheduler.cycles
     );
 
     for (i = 0; i < 16; ++i) {

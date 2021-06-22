@@ -20,7 +20,7 @@ debugger_eval_breakpoints(
     uint32_t pc;
 
     debugger = &gba->debugger;
-    pc = gba->core.pc - (gba->core.cpsr.thumb ? 2 : 4);
+    pc = gba->core.pc - (gba->core.cpsr.thumb ? 2 : 4) * 2;
 
     i = 0;
     while (i < debugger->breakpoints_len) {

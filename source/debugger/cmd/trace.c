@@ -18,7 +18,7 @@ debugger_cmd_trace(
     char const * const *argv
 ) {
     if (argc == 1) {
-        core_step(gba);
+        sched_run_for(gba, 1);
         debugger_dump_context_compact_header();
         debugger_dump_context_compact(gba);
     } else if (argc == 2) {
@@ -27,7 +27,7 @@ debugger_cmd_trace(
         nb = strtoul(argv[1], NULL, 0);
         debugger_dump_context_compact_header();
         while (!g_interrupt && nb > 0) {
-            core_step(gba);
+            sched_run_for(gba, 1);
             debugger_dump_context_compact(gba);
             --nb;
         }

@@ -22,7 +22,6 @@
 #include "core/arm.h"
 #include "core/thumb.h"
 #include "gba.h"
-#include "video.h"
 
 /*
 ** Initialize the core by initializing its registers
@@ -55,22 +54,10 @@ core_init(
 }
 
 /*
-** Fetch, decode and execute instructions until the computer catches fire.
-*/
-void
-core_run(
-    struct gba *gba
-) {
-    while (true) {
-        core_step(gba);
-    }
-}
-
-/*
 ** Fetch, decode and execute the next instruction.
 */
 void
-core_step(
+core_next(
     struct gba *gba
 ) {
     struct core *core;
@@ -144,8 +131,7 @@ core_step(
     **
     ** (Not having cycle counting at this stage is a meme ngl :')
     */
-    video_step(gba);
-    timer_tick(gba, 4);
+    gba->scheduler.cycles += 4;
 }
 
 /*

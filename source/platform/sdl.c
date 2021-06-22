@@ -71,6 +71,17 @@ sdl_init(
 
 static
 void
+sdl_cleanup(
+    struct sdl *app
+) {
+    SDL_DestroyTexture(app->texture);
+    SDL_DestroyRenderer(app->renderer);
+    SDL_DestroyWindow(app->window);
+    SDL_Quit();
+}
+
+static
+void
 sdl_handle_inputs(
     struct gba *gba
 ) {
@@ -127,7 +138,6 @@ sdl_handle_inputs(
                 g_stop = true;
                 g_interrupt = true;
                 kill(getpid(), SIGTERM);        // Ask readline to stop waiting for user input
-                pthread_exit(NULL);
                 break;
             default:
                 break;
@@ -148,8 +158,7 @@ sdl_render_loop(
 
     sdl_count = 0;
     while (!g_stop) {
-        SDL_SetRenderDrawColor(app.renderer, 96, 128, 255, 255);
-        SDL_RenderClear(app.renderer);
+        SDL_SetRenderDrawColor(app.renderer, 255, 255, 255, 255);
 
         sdl_handle_inputs(gba);
 
@@ -175,6 +184,7 @@ sdl_render_loop(
         if (sdl_count >= 120) {
             uint fps;
 
+            // TODO: Actually count frame correctly instead of this shit
             fps = (gba->frame_counter - old_frame_counter) / 2; // 120 SDL frames is roughly 2 seconds
             old_frame_counter = gba->frame_counter;
 
@@ -183,5 +193,8 @@ sdl_render_loop(
             sdl_count = 0;
         }
     }
+
+    sdl_cleanup(&app);
+
     return (NULL);
 }

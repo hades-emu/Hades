@@ -28,7 +28,7 @@ debugger_cmd_next(
 
         next_pc = core->pc + op_len;
         while (!g_interrupt && core->pc != next_pc) {
-            core_step(gba);
+            sched_run_for(gba, 1);
         }
 
         debugger_dump_context(gba, false);
@@ -37,7 +37,7 @@ debugger_cmd_next(
 
         next_pc = core->pc + strtoul(argv[1], NULL, 0) * op_len;
         while (!g_interrupt && core->pc != next_pc) {
-            core_step(gba);
+            sched_run_for(gba, 1);
         }
 
         debugger_dump_context(gba, false);

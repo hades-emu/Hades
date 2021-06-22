@@ -17,6 +17,8 @@
 #include "gba.h"
 #include "core/arm.h"
 #include "core/thumb.h"
+#include "scheduler.h"
+#include "ppu.h"
 #include "memory.h"
 #include "debugger.h"
 
@@ -189,8 +191,10 @@ main(
     core_arm_decode_insns();
     core_thumb_decode_insns();
 
+    sched_init(&gba->scheduler);
     mem_init(&gba->memory);
     io_init(&gba->io);
+    ppu_init(gba);
 
     /* Load the BIOS. NOTE: this function exits on failure. */
     mem_load_bios(&gba->memory, "bios.bin");
@@ -221,9 +225,7 @@ main(
         debugger_repl(gba);
         debugger_destroy(gba);
     } else {
-        while (!g_stop) {
-            core_step(gba);
-        }
+        sched_run_forever(gba);
     }
 
     g_stop = true;
@@ -232,6 +234,7 @@ main(
         pthread_join(render_thread, NULL);
     }
 
+    sched_cleanup(&gba->scheduler);
     free(gba);
 
     return (EXIT_SUCCESS);

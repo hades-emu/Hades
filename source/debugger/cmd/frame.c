@@ -17,11 +17,11 @@ debugger_cmd_frame(
     size_t argc __unused,
     char const * const *argv __unused
 ) {
-    while (!g_interrupt && gba->video.v == 0) {
-        core_step(gba);
+    while (!g_interrupt && gba->io.vcount.raw == 0) {
+        sched_run_for(gba, 1);
     }
 
-    while (!g_interrupt && gba->video.v != 0) {
-        core_step(gba);
+    while (!g_interrupt && gba->io.vcount.raw != 0) {
+        sched_run_for(gba, 1);
     }
 }
