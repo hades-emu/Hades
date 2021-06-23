@@ -97,7 +97,7 @@ mem_dma_transfer(
         }
 
         if (channel->control.repeat) {
-            unimplemented(HS_DMA, "Repeat bit unimplemented");
+            //unimplemented(HS_DMA, "Repeat bit unimplemented");
         } else {
             channel->control.enable = false;
         }

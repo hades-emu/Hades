@@ -52,6 +52,7 @@ executable(
     'source/memory/memory.c',
     'source/memory/rom.c',
     'source/platform/sdl.c',
+    'source/ppu/oam.c',
     'source/ppu/background.c',
     'source/ppu/ppu.c',
     'source/main.c',

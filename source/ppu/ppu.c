@@ -60,6 +60,7 @@ ppu_render_scanline(
 
                 for (prio = 3; prio >= 0; --prio) {
                     ppu_render_background_text(gba, line, prio);
+                    ppu_render_oam(gba, line, prio);
                 }
             }
             break;

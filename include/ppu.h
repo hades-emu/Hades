@@ -18,9 +18,6 @@
 # define SCREEN_REAL_HEIGHT     228
 # define CYCLES_PER_PIXEL       4
 
-struct ppu {
-};
-
 union color {
     struct {
         uint16_t red: 5;
@@ -59,8 +56,8 @@ union oam_entry {
         struct {
             uint16_t coord_x: 9;
             uint16_t : 3;
-            uint16_t hfip: 1;
-            uint16_t vlip: 1;
+            uint16_t hflip: 1;
+            uint16_t vflip: 1;
             uint16_t size_low : 2;
         } __packed;
         struct {
@@ -78,6 +75,9 @@ static_assert(sizeof(union oam_entry) == 3 * sizeof(uint16_t));
 void ppu_render_background_bitmap(struct gba *gba, uint32_t line, bool palette);
 void ppu_render_background_text(struct gba *gba, uint32_t line, uint32_t prio);
 void ppu_plot_pixel(struct gba *gba, union color c, uint32_t x, uint32_t y);
+
+/* ppu/oam.c */
+void ppu_render_oam(struct gba *gba, int32_t line, uint32_t prio);
 
 /* ppu/ppu.c */
 void ppu_init(struct gba *);

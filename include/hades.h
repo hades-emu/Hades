@@ -157,6 +157,37 @@ bitfield_update(
 }
 
 /*
+** Sign-extend a 8-bits value to a signed 32-bit value.
+*/
+static inline
+int32_t
+sign_extend8(
+    uint32_t value
+) {
+    if ((value & 0x80) != 0) {
+        return ((int32_t)(value | 0xFFFFFF00));
+    } else {
+        return ((int32_t)value);
+    }
+}
+
+
+/*
+** Sign-extend a 9-bits value to a signed 32-bit value.
+*/
+static inline
+int32_t
+sign_extend9(
+    uint32_t value
+) {
+    if ((value & 0x100) != 0) {
+        return ((int32_t)(value | 0xFFFFFF00));
+    } else {
+        return ((int32_t)value);
+    }
+}
+
+/*
 ** Sign-extend a 11-bits value to a signed 32-bit value.
 */
 static inline
