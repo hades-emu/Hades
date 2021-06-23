@@ -92,8 +92,8 @@ ppu_render_background_text(
             }
 
             tile.raw = mem_read16(gba, VRAM_START + screen_addr + screen_idx * sizeof(union tile));
-            chr_y = tile.vflip ? 7 - chr_y : chr_y;
-            chr_x = tile.hflip ? 7 - chr_x : chr_x;
+            chr_y ^= tile.vflip * 0b111;
+            chr_x ^= tile.hflip * 0b111;
 
             if (io->bgcnt[bg_idx].palette_type) { // 256 colors, 1 palette
                 palette_idx = mem_read8(gba,

@@ -28,7 +28,6 @@ struct gba
 {
     struct core core;
     struct memory memory;
-    struct ppu ppu;
     struct debugger debugger;
     struct io io;
     struct scheduler scheduler;
