@@ -22,6 +22,7 @@ struct options
     bool debugger;
     uint32_t scale;
     bool headless;
+    uint32_t color;     // 0: auto, 1: never, 2: always
 };
 
 struct gba
@@ -37,6 +38,12 @@ struct gba
     ** Can therefore be used by all threads.
     */
     struct options options;
+
+    /*
+    ** Read-only past initialization.
+    ** Can therefore be used by all threads.
+    */
+    char game_title[13];
 
     /*
     ** The result of the video controller, used by the renderer to

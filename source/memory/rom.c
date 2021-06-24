@@ -10,6 +10,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdio.h>
+#include "gba.h"
 #include "memory.h"
 #include "hades.h"
 
@@ -27,7 +28,7 @@ mem_load_bios(
 
     file = fopen(path, "rb");
     if (!file) {
-        fprintf(stderr, "hades: can't open gba_bios.gba: %s.\n", strerror(errno));
+        fprintf(stderr, "hades: can't open %s: %s.\n", path, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -40,7 +41,7 @@ mem_load_bios(
     rewind(file);
 
     if (fread(memory->bios, 1, 0x4000, file) != 0x4000) {
-        fprintf(stderr, "hades: failed to read bios.bin: %s.\n", strerror(errno));
+        fprintf(stderr, "hades: failed to read %s: %s.\n", path, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -54,7 +55,7 @@ mem_load_bios(
 */
 int
 mem_load_rom(
-    struct memory *memory,
+    struct gba *gba,
     char const *path
 ) {
     FILE *file;
@@ -69,18 +70,20 @@ mem_load_rom(
 
     fseek(file, 0, SEEK_END);
     file_len = ftell(file);
-    if (file_len > 0x2000000) {
+    if (file_len > 0x2000000 || file_len < 192) {
         fprintf(stderr, "hades: %s: invalid game.\n", path);
         exit(EXIT_FAILURE);
     }
     rewind(file);
 
-    len = fread(memory->rom, 1, 0x2000000, file);
+    len = fread(gba->memory.rom, 1, 0x2000000, file);
 
     if (len != file_len) {
         fprintf(stderr, "hades: failed to read %s: %s.\n", path, strerror(errno));
         exit(EXIT_FAILURE);
     }
+
+    memcpy(gba->game_title, gba->memory.rom + 0xA0, 12);
 
     return (0);
 }

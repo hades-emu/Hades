@@ -47,28 +47,6 @@
 */
 # define ARRAY_LEN(x)       (sizeof(x) / sizeof((x)[0]))
 
-/*
-** A set of ANSI control sequences to format the terminal.
-*/
-# define RESET          "\e[0m"
-# define BOLD           "\e[1m"
-
-# define RED            "\e[31m"
-# define GREEN          "\e[32m"
-# define YELLOW         "\e[33m"
-# define BLUE           "\e[34m"
-# define MAGENTA        "\e[35m"
-# define CYAN           "\e[36m"
-# define LIGHT_GRAY     "\e[37m"
-# define DARK_GRAY      "\e[90m"
-# define LIGHT_RED      "\e[91m"
-# define LIGHT_GREEN    "\e[92m"
-# define LIGHT_YELLOW   "\e[93m"
-# define LIGHT_BLUE     "\e[94m"
-# define LIGHT_MAGENTA  "\e[95m"
-# define LIGHT_CYAN     "\e[96m"
-# define WHITE          "\e[97m"
-
 enum modules {
     HS_GLOBAL      = 0,
 
@@ -310,10 +288,34 @@ char **strsplit(char *str, size_t *size);
 void logln(enum modules module, char const *fmt, ...);
 void panic(enum modules module, char const *fmt, ...) __attribute__((noreturn));
 void unimplemented(enum modules module, char const *fmt, ...) __attribute__((noreturn));
+void disable_colors(void);
 
 extern atomic_bool g_stop;
 extern atomic_bool g_interrupt;
 extern bool g_verbose[HS_END];
 extern bool g_verbose_global;
+
+/*
+** A set of global strings pointing to ANSI control sequences to format the terminal.
+** They can also be set to the empty string if coloration is disabled.
+*/
+extern char const *g_reset;
+extern char const *g_bold;
+
+extern char const *g_red;
+extern char const *g_green;
+extern char const *g_yellow;
+extern char const *g_blue;
+extern char const *g_magenta;
+extern char const *g_cyan;
+extern char const *g_light_gray;
+extern char const *g_dark_gray;
+extern char const *g_light_red;
+extern char const *g_light_green;
+extern char const *g_light_yellow;
+extern char const *g_light_blue;
+extern char const *g_light_magenta;
+extern char const *g_light_cyan;
+extern char const *g_white;
 
 #endif /* !HADES_H */

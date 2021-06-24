@@ -25,7 +25,13 @@ debugger_eval_breakpoints(
     i = 0;
     while (i < debugger->breakpoints_len) {
         if (debugger->breakpoints[i] == pc) {
-            printf(">>>> Breakpoint hit (%zu) at " LIGHT_MAGENTA "0x%08x" RESET " <<<<\n", i, pc);
+            printf(
+                ">>>> Breakpoint hit (%zu) at %s0x%08x%s <<<<\n",
+                i,
+                g_light_magenta,
+                pc,
+                g_reset
+            );
             debugger_dump_context(gba, false);
             g_interrupt = true;
         }
@@ -56,7 +62,12 @@ debugger_cmd_break(
 
         debugger->breakpoints_len += 1;
 
-        printf("New breakpoint at address " LIGHT_MAGENTA "0x%08x" RESET ".\n", addr);
+        printf(
+            "New breakpoint at address %s0x%08x%s.\n",
+            g_light_magenta,
+            addr,
+            g_reset
+        );
     } else {
         printf("Usage: %s\n", g_commands[CMD_BREAK].usage);
     }

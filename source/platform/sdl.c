@@ -188,7 +188,7 @@ sdl_render_loop(
             fps = (gba->frame_counter - old_frame_counter) / 2; // 120 SDL frames is roughly 2 seconds
             old_frame_counter = gba->frame_counter;
 
-            snprintf(title, sizeof(title), "Hades | %u FPS", fps);
+            snprintf(title, sizeof(title), "Hades | %s | %u FPS", gba->game_title, fps);
             SDL_SetWindowTitle(app.window, title);
             sdl_count = 0;
         }
