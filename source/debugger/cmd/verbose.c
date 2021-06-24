@@ -40,7 +40,12 @@ debugger_cmd_verbose(
 ) {
     if (argc == 1) {
         g_verbose_global = !g_verbose_global;
-        printf("Verbosity set to " LIGHT_MAGENTA "%s" RESET "\n", g_verbose_global ? "true" : "false");
+        printf(
+            "Verbosity set to %s%s%s\n",
+            g_light_magenta,
+            g_verbose_global ? "true" : "false",
+            g_reset
+        );
     } else if (argc == 2) {
         uint i;
 
@@ -48,9 +53,13 @@ debugger_cmd_verbose(
             if (!strcmp(verbosities[i].name, argv[1])) {
                 *verbosities[i].flag ^= 1;
                 printf(
-                    LIGHT_GREEN "%s" RESET " verbosity set to " LIGHT_MAGENTA "%s" RESET "\n",
+                    "%s%s%s verbosity set to %s%s%s\n",
+                    g_light_green,
                     verbosities[i].name,
-                    *verbosities[i].flag ? "true" : "false"
+                    g_reset,
+                    g_light_magenta,
+                    *verbosities[i].flag ? "true" : "false",
+                    g_reset
                 );
             }
         }

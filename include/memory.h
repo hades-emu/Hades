@@ -128,6 +128,6 @@ void mem_write32(struct gba *gba, uint32_t addr, uint32_t val);
 
 /* memory/rom.c */
 int mem_load_bios(struct memory *memory, char const *filename);
-int mem_load_rom(struct memory *memory, char const *filename);
+int mem_load_rom(struct gba *gba, char const *filename);
 
 #endif /* !MEMORY_H */

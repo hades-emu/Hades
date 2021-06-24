@@ -26,25 +26,44 @@ debugger_cmd_registers(
     core = &gba->core;
     for (i = 0; i < 4; ++i) {
         printf(
-            LIGHT_GREEN "%2s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
-            LIGHT_GREEN "%2s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
-            LIGHT_GREEN "%2s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET ", "
-            LIGHT_GREEN "%2s" RESET ": " LIGHT_MAGENTA "0x%08x" RESET "\n",
+            "%s%2s%s: %s0x%08x%s, "
+            "%s%2s%s: %s0x%08x%s, "
+            "%s%2s%s: %s0x%08x%s, "
+            "%s%2s%s: %s0x%08x%s\n",
+            g_light_green,
             registers_name[i * 4],
+            g_reset,
+            g_light_magenta,
             core->registers[i * 4],
+            g_reset,
+            g_light_green,
             registers_name[i * 4 + 1],
+            g_reset,
+            g_light_magenta,
             core->registers[i * 4 + 1],
+            g_reset,
+            g_light_green,
             registers_name[i * 4 + 2],
+            g_reset,
+            g_light_magenta,
             core->registers[i * 4 + 2],
+            g_reset,
+            g_light_green,
             registers_name[i * 4 + 3],
-            core->registers[i * 4 + 3]
+            g_reset,
+            g_light_magenta,
+            core->registers[i * 4 + 3],
+            g_reset
         );
     }
 
     printf("\n");
 
     printf(
-        LIGHT_GREEN "CPSR" RESET ": " LIGHT_MAGENTA "%c%c%c%c%c%c%c" RESET ", %s, (" LIGHT_MAGENTA "0x%08x" RESET ") | " LIGHT_GREEN "Cycles" RESET ": " LIGHT_MAGENTA "%#lx" RESET,
+        "%sCPSR%s: %s%c%c%c%c%c%c%c%s, %s, (%s0x%08x%s) | %sCycles%s: %s%#lx%s",
+        g_light_green,
+        g_reset,
+        g_light_magenta,
         core->cpsr.negative ? 'n' : '-',
         core->cpsr.zero ? 'z' : '-',
         core->cpsr.carry ? 'c' : '-',
@@ -52,13 +71,20 @@ debugger_cmd_registers(
         core->cpsr.irq_disable ? 'i' : '-',
         core->cpsr.fiq_disable ? 'f' : '-',
         core->cpsr.thumb ? 't' : '-',
+        g_reset,
         arm_modes_name[core->cpsr.mode],
+        g_light_magenta,
         core->cpsr.raw,
-        gba->scheduler.cycles
+        g_reset,
+        g_light_green,
+        g_reset,
+        g_light_magenta,
+        gba->scheduler.cycles,
+        g_reset
     );
 
     if (core->halt) {
-        printf(" > " LIGHT_RED BOLD "HALTED" RESET " <");
+        printf(" > %s%sHALTED%s <", g_light_red, g_bold, g_reset);
     }
     printf("\n");
 }

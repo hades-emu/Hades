@@ -75,6 +75,7 @@ print_usage(
         "    -d, --debugger                    enable the debugger\n"
         "        --headless                    disable any graphical output\n"
         "    -s, --scale=SIZE                  scale the window by SIZE\n"
+        "        --color=[always|never|auto]   adjust color settings (default: auto)\n"
         "\n"
         "    -h, --help                        print this help and exit\n"
         "        --version                     print the version information and exit\n"
@@ -103,6 +104,7 @@ args_parse(
             [2] = { "scale",        required_argument,  0,  0 },
             [3] = { "version",      no_argument,        0,  0 },
             [4] = { "headless",     no_argument,        0,  0 },
+            [5] = { "color",        optional_argument,  0,  0 },
                   { 0,              0,                  0,  0 }
         };
 
@@ -137,6 +139,24 @@ args_parse(
                     case 4: // --headless
                         options->headless = true;
                         break;
+                    case 5: // --color
+                        if (optarg) {
+                            if (!strcmp(optarg, "auto")) {
+                                options->color = 0;
+                                break;
+                            } else if (!strcmp(optarg, "never")) {
+                                options->color = 1;
+                                break;
+                            } else if (!strcmp(optarg, "always")) {
+                                options->color = 2;
+                                break;
+                            } else {
+                                print_usage(stderr, name);
+                                exit(EXIT_FAILURE);
+                            }
+                        } else {
+                            options->color = 0;
+                        }
                 }
                 break;
             case 'd':
@@ -162,6 +182,17 @@ args_parse(
         exit(EXIT_FAILURE);
     }
 
+    switch (options->color) {
+        case 0:
+            if (!isatty(1)) {
+                disable_colors();
+            }
+            break;
+        case 1:
+            disable_colors();
+            break;
+    }
+
     return (argv[optind]);
 }
 
@@ -181,7 +212,7 @@ main(
 
     memset(gba, 0, sizeof(*gba));
     gba->input.raw = 0x3FF; // Every button set to "released"
-    gba->options.scale = 2; // Default window is scaled by two.
+    gba->options.scale = 3; // Default window scale
 
     rom = args_parse(argc, argv, &gba->options); /* Parse arguments. NOTE: this function exits on failure. */
 
@@ -200,7 +231,7 @@ main(
     mem_load_bios(&gba->memory, "bios.bin");
 
     /* Load the given ROM. NOTE: this function exits on failure. */
-    mem_load_rom(&gba->memory, rom);
+    mem_load_rom(gba, rom);
 
     core_init(gba);
 

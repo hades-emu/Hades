@@ -52,16 +52,18 @@ debugger_dump_context_compact_header(void)
 {
     size_t i;
 
-    printf(LIGHT_GREEN "  Cycle Counter  " RESET);
+    printf("  %sCycle Counter%s  ", g_light_green, g_reset);
 
     for (i = 0; i < 16; ++i) {
         printf(
-            LIGHT_GREEN "   %s   " RESET " ",
-            registers_name[i]
+            "   %s%s%s    ",
+            g_light_green,
+            registers_name[i],
+            g_reset
         );
     }
 
-    printf("   " LIGHT_GREEN "CPSR" RESET);
+    printf("   %sCPSR%s", g_light_green, g_reset);
     printf("\n");
 }
 

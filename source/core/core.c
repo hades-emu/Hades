@@ -127,11 +127,11 @@ core_next(
 
     /*
     ** We don't have cycle counting yet, so we kinda arbitrarily assume
-    ** that 4 cycles were spent running the previous instruction (FIXME).
+    ** that 1 cycles were spent running the previous instruction (FIXME).
     **
     ** (Not having cycle counting at this stage is a meme ngl :')
     */
-    gba->scheduler.cycles += 4;
+    gba->scheduler.cycles += 1;
 }
 
 /*

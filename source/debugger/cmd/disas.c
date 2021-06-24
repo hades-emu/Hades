@@ -125,12 +125,15 @@ debugger_cmd_disas_at(
     handle = core->cpsr.thumb ? debugger->handle_thumb : debugger->handle_arm;
     count = try_disas(handle, &insn, memory, ptr, op_len, 1);
     if (count == 0) {
-        printf(LIGHT_MAGENTA "<bad>" RESET);
+        printf("%s<bad>%s", g_light_magenta, g_reset);
     } else {
         printf(
-            LIGHT_GREEN "%s" LIGHT_MAGENTA " %s" RESET,
+            "%s%s %s%s%s",
+            g_light_green,
             insn[0].mnemonic,
-            insn[0].op_str
+            g_light_magenta,
+            insn[0].op_str,
+            g_reset
         );
     }
 }
@@ -230,11 +233,13 @@ debugger_cmd_disas_around(
         p = ptr - (radius - 1) * op_len;
         while (p < ptr_start) {
             printf(
-                " %c %08x" RESET ": " LIGHT_GREEN "%-*s" RESET "\n",
+                " %c %08x: %s%-*s%s\n",
                 p == ptr ? '>' : ' ',
                 p,
+                g_light_green,
                 (int)mnemonic_len,
-                "<bad>"
+                "<bad>",
+                g_reset
             );
             p += op_len;
         }
@@ -246,12 +251,15 @@ debugger_cmd_disas_around(
         i = 0;
         while (i < count) {
             printf(
-                " %c %08x" RESET ": " LIGHT_GREEN "%-*s" LIGHT_MAGENTA " %s" RESET "\n",
+                " %c %08x: %s%-*s %s%s%s\n",
                 insn[i].address == ptr ? '>' : ' ',
                 (uint32_t)insn[i].address,
+                g_light_green,
                 (int)mnemonic_len,
                 insn[i].mnemonic,
-                insn[i].op_str
+                g_light_magenta,
+                insn[i].op_str,
+                g_reset
             );
             ++i;
         }
@@ -261,12 +269,13 @@ debugger_cmd_disas_around(
     {
         while (ptr_end < ptr + radius * op_len) {
             printf(
-                " %c %08x" RESET ": " LIGHT_GREEN "%-*s" LIGHT_MAGENTA " %s" RESET "\n",
+                " %c %08x: %s%-*s%s\n",
                 ptr_end == ptr ? '>' : ' ',
                 ptr_end,
+                g_light_green,
                 (int)mnemonic_len,
                 "<bad>",
-                ""
+                g_reset
             );
             ptr_end += op_len;
         }

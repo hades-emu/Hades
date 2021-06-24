@@ -26,6 +26,7 @@ Options:
     -d, --debugger                    enable the debugger
         --headless                    use Hades without any graphical output
     -s, --scale=SIZE                  scale the window by SIZE
+        --color=[always|never|auto]   adjust color settings (default: auto)
 
     -h, --help                        print this help and exit
         --version                     print the version information and exit

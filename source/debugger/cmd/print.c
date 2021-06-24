@@ -31,15 +31,15 @@ debugger_cmd_print_str(
         }
 
         if (i % align == 0) {
-            printf("%08x: " LIGHT_MAGENTA, addr + i);
+            printf("%08x: %s", addr + i, g_light_magenta);
         }
         printf("%c", c);
         if (i % align == align - 1) {
-            printf(RESET "\n");
+            printf("%s\n", g_reset);
         }
         ++i;
     }
-    printf(RESET "\n");
+    printf("%s\n", g_reset);
 }
 
 static
@@ -58,17 +58,17 @@ debugger_cmd_print_char(
 
         c = mem_read8(gba, addr + i);
         if (i % align == 0) {
-            printf("%08x: " LIGHT_MAGENTA, addr + i);
+            printf("%08x: %s", addr + i, g_light_magenta);
         }
 
         printf("%c", isprint(c) ? c : '.');
 
         if (i % align == align - 1) {
-            printf(RESET "\n");
+            printf("%s\n", g_reset);
         }
         ++i;
     }
-    printf(RESET "\n");
+    printf("%s\n", g_reset);
 }
 
 /*
@@ -98,7 +98,7 @@ debugger_cmd_print_u8(
             len = align;
         }
 
-        printf("%08x: " LIGHT_MAGENTA, start);
+        printf("%08x: %s", start, g_light_magenta);
 
         i = 0;
         while (i < len) {
@@ -110,7 +110,7 @@ debugger_cmd_print_u8(
             ++i;
         }
 
-        printf(RESET "|");
+        printf("%s|", g_reset);
 
         i = 0;
         while (i < len) {
@@ -159,7 +159,7 @@ debugger_cmd_print_u16(
             len = align;
         }
 
-        printf("%08x: " LIGHT_MAGENTA, start);
+        printf("%08x: %s", start, g_light_magenta);
 
         i = 0;
         while (i < len) {
@@ -171,7 +171,7 @@ debugger_cmd_print_u16(
             ++i;
         }
 
-        printf(RESET "|");
+        printf("%s|", g_reset);
 
         i = 0;
         while (i < len * 2) {
@@ -219,7 +219,7 @@ debugger_cmd_print_u32(
             len = align;
         }
 
-        printf("%08x: " LIGHT_MAGENTA, start);
+        printf("%08x: %s", start, g_light_magenta);
 
         i = 0;
         while (i < len) {
@@ -231,7 +231,7 @@ debugger_cmd_print_u32(
             ++i;
         }
 
-        printf(RESET "|");
+        printf("%s|", g_reset);
 
         i = 0;
         while (i < len * 4) {
