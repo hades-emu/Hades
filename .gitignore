@@ -1,5 +1,7 @@
+/screenshots
 /build
 /build.*
 /games
 /demos
 *.gba
+*.bin
