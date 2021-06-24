@@ -45,10 +45,14 @@ ppu_render_scanline(
 
     pthread_mutex_lock(&gba->framebuffer_mutex);
 
-    bg.raw = mem_read16(gba, PALRAM_START);
+    bg.raw = io->dispcnt.blank ? 0xffff : mem_read16(gba, PALRAM_START);
 
     for (x = 0; x < SCREEN_WIDTH; ++x) {
         ppu_plot_pixel(gba, bg, x, line);
+    }
+
+    if (io->dispcnt.blank) {
+        goto end;
     }
 
     switch (io->dispcnt.bg_mode) {
@@ -72,6 +76,7 @@ ppu_render_scanline(
             break;
     }
 
+end:
     pthread_mutex_unlock(&gba->framebuffer_mutex);
 }
 
