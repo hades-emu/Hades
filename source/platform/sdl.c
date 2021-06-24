@@ -7,6 +7,7 @@
 **
 \******************************************************************************/
 
+#include <sys/stat.h>
 #include <signal.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -82,8 +83,54 @@ sdl_cleanup(
 
 static
 void
+sdl_take_screenshot(
+    struct sdl *app
+) {
+    time_t now;
+    struct tm *now_info;
+    char file_name[256];
+    SDL_Surface *screenshot;
+    int w;
+    int h;
+    int out;
+
+    time(&now);
+    now_info = localtime(&now);
+
+    mkdir("screenshots", 0755);
+    strftime(file_name, sizeof(file_name), "screenshots/%Y-%m-%d_%Hh%Mm%Ss.bmp", now_info);
+
+    SDL_GetRendererOutputSize(app->renderer, &w, &h);
+    screenshot = SDL_CreateRGBSurface(0, w, h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+    SDL_RenderReadPixels(app->renderer, NULL, SDL_PIXELFORMAT_ARGB8888, screenshot->pixels, screenshot->pitch);
+    out = SDL_SaveBMP(screenshot, file_name);
+    SDL_FreeSurface(screenshot);
+
+    if (!out) {
+        printf(
+            "Screenshot saved in %s%s%s...\n",
+            g_light_green,
+            file_name,
+            g_reset
+        );
+    } else {
+        printf(
+            "%sError: failed to save screenshot in %s%s%s!%s\n",
+            g_light_red,
+            g_light_green,
+            file_name,
+            g_light_red,
+            g_reset
+        );
+    }
+
+}
+
+static
+void
 sdl_handle_inputs(
-    struct gba *gba
+    struct gba *gba,
+    struct sdl *app
 ) {
     SDL_Event event;
 
@@ -129,6 +176,7 @@ sdl_handle_inputs(
                         case SDLK_o:                gba->input.r = true; break;
                         case SDLK_BACKSPACE:        gba->input.select = true; break;
                         case SDLK_RETURN:           gba->input.start = true; break;
+                        case SDLK_F2:               sdl_take_screenshot(app);
                         default:                                  break;
                     }
                     pthread_mutex_unlock(&gba->input_mutex);
@@ -160,7 +208,7 @@ sdl_render_loop(
     while (!g_stop) {
         SDL_SetRenderDrawColor(app.renderer, 255, 255, 255, 255);
 
-        sdl_handle_inputs(gba);
+        sdl_handle_inputs(gba, &app);
 
         pthread_mutex_lock(&gba->framebuffer_mutex);
 
