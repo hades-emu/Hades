@@ -67,16 +67,20 @@ ppu_render_oam(
         //    continue;
         //}
 
-        coord_y = sign_extend8(oam.coord_y);
+        coord_y = oam.coord_y;
         size_x = sprite_size_x[(oam.size_high << 2) | oam.size_low];
-        size_y = sprite_size_y[(oam.size_high << 2) | oam.size_low];
+        size_y = sprite_size_y[(oam.size_high <<2) | oam.size_low];
+
+        if (coord_y + size_y >= 255) {
+            coord_y -= 256;
+        }
 
         // Filter and keep only the sprites that cross the current scanline
         if (line >= coord_y && line < coord_y + size_y) {
             for (x = 0; x < size_x; ++x) {
                 uint32_t palette_idx;
                 int32_t coord_x;
-                uint32_t plot_x;
+                int32_t plot_x;
                 uint32_t chr_x;
                 uint32_t chr_y;
                 uint32_t tile_x;
