@@ -3,7 +3,7 @@ name: Build
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  build-linux:
+  linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,3 +16,11 @@ jobs:
           meson build --buildtype=release --werror
           cd build
           ninja
+      - name: Test Hades
+        run: |
+          cd build
+          wget -q "https://github.com/Cult-of-GBA/BIOS/raw/master/bios.bin" -O bios.bin
+          wget -q "https://github.com/jsmolka/gba-tests/raw/master/thumb/thumb.gba" -O thumb.gba
+          wget -q "https://github.com/jsmolka/gba-tests/raw/master/arm/arm.gba" -O arm.gba
+          echo "main; s 1000000; r" | ./hades -d --headless ./thumb.gba | grep "r7: 0x00000000"
+          echo "main; s 1000000; r" | ./hades -d --headless ./arm.gba | grep "ip: 0x00000000"
