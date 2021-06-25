@@ -218,6 +218,7 @@ main(
 
     pthread_mutex_init(&gba->framebuffer_mutex, NULL);
     pthread_mutex_init(&gba->input_mutex, NULL);
+    pthread_mutex_init(&gba->emulator_mutex, NULL);
 
     core_arm_decode_insns();
     core_thumb_decode_insns();

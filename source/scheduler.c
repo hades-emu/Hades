@@ -110,6 +110,7 @@ sched_run_for(
 
     scheduler = &gba->scheduler;
     target = scheduler->cycles + cycles;
+    pthread_mutex_lock(&gba->emulator_mutex);
     while (!g_interrupt && scheduler->cycles < target ) {
         uint64_t elapsed;
         uint64_t old_cycles;
@@ -124,13 +125,14 @@ sched_run_for(
             sched_process_events(gba);
         }
     }
+    pthread_mutex_unlock(&gba->emulator_mutex);
 }
 
 void
 sched_run_forever(
     struct gba *gba
 ) {
-    while (!g_interrupt) {
-        sched_run_for(gba, 1);
+    while (!g_stop) {
+        sched_run_for(gba, UINT32_MAX);
     }
 }

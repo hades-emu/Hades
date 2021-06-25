@@ -67,7 +67,7 @@ logln(
 ) {
     va_list va;
 
-    if (g_verbose_global && g_verbose[module]) {
+    if (module == HS_GLOBAL || (g_verbose_global && g_verbose[module])) {
         va_start(va, fmt);
         printf("[%s] ", modules_str[module]);
         vprintf(fmt, va);

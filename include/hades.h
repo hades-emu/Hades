@@ -67,7 +67,7 @@ enum modules {
 };
 
 static char const * const modules_str[] = {
-    [HS_GLOBAL]     = "       ",
+    [HS_GLOBAL]     = " HADES ",
     [HS_ERROR]      = " ERROR ",
     [HS_WARNING]    = " WARN  ",
     [HS_CORE]       = " CORE  ",

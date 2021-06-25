@@ -61,6 +61,7 @@ mem_load_rom(
     FILE *file;
     long file_len;
     size_t len;
+    char *extension;
 
     file = fopen(path, "rb");
     if (!file) {
@@ -84,6 +85,15 @@ mem_load_rom(
     }
 
     memcpy(gba->game_title, gba->memory.rom + 0xA0, 12);
+    gba->rom_path = path;
+
+    // Build the path pointing to the save state
+    // (aka path/to/rom.gba but ending with .hds instead)
+    extension = strrchr(gba->rom_path, '.');
+    gba->save_path = calloc(extension - gba->rom_path + 5, 1);
+    hs_assert(gba->save_path);
+    strncpy(gba->save_path, gba->rom_path, extension - gba->rom_path);
+    strcat(gba->save_path, ".hds");
 
     return (0);
 }
