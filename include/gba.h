@@ -34,6 +34,12 @@ struct gba
     struct scheduler scheduler;
 
     /*
+    ** A mutex that protects the above structure from
+    ** concurrency errors, especially when saving/loading savestates.
+    */
+    pthread_mutex_t emulator_mutex;
+
+    /*
     ** Read-only past initialization.
     ** Can therefore be used by all threads.
     */
@@ -44,6 +50,8 @@ struct gba
     ** Can therefore be used by all threads.
     */
     char game_title[13];
+    char const *rom_path;
+    char *save_path;
 
     /*
     ** The result of the video controller, used by the renderer to
@@ -83,5 +91,9 @@ struct gba
     */
     atomic_uint frame_counter;
 };
+
+/* save.c */
+int save_state(struct gba const *gba, char const *path);
+int load_state(struct gba *gba, char const *path);
 
 #endif /* GBA_H */

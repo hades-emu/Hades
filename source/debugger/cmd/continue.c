@@ -17,5 +17,7 @@ debugger_cmd_continue(
     size_t argc __unused,
     char const * const *argv __unused
 ) {
-    sched_run_forever(gba);
+    while (!g_interrupt) {
+        sched_run_for(gba, UINT32_MAX);
+    }
 }

@@ -56,6 +56,7 @@ executable(
     'source/ppu/background.c',
     'source/ppu/ppu.c',
     'source/main.c',
+    'source/save.c',
     'source/scheduler.c',
     'source/timer.c',
     'source/utils.c',
