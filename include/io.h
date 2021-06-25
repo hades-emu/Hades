@@ -130,6 +130,10 @@ struct dma_channel {
         uint8_t  bytes[2];
     } count;
 
+    uint32_t internal_src;
+    uint32_t internal_dst;
+    uint16_t internal_count;
+
     union {
         struct {
             uint16_t : 5;
@@ -147,7 +151,7 @@ struct dma_channel {
     } control;
 } __packed;
 
-static_assert(sizeof(struct dma_channel) == 3 * sizeof(uint32_t));
+static_assert(sizeof(struct dma_channel) == (5 * sizeof(uint32_t) + sizeof(uint16_t)));
 
 struct timer {
     union {

@@ -10,6 +10,15 @@
 #include "hades.h"
 #include "gba.h"
 
+void
+mem_dma_load(
+    struct dma_channel *channel
+) {
+    channel->internal_src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
+    channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
+    channel->internal_count = channel->count.raw;
+}
+
 /*
 ** Go through all DMA channels and process them (if they are enabled).
 */
@@ -22,12 +31,10 @@ mem_dma_transfer(
 
     for (i = 0; i < 4; ++i) {
         struct dma_channel *channel;
-        uint32_t src;
         int32_t src_step;
-        uint32_t dst;
         int32_t dst_step;
-        uint32_t count;
         int32_t unit_size;
+        bool reload;
 
         channel = &gba->io.dma[i];
 
@@ -40,16 +47,14 @@ mem_dma_transfer(
             continue;
         }
 
-        src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
-        dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
-        count = channel->count.raw;
+        reload = false;
         unit_size = channel->control.unit_size ? 4 : 2; // In  bytes
 
         switch (channel->control.dst_ctl) {
             case 0b00:      dst_step = unit_size; break;
             case 0b01:      dst_step = -unit_size; break;
             case 0b10:      dst_step = 0; break;
-            case 0b11:      unimplemented(HS_DMA, "DMA transfers with increment+reload dest address isn't implemented."); break;
+            case 0b11:      dst_step = unit_size; reload = true; break;//unimplemented(HS_DMA, "DMA transfers with increment+reload dest address isn't implemented."); break;
         }
 
         src_step = 0;
@@ -61,34 +66,34 @@ mem_dma_transfer(
         }
 
         // A count of 0 is treated as max length.
-        if (count == 0) {
-            count = (i == 3 ? 0x10000 : 0x4000);
+        if (channel->internal_count == 0) {
+            channel->internal_count = (i == 3 ? 0x10000 : 0x4000);
         }
 
         logln(
             HS_DMA,
             "DMA transfer from 0x%08x%c to 0x%08x%c (len=%#08x, unit_size=%u, channel %u)",
-            src,
+            channel->internal_src,
             src_step > 0 ? '+' : '-',
-            dst,
+            channel->internal_dst,
             dst_step > 0 ? '+' : '-',
-            count,
+            channel->internal_count,
             unit_size,
             i
         );
 
-        if (dst == 0x040000A0 || dst == 0x040000A4) {
+        if (channel->internal_dst == 0x040000A0 || channel->internal_dst == 0x040000A4) {
             logln(HS_DMA, "FIFO transfer -- Ignored");
         } else {
-            while (count > 0) {
+            while (channel->internal_count > 0) {
                 if (unit_size == 4) {
-                    mem_write32(gba, dst, mem_read32(gba, src));
+                    mem_write32(gba, channel->internal_dst, mem_read32(gba, channel->internal_src));
                 } else { // unit_size == 2
-                    mem_write16(gba, dst, mem_read16(gba, src));
+                    mem_write16(gba, channel->internal_dst, mem_read16(gba, channel->internal_src));
                 }
-                src += src_step;
-                dst += dst_step;
-                --count;
+                channel->internal_src += src_step;
+                channel->internal_dst += dst_step;
+                --(channel->internal_count);
             }
         }
 
@@ -97,7 +102,10 @@ mem_dma_transfer(
         }
 
         if (channel->control.repeat) {
-            //unimplemented(HS_DMA, "Repeat bit unimplemented");
+            channel->internal_count = channel->count.raw;
+            if (reload) {
+                channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1);
+            }
         } else {
             channel->control.enable = false;
         }
