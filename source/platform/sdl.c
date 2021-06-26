@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 #include "hades.h"
 #include "gba.h"
@@ -99,12 +100,12 @@ sdl_take_screenshot(
     now_info = localtime(&now);
 
     mkdir("screenshots", 0755);
-    strftime(file_name, sizeof(file_name), "screenshots/%Y-%m-%d_%Hh%Mm%Ss.bmp", now_info);
+    strftime(file_name, sizeof(file_name), "screenshots/%Y-%m-%d_%Hh%Mm%Ss.png", now_info);
 
     SDL_GetRendererOutputSize(app->renderer, &w, &h);
     screenshot = SDL_CreateRGBSurface(0, w, h, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
     SDL_RenderReadPixels(app->renderer, NULL, SDL_PIXELFORMAT_ARGB8888, screenshot->pixels, screenshot->pitch);
-    out = SDL_SaveBMP(screenshot, file_name);
+    out = IMG_SavePNG(screenshot, file_name);
     SDL_FreeSurface(screenshot);
 
     if (!out) {
@@ -177,7 +178,7 @@ sdl_handle_inputs(
                         case SDLK_o:                gba->input.r = true; break;
                         case SDLK_BACKSPACE:        gba->input.select = true; break;
                         case SDLK_RETURN:           gba->input.start = true; break;
-                        case SDLK_F1:
+                        case SDLK_F5:
                             g_interrupt = true;
                             pthread_mutex_lock(&gba->emulator_mutex);
                             if (!save_state(gba, gba->save_path)) {
@@ -202,7 +203,7 @@ sdl_handle_inputs(
                             pthread_mutex_unlock(&gba->emulator_mutex);
                             break;
                         case SDLK_F2:               sdl_take_screenshot(app); break;
-                        case SDLK_F3:
+                        case SDLK_F8:
                             g_interrupt = true;
                             pthread_mutex_lock(&gba->emulator_mutex);
                             if (!load_state(gba, gba->save_path)) {
