@@ -93,7 +93,7 @@ struct gba
 };
 
 /* save.c */
-int save_state(struct gba const *gba, char const *path);
-int load_state(struct gba *gba, char const *path);
+void save_state(struct gba *gba, char const *path);
+void load_state(struct gba *gba, char const *path);
 
 #endif /* GBA_H */
