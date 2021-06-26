@@ -38,7 +38,7 @@ The build dependencies are:
 
   - `meson`
   - `ninja`
-  - `SDL2`
+  - `SDL2` and `SDL2_Image`
   - `GCC`
   - `readline`
   - `capstone`
@@ -46,7 +46,7 @@ The build dependencies are:
 On Ubuntu, you can install all those dependencies with:
 
 ```bash
-$ apt install meson ninja-build gcc libsdl2-dev libreadline-dev libcapstone-dev
+$ apt install meson ninja-build gcc libsdl2-dev libsdl2-image-dev libreadline-dev libcapstone-dev
 ```
 
 To build Hades, run:

@@ -64,6 +64,7 @@ executable(
         dependency('capstone', version: '>=3.0.0', required: true),
         dependency('readline', version: '>=7', required: true),
         dependency('sdl2', version: '>=2', required: true),
+        dependency('SDL2_image', version: '>=2', required: true),
         dependency('threads', required: true)
     ],
     include_directories: include_directories('include'),

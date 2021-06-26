@@ -10,7 +10,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson ninja-build libsdl2-dev libreadline-dev libcapstone-dev
+          sudo apt-get install -y meson ninja-build libsdl2-dev libreadline-dev libcapstone-dev libsdl2-image-dev
       - name: Build Hades
         run: |
           meson build --buildtype=release --werror
