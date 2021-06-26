@@ -263,7 +263,9 @@ sdl_handle_events(
                         case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   gba->input.r = true; break;
                         case SDL_CONTROLLER_BUTTON_START:           gba->input.start = true; break;
                         case SDL_CONTROLLER_BUTTON_BACK:            gba->input.select = true; break;
+#if SDL_VERSION_ATLEAST(2, 14, 0)
                         case SDL_CONTROLLER_BUTTON_MISC1:           sdl_take_screenshot(app); break;
+#endif
                     }
                     pthread_mutex_unlock(&gba->input_mutex);
                 }
