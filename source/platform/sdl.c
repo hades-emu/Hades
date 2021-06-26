@@ -21,6 +21,11 @@ struct sdl
     SDL_Renderer *renderer;
     SDL_Window *window;
     SDL_Texture *texture;
+
+    // Game Controller
+    SDL_GameController *controller;
+    SDL_JoystickID joystick_idx;
+    bool controller_connected;
 };
 
 static
@@ -29,7 +34,7 @@ sdl_init(
     struct gba const *gba,
     struct sdl *app
 ) {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
         printf("Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
@@ -69,6 +74,10 @@ sdl_init(
         240,
         160
     );
+
+    app->controller = NULL;
+    app->joystick_idx = -1;
+    app->controller_connected = false;
 }
 
 static
@@ -129,7 +138,7 @@ sdl_take_screenshot(
 
 static
 void
-sdl_handle_inputs(
+sdl_handle_events(
     struct gba *gba,
     struct sdl *app
 ) {
@@ -137,6 +146,38 @@ sdl_handle_inputs(
 
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
+            case SDL_CONTROLLERDEVICEADDED:
+                if (!app->controller_connected) {
+                    SDL_Joystick *joystick;
+
+                    app->controller = SDL_GameControllerOpen(event.cdevice.which);
+                    joystick = SDL_GameControllerGetJoystick(app->controller);
+                    app->joystick_idx = SDL_JoystickInstanceID(joystick);
+                    app->controller_connected = true;
+                    logln(
+                        HS_GLOBAL,
+                        "Controller \"%s%s%s\" connected.",
+                        g_light_magenta,
+                        SDL_GameControllerName(app->controller),
+                        g_reset
+                    );
+                }
+                break;
+            case SDL_CONTROLLERDEVICEREMOVED:
+                if (event.cdevice.which >= 0 && event.cdevice.which == app->joystick_idx) {
+                    logln(
+                        HS_GLOBAL,
+                        "Controller \"%s%s%s\" disconnected.",
+                        g_light_magenta,
+                        SDL_GameControllerName(app->controller),
+                        g_reset
+                    );
+                    SDL_GameControllerClose(app->controller);
+                    app->controller = NULL;
+                    app->joystick_idx = -1;
+                    app->controller_connected = false;
+                }
+                break;
             case SDL_KEYDOWN:
                 {
                     pthread_mutex_lock(&gba->input_mutex);
@@ -186,6 +227,47 @@ sdl_handle_inputs(
                     pthread_mutex_unlock(&gba->input_mutex);
                 }
                 break;
+            case SDL_CONTROLLERBUTTONDOWN:
+                {
+                    pthread_mutex_lock(&gba->input_mutex);
+                    switch (event.cbutton.button) {
+                        case SDL_CONTROLLER_BUTTON_B:               gba->input.a = false; break;
+                        case SDL_CONTROLLER_BUTTON_A:               gba->input.b = false; break;
+                        case SDL_CONTROLLER_BUTTON_Y:               gba->input.a = false; break;
+                        case SDL_CONTROLLER_BUTTON_X:               gba->input.b = false; break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       gba->input.left = false; break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      gba->input.right = false; break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         gba->input.up = false; break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       gba->input.down = false; break;
+                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    gba->input.l = false; break;
+                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   gba->input.r = false; break;
+                        case SDL_CONTROLLER_BUTTON_START:           gba->input.start = false; break;
+                        case SDL_CONTROLLER_BUTTON_BACK:            gba->input.select = false; break;
+                    }
+                    pthread_mutex_unlock(&gba->input_mutex);
+                }
+                break;
+            case SDL_CONTROLLERBUTTONUP:
+                {
+                    pthread_mutex_lock(&gba->input_mutex);
+                    switch (event.cbutton.button) {
+                        case SDL_CONTROLLER_BUTTON_B:               gba->input.a = true; break;
+                        case SDL_CONTROLLER_BUTTON_A:               gba->input.b = true; break;
+                        case SDL_CONTROLLER_BUTTON_Y:               gba->input.a = true; break;
+                        case SDL_CONTROLLER_BUTTON_X:               gba->input.b = true; break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       gba->input.left = true; break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      gba->input.right = true; break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         gba->input.up = true; break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       gba->input.down = true; break;
+                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    gba->input.l = true; break;
+                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   gba->input.r = true; break;
+                        case SDL_CONTROLLER_BUTTON_START:           gba->input.start = true; break;
+                        case SDL_CONTROLLER_BUTTON_BACK:            gba->input.select = true; break;
+                        case SDL_CONTROLLER_BUTTON_MISC1:           sdl_take_screenshot(app); break;
+                    }
+                    pthread_mutex_unlock(&gba->input_mutex);
+                }
+                break;
             case SDL_QUIT:
                 g_stop = true;
                 g_interrupt = true;
@@ -206,13 +288,14 @@ sdl_render_loop(
     uint sdl_count;
     struct sdl app;
 
+    memset(&app, 0, sizeof(app));
     sdl_init(gba, &app);
 
     sdl_count = 0;
     while (!g_stop) {
         SDL_SetRenderDrawColor(app.renderer, 255, 255, 255, 255);
 
-        sdl_handle_inputs(gba, &app);
+        sdl_handle_events(gba, &app);
 
         pthread_mutex_lock(&gba->framebuffer_mutex);
 
