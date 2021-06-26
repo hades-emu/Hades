@@ -7,59 +7,147 @@
 **
 \******************************************************************************/
 
+#include <string.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "gba.h"
+#include "scheduler.h"
 
-int
+void
 save_state(
-    struct gba const *gba,
+    struct gba *gba,
     char const *path
 ) {
     FILE *file;
+    size_t i;
+
+    g_interrupt = true;
+    pthread_mutex_lock(&gba->emulator_mutex);
 
     file = fopen(path, "w");
     if (!file) {
-        return (-1);
+        goto err;
     }
 
     if (
            fwrite(&gba->core, sizeof(gba->core), 1, file) != 1
         || fwrite(&gba->memory, sizeof(gba->memory), 1, file) != 1
         || fwrite(&gba->io, sizeof(gba->io), 1, file) != 1
-        //|| fwrite(&gba->scheduler, sizeof(gba->scheduler), 1, file) != 1
+        || fwrite(&gba->scheduler.cycles, sizeof(uint64_t), 1, file) != 1
+        || fwrite(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
-        fclose(file);
-        return (-1);
+        goto err;
     }
 
-    fclose(file);
+    // Serialize the scheduler's event list
+    for (i = 0; i < gba->scheduler.events_size; ++i) {
+        struct scheduler_event *event;
+
+        event = gba->scheduler.events + i;
+        if (
+               fwrite(&event->active, sizeof(bool), 1, file) != 1
+            || fwrite(&event->repeat, sizeof(bool), 1, file) != 1
+            || fwrite(&event->at, sizeof(uint64_t), 1, file) != 1
+            || fwrite(&event->period, sizeof(uint64_t), 1, file) != 1
+        ) {
+            goto err;
+        }
+    }
+
     fflush(file);
-    return (0);
+
+    logln(
+        HS_GLOBAL,
+        "State saved to %s%s%s",
+        g_light_magenta,
+        path,
+        g_reset
+    );
+
+    goto finally;
+
+err:
+    logln(
+        HS_GLOBAL,
+        "%sError: failed to save state to %s: %s%s",
+        g_light_red,
+        path,
+        strerror(errno),
+        g_reset
+    );
+
+finally:
+
+    fclose(file);
+    g_interrupt = false;
+    pthread_mutex_unlock(&gba->emulator_mutex);
 }
 
-int
+void
 load_state(
     struct gba *gba,
     char const *path
 ) {
     FILE *file;
+    size_t i;
+
+    g_interrupt = true;
+    pthread_mutex_lock(&gba->emulator_mutex);
 
     file = fopen(path, "r");
     if (!file) {
-        return (-1);
+        goto err;
     }
 
     if (
            fread(&gba->core, sizeof(gba->core), 1, file) != 1
         || fread(&gba->memory, sizeof(gba->memory), 1, file) != 1
         || fread(&gba->io, sizeof(gba->io), 1, file) != 1
-        //|| fread(&gba->scheduler, sizeof(gba->scheduler), 1, file) != 1
+        || fread(&gba->scheduler.cycles, sizeof(uint64_t), 1, file) != 1
+        || fread(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
-        fclose(file);
-        return (-1);
+        goto err;
     }
 
+    // Serialize the scheduler's event list
+    for (i = 0; i < gba->scheduler.events_size; ++i) {
+        struct scheduler_event *event;
+
+        event = gba->scheduler.events + i;
+        if (
+               fread(&event->active, sizeof(bool), 1, file) != 1
+            || fread(&event->repeat, sizeof(bool), 1, file) != 1
+            || fread(&event->at, sizeof(uint64_t), 1, file) != 1
+            || fread(&event->period, sizeof(uint64_t), 1, file) != 1
+        ) {
+            goto err;
+        }
+    }
+
+    logln(
+        HS_GLOBAL,
+        "State loaded from %s%s%s",
+        g_light_magenta,
+        path,
+        g_reset
+    );
+
+    goto finally;
+
+err:
+    logln(
+        HS_GLOBAL,
+        "%sError: failed to load state from %s: %s%s",
+        g_light_red,
+        path,
+        strerror(errno),
+        g_reset
+    );
+
+finally:
+
     fclose(file);
-    return (0);
+    g_interrupt = false;
+    pthread_mutex_unlock(&gba->emulator_mutex);
 }

@@ -7,7 +7,6 @@
 **
 \******************************************************************************/
 
-#include <errno.h>
 #include <sys/stat.h>
 #include <signal.h>
 #include <pthread.h>
@@ -178,55 +177,9 @@ sdl_handle_inputs(
                         case SDLK_o:                gba->input.r = true; break;
                         case SDLK_BACKSPACE:        gba->input.select = true; break;
                         case SDLK_RETURN:           gba->input.start = true; break;
-                        case SDLK_F5:
-                            g_interrupt = true;
-                            pthread_mutex_lock(&gba->emulator_mutex);
-                            if (!save_state(gba, gba->save_path)) {
-                                logln(
-                                    HS_GLOBAL,
-                                    "State saved to %s%s%s",
-                                    g_light_magenta,
-                                    gba->save_path,
-                                    g_reset
-                                );
-                            } else {
-                                logln(
-                                    HS_GLOBAL,
-                                    "%sError: failed to save state to %s: %s%s",
-                                    g_light_red,
-                                    gba->save_path,
-                                    strerror(errno),
-                                    g_reset
-                                );
-                            }
-                            g_interrupt = false;
-                            pthread_mutex_unlock(&gba->emulator_mutex);
-                            break;
                         case SDLK_F2:               sdl_take_screenshot(app); break;
-                        case SDLK_F8:
-                            g_interrupt = true;
-                            pthread_mutex_lock(&gba->emulator_mutex);
-                            if (!load_state(gba, gba->save_path)) {
-                                logln(
-                                    HS_GLOBAL,
-                                    "State loaded from %s%s%s",
-                                    g_light_magenta,
-                                    gba->save_path,
-                                    g_reset
-                                );
-                            } else {
-                                logln(
-                                    HS_GLOBAL,
-                                    "%sError: failed to load state from %s: %s%s",
-                                    g_light_red,
-                                    gba->save_path,
-                                    strerror(errno),
-                                    g_reset
-                                );
-                            }
-                            g_interrupt = false;
-                            pthread_mutex_unlock(&gba->emulator_mutex);
-                            break;
+                        case SDLK_F5:               save_state(gba, gba->save_path); break;
+                        case SDLK_F8:               load_state(gba, gba->save_path); break;
                         default:
                             break;
                     }
