@@ -117,15 +117,17 @@ sdl_take_screenshot(
     SDL_FreeSurface(screenshot);
 
     if (!out) {
-        printf(
-            "Screenshot saved in %s%s%s...\n",
+        logln(
+            HS_GLOBAL,
+            "Screenshot saved in %s%s%s...",
             g_light_green,
             file_name,
             g_reset
         );
     } else {
-        printf(
-            "%sError: failed to save screenshot in %s%s%s!%s\n",
+        logln(
+            HS_ERROR,
+            "%sError: failed to save screenshot in %s%s%s!%s",
             g_light_red,
             g_light_green,
             file_name,
@@ -263,7 +265,7 @@ sdl_handle_events(
                         case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   gba->input.r = true; break;
                         case SDL_CONTROLLER_BUTTON_START:           gba->input.start = true; break;
                         case SDL_CONTROLLER_BUTTON_BACK:            gba->input.select = true; break;
-#if SDL_VERSION_ATLEAST(2, 14, 0)
+#if SDL_VERSION_ATLEAST(2, 0, 14)
                         case SDL_CONTROLLER_BUTTON_MISC1:           sdl_take_screenshot(app); break;
 #endif
                     }
