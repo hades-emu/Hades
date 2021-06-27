@@ -111,7 +111,7 @@ struct gba;
 struct dma_channel;
 
 /* memory/dma.c */
-void mem_dma_load(struct dma_channel *channel);
+void mem_dma_load(struct dma_channel *channel, uint32_t channel_idx);
 void mem_dma_transfer(struct gba *gba, enum dma_timings timing);
 
 /* memory/io.c */
