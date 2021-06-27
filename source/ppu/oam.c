@@ -125,7 +125,7 @@ ppu_render_oam(
                     uint32_t addr;
 
                     addr = tile_addr + chr_y * 8 + chr_x;
-                    palette_idx = gba->memory.vram[addr];
+                    palette_idx = mem_read8(gba, VRAM_START + addr);
                 } else { // 16 colors, 16 palettes
                     uint32_t addr;
 
@@ -136,7 +136,7 @@ ppu_render_oam(
                     */
 
                     addr = tile_addr + chr_y * 4 + (chr_x >> 1);
-                    palette_idx = gba->memory.vram[addr];
+                    palette_idx = mem_read8(gba, VRAM_START + addr);
                     palette_idx >>= (chr_x % 2) * 4;
                     palette_idx &= 0xF;
                 }
