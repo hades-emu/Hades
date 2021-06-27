@@ -63,9 +63,9 @@ ppu_render_oam(
             continue;
         }
 
-        //if (oam.affine) { // TODO: Handle affine sprites
-        //    continue;
-        //}
+        if (oam.affine) { // TODO: Handle affine sprites
+            continue;
+        }
 
         coord_y = oam.coord_y;
         size_x = sprite_size_x[(oam.size_high << 2) | oam.size_low];
