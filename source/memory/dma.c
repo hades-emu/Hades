@@ -12,10 +12,13 @@
 
 void
 mem_dma_load(
-    struct dma_channel *channel
+    struct dma_channel *channel,
+    uint32_t channel_idx
 ) {
     channel->internal_src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
+    channel->internal_src &= channel_idx ? 0x0FFFFFFF : 0x07FFFFFF;
     channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
+    channel->internal_dst &= (channel_idx != 3) ? 0x0FFFFFFF : 0x07FFFFFF;
     channel->internal_count = channel->count.raw;
 }
 
@@ -54,10 +57,9 @@ mem_dma_transfer(
             case 0b00:      dst_step = unit_size; break;
             case 0b01:      dst_step = -unit_size; break;
             case 0b10:      dst_step = 0; break;
-            case 0b11:      dst_step = unit_size; reload = true; break;//unimplemented(HS_DMA, "DMA transfers with increment+reload dest address isn't implemented."); break;
+            case 0b11:      dst_step = unit_size; reload = true; break;
         }
 
-        src_step = 0;
         switch (channel->control.src_ctl) {
             case 0b00:      src_step = unit_size; break;
             case 0b01:      src_step = -unit_size; break;
@@ -98,13 +100,14 @@ mem_dma_transfer(
         }
 
         if (channel->control.irq_end) {
-            unimplemented(HS_DMA, "IRQ at the end of DMA transfers isn't implemented yet.");
+            core_trigger_irq(gba, IRQ_DMA0 + i);
         }
 
         if (channel->control.repeat) {
             channel->internal_count = channel->count.raw;
             if (reload) {
                 channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1);
+                channel->internal_dst &= (i != 3) ? 0x0FFFFFFF : 0x07FFFFFF;
             }
         } else {
             channel->control.enable = false;
