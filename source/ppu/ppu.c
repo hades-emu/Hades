@@ -131,11 +131,13 @@ ppu_hblank(
 
     io->dispstat.hblank = true;
 
-    /* Trigger the HBLANK DMA transfer */
+    /* Trigger the HBLANK IRQ & DMA transfer */
     if (io->dispstat.hblank_irq) {
         core_trigger_irq(gba, IRQ_HBLANK);
     }
-    mem_dma_transfer(gba, DMA_TIMING_HBLANK);
+    if (io->vcount.raw < SCREEN_HEIGHT) {
+        mem_dma_transfer(gba, DMA_TIMING_HBLANK);
+    }
 }
 
 void
