@@ -36,16 +36,10 @@ atomic_bool g_interrupt;
 ** A global variable used to indicate the verbosity of all the different log levels.
 ** Restricted to the logic thread only.
 */
-bool g_verbose_global;
+bool g_verbose_global = true;
 bool g_verbose[HS_END] = {
     [HS_GLOBAL] = true,
-    [HS_WARNING] = true,
     [HS_ERROR] = true,
-
-    [HS_CORE] = true,
-    [HS_IO] = true,
-    [HS_DMA] = true,
-    [HS_IRQ] = true,
     [HS_MEMORY] = true,
 };
 
