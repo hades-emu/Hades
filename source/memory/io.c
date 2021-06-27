@@ -273,7 +273,7 @@ mem_io_write8(
         case IO_REG_DMA0CTL:                io->dma[0].control.bytes[0] = val; break;
         case IO_REG_DMA0CTL + 1:
             io->dma[0].control.bytes[1] = val;
-            mem_dma_load(io->dma + 0);
+            mem_dma_load(io->dma + 0, 0);
             mem_dma_transfer(gba, DMA_TIMING_NOW);
             break;
 
@@ -291,7 +291,7 @@ mem_io_write8(
         case IO_REG_DMA1CTL:                io->dma[1].control.bytes[0] = val; break;
         case IO_REG_DMA1CTL + 1:
             io->dma[1].control.bytes[1] = val;
-            mem_dma_load(io->dma + 1);
+            mem_dma_load(io->dma + 1, 1);
             mem_dma_transfer(gba, DMA_TIMING_NOW);
             break;
 
@@ -309,7 +309,7 @@ mem_io_write8(
         case IO_REG_DMA2CTL:                io->dma[2].control.bytes[0] = val; break;
         case IO_REG_DMA2CTL + 1:
             io->dma[2].control.bytes[1] = val;
-            mem_dma_load(io->dma + 2);
+            mem_dma_load(io->dma + 2, 2);
             mem_dma_transfer(gba, DMA_TIMING_NOW);
             break;
 
@@ -327,7 +327,7 @@ mem_io_write8(
         case IO_REG_DMA3CTL:                io->dma[3].control.bytes[0] = val; break;
         case IO_REG_DMA3CTL + 1:
             io->dma[3].control.bytes[1] = val;
-            mem_dma_load(io->dma + 3);
+            mem_dma_load(io->dma + 3, 3);
             mem_dma_transfer(gba, DMA_TIMING_NOW);
             break;
 
