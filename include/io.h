@@ -97,6 +97,9 @@ enum io_regs {
 
     IO_REG_KEYINPUT     = 0x04000130,
 
+    /* Serial Communication (2) */
+    IO_REG_RCNT         = 0x04000134,
+
     /* Interrupts */
 
     IO_REG_IE           = 0x04000200,
@@ -260,6 +263,12 @@ struct io {
 
     // Timers
     struct timer timers[4];
+
+    // REG_RCNT
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } rcnt;
 
     // REG_IME
     union {
