@@ -84,7 +84,7 @@ core_next(
                     }
                 }
 
-                panic(HS_CORE, "Unknown thumb op-code %#04x.", op);
+                panic(HS_CORE, "Unknown thumb op-code 0x%04x (pc=0x%08x).", op);
             } else {
                 uint32_t op;
 
@@ -126,7 +126,7 @@ core_next(
 
     /*
     ** We don't have cycle counting yet, so we kinda arbitrarily assume
-    ** that 1 cycles were spent running the previous instruction (FIXME).
+    ** that 1 cycles was spent running the previous instruction (FIXME).
     **
     ** (Not having cycle counting at this stage is a meme ngl :')
     */
@@ -392,8 +392,7 @@ core_interrupt(
     core_switch_mode(core, mode);
     core_spsr_set(core, mode, cpsr);
 
-    // TODO FIXME What if `vector` isn't SVC/SWI/RESET?
-    if (vector == VEC_SVC) {
+    if (vector == VEC_SVC || vector == VEC_UND) {
         core->lr = core->pc - (core->cpsr.thumb ? 2 : 4);
     } else if (vector != VEC_RESET) {
         core->lr = core->pc - (core->cpsr.thumb ? 0 : 4);
