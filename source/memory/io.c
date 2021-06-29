@@ -196,6 +196,9 @@ mem_io_read8(
                 return (out);
             }
 
+        case IO_REG_RCNT:                   return (io->rcnt.bytes[0]);
+        case IO_REG_RCNT + 1:               return (io->rcnt.bytes[1]);
+
         /* Interrupts */
         case IO_REG_IE:                     return (io->int_enabled.bytes[0]);
         case IO_REG_IE + 1:                 return (io->int_enabled.bytes[1]);
@@ -386,6 +389,10 @@ mem_io_write8(
             io->timers[3].control.bytes[0] = val;
             break;
         case IO_REG_TM3CNT_HI + 1:          io->timers[3].control.bytes[1] = val; break;
+
+        /* Serial Communication (2) */
+        case IO_REG_RCNT:
+        case IO_REG_RCNT + 1:               io->rcnt.bytes[addr - IO_REG_RCNT] = val; break;
 
         /* Interrupt */
         case IO_REG_IE:
