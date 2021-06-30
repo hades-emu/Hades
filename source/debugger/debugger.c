@@ -131,9 +131,9 @@ struct dbg_command g_commands[] = {
     [CMD_FRAME] = {
         .name = "frame",
         .alias = "f",
-        .usage = "frame",
+        .usage = "frame [N=1]",
         .desc = "Continue until the current frame is fully drawn.",
-        .nargs = 1,
+        .nargs = 0,
         .func = debugger_cmd_frame,
     },
     [CMD_MAIN] = {
