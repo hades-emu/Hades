@@ -53,13 +53,20 @@ union oam_entry {
             uint16_t color_256: 1;
             uint16_t size_high : 2;
         } __packed;
-        struct {
-            uint16_t coord_x: 9;
-            uint16_t : 3;
-            uint16_t hflip: 1;
-            uint16_t vflip: 1;
-            uint16_t size_low : 2;
-        } __packed;
+        union {
+            struct {
+                uint16_t coord_x: 9;
+                uint16_t : 3;
+                uint16_t hflip: 1;
+                uint16_t vflip: 1;
+                uint16_t size_low : 2;
+            } __packed;
+            struct {
+                uint16_t : 9; // coord_x
+                uint16_t affine_data_idx: 5;
+                uint16_t : 2; // size_low
+            } __packed;
+        };
         struct {
             uint16_t tile_idx: 10;
             uint16_t priority: 2;
@@ -71,9 +78,20 @@ union oam_entry {
 
 static_assert(sizeof(union oam_entry) == 3 * sizeof(uint16_t));
 
+union oam_float {
+    struct {
+        uint8_t fraction;
+        int8_t integer;
+    } __packed;
+    uint16_t raw;
+};
+
+static_assert(sizeof(union oam_float) == sizeof(uint16_t));
+
 /* ppu/background.c */
 void ppu_render_background_bitmap(struct gba *gba, uint32_t line, bool palette);
-void ppu_render_background_text(struct gba *gba, uint32_t line, uint32_t prio);
+void ppu_render_background_text(struct gba *gba, uint32_t line, uint32_t bg_idx);
+void ppu_render_background_affine(struct gba *gba, uint32_t line, uint32_t bg_idx);
 void ppu_plot_pixel(struct gba *gba, union color c, uint32_t x, uint32_t y);
 
 /* ppu/oam.c */

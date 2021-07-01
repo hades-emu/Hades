@@ -287,9 +287,9 @@ void *
 sdl_render_loop(
     struct gba *gba
 ) {
-    static uint old_frame_counter = 0;
+    static uint32_t old_frame_counter = 0;
     char title[1024];
-    uint sdl_count;
+    uint32_t sdl_count;
     struct sdl app;
 
     memset(&app, 0, sizeof(app));
@@ -321,7 +321,7 @@ sdl_render_loop(
         ++sdl_count;
 
         if (sdl_count >= 120) {
-            uint fps;
+            uint32_t fps;
 
             // TODO: Actually count frame correctly instead of this shit
             fps = (gba->frame_counter - old_frame_counter) / 2; // 120 SDL frames is roughly 2 seconds

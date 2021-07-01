@@ -60,10 +60,23 @@ ppu_render_scanline(
         case 1:
         case 2:
             {
+                int32_t bg_idx;
                 int32_t prio;
 
                 for (prio = 3; prio >= 0; --prio) {
-                    ppu_render_background_text(gba, line, prio);
+                    for (bg_idx = 3; bg_idx >= 0; --bg_idx) {
+
+                        // Only show enabled background that have the desired priority
+                        if (!bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) || io->bgcnt[bg_idx].priority != prio) {
+                            continue;
+                        }
+
+                        if (io->dispcnt.bg_mode == 2 || (io->dispcnt.bg_mode == 1 && bg_idx == 2)) {
+                            ppu_render_background_affine(gba, line, bg_idx);
+                        } else {
+                            ppu_render_background_text(gba, line, bg_idx);
+                        }
+                    }
                     ppu_render_oam(gba, line, prio);
                 }
             }
