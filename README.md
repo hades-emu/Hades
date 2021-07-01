@@ -50,7 +50,7 @@ $ apt install meson ninja-build gcc libsdl2-dev libsdl2-image-dev libreadline-de
 To build Hades, run:
 
 ```bash
-meson build --buildtype=release
+meson build
 cd build
 ninja
 ```
