@@ -95,7 +95,7 @@ mem_dma_transfer(
                 }
                 channel->internal_src += src_step;
                 channel->internal_dst += dst_step;
-                --(channel->internal_count);
+                channel->internal_count -= 1;
             }
         }
 
