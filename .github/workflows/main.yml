@@ -10,9 +10,10 @@ jobs:
         shell: msys2 {0}
     steps:
       - uses: actions/checkout@v2
-      - uses: msys2/setup-msys2@v2
+      - name: INstall Dependencies
+        uses: msys2/setup-msys2@v2
         with:
-          install: mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-readline mingw-w64-x86_64-capstone
+          install: mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-readline mingw-w64-x86_64-capstone
       - name: Build Hades
         run: |
           meson build --werror
