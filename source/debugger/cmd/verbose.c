@@ -47,7 +47,7 @@ debugger_cmd_verbose(
             g_reset
         );
     } else if (argc == 2) {
-        uint i;
+        uint32_t i;
 
         for (i = 0; verbosities[i].name; ++i) {
             if (!strcmp(verbosities[i].name, argv[1])) {

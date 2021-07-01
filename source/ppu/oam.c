@@ -40,94 +40,118 @@ ppu_render_oam(
 
     for (oam_idx = 127; oam_idx >= 0; --oam_idx) {
         union oam_entry oam;
-        int32_t coord_y;
         int32_t x;
-        int32_t size_x;
-        int32_t size_y;
+
+        int32_t win_oy;
+        int32_t win_ox;
+        int32_t win_sx;
+        int32_t win_sy;
+        int32_t sprite_sx;
+        int32_t sprite_sy;
 
         oam.raw[0] = *(uint16_t *)((uint8_t *)gba->memory.oam + (oam_idx * 4 + 0) * 2);
         oam.raw[1] = *(uint16_t *)((uint8_t *)gba->memory.oam + (oam_idx * 4 + 1) * 2);
         oam.raw[2] = *(uint16_t *)((uint8_t *)gba->memory.oam + (oam_idx * 4 + 2) * 2);
 
+        // Skip OAM entries that should'nt be displayed
         if (oam.priority != prio || (!oam.affine && oam.virt_dsize)) {
             continue;
         }
 
-        /*
-        ** When using BG Mode 3-5 (Bitmap Modes), only tile numbers 512-1023 may be used.
-        ** That is because lower 16K of OBJ memory are used for BG.
-        ** Attempts to use tiles 0-511 are ignored (not displayed).
-        **    - GBATek
-        */
-        if (io->dispcnt.bg_mode >= 3 && oam.tile_idx < 512) {
-            continue;
+        win_oy = oam.coord_y;
+        win_ox = sign_extend9(oam.coord_x);
+        sprite_sx = sprite_size_x[(oam.size_high << 2) | oam.size_low];
+        sprite_sy = sprite_size_y[(oam.size_high << 2) | oam.size_low];
+        win_sx = sprite_sx;
+        win_sy = sprite_sy;
+
+        if (oam.affine && oam.virt_dsize) {
+            win_sx *= 2;
+            win_sy *= 2;
         }
 
-        if (oam.affine) { // TODO: Handle affine sprites
-            continue;
+        if (win_oy + win_sy >= 255) { // TODO Improve this for super large sprite
+            win_oy -= 256;
         }
 
-        coord_y = oam.coord_y;
-        size_x = sprite_size_x[(oam.size_high << 2) | oam.size_low];
-        size_y = sprite_size_y[(oam.size_high <<2) | oam.size_low];
+        if (line >= win_oy && line < win_oy + win_sy) {
+            union oam_float px;
+            union oam_float py;
 
-        if (coord_y + size_y >= 255) {
-            coord_y -= 256;
-        }
+            union oam_float pa;
+            union oam_float pb;
+            union oam_float pc;
+            union oam_float pd;
 
-        // Filter and keep only the sprites that cross the current scanline
-        if (line >= coord_y && line < coord_y + size_y) {
-            for (x = 0; x < size_x; ++x) {
+            if (oam.affine) {
+                pa.raw = (int16_t)(uint16_t)mem_read16(gba, OAM_START + oam.affine_data_idx * 32 + 0x6);
+                pb.raw = (int16_t)(uint16_t)mem_read16(gba, OAM_START + oam.affine_data_idx * 32 + 0xe);
+                pc.raw = (int16_t)(uint16_t)mem_read16(gba, OAM_START + oam.affine_data_idx * 32 + 0x16);
+                pd.raw = (int16_t)(uint16_t)mem_read16(gba, OAM_START + oam.affine_data_idx * 32 + 0x1e);
+            } else { // Identity matrix
+                pa = (union oam_float){ .integer = 1}; // 1,0
+                pb.raw = 0;
+                pc.raw = 0;
+                pd = (union oam_float){ .integer = 1}; // 1,0
+            }
+
+            /*
+            ** We pre-compute PX and PY for x=0 and simply add the difference when X is increased.
+            */
+            px.raw = pa.raw * -(win_sx / 2) + pb.raw * ((line - win_oy) - (win_sy / 2)) + ((sprite_sx / 2) << 8);
+            py.raw = pc.raw * -(win_sx / 2) + pd.raw * ((line - win_oy) - (win_sy / 2)) + ((sprite_sy / 2) << 8);
+
+            for (x = 0; x < win_sx; ++x, px.raw += pa.raw, py.raw += pc.raw) {
                 uint32_t palette_idx;
-                int32_t coord_x;
-                int32_t plot_x;
-                uint32_t chr_x;
-                uint32_t chr_y;
-                uint32_t tile_x;
-                uint32_t tile_y;
-                uint32_t tile_addr;
+                uint32_t chr_x;  // X coordinate of the pixel within the tile (0-7)
+                uint32_t chr_y;  // Y coordinate of the pixel within the tile (0-7)
+                uint32_t tile_x; // X coordinate of the tile within the sprite
+                uint32_t tile_y; // Y coordinate of the tile within the sprite
+                uint32_t tile_offset;
                 uint32_t tile_size;
 
-                tile_x = x / 8;
-                tile_y = (line - coord_y) / 8;
-                chr_x = x % 8;
-                chr_y = (line - coord_y) % 8;
-                coord_x = sign_extend9(oam.coord_x);
-                plot_x = coord_x + x;
-
                 // Filter-out pixels that are outside of the screen
-                if (plot_x < 0 || plot_x >= SCREEN_WIDTH) {
+                if (win_ox + x < 0 || win_ox + x >= SCREEN_WIDTH) {
                     continue;
                 }
 
+                tile_x = px.integer / 8;
+                tile_y = py.integer / 8;
+                chr_x = px.integer & 7;
+                chr_y = py.integer & 7;
+
+                // Filter out pixels that are rotated/shred/scaled outside of their sprite.
+                if (
+                       px.integer < 0 || tile_x >= sprite_sx / 8
+                    || py.integer < 0 || tile_y >= sprite_sy / 8
+                ) {
+                    continue;
+                }
+
+                // Flip horizontally
                 if (!oam.affine && oam.hflip) {
-                    tile_x = (size_x / 8) - 1 - tile_x;
+                    tile_x = (sprite_sx / 8) - 1 - tile_x;
                     chr_x ^= 0b111;
                 }
 
+                // Flip vertically
                 if (!oam.affine && oam.vflip) {
-                    tile_y = (size_y / 8) - 1 - tile_y;
+                    tile_y = (sprite_sy / 8) - 1 - tile_y;
                     chr_y ^= 0b111;
                 }
 
                 tile_size = oam.color_256 ? 64 : 32;
-                tile_addr = 0x10000 + oam.tile_idx * 32;
+                tile_offset = 0x10000 + oam.tile_idx * 32;
 
                 if (io->dispcnt.obj_dim) { // 1 Dimension
-                    tile_addr += tile_y * (size_x / 8) * tile_size;
+                    tile_offset += tile_y * (sprite_sx / 8) * tile_size + tile_x * tile_size;
                 } else { // 2 Dimension
-                    tile_addr += tile_y * 32 * 32;
+                    tile_offset += tile_y * 32 * 32 + tile_x * tile_size;
                 }
 
-                tile_addr += tile_x * tile_size;
-
                 if (oam.color_256) { // 256 colors, 1 palette
-                    uint32_t addr;
-
-                    addr = tile_addr + chr_y * 8 + chr_x;
-                    palette_idx = mem_read8(gba, VRAM_START + addr);
+                    palette_idx = mem_read8(gba, VRAM_START + tile_offset + chr_y * 8 + chr_x);
                 } else { // 16 colors, 16 palettes
-                    uint32_t addr;
 
                     /*
                     ** In this mode, each byte represents two pixels:
@@ -135,8 +159,7 @@ ppu_render_oam(
                     **   * The upper 4 bits define the color for the right pixel
                     */
 
-                    addr = tile_addr + chr_y * 4 + (chr_x >> 1);
-                    palette_idx = mem_read8(gba, VRAM_START + addr);
+                    palette_idx = mem_read8(gba, VRAM_START + tile_offset + chr_y * 4 + (chr_x >> 1));
                     palette_idx >>= (chr_x % 2) * 4;
                     palette_idx &= 0xF;
                 }
@@ -154,7 +177,7 @@ ppu_render_oam(
                         PALRAM_START + 0x200 + palette_idx * sizeof(union color)
                     );
 
-                    ppu_plot_pixel(gba, c, plot_x, line);
+                    ppu_plot_pixel(gba, c, win_ox + x, line);
                 }
             }
         }

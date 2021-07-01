@@ -18,7 +18,7 @@ timer_tick(
     uint32_t cycles
 ) {
     bool prev_overflow;
-    uint i;
+    uint32_t i;
 
     prev_overflow = false;
     for (i = 0; i < 4; ++i) {
