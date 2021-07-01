@@ -11,7 +11,7 @@ project(
     'Hades',
     'c',
     version: '0.0.1',
-    default_options: ['c_std=gnu11'],
+    default_options: ['c_std=gnu11', 'buildtype=release'],
 )
 
 executable(
