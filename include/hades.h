@@ -22,24 +22,24 @@
 ** A useful set of macros that act like keywords that are not available
 ** otherwise in C11.
 */
-# define inline             __inline
-# define asm                __asm__
-# define restrict           __restrict
-# define __pure             __attribute__((pure))
-# define __const            __attribute__((const))
-# define __cold             __attribute__((cold))
-# define __hot              __attribute__((hot))
-# define __used             __attribute__((used))
-# define __unused           __attribute__((unused))
-# define __packed           __attribute__((packed))
-# define __weak             __attribute__((weak))
-# define __weakref(x)       __attribute__((weakref(x)))
-# define __alias(x)         __attribute__((alias(x)))
-# define __aligned(x)       __attribute__((aligned(x)))
-# define __section(s)       __attribute__((section(s)))
-# define __noreturn         __attribute__((noreturn))
-# define likely(x)          __builtin_expect((x), 1)
-# define unlikely(x)        __builtin_expect((x), 0)
+# ifndef __used
+#  define __used            __attribute__((used))
+# endif /* !__used */
+# ifndef __unused
+#  define __unused          __attribute__((unused))
+# endif /* !__unused */
+# ifndef __packed
+#  define __packed          __attribute__((packed))
+# endif /* !__packed */
+# ifndef likely
+#  define likely(x)         __builtin_expect((x), 1)
+# endif /* !__likely */
+# ifndef unlikely
+#  define unlikely(x)       __builtin_expect((x), 0)
+# endif /* !unlikely */
+# ifndef __noreturn
+#  define __noreturn        __attribute__((noreturn))
+# endif /* !__noreturn */
 
 /*
 ** Calculate the number of elements of a static array.
