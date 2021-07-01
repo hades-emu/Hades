@@ -88,7 +88,7 @@ sched_add_event(
 
     // If no event are available, reallocate `scheduler->events`.
     scheduler->events_size += 5;
-    scheduler->events = reallocarray(scheduler->events, scheduler->events_size, sizeof(struct scheduler_event));
+    scheduler->events = realloc(scheduler->events, scheduler->events_size * sizeof(struct scheduler_event));
     hs_assert(scheduler->events);
 
     scheduler->events[i] = event;
