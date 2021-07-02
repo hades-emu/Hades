@@ -275,7 +275,6 @@ sdl_handle_events(
             case SDL_QUIT:
                 g_stop = true;
                 g_interrupt = true;
-                kill(getpid(), SIGTERM);        // Ask readline to stop waiting for user input
                 break;
             default:
                 break;
@@ -283,7 +282,7 @@ sdl_handle_events(
     }
 }
 
-void *
+void
 sdl_render_loop(
     struct gba *gba
 ) {
@@ -334,6 +333,4 @@ sdl_render_loop(
     }
 
     sdl_cleanup(&app);
-
-    return (NULL);
 }
