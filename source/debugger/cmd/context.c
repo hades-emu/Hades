@@ -82,7 +82,7 @@ debugger_dump_context_compact(
     op_len = core->cpsr.thumb ? 2 : 4;
 
     printf(
-        "%016lx ",
+        "%016" PRIu64 " ",
         gba->scheduler.cycles
     );
 

@@ -60,7 +60,7 @@ debugger_cmd_registers(
     printf("\n");
 
     printf(
-        "%sCPSR%s: %s%c%c%c%c%c%c%c%s, %s, (%s0x%08x%s) | %sCycles%s: %s%#lx%s",
+        "%sCPSR%s: %s%c%c%c%c%c%c%c%s, %s, (%s0x%08x%s) | %sCycles%s: %s0x%" PRIu64 "%s",
         g_light_green,
         g_reset,
         g_light_magenta,
