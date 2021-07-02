@@ -7,6 +7,7 @@
 **
 \******************************************************************************/
 
+#include <stdio.h>
 #include <unistd.h>
 #include "hades.h"
 #include "debugger.h"
