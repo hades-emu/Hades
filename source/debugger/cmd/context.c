@@ -8,8 +8,7 @@
 \******************************************************************************/
 
 #if defined (_WIN32) && !defined (__CYGWIN__)
-# include <stdio.h>
-# include <io.h>
+# define isatty _isatty
 #endif
 #include <unistd.h>
 #include "hades.h"
