@@ -190,6 +190,26 @@ args_parse(
     return (argv[optind]);
 }
 
+static
+void *
+logic_thread_main(
+    struct gba *gba
+) {
+    /*
+    ** If we use a debugger, iniialize it and enter the debugger's REPL.
+    ** Otherwise, loop until the application is closed.
+    */
+    if (gba->options.debugger) {
+        signal(SIGINT, &sighandler);
+        debugger_init(gba);
+        debugger_repl(gba);
+        debugger_destroy(gba);
+    } else {
+        sched_run_forever(gba);
+    }
+    return (NULL);
+}
+
 int
 main(
     int argc,
@@ -197,7 +217,7 @@ main(
 ) {
     char const *rom;
     struct gba *gba;
-    pthread_t render_thread;
+    pthread_t logic_thread;
 
     /* First, initialize the GBA system */
 
@@ -230,34 +250,22 @@ main(
 
     core_init(gba);
 
-    /* Create the render thread */
+    /*
+    ** If graphics are required, move the logic to another thread
+    ** and enter the SDL main loop
+    */
     if (!gba->options.headless) {
         pthread_create(
-            &render_thread,
+            &logic_thread,
             NULL,
             (void *(*)(void *))
-            sdl_render_loop,
+            logic_thread_main,
             gba
         );
-    }
-
-    /*
-    ** If we use a debugger, iniialize it and enter the debugger's REPL.
-    ** Otherwise, loop until the application is closed.
-    */
-    if (gba->options.debugger) {
-        signal(SIGINT, &sighandler);
-        debugger_init(gba);
-        debugger_repl(gba);
-        debugger_destroy(gba);
+        sdl_render_loop(gba);
+        pthread_join(logic_thread, NULL);
     } else {
-        sched_run_forever(gba);
-    }
-
-    g_stop = true;
-
-    if (!gba->options.headless) {
-        pthread_join(render_thread, NULL);
+        logic_thread_main(gba);
     }
 
     sched_cleanup(&gba->scheduler);

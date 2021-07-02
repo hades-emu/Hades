@@ -100,7 +100,7 @@ void ppu_render_oam(struct gba *gba, int32_t line, uint32_t prio);
 /* ppu/ppu.c */
 void ppu_init(struct gba *);
 
-/* sdl.c */
-void *sdl_render_loop(struct gba *gba);
+/* platform/sdl.c */
+void sdl_render_loop(struct gba *gba);
 
 #endif /* !PPU_H */
