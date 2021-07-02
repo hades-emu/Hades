@@ -7,7 +7,10 @@
 **
 \******************************************************************************/
 
-#include <stdio.h>
+#if defined (_WIN32) && !defined (__CYGWIN__)
+# include <stdio.h>
+# include <io.h>
+#endif
 #include <unistd.h>
 #include "hades.h"
 #include "debugger.h"
