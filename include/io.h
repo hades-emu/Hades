@@ -7,7 +7,20 @@
 **
 \******************************************************************************/
 
-#ifndef IO_H
+/*
+** On Windows, there's a system header named `io.h`.
+** Unfortunately, we sometimes need that header but this
+** file takes precedence.
+**
+** So here comes the ugly hack that allows the system `io.h` to
+** be included, uing `#include_next`.
+**
+** TODO: Explore other options (Renaming this file? Not use io.h?)
+*/
+#ifdef INCLUDE_SYS_IO
+# undef INCLUDE_SYS_IO
+# include_next <io.h>
+#elif !defined (IO_H)
 # define IO_H
 
 # include "hades.h"
@@ -328,6 +341,8 @@ struct io {
 
 static_assert(sizeof(((struct io *)NULL)->dispcnt) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->dispstat) == sizeof(uint16_t));
+
+struct gba;
 
 /* memory/io.c */
 void io_init(struct io *io);

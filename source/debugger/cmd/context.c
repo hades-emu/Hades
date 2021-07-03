@@ -7,11 +7,12 @@
 **
 \******************************************************************************/
 
-#include <unistd.h>
 #if defined (_WIN32) && !defined (__CYGWIN__)
-# warning ok cool
-# define isatty _isatty
+# define INCLUDE_SYS_IO
+# include <io.h>
 #endif
+#include <stdio.h>
+#include <unistd.h>
 #include "hades.h"
 #include "debugger.h"
 #include "gba.h"

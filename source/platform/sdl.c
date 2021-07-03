@@ -7,6 +7,12 @@
 **
 \******************************************************************************/
 
+#if defined (_WIN32) && !defined (__CYGWIN__)
+# define INCLUDE_SYS_IO
+# include <io.h>
+# include <direct.h>
+#endif
+#include <unistd.h>
 #include <sys/stat.h>
 #include <signal.h>
 #include <pthread.h>

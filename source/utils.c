@@ -7,7 +7,6 @@
 **
 \******************************************************************************/
 
-#include <execinfo.h>
 #include <ctype.h>
 #include "hades.h"
 
@@ -77,11 +76,14 @@ logln(
     }
 }
 
+#if __has_include(<execinfo.h>)
+# include <execinfo.h>
 /*
-** Print the given formatted string to stderr, followed by a `\n`, and then
+** Print the given formatted string to stderr followed by a backtrace of the
+** different functions that lead to `panic()` being called, and finally
 ** exit(1).
 */
-__attribute__((noreturn))
+__noreturn
 void
 panic(
     enum modules module,
@@ -93,7 +95,6 @@ panic(
     int size;
     int i;
     va_list va;
-
 
     va_start(va, fmt);
     printf("[%s] Abort: ", modules_str[module]);
@@ -112,12 +113,34 @@ panic(
 
     exit(1);
 }
+#else
+/*
+** Print the given formatted string to stderr and finally exit(1).
+*/
+__noreturn
+void
+panic(
+    enum modules module,
+    char const *fmt,
+    ...
+) {
+    va_list va;
+
+    va_start(va, fmt);
+    printf("[%s] Abort: ", modules_str[module]);
+    vprintf(fmt, va);
+    printf("\n");
+    va_end(va);
+
+    exit(1);
+}
+#endif
 
 /*
 ** Print the given formatted string to stderr, followed by a `\n`, and then
 ** exit(1).
 */
-__attribute__((noreturn))
+__noreturn
 void
 unimplemented(
     enum modules module,
@@ -198,4 +221,3 @@ strsplit(
 
     return (res);
 }
-
