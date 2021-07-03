@@ -67,6 +67,5 @@ executable(
         dependency('SDL2_image', version: '>=2', required: true),
         dependency('threads', required: true)
     ],
-    link_args: '-rdynamic',
     include_directories: include_directories('include'),
 )

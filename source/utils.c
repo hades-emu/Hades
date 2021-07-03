@@ -76,44 +76,6 @@ logln(
     }
 }
 
-#if __has_include(<execinfo.h>)
-# include <execinfo.h>
-/*
-** Print the given formatted string to stderr followed by a backtrace of the
-** different functions that lead to `panic()` being called, and finally
-** exit(1).
-*/
-__noreturn
-void
-panic(
-    enum modules module,
-    char const *fmt,
-    ...
-) {
-    void *backtrace_buffer[64];
-    char **symbols;
-    int size;
-    int i;
-    va_list va;
-
-    va_start(va, fmt);
-    printf("[%s] Abort: ", modules_str[module]);
-    vprintf(fmt, va);
-    printf("\n");
-    va_end(va);
-
-    printf("[%s] Stacktrace:\n", modules_str[module]);
-
-    size = backtrace(backtrace_buffer, ARRAY_LEN(backtrace_buffer));
-    symbols = backtrace_symbols(backtrace_buffer, size);
-
-    for (i = 0; i < size; ++i) {
-        printf("[%s]    %s\n", modules_str[module], symbols[i]);
-    }
-
-    exit(1);
-}
-#else
 /*
 ** Print the given formatted string to stderr and finally exit(1).
 */
@@ -134,7 +96,6 @@ panic(
 
     exit(1);
 }
-#endif
 
 /*
 ** Print the given formatted string to stderr, followed by a `\n`, and then
