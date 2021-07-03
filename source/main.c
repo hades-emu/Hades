@@ -21,6 +21,7 @@
 #include "ppu.h"
 #include "memory.h"
 #include "debugger.h"
+#include "compat.h"
 
 /*
 ** A global, atomic variable used to signal other threads it is time to stop and exit.
@@ -178,7 +179,7 @@ args_parse(
 
     switch (options->color) {
         case 0:
-            if (!isatty(1)) {
+            if (!hs_isatty(1)) {
                 disable_colors();
             }
             break;

@@ -7,11 +7,6 @@
 **
 \******************************************************************************/
 
-#if defined (_WIN32) && !defined (__CYGWIN__)
-# define INCLUDE_SYS_IO
-# include <io.h>
-# include <direct.h>
-#endif
 #include <unistd.h>
 #include <sys/stat.h>
 #include <signal.h>
@@ -20,6 +15,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
 #include "hades.h"
+#include "compat.h"
 #include "gba.h"
 
 struct sdl
@@ -113,7 +109,7 @@ sdl_take_screenshot(
     time(&now);
     now_info = localtime(&now);
 
-    mkdir("screenshots", 0755);
+    hs_mkdir("screenshots");
     strftime(file_name, sizeof(file_name), "screenshots/%Y-%m-%d_%Hh%Mm%Ss.png", now_info);
 
     SDL_GetRendererOutputSize(app->renderer, &w, &h);

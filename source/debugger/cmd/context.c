@@ -7,14 +7,11 @@
 **
 \******************************************************************************/
 
-#if defined (_WIN32) && !defined (__CYGWIN__)
-# define INCLUDE_SYS_IO
-# include <io.h>
-#endif
 #include <stdio.h>
 #include <unistd.h>
 #include "hades.h"
 #include "debugger.h"
+#include "compat.h"
 #include "gba.h"
 
 /*
@@ -26,7 +23,7 @@ debugger_dump_context(
     struct gba *gba,
     bool force
 ) {
-    if (!force && !isatty(STDIN_FILENO)) {
+    if (!force && !hs_isatty(STDIN_FILENO)) {
         return ;
     }
 
