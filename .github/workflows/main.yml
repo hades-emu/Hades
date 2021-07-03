@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: hades-win64
-          path: build/hades
+          path: build/hades.exe
           if-no-files-found: error
 
   mac-os:
