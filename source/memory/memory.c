@@ -54,7 +54,15 @@ mem_read8(
         case CART_2_REGION_2:
             return (memory->rom[addr & CART_MASK]);
         case CART_SRAM_REGION:
-            return (memory->sram[addr & CART_SRAM_MASK]);
+            {
+                if (addr == 0x0E000000) {
+                    return (0x62);
+                } else if (addr == 0x0E000001) {
+                    return (0x13);
+                } else {
+                    return (memory->sram[addr & CART_SRAM_MASK]);
+                }
+            }
         default:
             logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);
             return (0);
