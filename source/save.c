@@ -147,7 +147,10 @@ err:
 
 finally:
 
-    fclose(file);
+    if (file) {
+        fclose(file);
+    }
+
     g_interrupt = false;
     pthread_mutex_unlock(&gba->emulator_mutex);
 }
