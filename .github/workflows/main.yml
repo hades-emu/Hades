@@ -18,7 +18,7 @@ jobs:
         # mingw-w64-x86_64-readline mingw-w64-x86_64-capstone
       - name: Build Hades
         run: |
-          meson build
+          meson build -Dstatic-executable=true
           cd build
           ninja -v
           ls
