@@ -184,6 +184,10 @@ args_parse(
                         options->debugger = true;
                         break;
 #endif
+                    default:
+                        print_usage(stderr, name);
+                        exit(EXIT_FAILURE);
+                        break;
                 }
                 break;
             case 'd':
@@ -195,6 +199,10 @@ args_parse(
                 break;
             case 's':
                 options->scale = strtoul(optarg, NULL, 10);
+                break;
+            default:
+                print_usage(stderr, name);
+                exit(EXIT_FAILURE);
                 break;
         }
     }
