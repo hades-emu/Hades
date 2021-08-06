@@ -89,11 +89,8 @@ if get_option('enable-sdl2')
 endif
 
 if get_option('static-executable')
-    if host_machine.system() == 'windows'
-        ldflags += ['-Wl,-Bstatic']
-    else
-        ldflags += ['-static']
-    endif
+    ldflags += ['-static']
+    cflags += ['-static']
 endif
 
 executable(
