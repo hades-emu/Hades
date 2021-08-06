@@ -49,7 +49,7 @@ cflags = []
 ldflags = []
 
 dependencies = [
-    dependency('threads', required: true, static: true)
+    dependency('threads', required: true, static: get_option('static-executable'))
 ]
 
 if get_option('enable-debugger')
@@ -72,8 +72,8 @@ if get_option('enable-debugger')
     )
     cflags += ['-DENABLE_DEBUGGER']
     dependencies += [
-        dependency('capstone', version: '>=3.0.0', required: true, static: true),
-        dependency('readline', version: '>=7', required: true, static: true),
+        dependency('capstone', version: '>=3.0.0', required: true, static: get_option('static-executable')),
+        dependency('readline', version: '>=7', required: true, static: get_option('static-executable')),
     ]
 endif
 
@@ -83,9 +83,13 @@ if get_option('enable-sdl2')
     )
     cflags += ['-DENABLE_SDL2']
     dependencies += [
-        dependency('sdl2', version: '>=2', required: true, static: true),
-        dependency('SDL2_image', version: '>=2', required: true, static: true),
+        dependency('sdl2', version: '>=2', required: true, static: get_option('static-executable')),
+        dependency('SDL2_image', version: '>=2', required: true, static: get_option('static-executable')),
     ]
+endif
+
+if get_option('static-executable')
+    ldflags += ['-static']
 endif
 
 executable(
@@ -93,6 +97,7 @@ executable(
     sources,
     dependencies: dependencies,
     include_directories: include_directories('include'),
-    c_args : cflags,
-    install : true,
+    c_args: cflags,
+    link_args: ldflags,
+    install: true,
 )

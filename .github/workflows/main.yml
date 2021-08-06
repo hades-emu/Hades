@@ -20,7 +20,7 @@ jobs:
         run: |
           meson build
           cd build
-          ninja
+          ninja -v
           ls
       # - name: Test Hades
       #   run: |
