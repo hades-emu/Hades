@@ -49,10 +49,10 @@ cflags = []
 ldflags = []
 
 dependencies = [
-    dependency('threads', required: true, static: get_option('static-executable'))
+    dependency('threads', required: true, static: get_option('static_executable'))
 ]
 
-if get_option('enable-debugger')
+if get_option('enable_debugger')
     sources += files(
         'source/debugger/cmd/break.c',
         'source/debugger/cmd/context.c',
@@ -72,33 +72,33 @@ if get_option('enable-debugger')
     )
     cflags += ['-DENABLE_DEBUGGER']
     dependencies += [
-        dependency('capstone', version: '>=3.0.0', required: true, static: get_option('static-executable')),
-        dependency('readline', version: '>=7', required: true, static: get_option('static-executable')),
+        dependency('capstone', version: '>=3.0.0', required: true, static: get_option('static_executable')),
+        dependency('readline', version: '>=7', required: true, static: get_option('static_executable')),
     ]
 endif
 
-if get_option('enable-sdl2')
+if get_option('enable_sdl2')
     sources += files(
         'source/platform/sdl.c',
     )
     cflags += ['-DENABLE_SDL2']
     dependencies += [
-        dependency('sdl2', version: '>=2', required: true, static: get_option('static-executable')),
-        dependency('SDL2_image', version: '>=2', required: true, static: get_option('static-executable')),
+        dependency('sdl2', version: '>=2', required: true, static: get_option('static_executable')),
+        dependency('SDL2_image', version: '>=2', required: true, static: get_option('static_executable')),
     ]
 
     # For some reasons, static sdl2 on windows fail if we do not explicitely ask for its dependencies
-    if get_option('static-executable')
+    if get_option('static_executable')
         dependencies += [
-            dependency('libpng', required: true, static: get_option('static-executable')),
-            dependency('libjpeg', required: true, static: get_option('static-executable')),
-            dependency('libtiff-4', required: true, static: get_option('static-executable')),
-            dependency('libwebp', required: true, static: get_option('static-executable')),
+            dependency('libpng', required: true, static: get_option('static_executable')),
+            dependency('libjpeg', required: true, static: get_option('static_executable')),
+            dependency('libtiff-4', required: true, static: get_option('static_executable')),
+            dependency('libwebp', required: true, static: get_option('static_executable')),
         ]
     endif
 endif
 
-if get_option('static-executable')
+if get_option('static_executable')
     ldflags += ['-static']
     cflags += ['-static']
 endif
