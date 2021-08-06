@@ -152,6 +152,9 @@ mem_write8(
 
     memory = &gba->memory;
     switch (addr >> 24) {
+        case BIOS_REGION:
+            /* Ignore writes attempts to the bios memory. */
+            break;
         case EWRAM_REGION:
             memory->ewram[addr & EWRAM_MASK] = val;
             break;
@@ -169,6 +172,14 @@ mem_write8(
             break;
         case OAM_REGION:
             memory->oam[addr & OAM_MASK] = val;
+            break;
+        case CART_0_REGION_1:
+        case CART_0_REGION_2:
+        case CART_1_REGION_1:
+        case CART_1_REGION_2:
+        case CART_2_REGION_1:
+        case CART_2_REGION_2:
+            /* Ignore writes attempts to the cartridge memory. */
             break;
         case CART_SRAM_REGION:
             memory->sram[addr & CART_SRAM_MASK] = val;
