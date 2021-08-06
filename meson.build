@@ -49,7 +49,7 @@ cflags = []
 ldflags = []
 
 dependencies = [
-    dependency('threads', required: true)
+    dependency('threads', required: true, static: true)
 ]
 
 if get_option('enable-debugger')
@@ -72,8 +72,8 @@ if get_option('enable-debugger')
     )
     cflags += ['-DENABLE_DEBUGGER']
     dependencies += [
-        dependency('capstone', version: '>=3.0.0', required: true),
-        dependency('readline', version: '>=7', required: true),
+        dependency('capstone', version: '>=3.0.0', required: true, static: true),
+        dependency('readline', version: '>=7', required: true, static: true),
     ]
 endif
 
@@ -83,8 +83,8 @@ if get_option('enable-sdl2')
     )
     cflags += ['-DENABLE_SDL2']
     dependencies += [
-        dependency('sdl2', version: '>=2', required: true),
-        dependency('SDL2_image', version: '>=2', required: true),
+        dependency('sdl2', version: '>=2', required: true, static: true),
+        dependency('SDL2_image', version: '>=2', required: true, static: true),
     ]
 endif
 
