@@ -17,13 +17,14 @@ jobs:
           install: mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-readline mingw-w64-x86_64-capstone
       - name: Build Hades
         run: |
-          meson build -Dstatic_executable=true -Denable_debugger=true
+          meson build -Dstatic_executable=true
           cd build
-          ninja -v
-          ls
+          ninja
       - name: Test Hades
         run: |
-          cd build
+          meson build.test -Denable_debugger=true -Denable_sdl2=false
+          cd build.test
+          ninja
           wget -q "https://github.com/Cult-of-GBA/BIOS/raw/master/bios.bin" -O bios.bin
           wget -q "https://github.com/jsmolka/gba-tests/raw/master/thumb/thumb.gba" -O thumb.gba
           wget -q "https://github.com/jsmolka/gba-tests/raw/master/arm/arm.gba" -O arm.gba
@@ -45,13 +46,13 @@ jobs:
         run: |
           brew install meson ninja sdl2 sdl2_image readline capstone
       - name: Build Hades
-        env:
-          PKG_CONFIG_PATH: '/usr/local/opt/readline/lib/pkgconfig'
         run: |
           meson build --werror
           cd build
           ninja
       - name: Test Hades
+        env:
+          PKG_CONFIG_PATH: '/usr/local/opt/readline/lib/pkgconfig'
         run: |
           meson build.test -Denable_debugger=true -Denable_sdl2=false
           cd build.test
@@ -90,8 +91,8 @@ jobs:
           wget -q "https://github.com/Cult-of-GBA/BIOS/raw/master/bios.bin" -O bios.bin
           wget -q "https://github.com/jsmolka/gba-tests/raw/master/thumb/thumb.gba" -O thumb.gba
           wget -q "https://github.com/jsmolka/gba-tests/raw/master/arm/arm.gba" -O arm.gba
-          echo "main; s 1000000; r" | ./hades -d ./thumb.gba | grep "r7: 0x00000000" > /dev/null && echo "Thumb: OK" || ( echo "Thumb: KO" ; exit 1 )
-          echo "main; s 1000000; r" | ./hades -d ./arm.gba | grep "ip: 0x00000000" > /dev/null && echo "ARM: OK" || ( echo "ARM: KO" ; exit 1 )
+          echo "main; s 1000000; r" | ./hades -d --headless ./thumb.gba | grep "r7: 0x00000000" > /dev/null && echo "Thumb: OK" || ( echo "Thumb: KO" ; exit 1 )
+          echo "main; s 1000000; r" | ./hades -d --headless ./arm.gba | grep "ip: 0x00000000" > /dev/null && echo "ARM: OK" || ( echo "ARM: KO" ; exit 1 )
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
