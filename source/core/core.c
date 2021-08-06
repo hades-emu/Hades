@@ -114,9 +114,6 @@ core_next(
                 panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
             }
             end:
-            if (gba->options.debugger) {
-                debugger_eval_breakpoints(gba);
-            }
             break;
         case 1: // Halt
         case 2: // Stop

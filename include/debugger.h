@@ -7,7 +7,7 @@
 **
 \******************************************************************************/
 
-#ifndef DEBUGGER_H
+#if !defined(DEBUGGER_H) && defined(ENABLE_DEBUGGER)
 # define DEBUGGER_H
 
 # include <stdbool.h>

@@ -48,6 +48,7 @@ bool g_verbose[HS_END] = {
 ** The signal handler, used to set `g_interrupt` to true and go back to
 ** the debugger.
 */
+__unused
 static
 void
 sighandler(
@@ -67,9 +68,13 @@ print_usage(
         "Usage: %s [OPTION]... ROM\n"
         "\n"
         "Options:\n"
+#if ENABLE_DEBUGGER
         "    -d, --debugger                    enable the debugger\n"
+#endif
+#if ENABLE_SDL2
         "        --headless                    disable any graphical output\n"
         "    -s, --scale=SIZE                  scale the window by SIZE\n"
+#endif
         "        --color=[always|never|auto]   adjust color settings (default: auto)\n"
         "\n"
         "    -h, --help                        print this help and exit\n"
@@ -93,20 +98,43 @@ args_parse(
         int c;
         int option_index;
 
+        enum cli_options {
+            CLI_HELP = 0,
+            CLI_VERSION,
+            CLI_COLOR,
+#if ENABLE_SDL2
+            CLI_HEADLESS,
+            CLI_SCALE,
+#endif
+#if ENABLE_DEBUGGER
+            CLI_DEBUGGER,
+#endif
+        };
+
         static struct option long_options[] = {
-            [0] = { "debugger",     no_argument,        0,  0 },
-            [1] = { "help",         no_argument,        0,  0 },
-            [2] = { "scale",        required_argument,  0,  0 },
-            [3] = { "version",      no_argument,        0,  0 },
-            [4] = { "headless",     no_argument,        0,  0 },
-            [5] = { "color",        optional_argument,  0,  0 },
-                  { 0,              0,                  0,  0 }
+            [CLI_HELP]      = { "help",         no_argument,        0,  0 },
+            [CLI_VERSION]   = { "version",      no_argument,        0,  0 },
+            [CLI_COLOR]     = { "color",        optional_argument,  0,  0 },
+#if ENABLE_SDL2
+            [CLI_HEADLESS]  = { "headless",     no_argument,        0,  0 },
+            [CLI_SCALE]     = { "scale",        required_argument,  0,  0 },
+#endif
+#if ENABLE_DEBUGGER
+            [CLI_DEBUGGER]  = { "debugger",     no_argument,        0,  0 },
+#endif
+                              { 0,              0,                  0,  0 }
         };
 
         c = getopt_long(
             argc,
             argv,
-            "dhs:",
+#if ENABLE_SDL2
+            "s:"
+#endif
+#if ENABLE_DEBUGGER
+            "d"
+#endif
+            "h",
             long_options,
             &option_index
         );
@@ -118,23 +146,14 @@ args_parse(
         switch (c) {
             case 0:
                 switch (option_index) {
-                    case 0: // --debugger
-                        options->debugger = true;
-                        break;
-                    case 1: // --help
+                    case CLI_HELP: // --help
                         print_usage(stdout, name);
                         exit(EXIT_SUCCESS);
-                    case 2: // --scale
-                        options->scale = strtoul(optarg, NULL, 10);
-                        break;
-                    case 3: // --version
+                    case CLI_VERSION: // --version
                         printf("Hades v0.0.1\n");
                         exit(EXIT_SUCCESS);
                         break;
-                    case 4: // --headless
-                        options->headless = true;
-                        break;
-                    case 5: // --color
+                    case CLI_COLOR: // --color
                         if (optarg) {
                             if (!strcmp(optarg, "auto")) {
                                 options->color = 0;
@@ -152,6 +171,19 @@ args_parse(
                         } else {
                             options->color = 0;
                         }
+#if ENABLE_SDL2
+                    case CLI_HEADLESS: // --headless
+                        options->headless = true;
+                        break;
+                    case CLI_SCALE: // --scale
+                        options->scale = strtoul(optarg, NULL, 10);
+                        break;
+#endif
+#if ENABLE_DEBUGGER
+                    case CLI_DEBUGGER: // --debugger
+                        options->debugger = true;
+                        break;
+#endif
                 }
                 break;
             case 'd':
@@ -196,6 +228,7 @@ void *
 logic_thread_main(
     struct gba *gba
 ) {
+#if ENABLE_DEBUGGER
     /*
     ** If we use a debugger, iniialize it and enter the debugger's REPL.
     ** Otherwise, loop until the application is closed.
@@ -208,6 +241,9 @@ logic_thread_main(
     } else {
         sched_run_forever(gba);
     }
+#else
+    sched_run_forever(gba);
+#endif
     return (NULL);
 }
 
@@ -218,7 +254,6 @@ main(
 ) {
     char const *rom;
     struct gba *gba;
-    pthread_t logic_thread;
 
     /* First, initialize the GBA system */
 
@@ -251,11 +286,14 @@ main(
 
     core_init(gba);
 
+#if ENABLE_SDL2
     /*
     ** If graphics are required, move the logic to another thread
     ** and enter the SDL main loop
     */
     if (!gba->options.headless) {
+        pthread_t logic_thread;
+
         pthread_create(
             &logic_thread,
             NULL,
@@ -268,6 +306,9 @@ main(
     } else {
         logic_thread_main(gba);
     }
+#else
+    logic_thread_main(gba);
+#endif
 
     sched_cleanup(&gba->scheduler);
     free(gba);

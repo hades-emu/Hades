@@ -1,0 +1,2 @@
+option('enable-debugger', type: 'boolean', value: false, description: 'Enable Hades\' built-in debugger.')
+option('enable-sdl2', type: 'boolean', value: true, description: 'Enable the use of SDL2 as the graphical back-end.')

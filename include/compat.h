@@ -23,7 +23,7 @@
 # include <unistd.h>
 
 # define hs_isatty(x)           isatty(x)
-# define hs_mkdir(path)         mkdir(path, 0755);
+# define hs_mkdir(path)         mkdir((path), 0755);
 #endif
 
 #endif /* !COMPAT_H */
