@@ -94,4 +94,5 @@ executable(
     dependencies: dependencies,
     include_directories: include_directories('include'),
     c_args : cflags,
+    install : true,
 )
