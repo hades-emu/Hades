@@ -28,8 +28,8 @@ jobs:
           wget -q "https://github.com/Cult-of-GBA/BIOS/raw/master/bios.bin" -O bios.bin
           wget -q "https://github.com/jsmolka/gba-tests/raw/master/thumb/thumb.gba" -O thumb.gba
           wget -q "https://github.com/jsmolka/gba-tests/raw/master/arm/arm.gba" -O arm.gba
-          echo "main; s 1000000; r" | ./hades -d --headless ./thumb.gba | grep "r7: 0x00000000" > /dev/null && echo "Thumb: OK" || ( echo "Thumb: KO" ; exit 1 )
-          echo "main; s 1000000; r" | ./hades -d --headless ./arm.gba | grep "ip: 0x00000000" > /dev/null && echo "ARM: OK" || ( echo "ARM: KO" ; exit 1 )
+          echo "main; s 1000000; r" | ./hades -d ./thumb.gba | grep "r7: 0x00000000" > /dev/null && echo "Thumb: OK" || ( echo "Thumb: KO" ; exit 1 )
+          echo "main; s 1000000; r" | ./hades -d ./arm.gba | grep "ip: 0x00000000" > /dev/null && echo "ARM: OK" || ( echo "ARM: KO" ; exit 1 )
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
