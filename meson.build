@@ -88,11 +88,11 @@ if get_option('enable-sdl2')
     ]
 
     # For some reasons, static sdl2 on windows fail if we do not explicitely ask for its dependencies
-    if get_option('static-executable') and host_machine.system() == 'windows'
+    if get_option('static-executable')
         dependencies += [
             dependency('libpng', required: true, static: get_option('static-executable')),
             dependency('libjpeg', required: true, static: get_option('static-executable')),
-            dependency('libtiff', required: true, static: get_option('static-executable')),
+            dependency('libtiff-4', required: true, static: get_option('static-executable')),
             dependency('libwebp', required: true, static: get_option('static-executable')),
         ]
     endif
