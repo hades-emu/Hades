@@ -29,7 +29,9 @@ struct gba
 {
     struct core core;
     struct memory memory;
+#if ENABLE_DEBUGGER
     struct debugger debugger;
+#endif
     struct io io;
     struct scheduler scheduler;
 

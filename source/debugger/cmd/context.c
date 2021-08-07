@@ -7,9 +7,11 @@
 **
 \******************************************************************************/
 
+#include <stdio.h>
 #include <unistd.h>
 #include "hades.h"
 #include "debugger.h"
+#include "compat.h"
 #include "gba.h"
 
 /*
@@ -21,7 +23,7 @@ debugger_dump_context(
     struct gba *gba,
     bool force
 ) {
-    if (!force && !isatty(STDIN_FILENO)) {
+    if (!force && !hs_isatty(STDIN_FILENO)) {
         return ;
     }
 
@@ -82,7 +84,7 @@ debugger_dump_context_compact(
     op_len = core->cpsr.thumb ? 2 : 4;
 
     printf(
-        "%016lx ",
+        "%016" PRIu64 " ",
         gba->scheduler.cycles
     );
 
