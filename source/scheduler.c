@@ -119,6 +119,12 @@ sched_run_for(
         core_next(gba);
         elapsed = scheduler->cycles - old_cycles;
 
+#if ENABLE_DEBUGGER
+        if (gba->options.debugger) {
+            debugger_eval_breakpoints(gba);
+        }
+#endif
+
         timer_tick(gba, elapsed); // TODO: Make this a scheduler event?
 
         if (scheduler->cycles >= scheduler->next_event) {

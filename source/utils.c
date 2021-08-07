@@ -7,7 +7,6 @@
 **
 \******************************************************************************/
 
-#include <execinfo.h>
 #include <ctype.h>
 #include "hades.h"
 
@@ -78,37 +77,22 @@ logln(
 }
 
 /*
-** Print the given formatted string to stderr, followed by a `\n`, and then
-** exit(1).
+** Print the given formatted string to stderr and finally exit(1).
 */
-__attribute__((noreturn))
+__noreturn
 void
 panic(
     enum modules module,
     char const *fmt,
     ...
 ) {
-    void *backtrace_buffer[64];
-    char **symbols;
-    int size;
-    int i;
     va_list va;
-
 
     va_start(va, fmt);
     printf("[%s] Abort: ", modules_str[module]);
     vprintf(fmt, va);
     printf("\n");
     va_end(va);
-
-    printf("[%s] Stacktrace:\n", modules_str[module]);
-
-    size = backtrace(backtrace_buffer, ARRAY_LEN(backtrace_buffer));
-    symbols = backtrace_symbols(backtrace_buffer, size);
-
-    for (i = 0; i < size; ++i) {
-        printf("[%s]    %s\n", modules_str[module], symbols[i]);
-    }
 
     exit(1);
 }
@@ -117,7 +101,7 @@ panic(
 ** Print the given formatted string to stderr, followed by a `\n`, and then
 ** exit(1).
 */
-__attribute__((noreturn))
+__noreturn
 void
 unimplemented(
     enum modules module,
@@ -198,4 +182,3 @@ strsplit(
 
     return (res);
 }
-
