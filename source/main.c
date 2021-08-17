@@ -238,7 +238,7 @@ logic_thread_main(
 ) {
 #if ENABLE_DEBUGGER
     /*
-    ** If we use a debugger, iniialize it and enter the debugger's REPL.
+    ** If we use a debugger, initialize it and enter the debugger's REPL.
     ** Otherwise, loop until the application is closed.
     */
     if (gba->options.debugger) {
