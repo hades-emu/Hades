@@ -10,6 +10,10 @@
 #ifndef HADES_H
 # define HADES_H
 
+# define HADES_MAJOR    0
+# define HADES_MINOR    0
+# define HADES_VERSION  "0.0.1"
+
 # include <stdatomic.h>
 # include <stdio.h>
 # include <stdint.h>
@@ -33,7 +37,7 @@
 # endif /* !__packed */
 # ifndef likely
 #  define likely(x)         __builtin_expect((x), 1)
-# endif /* !__likely */
+# endif /* !likely */
 # ifndef unlikely
 #  define unlikely(x)       __builtin_expect((x), 0)
 # endif /* !unlikely */
@@ -92,7 +96,7 @@ static char const * const modules_str[] = {
         if (unlikely(!(expr))) {                            \
             panic(                                          \
                 HS_ERROR,                                   \
-                "assert(%s) failed (in %s at line %u).",  \
+                "assert(%s) failed (in %s at line %u).",    \
                 #expr,                                      \
                 __FILE__,                                   \
                 __LINE__                                    \

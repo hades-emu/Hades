@@ -30,6 +30,9 @@ ppu_plot_pixel(
     ;
 }
 
+/*
+** Render the current scanline and write the result in `gba->framebuffer`.
+*/
 static
 void
 ppu_render_scanline(
@@ -93,6 +96,10 @@ end:
     pthread_mutex_unlock(&gba->framebuffer_mutex);
 }
 
+/*
+** Called when the PPU enters HDraw, this function updates some IO registers
+** to reflect the progress of the PPU and eventually triggers an IRQ.
+*/
 static
 void
 ppu_hdraw(
@@ -128,6 +135,11 @@ ppu_hdraw(
     }
 }
 
+/*
+** Called when the PPU enters HBlank, this function updates some IO registers
+** to reflect the progress of the PPU, eventually triggers an IRQ, and render
+** the current scanline.
+*/
 static
 void
 ppu_hblank(
@@ -153,6 +165,9 @@ ppu_hblank(
     }
 }
 
+/*
+** Initialize the PPU.
+*/
 void
 ppu_init(
     struct gba *gba

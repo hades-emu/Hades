@@ -30,6 +30,9 @@ struct sdl
     bool controller_connected;
 };
 
+/*
+** Initialize the SDL sub-system and create the window.
+*/
 static
 void
 sdl_init(
@@ -82,6 +85,9 @@ sdl_init(
     app->controller_connected = false;
 }
 
+/*
+** Clean-up and quit the SDL sub-system, therefore closing the window.
+*/
 static
 void
 sdl_cleanup(
@@ -93,6 +99,12 @@ sdl_cleanup(
     SDL_Quit();
 }
 
+/*
+** Take a screenshot (PNG) of the rendered output and put it in a
+** file named after the current time.
+**
+** All screenshots are put in the `screenshot/`subdirectory.
+*/
 static
 void
 sdl_take_screenshot(
@@ -140,6 +152,9 @@ sdl_take_screenshot(
 
 }
 
+/*
+** Handle all SDL events, processing them if any or instantly returning if not.
+*/
 static
 void
 sdl_handle_events(
@@ -284,19 +299,23 @@ sdl_handle_events(
     }
 }
 
+/*
+** Main function of the render thread.
+** This function initializes and handles all SDL-related stuff.
+*/
 void
 sdl_render_loop(
     struct gba *gba
 ) {
     static uint32_t old_frame_counter = 0;
-    char title[1024];
-    uint32_t sdl_count;
+    uint32_t sdl_last_ticks;
     struct sdl app;
+    char title[1024];
 
     memset(&app, 0, sizeof(app));
     sdl_init(gba, &app);
 
-    sdl_count = 0;
+    sdl_last_ticks = 0;
     while (!g_stop) {
         SDL_SetRenderDrawColor(app.renderer, 255, 255, 255, 255);
 
@@ -319,18 +338,16 @@ sdl_render_loop(
         SDL_RenderPresent(app.renderer);
 
         SDL_Delay(17);
-        ++sdl_count;
 
-        if (sdl_count >= 120) {
+        if (SDL_GetTicks() - sdl_last_ticks > 1000) {  // Update FPS every seconds
             uint32_t fps;
 
-            // TODO: Actually count frame correctly instead of this shit
-            fps = (gba->frame_counter - old_frame_counter) / 2; // 120 SDL frames is roughly 2 seconds
+            fps = (gba->frame_counter - old_frame_counter);
             old_frame_counter = gba->frame_counter;
 
             snprintf(title, sizeof(title), "Hades | %s | %u FPS", gba->game_title, fps);
             SDL_SetWindowTitle(app.window, title);
-            sdl_count = 0;
+            sdl_last_ticks = SDL_GetTicks();
         }
     }
 

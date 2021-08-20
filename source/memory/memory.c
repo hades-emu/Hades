@@ -13,6 +13,9 @@
 #include "core.h"
 #include "gba.h"
 
+/*
+** Initialize the memory to its initial state, before the system is up.
+*/
 void
 mem_init(
     struct memory *memory
