@@ -23,6 +23,9 @@
 int32_t sprite_size_x[16] = { 8, 16, 32, 64, 16, 32, 32, 64, 8, 8, 16, 32, 0, 0, 0, 0};
 int32_t sprite_size_y[16] = { 8, 16, 32, 64, 8, 8, 16, 32, 16, 32, 32, 64, 0, 0, 0, 0};
 
+/*
+** Render all the sprites of a given priority.
+*/
 void
 ppu_render_oam(
     struct gba *gba,

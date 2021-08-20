@@ -57,6 +57,9 @@ sighandler(
     g_interrupt = true;
 }
 
+/*
+** Print the program's usage.
+*/
 static
 void
 print_usage(
@@ -84,6 +87,9 @@ print_usage(
     );
 }
 
+/*
+** Parse the given command line arguments.
+*/
 static
 char const *
 args_parse(
@@ -150,7 +156,7 @@ args_parse(
                         print_usage(stdout, name);
                         exit(EXIT_SUCCESS);
                     case CLI_VERSION: // --version
-                        printf("Hades v0.0.1\n");
+                        printf("Hades v" HADES_VERSION "\n");
                         exit(EXIT_SUCCESS);
                         break;
                     case CLI_COLOR: // --color

@@ -14,6 +14,9 @@
 #include "gba.h"
 #include "scheduler.h"
 
+/*
+** Save the current state of the emulator in the file pointed by `path`.
+*/
 void
 save_state(
     struct gba *gba,
@@ -84,6 +87,9 @@ finally:
     pthread_mutex_unlock(&gba->emulator_mutex);
 }
 
+/*
+** Load a new state for the emulator from the content of the file pointed by `path`.
+*/
 void
 load_state(
     struct gba *gba,

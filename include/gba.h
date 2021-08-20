@@ -19,9 +19,9 @@
 
 struct options
 {
-    bool debugger;
-    uint32_t scale;
-    bool headless;
+    bool debugger;      // True if the debugger is enabled
+    uint32_t scale;     // The GUI's framebuffer scaling factor
+    bool headless;      // Run Hades without a GUI (aka text/debugger only)
     uint32_t color;     // 0: auto, 1: never, 2: always
 };
 

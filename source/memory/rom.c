@@ -52,6 +52,8 @@ mem_load_bios(
 ** Load the ROM into the emulator's memory.
 **
 ** This function exits on failure.
+**
+** TODO: Ensure the loaded file is actually a GBA game.
 */
 int
 mem_load_rom(

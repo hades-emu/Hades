@@ -10,6 +10,9 @@
 #include "gba.h"
 #include "ppu.h"
 
+/*
+** Render the bitmap background of given index.
+*/
 void
 ppu_render_background_bitmap(
     struct gba *gba,
@@ -34,6 +37,11 @@ ppu_render_background_bitmap(
     }
 }
 
+/*
+** Render the affine background of given index.
+**
+** NOTE: As of now, this function is a stub.
+*/
 void
 ppu_render_background_affine(
     struct gba *gba __unused,
@@ -43,6 +51,9 @@ ppu_render_background_affine(
     // TODO
 }
 
+/*
+** Render the text background of given index.
+*/
 void
 ppu_render_background_text(
     struct gba *gba,
@@ -105,8 +116,8 @@ ppu_render_background_text(
 
             /*
             ** In this mode, each byte represents two pixels:
-            **   * The lower 4 bits define the color for the left pixel
-            **   * The upper 4 bits define the color for the right pixel
+            **   * The lower 4 bits define the color of the left pixel
+            **   * The upper 4 bits define the color of the right pixel
             */
 
             palette_idx = mem_read8(gba,
