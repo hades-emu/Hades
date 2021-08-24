@@ -48,7 +48,7 @@ ppu_render_scanline(
 
     pthread_mutex_lock(&gba->framebuffer_mutex);
 
-    bg.raw = io->dispcnt.blank ? 0xffff : mem_read16(gba, PALRAM_START);
+    bg.raw = io->dispcnt.blank ? 0xffff : mem_read16_raw(gba, PALRAM_START);
 
     for (x = 0; x < SCREEN_WIDTH; ++x) {
         ppu_plot_pixel(gba, bg, x, line);

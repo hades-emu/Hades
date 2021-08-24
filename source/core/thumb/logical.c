@@ -45,6 +45,7 @@ core_thumb_lsl(
     core->registers[rd] = value;
 
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -84,6 +85,7 @@ core_thumb_lsr(
     core->registers[rd] = value;
 
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -123,4 +125,5 @@ core_thumb_asr(
     core->registers[rd] = value;
 
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }

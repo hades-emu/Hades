@@ -46,6 +46,7 @@ core_thumb_lo_add(
 
     core->registers[rd] = res;
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -84,6 +85,7 @@ core_thumb_lo_sub(
 
     core->registers[rd] = res;
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -107,6 +109,7 @@ core_thumb_mov_imm(
     core->cpsr.zero = !(core->registers[rd]);
     core->cpsr.negative = bitfield_get(core->registers[rd], 31); // Useless ?
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -133,6 +136,7 @@ core_thumb_cmp_imm(
     core->cpsr.carry = usub32(core->registers[rd], imm, 0);
     core->cpsr.overflow = isub32(core->registers[rd], imm, 0);
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -159,6 +163,7 @@ core_thumb_add_imm(
     core->cpsr.zero = !(core->registers[rd]);
     core->cpsr.negative = bitfield_get(core->registers[rd], 31);
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -186,6 +191,7 @@ core_thumb_sub_imm(
     core->cpsr.zero = !(core->registers[rd]);
     core->cpsr.negative = bitfield_get(core->registers[rd], 31);
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -216,6 +222,7 @@ core_thumb_hi_add(
         core_reload_pipeline(gba);
     } else {
         core->pc += 2;
+        core->prefetch_access_type = SEQUENTIAL;
     }
 }
 
@@ -252,6 +259,7 @@ core_thumb_hi_cmp(
     core->cpsr.carry = usub32(op1, op2, 0);
     core->cpsr.overflow = isub32(op1, op2, 0);
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -282,6 +290,7 @@ core_thumb_hi_mov(
         core_reload_pipeline(gba);
     } else {
         core->pc += 2;
+        core->prefetch_access_type = SEQUENTIAL;
     }
 }
 
@@ -303,6 +312,7 @@ core_thumb_add_sp_imm(
     core = &gba->core;
     core->registers[rd] = core->sp + offset;
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -323,6 +333,7 @@ core_thumb_add_pc_imm(
     core = &gba->core;
     core->registers[rd] = (core->pc & 0xFFFFFFFC) + offset;
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -348,6 +359,7 @@ core_thumb_add_sp_s_imm(
     }
 
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -561,4 +573,5 @@ core_thumb_alu(
             break;
     }
     core->pc += 2;
+    core->prefetch_access_type = SEQUENTIAL;
 }

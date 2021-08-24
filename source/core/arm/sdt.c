@@ -30,6 +30,7 @@ core_arm_sdt(
     rn = bitfield_get_range(op, 16, 20);
 
     core = &gba->core;
+    core->prefetch_access_type = NON_SEQUENTIAL;
     base = core->registers[rn];
     offset = 0;
 
@@ -82,9 +83,9 @@ core_arm_sdt(
         uint32_t val;
 
         if (bitfield_get(op, 22)) { // Load Byte
-            val = mem_read8(gba, effective_addr);
+            val = mem_read8(gba, effective_addr, NON_SEQUENTIAL);
         } else { // Load Word
-            val = mem_read32_ror(gba, effective_addr);
+            val = mem_read32_ror(gba, effective_addr, NON_SEQUENTIAL);
         }
 
         if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
@@ -101,9 +102,9 @@ core_arm_sdt(
     } else { // Store
 
         if (bitfield_get(op, 22)) { // Store Byte
-            mem_write8(gba, effective_addr, core->registers[rd]);
+            mem_write8(gba, effective_addr, core->registers[rd], NON_SEQUENTIAL);
         } else { // Store word
-            mem_write32(gba, effective_addr, core->registers[rd]);
+            mem_write32(gba, effective_addr, core->registers[rd], NON_SEQUENTIAL);
         }
 
         if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
@@ -130,6 +131,7 @@ core_arm_hsdt(
 
     core = &gba->core;
     core->pc += 4;
+    core->prefetch_access_type = NON_SEQUENTIAL;
 
     rd = bitfield_get_range(op, 12, 16);
     rn = bitfield_get_range(op, 16, 20);
@@ -175,17 +177,17 @@ core_arm_hsdt(
         switch ((bitfield_get(op, 6) << 1) | bitfield_get(op, 5)) {
             //   0bSH
             case 0b01: // Unsigned Halfword Load
-                val = mem_read16(gba, effective_addr);
+                val = mem_read16_ror(gba, effective_addr, NON_SEQUENTIAL);
                 break;
             case 0b10: // Signed Byte Load
-                val = (int32_t)(int8_t)mem_read8(gba, effective_addr);
+                val = (int32_t)(int8_t)mem_read8(gba, effective_addr, NON_SEQUENTIAL);
                 break;
             case 0b11: // Signed Halfword Load
                 // (Unligned addresses are a bitch)
                 if (bitfield_get(addr, 0)) {
-                    val = (int32_t)(int8_t)(uint8_t)mem_read16(gba, effective_addr);
+                    val = (int32_t)(int8_t)mem_read8(gba, effective_addr, NON_SEQUENTIAL);
                 } else {
-                    val = (int32_t)(int16_t)(uint16_t)mem_read16(gba, effective_addr);
+                    val = (int32_t)(int16_t)mem_read16(gba, effective_addr, NON_SEQUENTIAL);
                 }
                break;
             default:
@@ -207,7 +209,7 @@ core_arm_hsdt(
         switch ((bitfield_get(op, 6) << 1) | bitfield_get(op, 5)) {
             //   0bSH
             case 0b01: // Unsigned Halfword Store
-                mem_write16(gba, effective_addr, core->registers[rd]);
+                mem_write16(gba, effective_addr, core->registers[rd], NON_SEQUENTIAL);
                 break;
             default:
                 unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented (op=%08x)", op);

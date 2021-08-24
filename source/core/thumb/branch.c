@@ -45,6 +45,7 @@ core_thumb_branch_link(
     if (!h) {
         core->lr = core->pc + (sign_extend11(offset) << 12);
         core->pc += 2;
+        core->prefetch_access_type = SEQUENTIAL;
     } else {
         uint32_t lr;
 
@@ -77,6 +78,7 @@ core_thumb_branch_cond(
         core_reload_pipeline(gba);
     } else {
         core->pc += 2;
+        core->prefetch_access_type = SEQUENTIAL;
     }
 }
 

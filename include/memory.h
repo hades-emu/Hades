@@ -13,6 +13,11 @@
 # include <stdint.h>
 # include "hades.h"
 
+enum access_type {
+    NON_SEQUENTIAL,
+    SEQUENTIAL,
+};
+
 /*
 ** The overall memory of the Gameboy Advance.
 */
@@ -120,16 +125,33 @@ void mem_io_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /* memory/memory.c */
 void mem_init(struct memory *memory);
-uint8_t mem_read8(struct gba const *gba, uint32_t addr);
-uint32_t mem_read16(struct gba const *gba, uint32_t addr);
-uint32_t mem_read32(struct gba const *gba, uint32_t addr);
-uint32_t mem_read32_ror(struct gba const *gba, uint32_t addr);
-void mem_write8(struct gba *gba, uint32_t addr, uint8_t val);
-void mem_write16(struct gba *gba, uint32_t addr, uint16_t val);
-void mem_write32(struct gba *gba, uint32_t addr, uint32_t val);
+void mem_update_waitstates(struct gba const *gba);
+uint8_t mem_read8(struct gba *gba, uint32_t addr, enum access_type access_type);
+uint8_t mem_read8_raw(struct gba const *gba, uint32_t addr);
+uint16_t mem_read16(struct gba *gba, uint32_t addr, enum access_type access_type);
+uint16_t mem_read16_raw(struct gba const *gba, uint32_t addr);
+uint32_t mem_read16_ror(struct gba *gba, uint32_t addr, enum access_type access_type);
+uint32_t mem_read32(struct gba *gba, uint32_t addr, enum access_type access_type);
+uint32_t mem_read32_raw(struct gba const *gba, uint32_t addr);
+uint32_t mem_read32_ror(struct gba *gba, uint32_t addr, enum access_type access_type);
+void mem_write8(struct gba *gba, uint32_t addr, uint8_t val, enum access_type access_type);
+void mem_write8_raw(struct gba *gba, uint32_t addr, uint8_t val);
+void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_type access_type);
+void mem_write16_raw(struct gba *gba, uint32_t addr, uint16_t val);
+void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_type access_type);
+void mem_write32_raw(struct gba *gba, uint32_t addr, uint32_t val);
 
 /* memory/rom.c */
 int mem_load_bios(struct memory *memory, char const *filename);
 int mem_load_rom(struct gba *gba, char const *filename);
+
+/*
+** The following memory-accessors are used by the PPU for fast memory access
+** with no overhead and to prevent the cycle counter to be incremented.
+*/
+
+# define mem_palram_read8(gba, addr)        ((gba)->memory.palram[(addr) & PALRAM_MASK])
+# define mem_vram_read8(gba, addr)          ((gba)->memory.vram[(addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2)])
+# define mem_oam_read8(gba, addr)           ((gba)->memory.oam[(addr) & OAM_MASK])
 
 #endif /* !MEMORY_H */

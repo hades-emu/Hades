@@ -31,12 +31,12 @@ core_arm_swp(
     rn = bitfield_get_range(op, 16, 20);
 
     if (bitfield_get(op, 22)) { // Swap byte quantity
-        tmp = mem_read8(gba, core->registers[rn]);
-        mem_write8(gba, core->registers[rn], core->registers[rm]);
+        tmp = mem_read8(gba, core->registers[rn], NON_SEQUENTIAL);
+        mem_write8(gba, core->registers[rn], core->registers[rm], NON_SEQUENTIAL);
         core->registers[rd] = tmp;
     } else { // Swap word quantity
-        tmp = mem_read32_ror(gba, core->registers[rn]);
-        mem_write32(gba, core->registers[rn], core->registers[rm]);
+        tmp = mem_read32_ror(gba, core->registers[rn], NON_SEQUENTIAL);
+        mem_write32(gba, core->registers[rn], core->registers[rm], NON_SEQUENTIAL);
         core->registers[rd] = tmp;
     }
 
@@ -44,5 +44,6 @@ core_arm_swp(
         core_reload_pipeline(gba);
     } else {
         core->pc += 4;
+        core->prefetch_access_type = NON_SEQUENTIAL;
     }
 }

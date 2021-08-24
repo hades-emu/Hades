@@ -89,9 +89,9 @@ mem_dma_transfer(
         } else {
             while (channel->internal_count > 0) {
                 if (unit_size == 4) {
-                    mem_write32(gba, channel->internal_dst, mem_read32(gba, channel->internal_src));
+                    mem_write32_raw(gba, channel->internal_dst, mem_read32_raw(gba, channel->internal_src));
                 } else { // unit_size == 2
-                    mem_write16(gba, channel->internal_dst, mem_read16(gba, channel->internal_src));
+                    mem_write16_raw(gba, channel->internal_dst, mem_read16_raw(gba, channel->internal_src));
                 }
                 channel->internal_src += src_step;
                 channel->internal_dst += dst_step;

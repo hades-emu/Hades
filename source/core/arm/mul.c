@@ -27,6 +27,8 @@ core_arm_mul(
     bool a;
 
     core = &gba->core;
+    core->prefetch_access_type = SEQUENTIAL;
+
     rm = bitfield_get_range(op, 0, 4);
     rs = bitfield_get_range(op, 8, 12);
     rn = bitfield_get_range(op, 12, 16);
@@ -68,6 +70,7 @@ core_arm_mull(
     bool u;
 
     core = &gba->core;
+    core->prefetch_access_type = SEQUENTIAL;
 
     rm = bitfield_get_range(op, 0, 4);
     rs = bitfield_get_range(op, 8, 12);
