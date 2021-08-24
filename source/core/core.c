@@ -51,6 +51,7 @@ core_init(
     core->sp = 0x03007F00;
     core->cpsr.mode = MODE_SYS;
     core->prefetch_access_type = NON_SEQUENTIAL;
+    mem_update_waitstates(gba);
     core_interrupt(gba, VEC_RESET, MODE_SVC);
 }
 
@@ -99,6 +100,7 @@ core_next(
                 // Ignore instructions where the conditions aren't met.
                 if (!can_exec) {
                     core->pc += 4;
+                    core_idle(gba);
                     goto end;
                 }
 
@@ -119,9 +121,16 @@ core_next(
         case 1: // Halt
         case 2: // Stop
             core_scan_irq(gba);
-            core->cycles += 1;
+            core_idle(gba);
             break;
     }
+}
+
+void
+core_idle(
+    struct gba *gba
+) {
+    gba->core.cycles += 1;
 }
 
 /*
