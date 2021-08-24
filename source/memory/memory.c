@@ -303,7 +303,7 @@ mem_write8(
     enum access_type access_type
 ) {
     mem_access(gba, addr, sizeof(uint8_t), access_type);
-    mem_write8_raw(gba, addr + 0, (uint8_t)(val >> 0));
+    mem_write8_raw(gba, addr, val);
 }
 
 /*
@@ -368,7 +368,7 @@ mem_write16(
 ) {
     addr &= ~(sizeof(uint16_t) - 1);
 
-    mem_access(gba, addr, sizeof(uint8_t), access_type);
+    mem_access(gba, addr, sizeof(uint16_t), access_type);
     mem_write8_raw(gba, addr + 0, (uint8_t)(val >> 0));
     mem_write8_raw(gba, addr + 1, (uint8_t)(val >> 8));
 }
@@ -400,7 +400,7 @@ mem_write32(
 ) {
     addr &= ~(sizeof(uint32_t) - 1);
 
-    mem_access(gba, addr, sizeof(uint8_t), access_type);
+    mem_access(gba, addr, sizeof(uint32_t), access_type);
     mem_write8_raw(gba, addr + 0, (uint8_t)(val >>  0));
     mem_write8_raw(gba, addr + 1, (uint8_t)(val >>  8));
     mem_write8_raw(gba, addr + 2, (uint8_t)(val >> 16));
