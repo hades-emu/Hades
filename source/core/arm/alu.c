@@ -33,6 +33,7 @@ core_arm_alu(
     cond = bitfield_get(op, 20);
 
     core = &gba->core;
+    core->prefetch_access_type = SEQUENTIAL;
     shift_carry = core->cpsr.carry;
 
     /*
@@ -76,7 +77,6 @@ core_arm_alu(
         op1 = core->registers[rn];
         op2 = core_compute_shift(core, shift, core->registers[rm], (cond && rd != 15 ? &shift_carry : NULL));
     }
-
 
     /*
     ** Execute the correct data processing instruction.

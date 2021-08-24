@@ -82,6 +82,7 @@ mem_io_reg_name(
         case IO_REG_KEYINPUT:       return ("REG_KEYINPUT");
         case IO_REG_IE:             return ("REG_IE");
         case IO_REG_IF:             return ("REG_IF");
+        case IO_REG_WAITCNT:        return ("REG_WAITCNT");
         case IO_REG_IME:            return ("REG_IME");
         case IO_REG_POSTFLG:        return ("REG_POSTFLG");
         case IO_REG_HALTCNT:        return ("REG_HALTCNT");
@@ -204,6 +205,8 @@ mem_io_read8(
         case IO_REG_IE + 1:                 return (io->int_enabled.bytes[1]);
         case IO_REG_IF:                     return (io->int_flag.bytes[0]);
         case IO_REG_IF + 1:                 return (io->int_flag.bytes[1]);
+        case IO_REG_WAITCNT:                return (io->waitcnt.bytes[0]);
+        case IO_REG_WAITCNT + 1:            return (io->waitcnt.bytes[1]);
         case IO_REG_IME:                    return (io->ime.bytes[0]);
         case IO_REG_IME + 1:                return (io->ime.bytes[1]);
 
@@ -402,6 +405,11 @@ mem_io_write8(
             break;
         case IO_REG_IF:                     io->int_flag.bytes[0] &= ~val; break;
         case IO_REG_IF + 1:                 io->int_flag.bytes[1] &= ~val; break;
+        case IO_REG_WAITCNT:
+        case IO_REG_WAITCNT + 1:
+            io->waitcnt.bytes[addr - IO_REG_WAITCNT] = val;
+            mem_update_waitstates(gba);
+            break;
         case IO_REG_IME:
         case IO_REG_IME + 1:
             io->ime.bytes[addr - IO_REG_IME] = val;

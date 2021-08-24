@@ -37,7 +37,6 @@ save_state(
            fwrite(&gba->core, sizeof(gba->core), 1, file) != 1
         || fwrite(&gba->memory, sizeof(gba->memory), 1, file) != 1
         || fwrite(&gba->io, sizeof(gba->io), 1, file) != 1
-        || fwrite(&gba->scheduler.cycles, sizeof(uint64_t), 1, file) != 1
         || fwrite(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
         goto err;
@@ -110,7 +109,6 @@ load_state(
            fread(&gba->core, sizeof(gba->core), 1, file) != 1
         || fread(&gba->memory, sizeof(gba->memory), 1, file) != 1
         || fread(&gba->io, sizeof(gba->io), 1, file) != 1
-        || fread(&gba->scheduler.cycles, sizeof(uint64_t), 1, file) != 1
         || fread(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
         goto err;

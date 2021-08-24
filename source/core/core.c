@@ -50,6 +50,7 @@ core_init(
     core->r13_svc = 0x03007FE0;
     core->sp = 0x03007F00;
     core->cpsr.mode = MODE_SYS;
+    core->prefetch_access_type = NON_SEQUENTIAL;
     core_interrupt(gba, VEC_RESET, MODE_SVC);
 }
 
@@ -72,7 +73,7 @@ core_next(
 
                 op = core->prefetch[0];
                 core->prefetch[0] = core->prefetch[1];
-                core->prefetch[1] = mem_read16(gba, core->pc);
+                core->prefetch[1] = mem_read16(gba, core->pc, core->prefetch_access_type);
 
                 for (i = 0; i < thumb_insns_len; ++i) {
                     if ((op & thumb_insns[i].mask) == thumb_insns[i].value) {
@@ -90,7 +91,7 @@ core_next(
 
                 op = core->prefetch[0];
                 core->prefetch[0] = core->prefetch[1];
-                core->prefetch[1] = mem_read32(gba, core->pc);
+                core->prefetch[1] = mem_read32(gba, core->pc, core->prefetch_access_type);
 
                 can_exec = core_compute_cond(core, op >> 28);
 
@@ -118,21 +119,17 @@ core_next(
         case 1: // Halt
         case 2: // Stop
             core_scan_irq(gba);
+            core->cycles += 1;
             break;
     }
-
-    /*
-    ** We don't have cycle counting yet, so we kinda arbitrarily assume
-    ** that 1 cycles was spent running the previous instruction (FIXME).
-    **
-    ** (Not having cycle counting at this stage is a meme ngl :')
-    */
-    gba->scheduler.cycles += 1;
 }
 
 /*
 ** Reload the cached op-code on the 3-stage pipeline.
 ** This must be called when the value of PC is changed.
+**
+** This function takes 1N and 1S cycles to complete, and set the
+** next prefetch access type to SEQUENTIAL.
 */
 void
 core_reload_pipeline(
@@ -143,17 +140,18 @@ core_reload_pipeline(
     core = &gba->core;
     if (core->cpsr.thumb) {
         core->pc &= 0xFFFFFFFE;
-        core->prefetch[0] = mem_read16(gba, core->pc);
+        core->prefetch[0] = mem_read16(gba, core->pc, NON_SEQUENTIAL);
         core->pc += 2;
-        core->prefetch[1] = mem_read16(gba, core->pc);
+        core->prefetch[1] = mem_read16(gba, core->pc, SEQUENTIAL);
         core->pc += 2;
     } else {
         core->pc &= 0xFFFFFFFC;
-        core->prefetch[0] = mem_read32(gba, core->pc);
+        core->prefetch[0] = mem_read32(gba, core->pc, NON_SEQUENTIAL);
         core->pc += 4;
-        core->prefetch[1] = mem_read32(gba, core->pc);
+        core->prefetch[1] = mem_read32(gba, core->pc, SEQUENTIAL);
         core->pc += 4;
     }
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*

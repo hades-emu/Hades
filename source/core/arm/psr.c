@@ -31,6 +31,7 @@ core_arm_mrs(
     }
 
     core->pc += 4;
+    core->prefetch_access_type = SEQUENTIAL;
 }
 
 /*
@@ -89,4 +90,5 @@ core_arm_msr(
     }
 
     core->pc += 4;
+    core->prefetch_access_type = SEQUENTIAL;
 }

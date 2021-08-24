@@ -26,7 +26,6 @@ struct scheduler_event {
 };
 
 struct scheduler {
-    uint64_t cycles;                // Amount of cycles spent by the CPU
     uint64_t next_event;            // The next event should occure when cycles == next_event
 
     struct scheduler_event *events;

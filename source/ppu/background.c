@@ -27,10 +27,10 @@ ppu_render_background_bitmap(
         if (palette) {
             uint8_t palette_idx;
 
-            palette_idx = mem_read8(gba, VRAM_START + (SCREEN_WIDTH * line + x) + 0xA000 * gba->io.dispcnt.frame);
-            c.raw = mem_read16(gba, PALRAM_START + palette_idx * sizeof(union color));
+            palette_idx = mem_read8_raw(gba, VRAM_START + (SCREEN_WIDTH * line + x) + 0xA000 * gba->io.dispcnt.frame);
+            c.raw = mem_read16_raw(gba, PALRAM_START + palette_idx * sizeof(union color));
         } else {
-            c.raw = mem_read16(gba, VRAM_START + (SCREEN_WIDTH * line + x) * sizeof(union color));
+            c.raw = mem_read16_raw(gba, VRAM_START + (SCREEN_WIDTH * line + x) * sizeof(union color));
         }
 
         ppu_plot_pixel(gba, c, x, line);
@@ -104,12 +104,12 @@ ppu_render_background_text(
                 break;
         }
 
-        tile.raw = mem_read16(gba, VRAM_START + screen_addr + screen_idx * sizeof(union tile));
+        tile.raw = mem_read16_raw(gba, VRAM_START + screen_addr + screen_idx * sizeof(union tile));
         chr_y ^= tile.vflip * 0b111;
         chr_x ^= tile.hflip * 0b111;
 
         if (io->bgcnt[bg_idx].palette_type) { // 256 colors, 1 palette
-            palette_idx = mem_read8(gba,
+            palette_idx = mem_read8_raw(gba,
                 VRAM_START + chrs_addr + tile.number * 64 + chr_y * 8 + chr_x
             );
         } else { // 16 colors, 16 palettes
@@ -120,7 +120,7 @@ ppu_render_background_text(
             **   * The upper 4 bits define the color of the right pixel
             */
 
-            palette_idx = mem_read8(gba,
+            palette_idx = mem_read8_raw(gba,
                 VRAM_START + chrs_addr + tile.number * 32 + chr_y * 4 + (chr_x >> 1)
             );
             palette_idx >>= (chr_x % 2) * 4;
@@ -130,7 +130,7 @@ ppu_render_background_text(
         if (palette_idx) {
             union color c;
 
-            c.raw = mem_read16(
+            c.raw = mem_read16_raw(
                 gba,
                 PALRAM_START + (tile.palette * 16 * !io->bgcnt[bg_idx].palette_type + palette_idx) * sizeof(union color)
             );

@@ -19,6 +19,7 @@
 # include <stdbool.h>
 # include <stdint.h>
 # include "hades.h"
+# include "memory.h"
 
 struct gba;
 
@@ -114,10 +115,13 @@ struct core {
     };
 
     uint32_t prefetch[2];              // The next instruction to be executed
+    enum access_type prefetch_access_type;
 
     struct psr cpsr;
 
     uint32_t halt;                  // 0=Run, 1=Halt, 2=Stop
+
+    uint64_t cycles;                // Amount of cycles spent by the CPU since initialization
 };
 
 /*
