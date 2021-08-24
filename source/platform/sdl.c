@@ -67,6 +67,15 @@ sdl_init(
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
     );
 
+    // Fallback with software rendering
+    if (!app->renderer) {
+        app->renderer = SDL_CreateRenderer(
+            app->window,
+            -1,
+            SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC
+        );
+    }
+
     if (!app->renderer) {
         printf("Failed to create renderer: %s\n", SDL_GetError());
         exit(1);
