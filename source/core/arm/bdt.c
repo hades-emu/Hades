@@ -29,6 +29,7 @@ core_arm_bdt(
     bool pre;
     bool s;
     bool wb;
+    enum access_type access_type;
 
     core = &gba->core;
     rn = bitfield_get_range(op, 16, 20);
@@ -76,6 +77,7 @@ core_arm_bdt(
     }
 
     core->pc += 4;
+    core->prefetch_access_type = NON_SEQUENTIAL;
 
     /*
     ** User bank transfer:
@@ -93,6 +95,7 @@ core_arm_bdt(
 
     i = 0;
     first = true;
+    access_type = NON_SEQUENTIAL;
     while (i < 16) {
         if (bitfield_get(op, i)) {
             base += pre ? 4 : 0; // Pre-increment
@@ -103,9 +106,9 @@ core_arm_bdt(
                     first = false;
                 }
 
-                core->registers[i] = mem_read32(gba, base);
+                core->registers[i] = mem_read32(gba, base, access_type);
             } else {
-                mem_write32(gba, base, core->registers[i]);
+                mem_write32(gba, base, core->registers[i], access_type);
 
                 if (first && wb) { // Write back after data is stored
                     core->registers[rn] = base_new;
@@ -114,7 +117,7 @@ core_arm_bdt(
             }
 
             base += pre ? 0 : 4; // Post-increment
-
+            access_type = SEQUENTIAL;
         }
         ++i;
     }

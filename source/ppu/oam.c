@@ -87,10 +87,10 @@ ppu_render_oam(
             union oam_float pd;
 
             if (oam.affine) {
-                pa.raw = (int16_t)(uint16_t)mem_read16(gba, OAM_START + oam.affine_data_idx * 32 + 0x6);
-                pb.raw = (int16_t)(uint16_t)mem_read16(gba, OAM_START + oam.affine_data_idx * 32 + 0xe);
-                pc.raw = (int16_t)(uint16_t)mem_read16(gba, OAM_START + oam.affine_data_idx * 32 + 0x16);
-                pd.raw = (int16_t)(uint16_t)mem_read16(gba, OAM_START + oam.affine_data_idx * 32 + 0x1e);
+                pa.raw = (int16_t)mem_read16_raw(gba, OAM_START + oam.affine_data_idx * 32 + 0x6);
+                pb.raw = (int16_t)mem_read16_raw(gba, OAM_START + oam.affine_data_idx * 32 + 0xe);
+                pc.raw = (int16_t)mem_read16_raw(gba, OAM_START + oam.affine_data_idx * 32 + 0x16);
+                pd.raw = (int16_t)mem_read16_raw(gba, OAM_START + oam.affine_data_idx * 32 + 0x1e);
             } else { // Identity matrix
                 pa = (union oam_float){ .integer = 1}; // 1,0
                 pb.raw = 0;
@@ -153,7 +153,7 @@ ppu_render_oam(
                 }
 
                 if (oam.color_256) { // 256 colors, 1 palette
-                    palette_idx = mem_read8(gba, VRAM_START + tile_offset + chr_y * 8 + chr_x);
+                    palette_idx = mem_read8_raw(gba, VRAM_START + tile_offset + chr_y * 8 + chr_x);
                 } else { // 16 colors, 16 palettes
 
                     /*
@@ -162,7 +162,7 @@ ppu_render_oam(
                     **   * The upper 4 bits define the color for the right pixel
                     */
 
-                    palette_idx = mem_read8(gba, VRAM_START + tile_offset + chr_y * 4 + (chr_x >> 1));
+                    palette_idx = mem_read8_raw(gba, VRAM_START + tile_offset + chr_y * 4 + (chr_x >> 1));
                     palette_idx >>= (chr_x % 2) * 4;
                     palette_idx &= 0xF;
                 }
@@ -175,7 +175,7 @@ ppu_render_oam(
                         palette_idx += oam.palette_num * 16;
                     }
 
-                    c.raw = mem_read16(
+                    c.raw = mem_read16_raw(
                         gba,
                         PALRAM_START + 0x200 + palette_idx * sizeof(union color)
                     );

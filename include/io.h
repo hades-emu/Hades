@@ -117,6 +117,7 @@ enum io_regs {
 
     IO_REG_IE           = 0x04000200,
     IO_REG_IF           = 0x04000202,
+    IO_REG_WAITCNT      = 0x04000204,
     IO_REG_IME          = 0x04000208,
 
     /* System */
@@ -283,12 +284,6 @@ struct io {
         uint8_t bytes[2];
     } rcnt;
 
-    // REG_IME
-    union {
-        uint16_t raw;
-        uint8_t bytes[2];
-    } ime;
-
     // REG_IE
     union {
         struct {
@@ -334,6 +329,31 @@ struct io {
         uint16_t raw;
         uint8_t bytes[2];
     } int_flag;
+
+    // REG_WAITCNT
+    union {
+        struct {
+            uint16_t sram: 2;
+            uint16_t ws0_nonseq: 2;
+            uint16_t ws0_seq: 1;
+            uint16_t ws1_nonseq: 2;
+            uint16_t ws1_seq: 1;
+            uint16_t ws2_nonseq: 2;
+            uint16_t ws2_seq: 1;
+            uint16_t phi: 2;
+            uint16_t : 1;
+            uint16_t gamepak_prefetch: 1;
+            uint16_t gamepak_type: 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } waitcnt;
+
+    // REG_IME
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } ime;
 
     // REG_POSTFLG
     uint8_t postflg;

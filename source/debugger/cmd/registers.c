@@ -79,7 +79,7 @@ debugger_cmd_registers(
         g_light_green,
         g_reset,
         g_light_magenta,
-        gba->scheduler.cycles,
+        gba->core.cycles,
         g_reset
     );
 

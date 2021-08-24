@@ -33,9 +33,11 @@ sched_process_events(
     struct gba *gba
 ) {
     size_t i;
+    struct core *core;
     struct scheduler *scheduler;
     struct scheduler_event *event;
 
+    core = &gba->core;
     scheduler = &gba->scheduler;
     while (true) {
         event = NULL;
@@ -45,7 +47,7 @@ sched_process_events(
         for (i = 0; i < scheduler->events_size; ++i) {
 
             // Keep only the event that are active and should occure now
-            if (scheduler->events[i].active && scheduler->events[i].at <= scheduler->cycles) {
+            if (scheduler->events[i].active && scheduler->events[i].at <= core->cycles) {
                 if (!event || scheduler->events[i].at < event->at) {
                     event = scheduler->events + i;
                 }
@@ -56,7 +58,7 @@ sched_process_events(
             break;
         }
 
-        event->callback(gba, scheduler->cycles - event->at);
+        event->callback(gba, core->cycles - event->at);
         if (event->repeat) {
             event->at += event->period;
         } else {
@@ -105,19 +107,21 @@ sched_run_for(
     struct gba *gba,
     uint64_t cycles
 ) {
+    struct core *core;
     struct scheduler *scheduler;
     uint64_t target;
 
+    core = &gba->core;
     scheduler = &gba->scheduler;
-    target = scheduler->cycles + cycles;
     pthread_mutex_lock(&gba->emulator_mutex);
-    while (!g_interrupt && scheduler->cycles < target ) {
+    target = core->cycles + cycles;
+    while (!g_interrupt && core->cycles < target ) {
         uint64_t elapsed;
         uint64_t old_cycles;
 
-        old_cycles = scheduler->cycles;
+        old_cycles = core->cycles;
         core_next(gba);
-        elapsed = scheduler->cycles - old_cycles;
+        elapsed = core->cycles - old_cycles;
 
 #if ENABLE_DEBUGGER
         if (gba->options.debugger) {
@@ -127,7 +131,7 @@ sched_run_for(
 
         timer_tick(gba, elapsed); // TODO: Make this a scheduler event?
 
-        if (scheduler->cycles >= scheduler->next_event) {
+        if (core->cycles >= scheduler->next_event) {
             sched_process_events(gba);
         }
     }
