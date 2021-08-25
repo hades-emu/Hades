@@ -54,12 +54,12 @@ mem_update_waitstates(
     access_time16[NON_SEQUENTIAL][CART_SRAM_REGION] = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
 
     // 16 bit, seq
-    access_time16[SEQUENTIAL][CART_0_REGION_1]  = 1 + io->waitcnt.ws0_seq ? 2 : 1;
-    access_time16[SEQUENTIAL][CART_0_REGION_2]  = 1 + io->waitcnt.ws0_seq ? 2 : 1;
-    access_time16[SEQUENTIAL][CART_1_REGION_1]  = 1 + io->waitcnt.ws1_seq ? 4 : 1;
-    access_time16[SEQUENTIAL][CART_1_REGION_2]  = 1 + io->waitcnt.ws1_seq ? 4 : 1;
-    access_time16[SEQUENTIAL][CART_2_REGION_1]  = 1 + io->waitcnt.ws2_seq ? 8 : 1;
-    access_time16[SEQUENTIAL][CART_2_REGION_2]  = 1 + io->waitcnt.ws2_seq ? 8 : 1;
+    access_time16[SEQUENTIAL][CART_0_REGION_1]  = 1 + (io->waitcnt.ws0_seq ? 1 : 2);
+    access_time16[SEQUENTIAL][CART_0_REGION_2]  = 1 + (io->waitcnt.ws0_seq ? 1 : 2);
+    access_time16[SEQUENTIAL][CART_1_REGION_1]  = 1 + (io->waitcnt.ws1_seq ? 1 : 4);
+    access_time16[SEQUENTIAL][CART_1_REGION_2]  = 1 + (io->waitcnt.ws1_seq ? 1 : 4);
+    access_time16[SEQUENTIAL][CART_2_REGION_1]  = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
+    access_time16[SEQUENTIAL][CART_2_REGION_2]  = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
     access_time16[SEQUENTIAL][CART_SRAM_REGION] = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
 
     // Update for 32-bit too.
@@ -287,7 +287,6 @@ mem_read32_ror(
     uint32_t value;
 
     rotate = (addr % 4) << 3;
-    addr &= ~(sizeof(uint32_t) - 1);
     value = mem_read32(gba, addr, access_type);
     return (ror32(value, rotate));
 }

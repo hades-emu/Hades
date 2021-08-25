@@ -101,7 +101,7 @@ core_next(
                 // Ignore instructions where the conditions aren't met.
                 if (!can_exec) {
                     core->pc += 4;
-                    core_idle(gba);
+                    core->prefetch_access_type = SEQUENTIAL;
                     goto end;
                 }
 
