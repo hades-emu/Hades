@@ -89,9 +89,12 @@ struct gba
     } input;
 
     /*
-    **Amount of frames elapsed since the beginning of the execution.
+    ** Amount of frames elapsed since the beginning of the execution.
     */
     atomic_uint frame_counter;
+
+    pthread_t logic_thread;
+    pthread_t render_thread;
 };
 
 /* save.c */

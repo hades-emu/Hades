@@ -44,11 +44,11 @@ bool g_verbose[HS_END] = {
     [HS_MEMORY] = true,
 };
 
+#if ENABLE_DEBUGGER
 /*
 ** The signal handler, used to set `g_interrupt` to true and go back to
 ** the debugger.
 */
-__unused
 static
 void
 sighandler(
@@ -56,6 +56,7 @@ sighandler(
 ) {
     g_interrupt = true;
 }
+#endif
 
 /*
 ** Print the program's usage.
@@ -155,6 +156,7 @@ args_parse(
                     case CLI_HELP: // --help
                         print_usage(stdout, name);
                         exit(EXIT_SUCCESS);
+                        break;
                     case CLI_VERSION: // --version
                         printf("Hades v" HADES_VERSION "\n");
                         exit(EXIT_SUCCESS);
@@ -177,6 +179,7 @@ args_parse(
                         } else {
                             options->color = 0;
                         }
+                        break;
 #if ENABLE_SDL2
                     case CLI_HEADLESS: // --headless
                         options->headless = true;
@@ -306,21 +309,24 @@ main(
     ** and enter the SDL main loop
     */
     if (!gba->options.headless) {
-        pthread_t logic_thread;
-
+        gba->render_thread = pthread_self();
         pthread_create(
-            &logic_thread,
+            &gba->logic_thread,
             NULL,
             (void *(*)(void *))
             logic_thread_main,
             gba
         );
         sdl_render_loop(gba);
-        pthread_join(logic_thread, NULL);
+        pthread_join(gba->logic_thread, NULL);
     } else {
+        gba->render_thread = pthread_self();
+        gba->logic_thread = pthread_self();
         logic_thread_main(gba);
     }
 #else
+    gba->render_thread = pthread_self();
+    gba->logic_thread = pthread_self();
     logic_thread_main(gba);
 #endif
 
