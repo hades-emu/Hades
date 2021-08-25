@@ -119,7 +119,7 @@ struct dbg_command {
 
 enum dbg_commands {
     CMD_HELP        = 0x0,
-    CMD_QUIT,
+    CMD_EXIT,
     CMD_CONTINUE,
     CMD_NEXT,
     CMD_STEP,
@@ -164,6 +164,9 @@ void debugger_cmd_continue(struct gba *, size_t, char const * const *);
 /* debugger/cmd/disas.c */
 void debugger_cmd_disas(struct gba *, size_t, char const * const *);
 void debugger_cmd_disas_at(struct gba *gba, uint32_t ptr);
+
+/* debugger/cmd/exit.c */
+void debugger_cmd_exit(struct gba *, size_t, char const * const *);
 
 /* debugger/cmd/frame.c */
 void debugger_cmd_frame(struct gba *, size_t, char const * const *);
