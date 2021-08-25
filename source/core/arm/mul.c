@@ -10,6 +10,53 @@
 #include "hades.h"
 #include "gba.h"
 
+static
+void
+core_arm_mul_idle_signed(
+    struct gba *gba,
+    uint32_t rs
+) {
+    uint32_t x;
+    uint32_t mask;
+
+    mask = 0xFFFFFF00;
+    for (x = 0; x < 4; ++x) {
+
+        rs &= mask;
+        core_idle(gba);
+
+        if (rs == 0 || rs == mask) {
+            break;
+        }
+
+        mask <<= 8u;
+    }
+}
+
+static
+void
+core_arm_mul_idle_unsigned(
+    struct gba *gba,
+    uint32_t rs
+) {
+    uint32_t x;
+    uint32_t mask;
+
+    mask = 0xFFFFFF00;
+    for (x = 0; x < 4; ++x) {
+
+        rs &= mask;
+        core_idle(gba);
+
+        if (rs == 0) {
+            break;
+        }
+
+        mask <<= 8u;
+    }
+}
+
+
 /*
 ** Execute the Multiply (MUL) and Multiply Accumulate (MLA) instruction.
 */
@@ -27,7 +74,6 @@ core_arm_mul(
     bool a;
 
     core = &gba->core;
-    core->prefetch_access_type = SEQUENTIAL;
 
     rm = bitfield_get_range(op, 0, 4);
     rs = bitfield_get_range(op, 8, 12);
@@ -36,8 +82,12 @@ core_arm_mul(
     s = bitfield_get(op, 20);
     a = bitfield_get(op, 21);
 
+    // This must be done first in case Rs is also Rd.
+    core_arm_mul_idle_signed(gba, core->registers[rs]);
+
     if (a) {
         core->registers[rd] = core->registers[rm] * core->registers[rs] + core->registers[rn];
+        core_idle(gba);
     } else {
         core->registers[rd] = core->registers[rm] * core->registers[rs];
     }
@@ -48,6 +98,7 @@ core_arm_mul(
     }
 
     core->pc += 4;
+    core->prefetch_access_type = NON_SEQUENTIAL;
 }
 
 /*
@@ -80,23 +131,31 @@ core_arm_mull(
     a = bitfield_get(op, 21);
     u = bitfield_get(op, 22);
 
+    core_idle(gba);
+
     switch ((u << 1) | a) {
         // UMULL
         case 0b00:
+            core_arm_mul_idle_unsigned(gba, core->registers[rs]);
             ures = (uint64_t)core->registers[rm] * (uint64_t)core->registers[rs];
             break;
         // UMLAL
         case 0b01:
+            core_arm_mul_idle_unsigned(gba, core->registers[rs]);
+            core_idle(gba);
             ures = (uint64_t)core->registers[rd_lo] | ((uint64_t)core->registers[rd_hi] << 32);
             ures += (uint64_t)core->registers[rm] * (uint64_t)core->registers[rs];
             break;
         // SMULL
         case 0b10:
+            core_arm_mul_idle_signed(gba, core->registers[rs]);
             ires = (int64_t)(int32_t)core->registers[rm] * (int64_t)(int32_t)core->registers[rs];
             ures = ires;
             break;
         // SMLAL
         case 0b11:
+            core_arm_mul_idle_signed(gba, core->registers[rs]);
+            core_idle(gba);
             ures = (uint64_t)core->registers[rd_lo] | ((uint64_t)core->registers[rd_hi] << 32);
             ires = ures;
             ires += (int64_t)(int32_t)core->registers[rm] * (int64_t)(int32_t)core->registers[rs];
@@ -113,4 +172,5 @@ core_arm_mull(
     }
 
     core->pc += 4;
+    core->prefetch_access_type = NON_SEQUENTIAL;
 }

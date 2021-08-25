@@ -25,6 +25,7 @@ sources = files(
     'source/core/arm/swi.c',
     'source/core/arm/swp.c',
     'source/core/thumb/alu.c',
+    'source/core/thumb/bdt.c',
     'source/core/thumb/branch.c',
     'source/core/thumb/core.c',
     'source/core/thumb/logical.c',

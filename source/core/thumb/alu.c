@@ -422,6 +422,8 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
+
+            core_idle(gba);
             break;
         case 0b0011:
             // LSR (Logical Shift Right)
@@ -448,6 +450,8 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
+
+            core_idle(gba);
             break;
         case 0b0100:
             // ASR (Arithmetic Shift Right)
@@ -474,6 +478,8 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
+
+            core_idle(gba);
             break;
         case 0b0101:
             // ADC (Add with Carry) (op1 + op2 + carry)
@@ -520,6 +526,8 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
+
+            core_idle(gba);
             break;
         case 0b1000:
             // TST (as AND, but result is not written)
@@ -555,9 +563,11 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(core->registers[rd], 31);
             break;
         case 0b1101:
+            // MUL
             core->registers[rd] = op1 * op2;
             core->cpsr.zero = !(core->registers[rd]);
             core->cpsr.negative = bitfield_get(core->registers[rd], 31);
+            core->cpsr.carry = 0;
             break;
         case 0b1110:
             // BIC (op1 AND NOT op2)

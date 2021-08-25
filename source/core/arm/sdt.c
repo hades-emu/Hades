@@ -93,6 +93,7 @@ core_arm_sdt(
         }
 
         core->registers[rd] = val;
+        core_idle(gba);
 
         // Reload the pipeline of rd is pc
         if (rd == 15) {
@@ -194,6 +195,8 @@ core_arm_hsdt(
                 unimplemented(HS_CORE, "Sub-operation of \"Halfword and Signed Data Transfer\" not implemented (op=%08x)", op);
                 break;
         }
+
+        core_idle(gba);
 
         /*
         ** if bit 24 or bit 21 is set (post-indexing modification or write-through),
