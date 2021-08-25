@@ -301,6 +301,9 @@ sdl_handle_events(
             case SDL_QUIT:
                 g_stop = true;
                 g_interrupt = true;
+#if ENABLE_DEBUGGER
+                pthread_kill(gba->logic_thread, SIGTERM); // Ask readline to stop waiting for user input
+#endif
                 break;
             default:
                 break;
