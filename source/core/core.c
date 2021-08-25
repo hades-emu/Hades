@@ -53,6 +53,7 @@ core_init(
     core->prefetch_access_type = NON_SEQUENTIAL;
     mem_update_waitstates(gba);
     core_interrupt(gba, VEC_RESET, MODE_SVC);
+    core->cycles = 0;
 }
 
 /*
