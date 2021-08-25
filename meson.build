@@ -58,6 +58,7 @@ if get_option('enable_debugger')
         'source/debugger/cmd/context.c',
         'source/debugger/cmd/continue.c',
         'source/debugger/cmd/disas.c',
+        'source/debugger/cmd/exit.c',
         'source/debugger/cmd/frame.c',
         'source/debugger/cmd/help.c',
         'source/debugger/cmd/main.c',
