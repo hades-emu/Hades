@@ -122,15 +122,19 @@ core_arm_bdt(
         ++i;
     }
 
-    if (pc_in_rlist && load) {
-        if (s) {
-            struct psr spsr;
+    if (load) {
+        core_idle(gba);
 
-            spsr = core_spsr_get(core, core->cpsr.mode);
-            core_switch_mode(core, spsr.mode);
-            core->cpsr = spsr;
+        if (pc_in_rlist) {
+            if (s) {
+                struct psr spsr;
+
+                spsr = core_spsr_get(core, core->cpsr.mode);
+                core_switch_mode(core, spsr.mode);
+                core->cpsr = spsr;
+            }
+            core_reload_pipeline(gba);
         }
-        core_reload_pipeline(gba);
     }
 
     if (mode_switch) { // Roll back to previous mode

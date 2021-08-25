@@ -40,6 +40,8 @@ core_arm_swp(
         core->registers[rd] = tmp;
     }
 
+    core_idle(gba);
+
     if (rd == 15) {
         core_reload_pipeline(gba);
     } else {
