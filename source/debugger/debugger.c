@@ -24,13 +24,12 @@ struct dbg_command g_commands[] = {
         .nargs = 0,
         .func = debugger_cmd_help,
     },
-    [CMD_QUIT] = {
-        .name = "quit",
-        .alias = "q",
+    [CMD_EXIT] = {
+        .name = "exit",
         .usage = "exit",
-        .desc = "Close Hades",
-        .nargs = 1,
-        .func = NULL,
+        .desc = "Exit Hades",
+        .nargs = 0,
+        .func = debugger_cmd_exit,
     },
     [CMD_CONTINUE] = {
         .name = "continue",
