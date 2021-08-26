@@ -108,6 +108,10 @@ mem_access(
 
     page = (addr >> 24) & 0xF;
 
+    if (page >= CART_0_REGION_1 && page <= CART_2_REGION_2 && (addr & 0x1FFFF) == 0) {
+        access_type = NON_SEQUENTIAL;
+    }
+
     if (size <= sizeof(uint16_t)) {
         cycles = access_time16[access_type][page];
     } else {
