@@ -18,19 +18,22 @@ core_arm_mul_idle_signed(
 ) {
     uint32_t x;
     uint32_t mask;
+    uint32_t cycles;
 
+    cycles = 1;
     mask = 0xFFFFFF00;
     for (x = 0; x < 4; ++x) {
 
         rs &= mask;
-        core_idle(gba);
 
         if (rs == 0 || rs == mask) {
             break;
         }
 
         mask <<= 8u;
+        cycles += 1;
     }
+    core_idle_for(gba, cycles);
 }
 
 static
@@ -41,21 +44,23 @@ core_arm_mul_idle_unsigned(
 ) {
     uint32_t x;
     uint32_t mask;
+    uint32_t cycles;
 
+    cycles = 1;
     mask = 0xFFFFFF00;
     for (x = 0; x < 4; ++x) {
 
         rs &= mask;
-        core_idle(gba);
 
         if (rs == 0) {
             break;
         }
 
         mask <<= 8u;
+        cycles += 1;
     }
+    core_idle_for(gba, cycles);
 }
-
 
 /*
 ** Execute the Multiply (MUL) and Multiply Accumulate (MLA) instruction.

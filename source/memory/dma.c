@@ -96,6 +96,7 @@ mem_dma_transfer(
                 channel->internal_src += src_step;
                 channel->internal_dst += dst_step;
                 channel->internal_count -= 1;
+                core_idle(gba); // TODO: This isn't ideal but it's a quickwin before revamping DMAs.
             }
         }
 

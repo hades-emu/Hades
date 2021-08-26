@@ -143,19 +143,13 @@ mem_io_read8(
         case IO_REG_SOUNDBIAS:              return (0x0);
         case IO_REG_SOUNDBIAS + 1:          return (0b10);
 
-        /* DMA - Channel 0 */
+        /* DMA */
         case IO_REG_DMA0CTL:                return (io->dma[0].control.bytes[0]);
         case IO_REG_DMA0CTL + 1:            return (io->dma[0].control.bytes[1]);
-
-        /* DMA - Channel 1 */
         case IO_REG_DMA1CTL:                return (io->dma[1].control.bytes[0]);
         case IO_REG_DMA1CTL + 1:            return (io->dma[1].control.bytes[1]);
-
-        /* DMA - Channel 2 */
         case IO_REG_DMA2CTL:                return (io->dma[2].control.bytes[0]);
         case IO_REG_DMA2CTL + 1:            return (io->dma[2].control.bytes[1]);
-
-        /* DMA - Channel 3 */
         case IO_REG_DMA3CTL:                return (io->dma[3].control.bytes[0]);
         case IO_REG_DMA3CTL + 1:            return (io->dma[3].control.bytes[1]);
 
@@ -163,25 +157,21 @@ mem_io_read8(
         case IO_REG_TM0CNT_LO:              return (io->timers[0].counter.bytes[0]);
         case IO_REG_TM0CNT_LO + 1:          return (io->timers[0].counter.bytes[1]);
         case IO_REG_TM0CNT_HI:              return (io->timers[0].control.bytes[0]);
-        case IO_REG_TM0CNT_HI + 1:          return (io->timers[0].control.bytes[1]);
 
         /* Timer 1 */
         case IO_REG_TM1CNT_LO:              return (io->timers[1].counter.bytes[0]);
         case IO_REG_TM1CNT_LO + 1:          return (io->timers[1].counter.bytes[1]);
         case IO_REG_TM1CNT_HI:              return (io->timers[1].control.bytes[0]);
-        case IO_REG_TM1CNT_HI + 1:          return (io->timers[1].control.bytes[1]);
 
         /* Timer 2 */
         case IO_REG_TM2CNT_LO:              return (io->timers[2].counter.bytes[0]);
         case IO_REG_TM2CNT_LO + 1:          return (io->timers[2].counter.bytes[1]);
         case IO_REG_TM2CNT_HI:              return (io->timers[2].control.bytes[0]);
-        case IO_REG_TM2CNT_HI + 1:          return (io->timers[2].control.bytes[1]);
 
         /* Timer 3 */
         case IO_REG_TM3CNT_LO:              return (io->timers[3].counter.bytes[0]);
         case IO_REG_TM3CNT_LO + 1:          return (io->timers[3].counter.bytes[1]);
         case IO_REG_TM3CNT_HI:              return (io->timers[3].control.bytes[0]);
-        case IO_REG_TM3CNT_HI + 1:          return (io->timers[3].control.bytes[1]);
 
         /* Inputs */
         case IO_REG_KEYINPUT:
@@ -363,7 +353,6 @@ mem_io_write8(
             }
             io->timers[1].control.bytes[0] = val;
             break;
-        case IO_REG_TM1CNT_HI + 1:          io->timers[1].control.bytes[1] = val; break;
 
         /* Timer 2 */
         case IO_REG_TM2CNT_LO:              io->timers[2].reload.bytes[0] = val; break;
@@ -377,7 +366,6 @@ mem_io_write8(
             }
             io->timers[2].control.bytes[0] = val;
             break;
-        case IO_REG_TM2CNT_HI + 1:          io->timers[2].control.bytes[1] = val; break;
 
         /* Timer 3 */
         case IO_REG_TM3CNT_LO:              io->timers[3].reload.bytes[0] = val; break;
@@ -391,7 +379,6 @@ mem_io_write8(
             }
             io->timers[3].control.bytes[0] = val;
             break;
-        case IO_REG_TM3CNT_HI + 1:          io->timers[3].control.bytes[1] = val; break;
 
         /* Serial Communication (2) */
         case IO_REG_RCNT:
@@ -399,10 +386,7 @@ mem_io_write8(
 
         /* Interrupt */
         case IO_REG_IE:
-        case IO_REG_IE + 1:
-            io->int_enabled.bytes[addr - IO_REG_IE] = val;
-            core_scan_irq(gba);
-            break;
+        case IO_REG_IE + 1:                 io->int_enabled.bytes[addr - IO_REG_IE] = val; break;
         case IO_REG_IF:                     io->int_flag.bytes[0] &= ~val; break;
         case IO_REG_IF + 1:                 io->int_flag.bytes[1] &= ~val; break;
         case IO_REG_WAITCNT:
@@ -411,10 +395,7 @@ mem_io_write8(
             mem_update_waitstates(gba);
             break;
         case IO_REG_IME:
-        case IO_REG_IME + 1:
-            io->ime.bytes[addr - IO_REG_IME] = val;
-            core_scan_irq(gba);
-            break;
+        case IO_REG_IME + 1:                io->ime.bytes[addr - IO_REG_IME] = val; break;
 
         /* System */
         case IO_REG_POSTFLG:                io->postflg = val; break;

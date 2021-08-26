@@ -118,7 +118,7 @@ mem_access(
         cycles = access_time32[access_type][page];
     }
 
-    gba->core.cycles += cycles;
+    core_idle_for(gba, cycles);
 }
 
 /*
