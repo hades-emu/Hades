@@ -123,13 +123,15 @@ sched_run_for(
         core_next(gba);
         elapsed = core->cycles - old_cycles;
 
+        if (!elapsed) {
+            logln(HS_WARNING, "No cycles elapsed during `core_next()`.");
+        }
+
 #if ENABLE_DEBUGGER
         if (gba->options.debugger) {
             debugger_eval_breakpoints(gba);
         }
 #endif
-
-        timer_tick(gba, elapsed); // TODO: Make this a scheduler event?
 
         if (core->cycles >= scheduler->next_event) {
             sched_process_events(gba);
