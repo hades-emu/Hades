@@ -68,6 +68,10 @@ core_next(
     bool can_exec;
 
     core = &gba->core;
+
+    // Scan for any pending interrupt
+    core_scan_irq(gba);
+
     switch (core->halt) {
         case 0: // Run
             if (core->cpsr.thumb) {
@@ -121,7 +125,6 @@ core_next(
             break;
         case 1: // Halt
         case 2: // Stop
-            core_scan_irq(gba);
             core_idle(gba);
             break;
     }
@@ -131,7 +134,16 @@ void
 core_idle(
     struct gba *gba
 ) {
-    gba->core.cycles += 1;
+    core_idle_for(gba, 1);
+}
+
+void
+core_idle_for(
+    struct gba *gba,
+    uint32_t cycles
+) {
+    gba->core.cycles += cycles;
+    timer_tick(gba, cycles);
 }
 
 /*
@@ -411,7 +423,10 @@ core_interrupt(
 }
 
 /*
-** Try to trigger the given IRQ.
+** Mark the given IRQ as enabled.
+**
+** It will be fired at the beginning of the next instruction if the different
+** condition flags are enabled.
 */
 void
 core_trigger_irq(
@@ -420,20 +435,20 @@ core_trigger_irq(
 ) {
     gba->io.int_flag.raw |= (1 << irq);
     gba->core.halt = 0;
-    core_scan_irq(gba);
 }
 
 /*
 ** Ensure all the conditions to trigger any IRQ are met, and if they are, fire that interrupt.
+**
+** To trigger any interrupt, we need:
+**   * The CPSR.I flag set to 0
+**   * The bit 0 of the IME IO register set to 1
+**   * That interrupt enabled in both REG_IE and REG_IF
 */
 void
 core_scan_irq(
     struct gba *gba
 ) {
-    // To trigger any interrupt, we need:
-    //   * The CPSR.I flag set to 0
-    //   * The bit 0 of the IME IO register set to 1
-    //   * That interrupt enabled in both REG_IE and REG_IF
     if (
            !gba->core.cpsr.irq_disable
         && (gba->io.ime.raw & 0b1)
@@ -575,21 +590,21 @@ core_compute_cond(
     uint32_t cond
 ) {
     switch (cond) {
-        case COND_EQ: return core->cpsr.zero;
-        case COND_NE: return !core->cpsr.zero;
-        case COND_CS: return core->cpsr.carry;
-        case COND_CC: return !core->cpsr.carry;
-        case COND_MI: return core->cpsr.negative;
-        case COND_PL: return !core->cpsr.negative;
-        case COND_VS: return core->cpsr.overflow;
-        case COND_VC: return !core->cpsr.overflow;
-        case COND_HI: return core->cpsr.carry && !core->cpsr.zero;
-        case COND_LS: return !core->cpsr.carry || core->cpsr.zero;
-        case COND_GE: return core->cpsr.negative == core->cpsr.overflow;
-        case COND_LT: return core->cpsr.negative != core->cpsr.overflow;
-        case COND_GT: return !core->cpsr.zero && (core->cpsr.negative == core->cpsr.overflow);
-        case COND_LE: return core->cpsr.zero || (core->cpsr.negative != core->cpsr.overflow);
-        case COND_AL: return true;
+        case COND_EQ: return (core->cpsr.zero);
+        case COND_NE: return (!core->cpsr.zero);
+        case COND_CS: return (core->cpsr.carry);
+        case COND_CC: return (!core->cpsr.carry);
+        case COND_MI: return (core->cpsr.negative);
+        case COND_PL: return (!core->cpsr.negative);
+        case COND_VS: return (core->cpsr.overflow);
+        case COND_VC: return (!core->cpsr.overflow);
+        case COND_HI: return (core->cpsr.carry && !core->cpsr.zero);
+        case COND_LS: return (!core->cpsr.carry || core->cpsr.zero);
+        case COND_GE: return (core->cpsr.negative == core->cpsr.overflow);
+        case COND_LT: return (core->cpsr.negative != core->cpsr.overflow);
+        case COND_GT: return (!core->cpsr.zero && (core->cpsr.negative == core->cpsr.overflow));
+        case COND_LE: return (core->cpsr.zero || (core->cpsr.negative != core->cpsr.overflow));
+        case COND_AL: return (true);
         default:
             panic(HS_CORE, "Unknown cond %u\n", cond);
     }

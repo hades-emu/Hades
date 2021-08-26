@@ -10,6 +10,33 @@
 #include "hades.h"
 #include "gba.h"
 
+static
+void
+core_arm_mul_idle_signed(
+    struct gba *gba,
+    uint32_t rs
+) {
+    uint32_t x;
+    uint32_t mask;
+    uint32_t cycles;
+
+    cycles = 1;
+    mask = 0xFFFFFF00;
+    for (x = 0; x < 4; ++x) {
+
+        rs &= mask;
+
+        if (rs == 0 || rs == mask) {
+            break;
+        }
+
+        mask <<= 8u;
+        cycles += 1;
+    }
+
+    core_idle_for(gba, cycles);
+}
+
 /*
 ** Implement the ADD instruction (low registers).
 */
@@ -381,6 +408,7 @@ core_thumb_alu(
     rs = bitfield_get_range(op, 3, 6);
 
     core = &gba->core;
+    core->prefetch_access_type = SEQUENTIAL;
     op1 = core->registers[rd];
     op2 = core->registers[rs];
 
@@ -401,6 +429,9 @@ core_thumb_alu(
             // LSL (Logical Shift Left)
 
             op2 &= 0xFF; // Keep only one byte
+
+            core_idle(gba);
+            core->prefetch_access_type = NON_SEQUENTIAL;
 
             switch (op2) {
                 case 0:
@@ -430,6 +461,9 @@ core_thumb_alu(
 
             op2 &= 0xFF; // Keep only one byte
 
+            core_idle(gba);
+            core->prefetch_access_type = NON_SEQUENTIAL;
+
             switch (op2) {
                 case 0:
                     carry_out = core->cpsr.carry;
@@ -457,6 +491,9 @@ core_thumb_alu(
             // ASR (Arithmetic Shift Right)
 
             op2 &= 0xFF; // Keep only one byte
+
+            core_idle(gba);
+            core->prefetch_access_type = NON_SEQUENTIAL;
 
             switch (op2) {
                 case 0:
@@ -509,6 +546,9 @@ core_thumb_alu(
             break;
         case 0b0111:
             // ROR (Rotate Right)
+
+            core_idle(gba);
+            core->prefetch_access_type = NON_SEQUENTIAL;
 
             if (op2 > 32) {
                 op2 = ((op2 - 1) % 32) + 1;
@@ -564,10 +604,12 @@ core_thumb_alu(
             break;
         case 0b1101:
             // MUL
+            core_arm_mul_idle_signed(gba, op2);
             core->registers[rd] = op1 * op2;
             core->cpsr.zero = !(core->registers[rd]);
             core->cpsr.negative = bitfield_get(core->registers[rd], 31);
             core->cpsr.carry = 0;
+            core->prefetch_access_type = NON_SEQUENTIAL;
             break;
         case 0b1110:
             // BIC (op1 AND NOT op2)
@@ -583,5 +625,4 @@ core_thumb_alu(
             break;
     }
     core->pc += 2;
-    core->prefetch_access_type = SEQUENTIAL;
 }
