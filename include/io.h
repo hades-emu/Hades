@@ -175,6 +175,7 @@ struct timer {
         uint16_t raw;
         uint8_t bytes[2];
     } counter;
+
     union {
         uint16_t raw;
         uint8_t bytes[2];
@@ -193,7 +194,7 @@ struct timer {
         uint8_t bytes[2];
     } control;
 
-    uint64_t real_counter;
+    uint64_t internal_counter;
 };
 
 /*
