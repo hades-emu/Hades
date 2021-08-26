@@ -10,7 +10,7 @@
 #include "hades.h"
 #include "gba.h"
 
-static uint64_t scalers[4] = { 1, 64, 256, 1024};
+static uint64_t scalers[4] = { 0, 6, 8, 10 };
 
 void
 timer_tick(
@@ -30,18 +30,18 @@ timer_tick(
             continue;
         }
 
-        if (timer->control.count_up && i != 0) {
-            timer->real_counter += prev_overflow;
-            timer->counter.raw = timer->real_counter;
-            prev_overflow = (timer->real_counter > (uint64_t)timer->counter.raw);
+        if (timer->control.count_up && i > 0) {
+            timer->internal_counter += prev_overflow;
+            timer->counter.raw = timer->internal_counter;
+            prev_overflow = (timer->internal_counter > (uint64_t)UINT16_MAX);
         } else {
-            timer->real_counter += cycles;
-            timer->counter.raw = timer->real_counter / scalers[timer->control.prescaler];
-            prev_overflow = ((timer->real_counter / scalers[timer->control.prescaler]) > (uint64_t)timer->counter.raw);
+            timer->internal_counter += cycles;
+            timer->counter.raw = timer->internal_counter >> scalers[timer->control.prescaler];
+            prev_overflow = ((timer->internal_counter >> scalers[timer->control.prescaler]) > (uint64_t)UINT16_MAX);
         }
 
         if (prev_overflow) {
-            timer->real_counter = timer->reload.raw;
+            timer->internal_counter = timer->reload.raw;
             timer->counter.raw = timer->reload.raw;
             logln(
                 HS_TIMER,
