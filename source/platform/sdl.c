@@ -247,8 +247,16 @@ sdl_handle_events(
                         case SDLK_BACKSPACE:        gba->input.select = true; break;
                         case SDLK_RETURN:           gba->input.start = true; break;
                         case SDLK_F2:               sdl_take_screenshot(app); break;
-                        case SDLK_F5:               save_state(gba, gba->save_path); break;
-                        case SDLK_F8:               load_state(gba, gba->save_path); break;
+                        case SDLK_F5:
+                            // That's ugly, an event queue would be better
+                            pthread_mutex_unlock(&gba->input_mutex);
+                            save_state(gba, gba->save_path);
+                            return;
+                        case SDLK_F8:
+                            // That's ugly, an event queue would be better
+                            pthread_mutex_unlock(&gba->input_mutex);
+                            load_state(gba, gba->save_path);
+                            return;
                         default:
                             break;
                     }
