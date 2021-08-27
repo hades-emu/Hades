@@ -365,7 +365,7 @@ sdl_render_loop(
             fps = (gba->frame_counter - old_frame_counter);
             old_frame_counter = gba->frame_counter;
 
-            snprintf(title, sizeof(title), "Hades | %s | %u FPS", gba->game_title, fps);
+            snprintf(title, sizeof(title), "Hades - %u FPS", fps);
             SDL_SetWindowTitle(app.window, title);
             sdl_last_ticks = SDL_GetTicks();
         }
