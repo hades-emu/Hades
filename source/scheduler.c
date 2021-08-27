@@ -8,15 +8,30 @@
 \******************************************************************************/
 
 #include "gba.h"
+#include "compat.h"
 
 void
 sched_init(
-    struct scheduler *scheduler
+    struct gba *gba
 ) {
+    struct scheduler *scheduler;
+
+    scheduler = &gba->scheduler;
+
     // Pre-allocate 10 events
     scheduler->events_size = 10;
     scheduler->events = calloc(scheduler->events_size, sizeof(struct scheduler_event));
     hs_assert(scheduler->events);
+
+    // Frame limiter event
+    sched_add_event(
+        gba,
+        NEW_REPEAT_EVENT(
+            CYCLES_PER_PIXEL * SCREEN_REAL_WIDTH * SCREEN_REAL_HEIGHT,  // Timing of first trigger
+            CYCLES_PER_PIXEL * SCREEN_REAL_WIDTH * SCREEN_REAL_HEIGHT,  // Period
+            sched_frame_limiter
+        )
+    );
 }
 
 void
@@ -147,4 +162,30 @@ sched_run_forever(
     while (!g_stop) {
         sched_run_for(gba, UINT32_MAX);
     }
+}
+
+void
+sched_frame_limiter(
+    struct gba *gba,
+    uint64_t extra_cycles __unused
+) {
+    uint64_t diff;
+    uint64_t sleep_time;
+
+    // Early return if we are unbounded
+    if (!gba->options.speed) {
+        goto end;
+    }
+
+    diff = hs_tick_count() - gba->previous_frame_tick;
+
+    if (diff < 17 / gba->options.speed) { // One frame is supposed to take 16.6 millisecond
+        sleep_time = 17 / gba->options.speed - diff; // Millis
+        usleep(sleep_time * 1000);
+    }
+
+    gba->previous_frame_tick = hs_tick_count();
+
+end:
+    ++gba->frame_counter;
 }
