@@ -72,7 +72,7 @@ sdl_init(
         app->renderer = SDL_CreateRenderer(
             app->window,
             -1,
-            SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC
+            SDL_RENDERER_SOFTWARE
         );
     }
 
