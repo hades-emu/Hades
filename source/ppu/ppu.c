@@ -114,7 +114,6 @@ ppu_hdraw(
     ++io->vcount.raw;
     if (io->vcount.raw >= SCREEN_REAL_HEIGHT) {
         io->vcount.raw = 0;
-        gba->frame_counter++; // New frame, wouhou!
     }
 
     io->dispstat.vcount_eq = (io->vcount.raw == io->dispstat.vcount_val );

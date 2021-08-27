@@ -21,6 +21,7 @@ struct options
 {
     bool debugger;      // True if the debugger is enabled
     uint32_t scale;     // The GUI's framebuffer scaling factor
+    uint32_t speed;     // The emulator's speed multiplier.
     bool headless;      // Run Hades without a GUI (aka text/debugger only)
     uint32_t color;     // 0: auto, 1: never, 2: always
 };
@@ -89,10 +90,15 @@ struct gba
     } input;
 
     /*
-    ** Amount of frames elapsed since the beginning of the execution.
+    ** Frame counting related stuff.
     */
-    atomic_uint frame_counter;
+    atomic_uint frame_counter;          // Amount of frames since the beginning of the emulation.
+    uint64_t    previous_frame_tick;    // Time, in milliseconds, when the previous frame was rendered.
 
+    /*
+    ** Read-only past initialization.
+    ** Note that the logic thread can be the render thread if there's no rendering.
+    */
     pthread_t logic_thread;
     pthread_t render_thread;
 };

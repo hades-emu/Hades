@@ -77,8 +77,9 @@ print_usage(
 #endif
 #if ENABLE_SDL2
         "        --headless                    disable any graphical output\n"
-        "    -s, --scale=SIZE                  scale the window by SIZE\n"
+        "        --scale=SIZE                  scale the window by SIZE\n"
 #endif
+        "        --speed=0..9                  adjust the speed multiplier of the emulator. 0 means unbounded.\n"
         "        --color=[always|never|auto]   adjust color settings (default: auto)\n"
         "\n"
         "    -h, --help                        print this help and exit\n"
@@ -109,6 +110,7 @@ args_parse(
             CLI_HELP = 0,
             CLI_VERSION,
             CLI_COLOR,
+            CLI_SPEED,
 #if ENABLE_SDL2
             CLI_HEADLESS,
             CLI_SCALE,
@@ -122,6 +124,7 @@ args_parse(
             [CLI_HELP]      = { "help",         no_argument,        0,  0 },
             [CLI_VERSION]   = { "version",      no_argument,        0,  0 },
             [CLI_COLOR]     = { "color",        optional_argument,  0,  0 },
+            [CLI_SPEED]     = { "speed",        required_argument,  0,  0 },
 #if ENABLE_SDL2
             [CLI_HEADLESS]  = { "headless",     no_argument,        0,  0 },
             [CLI_SCALE]     = { "scale",        required_argument,  0,  0 },
@@ -135,9 +138,6 @@ args_parse(
         c = getopt_long(
             argc,
             argv,
-#if ENABLE_SDL2
-            "s:"
-#endif
 #if ENABLE_DEBUGGER
             "d"
 #endif
@@ -179,6 +179,9 @@ args_parse(
                         } else {
                             options->color = 0;
                         }
+                        break;
+                    case CLI_SPEED: // --speed
+                        options->speed = strtoul(optarg, NULL, 10);
                         break;
 #if ENABLE_SDL2
                     case CLI_HEADLESS: // --headless
@@ -223,6 +226,11 @@ args_parse(
 
     if (options->scale < 1 || options->scale > 15) {
         fprintf(stderr, "Error: the UI scale must be between 1 and 15.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (options->speed >= 10) {
+        fprintf(stderr, "Error: the emulator speed must be between 0 and 9.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -280,6 +288,7 @@ main(
     memset(gba, 0, sizeof(*gba));
     gba->input.raw = 0x3FF; // Every button set to "released"
     gba->options.scale = 3; // Default window scale
+    gba->options.speed = 1; // Default speed multiplier
 
     rom = args_parse(argc, argv, &gba->options); /* Parse arguments. NOTE: this function exits on failure. */
 
@@ -290,7 +299,7 @@ main(
     core_arm_decode_insns();
     core_thumb_decode_insns();
 
-    sched_init(&gba->scheduler);
+    sched_init(gba);
     mem_init(&gba->memory);
     io_init(&gba->io);
     ppu_init(gba);

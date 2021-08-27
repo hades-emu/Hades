@@ -33,11 +33,12 @@ struct scheduler {
 };
 
 /* scheduler.c */
-void sched_init(struct scheduler *scheduler);
+void sched_init(struct gba *gba);
 void sched_cleanup(struct scheduler *scheduler);
 void sched_run_forever(struct gba *gba);
 void sched_run_for(struct gba *gba, uint64_t cycles);
 void sched_add_event(struct gba *gba, struct scheduler_event event);
+void sched_frame_limiter(struct gba *gba, uint64_t extra_cycles);
 
 # define NEW_FIX_EVENT(_at, _callback)  \
     (struct scheduler_event){           \
