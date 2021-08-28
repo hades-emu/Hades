@@ -2,7 +2,7 @@
 
 A Nintendo Game Boy Advance emulator.
 
-![](https://i.imgur.com/vO1sDOV.png)
+![](https://i.imgur.com/e9CClPc.png)
 
 ## Running
 
