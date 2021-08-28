@@ -12,7 +12,7 @@
 
 Hades is still under heavy development, but you can download the latest nightly build for your favorite operating system [here](https://nightly.link/Arignir/Hades/workflows/main/master).
 
-## Running
+## Run
 
 You need a game ROM and a legitimate GameBoy Advance BIOS or a [replacement BIOS](https://github.com/Cult-of-GBA/BIOS/blob/master/bios.bin).
 
@@ -38,7 +38,7 @@ Options:
         --version                     print the version information and exit
 ```
 
-## Building
+## Build
 
 The build dependencies are:
 
