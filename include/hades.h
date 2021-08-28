@@ -152,7 +152,6 @@ sign_extend8(
     }
 }
 
-
 /*
 ** Sign-extend a 9-bits value to a signed 32-bit value.
 */
