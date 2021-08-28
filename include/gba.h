@@ -75,8 +75,12 @@ struct gba
     pthread_t render_thread;
 };
 
-/* save.c */
-void save_state(struct gba *gba, char const *path);
-void load_state(struct gba *gba, char const *path);
+/* gba/gba.c */
+int gba_load_bios(struct gba *memory, char const *filename);
+int gba_load_rom(struct gba *gba, char const *filename);
+
+/* gba/quicksave.c */
+void quicksave(struct gba *gba, char const *path);
+void quickload(struct gba *gba, char const *path);
 
 #endif /* GBA_H */
