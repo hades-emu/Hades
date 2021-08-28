@@ -303,10 +303,10 @@ main(
     ppu_init(gba);
 
     /* Load the BIOS. NOTE: this function exits on failure. */
-    mem_load_bios(&gba->memory, "bios.bin");
+    gba_load_bios(gba, "bios.bin");
 
     /* Load the given ROM. NOTE: this function exits on failure. */
-    mem_load_rom(gba, rom);
+    gba_load_rom(gba, rom);
 
     core_init(gba);
 

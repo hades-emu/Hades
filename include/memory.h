@@ -142,10 +142,6 @@ void mem_write16_raw(struct gba *gba, uint32_t addr, uint16_t val);
 void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_type access_type);
 void mem_write32_raw(struct gba *gba, uint32_t addr, uint32_t val);
 
-/* memory/rom.c */
-int mem_load_bios(struct memory *memory, char const *filename);
-int mem_load_rom(struct gba *gba, char const *filename);
-
 /*
 ** The following memory-accessors are used by the PPU for fast memory access
 ** with no overhead and to prevent the cycle counter to be incremented.

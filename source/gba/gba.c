@@ -20,15 +20,15 @@
 ** This function exits on failure.
 */
 int
-mem_load_bios(
-    struct memory *memory,
-    char const *path
+gba_load_bios(
+    struct gba *gba,
+    char const *bios_path
 ) {
     FILE *file;
 
-    file = fopen(path, "rb");
+    file = fopen(bios_path, "rb");
     if (!file) {
-        fprintf(stderr, "hades: can't open %s: %s.\n", path, strerror(errno));
+        fprintf(stderr, "hades: can't open %s: %s.\n", bios_path, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -40,8 +40,8 @@ mem_load_bios(
     }
     rewind(file);
 
-    if (fread(memory->bios, 1, 0x4000, file) != 0x4000) {
-        fprintf(stderr, "hades: failed to read %s: %s.\n", path, strerror(errno));
+    if (fread(gba->memory.bios, 1, 0x4000, file) != 0x4000) {
+        fprintf(stderr, "hades: failed to read %s: %s.\n", bios_path, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -49,32 +49,32 @@ mem_load_bios(
 }
 
 /*
-** Load the ROM into the emulator's memory.
+** Load the Game ROM into the emulator's memory.
 **
 ** This function exits on failure.
 **
 ** TODO: Ensure the loaded file is actually a GBA game.
 */
 int
-mem_load_rom(
+gba_load_rom(
     struct gba *gba,
-    char const *path
+    char const *rom_path
 ) {
     FILE *file;
     long file_len;
     size_t len;
     char *extension;
 
-    file = fopen(path, "rb");
+    file = fopen(rom_path, "rb");
     if (!file) {
-        fprintf(stderr, "hades: can't open %s: %s.\n", path, strerror(errno));
+        fprintf(stderr, "hades: can't open %s: %s.\n", rom_path, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
     fseek(file, 0, SEEK_END);
     file_len = ftell(file);
     if (file_len > 0x2000000 || file_len < 192) {
-        fprintf(stderr, "hades: %s: invalid game.\n", path);
+        fprintf(stderr, "hades: %s: invalid game.\n", rom_path);
         exit(EXIT_FAILURE);
     }
     rewind(file);
@@ -82,11 +82,11 @@ mem_load_rom(
     len = fread(gba->memory.rom, 1, 0x2000000, file);
 
     if (len != file_len) {
-        fprintf(stderr, "hades: failed to read %s: %s.\n", path, strerror(errno));
+        fprintf(stderr, "hades: failed to read %s: %s.\n", rom_path, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    gba->rom_path = path;
+    gba->rom_path = rom_path;
 
     // Build the path pointing to the save state
     // (aka path/to/rom.gba but ending with .hds instead)

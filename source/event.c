@@ -83,10 +83,10 @@ event_handle_all(
                     break;
                 }
             case EVENT_QUICKLOAD:
-                load_state(gba, gba->save_path);
+                quickload(gba, gba->save_path);
                 break;
             case EVENT_QUICKSAVE:
-                save_state(gba, gba->save_path);
+                quicksave(gba, gba->save_path);
                 break;
         }
         equeue->size -= event->size;

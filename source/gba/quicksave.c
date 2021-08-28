@@ -18,7 +18,7 @@
 ** Save the current state of the emulator in the file pointed by `path`.
 */
 void
-save_state(
+quicksave(
     struct gba *gba,
     char const *path
 ) {
@@ -85,7 +85,7 @@ finally:
 ** Load a new state for the emulator from the content of the file pointed by `path`.
 */
 void
-load_state(
+quickload(
     struct gba *gba,
     char const *path
 ) {
