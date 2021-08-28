@@ -125,6 +125,7 @@ void mem_io_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /* memory/memory.c */
 void mem_init(struct memory *memory);
+void mem_access(struct gba *gba, uint32_t addr, uint32_t size, enum access_type access_type);
 void mem_update_waitstates(struct gba const *gba);
 uint8_t mem_read8(struct gba *gba, uint32_t addr, enum access_type access_type);
 uint8_t mem_read8_raw(struct gba const *gba, uint32_t addr);

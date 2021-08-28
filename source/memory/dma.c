@@ -34,6 +34,7 @@ mem_dma_transfer(
 
     for (i = 0; i < 4; ++i) {
         struct dma_channel *channel;
+        enum access_type access;
         int32_t src_step;
         int32_t dst_step;
         int32_t unit_size;
@@ -48,6 +49,19 @@ mem_dma_transfer(
         // Skip channels that aren't enabled or that shouldn't happen at the given timing
         if (!channel->control.enable || channel->control.timing != timing) {
             continue;
+        }
+
+        // All DMA take at least two internal cycles.
+        core_idle_for(gba, 2);
+
+        // If both source and destination are in gamepak memory area, the DMA takes
+        // two more internal cycles.
+        if (   (channel->internal_src >> 24) >= CART_0_REGION_1
+            && (channel->internal_src >> 24) <= CART_2_REGION_2
+            && (channel->internal_dst >> 24) >= CART_0_REGION_1
+            && (channel->internal_dst >> 24) <= CART_2_REGION_2
+        ) {
+            core_idle_for(gba, 2);
         }
 
         reload = false;
@@ -87,16 +101,17 @@ mem_dma_transfer(
         if (channel->internal_dst == 0x040000A0 || channel->internal_dst == 0x040000A4) {
             logln(HS_DMA, "FIFO transfer -- Ignored");
         } else {
+            access = NON_SEQUENTIAL;
             while (channel->internal_count > 0) {
                 if (unit_size == 4) {
-                    mem_write32_raw(gba, channel->internal_dst, mem_read32_raw(gba, channel->internal_src));
+                    mem_write32(gba, channel->internal_dst, mem_read32(gba, channel->internal_src, access), access);
                 } else { // unit_size == 2
-                    mem_write16_raw(gba, channel->internal_dst, mem_read16_raw(gba, channel->internal_src));
+                    mem_write16(gba, channel->internal_dst, mem_read16(gba, channel->internal_src, access), access);
                 }
                 channel->internal_src += src_step;
                 channel->internal_dst += dst_step;
                 channel->internal_count -= 1;
-                core_idle(gba); // TODO: This isn't ideal but it's a quickwin before revamping DMAs.
+                access = SEQUENTIAL;
             }
         }
 
