@@ -25,9 +25,9 @@ hades <path/to/game.gba>
 ```
 Usage: ./hades [OPTION]... ROM
 Options:
-    -d, --debugger                    enable the debugger
-        --headless                    use Hades without any graphical output
-    -s, --scale=SIZE                  scale the window by SIZE
+        --headless                    disable any graphical output
+        --scale=SIZE                  scale the window size by SIZE (default: 3)
+        --speed=SPEED                 bind the emulator's FPS to 60*SPEED. 0 means unbounded. (default: 1)
         --color=[always|never|auto]   adjust color settings (default: auto)
 
     -h, --help                        print this help and exit
@@ -42,13 +42,11 @@ The build dependencies are:
   - `ninja`
   - `SDL2` and `SDL2_Image`
   - `GCC`
-  - `readline`
-  - `capstone`
 
 On Ubuntu, you can install all those dependencies with:
 
 ```bash
-$ apt install meson ninja-build gcc libsdl2-dev libsdl2-image-dev libreadline-dev libcapstone-dev
+$ apt install meson ninja-build gcc libsdl2-dev libsdl2-image-dev
 ```
 
 To build Hades, run:
