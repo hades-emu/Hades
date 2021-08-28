@@ -77,9 +77,9 @@ print_usage(
 #endif
 #if ENABLE_SDL2
         "        --headless                    disable any graphical output\n"
-        "        --scale=SIZE                  scale the window by SIZE\n"
+        "        --scale=SIZE                  scale the window size by SIZE (default: 3)\n"
 #endif
-        "        --speed=0..9                  adjust the speed multiplier of the emulator. 0 means unbounded.\n"
+        "        --speed=SPEED                 bind the emulator's FPS to 60*SPEED. 0 means unbounded. (default: 1)\n"
         "        --color=[always|never|auto]   adjust color settings (default: auto)\n"
         "\n"
         "    -h, --help                        print this help and exit\n"
