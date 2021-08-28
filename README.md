@@ -4,13 +4,9 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/arignir/hades/badge/master)](https://www.codefactor.io/repository/github/arignir/hades/overview/master)
 [![Build](https://github.com/Arignir/Hades/actions/workflows/main.yml/badge.svg)](https://github.com/Arignir/Hades/actions/workflows/main.yml)
 
-<center>
-
-![](https://i.imgur.com/e9CClPc.png)
-
 *A Nintendo Game Boy Advance emulator.*
 
-</center>
+![](https://i.imgur.com/e9CClPc.png)
 
 ## Download
 
