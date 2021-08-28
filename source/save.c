@@ -25,9 +25,6 @@ save_state(
     FILE *file;
     size_t i;
 
-    g_interrupt = true;
-    pthread_mutex_lock(&gba->emulator_mutex);
-
     file = fopen(path, "wb");
     if (!file) {
         goto err;
@@ -82,8 +79,6 @@ err:
 finally:
 
     fclose(file);
-    g_interrupt = false;
-    pthread_mutex_unlock(&gba->emulator_mutex);
 }
 
 /*
@@ -96,9 +91,6 @@ load_state(
 ) {
     FILE *file;
     size_t i;
-
-    g_interrupt = true;
-    pthread_mutex_lock(&gba->emulator_mutex);
 
     file = fopen(path, "rb");
     if (!file) {
@@ -154,7 +146,4 @@ finally:
     if (file) {
         fclose(file);
     }
-
-    g_interrupt = false;
-    pthread_mutex_unlock(&gba->emulator_mutex);
 }

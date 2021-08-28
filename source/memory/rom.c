@@ -86,7 +86,6 @@ mem_load_rom(
         exit(EXIT_FAILURE);
     }
 
-    memcpy(gba->game_title, gba->memory.rom + 0xA0, 12);
     gba->rom_path = path;
 
     // Build the path pointing to the save state

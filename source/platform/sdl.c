@@ -17,6 +17,7 @@
 #include "hades.h"
 #include "compat.h"
 #include "gba.h"
+#include "event.h"
 
 struct sdl
 {
@@ -208,102 +209,86 @@ sdl_handle_events(
                 break;
             case SDL_KEYDOWN:
                 {
-                    pthread_mutex_lock(&gba->input_mutex);
                     switch (event.key.keysym.sym) {
                         case SDLK_UP:
-                        case SDLK_w:                gba->input.up = false; break;
+                        case SDLK_w:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_UP, true)); break;
                         case SDLK_DOWN:
-                        case SDLK_s:                gba->input.down = false; break;
+                        case SDLK_s:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_DOWN, true)); break;
                         case SDLK_LEFT:
-                        case SDLK_a:                gba->input.left = false; break;
+                        case SDLK_a:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_LEFT, true)); break;
                         case SDLK_RIGHT:
-                        case SDLK_d:                gba->input.right = false; break;
-                        case SDLK_p:                gba->input.a = false; break;
-                        case SDLK_l:                gba->input.b = false; break;
-                        case SDLK_e:                gba->input.l = false; break;
-                        case SDLK_o:                gba->input.r = false; break;
-                        case SDLK_BACKSPACE:        gba->input.select = false; break;
-                        case SDLK_RETURN:           gba->input.start = false; break;
+                        case SDLK_d:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_RIGHT, true)); break;
+                        case SDLK_p:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, true)); break;
+                        case SDLK_l:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, true)); break;
+                        case SDLK_e:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_L, true)); break;
+                        case SDLK_o:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_R, true)); break;
+                        case SDLK_BACKSPACE:        event_new(gba, NEW_EVENT_KEYINPUT(KEY_SELECT, true)); break;
+                        case SDLK_RETURN:           event_new(gba, NEW_EVENT_KEYINPUT(KEY_START, true)); break;
                     }
-                    pthread_mutex_unlock(&gba->input_mutex);
                 }
                 break;
             case SDL_KEYUP:
                 {
-                    pthread_mutex_lock(&gba->input_mutex);
                     switch (event.key.keysym.sym) {
                         case SDLK_UP:
-                        case SDLK_w:                gba->input.up = true; break;
+                        case SDLK_w:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_UP, false)); break;
                         case SDLK_DOWN:
-                        case SDLK_s:                gba->input.down = true; break;
+                        case SDLK_s:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_DOWN, false)); break;
                         case SDLK_LEFT:
-                        case SDLK_a:                gba->input.left = true; break;
+                        case SDLK_a:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_LEFT, false)); break;
                         case SDLK_RIGHT:
-                        case SDLK_d:                gba->input.right = true; break;
-                        case SDLK_p:                gba->input.a = true; break;
-                        case SDLK_l:                gba->input.b = true; break;
-                        case SDLK_e:                gba->input.l = true; break;
-                        case SDLK_o:                gba->input.r = true; break;
-                        case SDLK_BACKSPACE:        gba->input.select = true; break;
-                        case SDLK_RETURN:           gba->input.start = true; break;
+                        case SDLK_d:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_RIGHT, false)); break;
+                        case SDLK_p:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, false)); break;
+                        case SDLK_l:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, false)); break;
+                        case SDLK_e:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_L, false)); break;
+                        case SDLK_o:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_R, false)); break;
+                        case SDLK_BACKSPACE:        event_new(gba, NEW_EVENT_KEYINPUT(KEY_SELECT, false)); break;
+                        case SDLK_RETURN:           event_new(gba, NEW_EVENT_KEYINPUT(KEY_START, false)); break;
                         case SDLK_F2:               sdl_take_screenshot(app); break;
-                        case SDLK_F5:
-                            // That's ugly, an event queue would be better
-                            pthread_mutex_unlock(&gba->input_mutex);
-                            save_state(gba, gba->save_path);
-                            return;
-                        case SDLK_F8:
-                            // That's ugly, an event queue would be better
-                            pthread_mutex_unlock(&gba->input_mutex);
-                            load_state(gba, gba->save_path);
-                            return;
+                        case SDLK_F5:               event_new(gba, NEW_EVENT_QUICKSAVE()); break;
+                        case SDLK_F8:               event_new(gba, NEW_EVENT_QUICKLOAD()); break;
                         default:
                             break;
                     }
-                    pthread_mutex_unlock(&gba->input_mutex);
                 }
                 break;
             case SDL_CONTROLLERBUTTONDOWN:
                 {
-                    pthread_mutex_lock(&gba->input_mutex);
                     switch (event.cbutton.button) {
-                        case SDL_CONTROLLER_BUTTON_B:               gba->input.a = false; break;
-                        case SDL_CONTROLLER_BUTTON_A:               gba->input.b = false; break;
-                        case SDL_CONTROLLER_BUTTON_Y:               gba->input.a = false; break;
-                        case SDL_CONTROLLER_BUTTON_X:               gba->input.b = false; break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       gba->input.left = false; break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      gba->input.right = false; break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         gba->input.up = false; break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       gba->input.down = false; break;
-                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    gba->input.l = false; break;
-                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   gba->input.r = false; break;
-                        case SDL_CONTROLLER_BUTTON_START:           gba->input.start = false; break;
-                        case SDL_CONTROLLER_BUTTON_BACK:            gba->input.select = false; break;
+                        case SDL_CONTROLLER_BUTTON_B:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, true)); break;
+                        case SDL_CONTROLLER_BUTTON_A:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, true)); break;
+                        case SDL_CONTROLLER_BUTTON_Y:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, true)); break;
+                        case SDL_CONTROLLER_BUTTON_X:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, true)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       event_new(gba, NEW_EVENT_KEYINPUT(KEY_LEFT, true)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      event_new(gba, NEW_EVENT_KEYINPUT(KEY_RIGHT, true)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         event_new(gba, NEW_EVENT_KEYINPUT(KEY_UP, true)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       event_new(gba, NEW_EVENT_KEYINPUT(KEY_DOWN, true)); break;
+                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    event_new(gba, NEW_EVENT_KEYINPUT(KEY_L, true)); break;
+                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   event_new(gba, NEW_EVENT_KEYINPUT(KEY_R, true)); break;
+                        case SDL_CONTROLLER_BUTTON_START:           event_new(gba, NEW_EVENT_KEYINPUT(KEY_START, true)); break;
+                        case SDL_CONTROLLER_BUTTON_BACK:            event_new(gba, NEW_EVENT_KEYINPUT(KEY_SELECT, true)); break;
                     }
-                    pthread_mutex_unlock(&gba->input_mutex);
                 }
                 break;
             case SDL_CONTROLLERBUTTONUP:
                 {
-                    pthread_mutex_lock(&gba->input_mutex);
                     switch (event.cbutton.button) {
-                        case SDL_CONTROLLER_BUTTON_B:               gba->input.a = true; break;
-                        case SDL_CONTROLLER_BUTTON_A:               gba->input.b = true; break;
-                        case SDL_CONTROLLER_BUTTON_Y:               gba->input.a = true; break;
-                        case SDL_CONTROLLER_BUTTON_X:               gba->input.b = true; break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       gba->input.left = true; break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      gba->input.right = true; break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         gba->input.up = true; break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       gba->input.down = true; break;
-                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    gba->input.l = true; break;
-                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   gba->input.r = true; break;
-                        case SDL_CONTROLLER_BUTTON_START:           gba->input.start = true; break;
-                        case SDL_CONTROLLER_BUTTON_BACK:            gba->input.select = true; break;
+                        case SDL_CONTROLLER_BUTTON_B:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, false)); break;
+                        case SDL_CONTROLLER_BUTTON_A:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, false)); break;
+                        case SDL_CONTROLLER_BUTTON_Y:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, false)); break;
+                        case SDL_CONTROLLER_BUTTON_X:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, false)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       event_new(gba, NEW_EVENT_KEYINPUT(KEY_LEFT, false)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      event_new(gba, NEW_EVENT_KEYINPUT(KEY_RIGHT, false)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         event_new(gba, NEW_EVENT_KEYINPUT(KEY_UP, false)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       event_new(gba, NEW_EVENT_KEYINPUT(KEY_DOWN, false)); break;
+                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    event_new(gba, NEW_EVENT_KEYINPUT(KEY_L, false)); break;
+                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   event_new(gba, NEW_EVENT_KEYINPUT(KEY_R, false)); break;
+                        case SDL_CONTROLLER_BUTTON_START:           event_new(gba, NEW_EVENT_KEYINPUT(KEY_START, false)); break;
+                        case SDL_CONTROLLER_BUTTON_BACK:            event_new(gba, NEW_EVENT_KEYINPUT(KEY_SELECT, false)); break;
 #if SDL_VERSION_ATLEAST(2, 0, 14)
                         case SDL_CONTROLLER_BUTTON_MISC1:           sdl_take_screenshot(app); break;
 #endif
                     }
-                    pthread_mutex_unlock(&gba->input_mutex);
                 }
                 break;
             case SDL_QUIT:

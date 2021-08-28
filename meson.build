@@ -39,6 +39,7 @@ sources = files(
     'source/ppu/oam.c',
     'source/ppu/background.c',
     'source/ppu/ppu.c',
+    'source/event.c',
     'source/main.c',
     'source/save.c',
     'source/scheduler.c',
@@ -46,7 +47,7 @@ sources = files(
     'source/utils.c',
 )
 
-cflags = []
+cflags = ['-fms-extensions']
 ldflags = []
 
 dependencies = [

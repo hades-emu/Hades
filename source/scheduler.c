@@ -128,7 +128,6 @@ sched_run_for(
 
     core = &gba->core;
     scheduler = &gba->scheduler;
-    pthread_mutex_lock(&gba->emulator_mutex);
     target = core->cycles + cycles;
     while (!g_interrupt && core->cycles < target ) {
         uint64_t elapsed;
@@ -151,8 +150,9 @@ sched_run_for(
         if (core->cycles >= scheduler->next_event) {
             sched_process_events(gba);
         }
+
+        event_handle_all(gba);
     }
-    pthread_mutex_unlock(&gba->emulator_mutex);
 }
 
 void

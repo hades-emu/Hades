@@ -19,8 +19,8 @@
 ** A structure containing the internal state of the debugger.
 */
 struct debugger {
-    csh handle_arm;         // Capstone handle for ARM mode
-    csh handle_thumb;       // Capstone handle for Thumb mode
+    csh handle_arm;             // Capstone handle for ARM mode
+    csh handle_thumb;           // Capstone handle for Thumb mode
 
     uint32_t *breakpoints;
     size_t breakpoints_len;
