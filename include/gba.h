@@ -16,6 +16,7 @@
 # include "debugger.h"
 # include "io.h"
 # include "scheduler.h"
+# include "event.h"
 
 struct options
 {
@@ -35,24 +36,19 @@ struct gba
 #endif
     struct io io;
     struct scheduler scheduler;
-
-    /*
-    ** A mutex that protects the above structure from
-    ** concurrency errors, especially when saving/loading savestates.
-    */
-    pthread_mutex_t emulator_mutex;
-
-    /*
-    ** Read-only past initialization.
-    ** Can therefore be used by all threads.
-    */
     struct options options;
 
     /*
+    ** The event queue, used by the render thread to communicate
+    ** with the logic thread.
+    */
+    struct event_queue event_queue;
+    pthread_mutex_t event_queue_mutex;
+
+    /*
     ** Read-only past initialization.
     ** Can therefore be used by all threads.
     */
-    char game_title[13];
     char const *rom_path;
     char *save_path;
 
@@ -66,38 +62,14 @@ struct gba
     pthread_mutex_t framebuffer_mutex;
 
     /*
-    ** The state of each input buttons.
-    **
-    ** Can be accessed by both the logic and render thread.
-    */
-    pthread_mutex_t input_mutex;
-    union {
-        struct {
-            uint16_t a: 1;
-            uint16_t b: 1;
-            uint16_t select: 1;
-            uint16_t start: 1;
-            uint16_t right: 1;
-            uint16_t left: 1;
-            uint16_t up: 1;
-            uint16_t down: 1;
-            uint16_t r: 1;
-            uint16_t l: 1;
-            uint16_t : 6;
-        } __packed;
-        uint16_t raw;
-        uint8_t bytes[2];
-    } input;
-
-    /*
-    ** Frame counting related stuff.
+    ** Frame limiter related stuff.
     */
     atomic_uint frame_counter;          // Amount of frames since the beginning of the emulation.
     uint64_t    previous_frame_tick;    // Time, in milliseconds, when the previous frame was rendered.
 
     /*
     ** Read-only past initialization.
-    ** Note that the logic thread can be the render thread if there's no rendering.
+    ** Note that the logic thread == render thread if there's no rendering (headless).
     */
     pthread_t logic_thread;
     pthread_t render_thread;

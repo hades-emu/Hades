@@ -286,15 +286,13 @@ main(
     hs_assert(gba != NULL);
 
     memset(gba, 0, sizeof(*gba));
-    gba->input.raw = 0x3FF; // Every button set to "released"
     gba->options.scale = 3; // Default window scale
     gba->options.speed = 1; // Default speed multiplier
 
     rom = args_parse(argc, argv, &gba->options); /* Parse arguments. NOTE: this function exits on failure. */
 
     pthread_mutex_init(&gba->framebuffer_mutex, NULL);
-    pthread_mutex_init(&gba->input_mutex, NULL);
-    pthread_mutex_init(&gba->emulator_mutex, NULL);
+    pthread_mutex_init(&gba->event_queue_mutex, NULL);
 
     core_arm_decode_insns();
     core_thumb_decode_insns();

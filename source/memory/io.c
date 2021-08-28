@@ -20,6 +20,7 @@ io_init(
     struct io *io
 ) {
     memset(io, 0, sizeof(*io));
+    io->keyinput.raw = 0x3FF; // Every button set to "released"
 }
 
 /*
@@ -173,19 +174,9 @@ mem_io_read8(
         case IO_REG_TM3CNT_LO + 1:          return (io->timers[3].counter.bytes[1]);
         case IO_REG_TM3CNT_HI:              return (io->timers[3].control.bytes[0]);
 
-        /* Inputs */
-        case IO_REG_KEYINPUT:
-        case IO_REG_KEYINPUT + 1:
-            {
-                uint8_t out;
-                pthread_mutex_t *mutex;
-
-                mutex = (pthread_mutex_t *)&gba->input_mutex;
-                pthread_mutex_lock(mutex);
-                out = gba->input.bytes[addr - IO_REG_KEYINPUT];
-                pthread_mutex_unlock(mutex);
-                return (out);
-            }
+        /* Key Input */
+        case IO_REG_KEYINPUT:               return (io->keyinput.bytes[0]);
+        case IO_REG_KEYINPUT + 1:           return (io->keyinput.bytes[1]);
 
         case IO_REG_RCNT:                   return (io->rcnt.bytes[0]);
         case IO_REG_RCNT + 1:               return (io->rcnt.bytes[1]);

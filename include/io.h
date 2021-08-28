@@ -276,6 +276,25 @@ struct io {
     // DMA Channels
     struct dma_channel dma[4];
 
+    // REG_KEYINPUT
+    union {
+        struct {
+            uint16_t a: 1;
+            uint16_t b: 1;
+            uint16_t select: 1;
+            uint16_t start: 1;
+            uint16_t right: 1;
+            uint16_t left: 1;
+            uint16_t up: 1;
+            uint16_t down: 1;
+            uint16_t r: 1;
+            uint16_t l: 1;
+            uint16_t : 6;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } keyinput;
+
     // Timers
     struct timer timers[4];
 
