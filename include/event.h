@@ -35,7 +35,7 @@ struct event {
 };
 
 struct event_keyinput {
-    struct event;
+    struct event super;
     enum keyinput key;
     bool pressed;
 };
@@ -51,8 +51,10 @@ void event_handle_all(struct gba *gba);
 
 # define NEW_EVENT_KEYINPUT(_key, _pressed)             \
     ((struct event *)&((struct event_keyinput){         \
-        .type = EVENT_KEYINPUT,                         \
-        .size = sizeof(struct event_keyinput),          \
+        .super = (struct event){                        \
+            .size = sizeof(struct event_keyinput),      \
+            .type = EVENT_KEYINPUT,                     \
+        },                                              \
         .key = (_key),                                  \
         .pressed = (_pressed)                           \
     }))
