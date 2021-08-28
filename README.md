@@ -18,11 +18,13 @@ You need a game ROM and a legitimate GameBoy Advance BIOS or a [replacement BIOS
 
 Move your BIOS to the same folder than Hades and name it `bios.bin`.
 
-You can then run:
+You can then open a terminal and run:
 
 ```bash
 hades <path/to/game.gba>
 ```
+
+Windows: Alternatively, you can also drag and drop your GBA file over `hades.exe`.
 
 **Usage:**
 
