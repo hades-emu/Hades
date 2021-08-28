@@ -94,8 +94,6 @@ mem_update_waitstates(
 **
 ** Source: GBATek
 */
-static
-inline
 void
 mem_access(
     struct gba *gba,
