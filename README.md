@@ -4,15 +4,23 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/arignir/hades/badge/master)](https://www.codefactor.io/repository/github/arignir/hades/overview/master)
 [![Build](https://github.com/Arignir/Hades/actions/workflows/main.yml/badge.svg)](https://github.com/Arignir/Hades/actions/workflows/main.yml)
 
-A Nintendo Game Boy Advance emulator.
+<center>
 
 ![](https://i.imgur.com/e9CClPc.png)
 
+*A Nintendo Game Boy Advance emulator.*
+
+</center>
+
+## Download
+
+Hades is still under heavy development, but you can download the latest nightly build for your favorite operating system [here](https://nightly.link/Arignir/Hades/workflows/main/master).
+
 ## Running
 
-You need a game ROM and a legitimate GameBoy Advance BIOS or a replacement BIOS.
+You need a game ROM and a legitimate GameBoy Advance BIOS or a [replacement BIOS](https://github.com/Cult-of-GBA/BIOS/blob/master/bios.bin).
 
-Place your BIOS in the same folder than the executable and name it `bios.bin`.
+Move your BIOS to the same folder than Hades and name it `bios.bin`.
 
 You can then run:
 
@@ -59,12 +67,11 @@ ninja
 
 ## Thanks
 
-Special thanks to some insanely good reading/projects that act as documentation when writing Hades:
+Special thanks to some insanely good reading/projects that act like a documentation when writing Hades:
 
   - [GBATEK](https://problemkaputt.de/gbatek.htm)
-  - [Tonc](https://www.coranac.com/tonc/text/toc.htm)
+  - [NanoBoyAdvance](https://github.com/fleroviux/NanoBoyAdvance/)
   - [Cowbite](https://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm)
   - [gba-tests](https://github.com/jsmolka/gba-tests)
-  - [NanoBoyAdvance](https://github.com/fleroviux/NanoBoyAdvance/)
   - [gdkGBA](https://github.com/gdkchan/gdkGBA/)
-  - [mGBA](https://mgba.io/)
+  - [Tonc](https://www.coranac.com/tonc/text/toc.htm)
