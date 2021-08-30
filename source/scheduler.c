@@ -9,6 +9,8 @@
 
 #include "gba.h"
 #include "compat.h"
+#include "scheduler.h"
+#include "memory.h"
 
 void
 sched_init(
@@ -30,6 +32,16 @@ sched_init(
             CYCLES_PER_PIXEL * SCREEN_REAL_WIDTH * SCREEN_REAL_HEIGHT,  // Timing of first trigger
             CYCLES_PER_PIXEL * SCREEN_REAL_WIDTH * SCREEN_REAL_HEIGHT,  // Period
             sched_frame_limiter
+        )
+    );
+
+    // Write save data to disk
+    sched_add_event(
+        gba,
+        NEW_REPEAT_EVENT(
+            CYCLES_PER_PIXEL * SCREEN_REAL_WIDTH * SCREEN_REAL_HEIGHT * 60,  // Timing of first trigger
+            CYCLES_PER_PIXEL * SCREEN_REAL_WIDTH * SCREEN_REAL_HEIGHT * 60,  // Period
+            sched_save_to_disk
         )
     );
 }
@@ -188,4 +200,12 @@ sched_frame_limiter(
 
 end:
     ++gba->frame_counter;
+}
+
+void
+sched_save_to_disk(
+    struct gba *gba,
+    uint64_t extra_cycles __unused
+) {
+    mem_backup_storage_write_to_disk(gba);
 }
