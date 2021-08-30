@@ -193,7 +193,7 @@ sched_frame_limiter(
 
     if (diff < 17 / gba->options.speed) { // One frame is supposed to take 16.6 millisecond
         sleep_time = 17 / gba->options.speed - diff; // Millis
-        usleep(sleep_time * 1000);
+        hs_usleep(sleep_time * 1000);
     }
 
     gba->previous_frame_tick = hs_tick_count();

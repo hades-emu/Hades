@@ -7,6 +7,7 @@
 **
 \******************************************************************************/
 
+#include <string.h>
 #include <ctype.h>
 #include "hades.h"
 
@@ -181,4 +182,24 @@ strsplit(
     }
 
     return (res);
+}
+
+void const *
+array_search(
+    uint8_t const *haystack,
+    size_t haystack_len,
+    char const *needle,
+    size_t needle_len
+) {
+    uint8_t const *tmp;
+
+    tmp = haystack;
+    while (haystack_len >= needle_len) {
+        if (!memcmp(tmp, needle, needle_len)) {
+            return (tmp);
+        }
+        ++tmp;
+        --haystack_len;
+    }
+    return (NULL);
 }

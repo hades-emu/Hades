@@ -28,21 +28,21 @@ mem_backup_storage_init(
 ) {
     size_t read;
 
-    if (memmem(gba->memory.rom, sizeof(gba->memory.rom), "EEPROM_", 7)) {
+    if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "EEPROM_", 7)) {
         logln(HS_GLOBAL, "Detected EEPROM memory. This memory is unsupported yet.");
         gba->memory.backup_storage_type = BACKUP_EEPROM;
-    } else if (memmem(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_", 5)) {
+    } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_", 5)) {
         logln(HS_GLOBAL, "Detected SRAM memory");
         gba->memory.backup_storage_type = BACKUP_SRAM;
         gba->memory.backup_storage_size = SRAM_SIZE;
     } else if (
-           memmem(gba->memory.rom, sizeof(gba->memory.rom), "FLASH_", 6)
-        || memmem(gba->memory.rom, sizeof(gba->memory.rom), "FLASH512_", 9)
+           array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH_", 6)
+        || array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH512_", 9)
     ) {
         logln(HS_GLOBAL, "Detected Flash 64 kilobytes / 512 kilobits");
         gba->memory.backup_storage_type = BACKUP_FLASH64;
         gba->memory.backup_storage_size = FLASH64_SIZE;
-    } else if (memmem(gba->memory.rom, sizeof(gba->memory.rom), "FLASH1M_", 8)) {
+    } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH1M_", 8)) {
         logln(HS_GLOBAL, "Detected Flash 128 kilobytes / 1 megabit");
         gba->memory.backup_storage_type = BACKUP_FLASH128;
         gba->memory.backup_storage_size = FLASH128_SIZE;
@@ -115,7 +115,6 @@ mem_backup_storage_write_to_disk(
         fseek(gba->backup_storage_file, 0, SEEK_SET);
         fwrite(gba->memory.backup_storage_data, gba->memory.backup_storage_size, 1, gba->backup_storage_file);
         gba->memory.backup_storage_dirty = false;
-        printf("W\n");
     }
 }
 
