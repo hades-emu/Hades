@@ -72,5 +72,5 @@ Special thanks to some invaluable resources while writing Hades:
   - [gba-tests](https://github.com/jsmolka/gba-tests) by Jsmolka
   - [gdkGBA](https://github.com/gdkchan/gdkGBA/) by gdkChan
   - [Tonc](https://www.coranac.com/tonc/text/toc.htm) by Cearn
-  - [GBA Cartridge Backup Storage](https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html) by Dennis H
+  - [GBA Cartridge Backup Storage](https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html) by Dillon Beliveau
   - [The Blender model](https://www.blendswap.com/blend/27357) used in this README by Zap Productions
