@@ -51,7 +51,7 @@ mem_update_waitstates(
     access_time16[NON_SEQUENTIAL][CART_1_REGION_2]  = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws1_nonseq];
     access_time16[NON_SEQUENTIAL][CART_2_REGION_1]  = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws2_nonseq];
     access_time16[NON_SEQUENTIAL][CART_2_REGION_2]  = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws2_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_SRAM_REGION] = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
+    access_time16[NON_SEQUENTIAL][SRAM_REGION]      = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
 
     // 16 bit, seq
     access_time16[SEQUENTIAL][CART_0_REGION_1]  = 1 + (io->waitcnt.ws0_seq ? 1 : 2);
@@ -60,10 +60,10 @@ mem_update_waitstates(
     access_time16[SEQUENTIAL][CART_1_REGION_2]  = 1 + (io->waitcnt.ws1_seq ? 1 : 4);
     access_time16[SEQUENTIAL][CART_2_REGION_1]  = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
     access_time16[SEQUENTIAL][CART_2_REGION_2]  = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
-    access_time16[SEQUENTIAL][CART_SRAM_REGION] = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
+    access_time16[SEQUENTIAL][SRAM_REGION]      = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
 
     // Update for 32-bit too.
-    for (x = CART_0_REGION_1; x <= CART_SRAM_REGION; ++x) {
+    for (x = CART_0_REGION_1; x <= SRAM_REGION; ++x) {
         access_time32[NON_SEQUENTIAL][x] = access_time16[NON_SEQUENTIAL][x] + access_time16[SEQUENTIAL][x];
         access_time32[SEQUENTIAL][x] = 2 * access_time16[SEQUENTIAL][x];
     }
@@ -106,7 +106,7 @@ mem_access(
 
     page = (addr >> 24) & 0xF;
 
-    if (page >= CART_0_REGION_1 && page <= CART_2_REGION_2 && (addr & 0x1FFFF) == 0) {
+    if (page >= CART_REGION_START && page <= CART_REGION_END && (addr & 0x1FFFF) == 0) {
         access_type = NON_SEQUENTIAL;
     }
 
@@ -158,23 +158,10 @@ mem_read8_raw(
             return (mem_vram_read8(gba, addr));
         case OAM_REGION:
             return (mem_oam_read8(gba, addr));
-        case CART_0_REGION_1:
-        case CART_0_REGION_2:
-        case CART_1_REGION_1:
-        case CART_1_REGION_2:
-        case CART_2_REGION_1:
-        case CART_2_REGION_2:
+        case CART_REGION_START ... CART_REGION_END:
             return (memory->rom[addr & CART_MASK]);
-        case CART_SRAM_REGION:
-            {
-                if (addr == 0x0E000000) {
-                    return (0x62);
-                } else if (addr == 0x0E000001) {
-                    return (0x13);
-                } else {
-                    return (memory->sram[addr & CART_SRAM_MASK]);
-                }
-            }
+        case SRAM_REGION:
+            return (mem_backup_storage_read8(gba, addr));
         default:
             logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);
             return (0);
@@ -341,16 +328,11 @@ mem_write8_raw(
         case OAM_REGION:
             memory->oam[addr & OAM_MASK] = val;
             break;
-        case CART_0_REGION_1:
-        case CART_0_REGION_2:
-        case CART_1_REGION_1:
-        case CART_1_REGION_2:
-        case CART_2_REGION_1:
-        case CART_2_REGION_2:
+        case CART_REGION_START ... CART_REGION_END:
             /* Ignore writes attempts to the cartridge memory. */
             break;
-        case CART_SRAM_REGION:
-            memory->sram[addr & CART_SRAM_MASK] = val;
+        case SRAM_REGION:
+            mem_backup_storage_write8(gba, addr, val);
             break;
         default:
             logln(HS_MEMORY, "Invalid write at address 0x%08x", addr);

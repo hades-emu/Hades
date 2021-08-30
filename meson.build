@@ -34,6 +34,8 @@ sources = files(
     'source/core/core.c',
     'source/gba/gba.c',
     'source/gba/quicksave.c',
+    'source/memory/backup/flash.c',
+    'source/memory/backup/storage.c',
     'source/memory/dma.c',
     'source/memory/io.c',
     'source/memory/memory.c',

@@ -18,13 +18,11 @@ You need a game ROM and a legitimate GameBoy Advance BIOS or a [replacement BIOS
 
 Move your BIOS to the same folder than Hades and name it `bios.bin`.
 
-You can then open a terminal and run:
+You can now either drag and drop your GBA rom over `hades.exe` (Windows only) or open a terminal and run:
 
 ```bash
 hades <path/to/game.gba>
 ```
-
-Windows: Alternatively, you can also drag and drop your GBA file over `hades.exe`.
 
 **Usage:**
 
@@ -65,12 +63,14 @@ ninja
 
 ## Thanks
 
-Special thanks to some insanely good reading/projects that act like a documentation when writing Hades:
+Special thanks to some invaluable resources while writing Hades:
 
-  - [GBATEK](https://problemkaputt.de/gbatek.htm)
-  - [NanoBoyAdvance](https://github.com/fleroviux/NanoBoyAdvance/)
-  - [Cowbite](https://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm)
-  - [gba-tests](https://github.com/jsmolka/gba-tests)
-  - [gdkGBA](https://github.com/gdkchan/gdkGBA/)
-  - [Tonc](https://www.coranac.com/tonc/text/toc.htm)
-  - [Zap Productions](https://www.blendswap.com/blend/27357)
+  - [GBATEK](https://problemkaputt.de/gbatek.htm) by Martin Korth
+  - [NanoBoyAdvance](https://github.com/fleroviux/NanoBoyAdvance/) by Fleroviux
+  - [Cowbite](https://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm) by Tom Happ
+  - [mGBA](https://mgba.io/) and [mgba-emu/suite](https://github.com/mgba-emu/suite) by Endrift
+  - [gba-tests](https://github.com/jsmolka/gba-tests) by Jsmolka
+  - [gdkGBA](https://github.com/gdkchan/gdkGBA/) by gdkChan
+  - [Tonc](https://www.coranac.com/tonc/text/toc.htm) by Cearn
+  - [GBA Cartridge Backup Storage](https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html) by Dennis H
+  - [The Blender model](https://www.blendswap.com/blend/27357) used in this README by Zap Productions

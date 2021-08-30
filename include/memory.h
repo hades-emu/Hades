@@ -13,9 +13,48 @@
 # include <stdint.h>
 # include "hades.h"
 
+/*
+** Access to the memory bus can either be sequential (the requested address follows the previous one)
+** or non-sequential (the requested address is unrelated to the previous one)
+*/
 enum access_type {
     NON_SEQUENTIAL,
     SEQUENTIAL,
+};
+
+/*
+** The different kind of backup storage a game can use.
+*/
+enum backup_storage {
+    BACKUP_EEPROM,
+    BACKUP_SRAM,
+    BACKUP_FLASH64,
+    BACKUP_FLASH128,
+};
+
+enum flash_state {
+    FLASH_STATE_READY,
+    FLASH_STATE_CMD_1,
+    FLASH_STATE_CMD_2,
+    FLASH_STATE_ERASE,
+    FLASH_STATE_WRITE,
+    FLASH_STATE_BANK,
+};
+
+enum flash_cmds {
+    FLASH_CMD_ENTER_IDENTITY    = 0x90,
+    FLASH_CMD_EXIT_IDENTITY     = 0xF0,
+    FLASH_CMD_PREP_ERASE        = 0x80,
+    FLASH_CMD_ERASE_CHIP        = 0x10,
+    FLASH_CMD_ERASE_SECTOR      = 0x30,
+    FLASH_CMD_WRITE             = 0xA0,
+    FLASH_CMD_SET_BANK          = 0xB0,
+};
+
+struct flash {
+    enum flash_state state;
+    bool identity_mode;
+    bool bank;
 };
 
 /*
@@ -34,72 +73,88 @@ struct memory {
 
     // External Memory (Game Pak)
     uint8_t rom[0x2000000];
-    uint8_t sram[0x10000];
+
+    // Backup Storage
+    uint8_t *backup_storage_data;
+    size_t backup_storage_size;
+    enum backup_storage backup_storage_type;
+    bool backup_storage_dirty;
+
+    // Flash memory
+    struct flash flash;
 };
 
 /*
 ** An enumeration of the different memory regions
 ** and other informations associated with them.
 */
-enum memory_regions {
-    BIOS_START          = 0x00000000,
-    BIOS_END            = 0x00003FFF,
-    BIOS_REGION         = BIOS_START >> 24,
-    BIOS_MASK           = BIOS_END - BIOS_START,
 
-    EWRAM_START         = 0x02000000,
-    EWRAM_END           = 0x0203FFFF,
-    EWRAM_REGION        = EWRAM_START >> 24,
-    EWRAM_MASK          = EWRAM_END - EWRAM_START,
+#define BIOS_START              (0x00000000)
+#define BIOS_END                (0x00003FFF)
+#define BIOS_REGION             (BIOS_START >> 24)
+#define BIOS_MASK               (BIOS_END - BIOS_START)
 
-    IWRAM_START         = 0x03000000,
-    IWRAM_END           = 0x03007FFF,
-    IWRAM_REGION        = IWRAM_START >> 24,
-    IWRAM_MASK          = IWRAM_END - IWRAM_START,
+#define EWRAM_START             (0x02000000)
+#define EWRAM_END               (0x0203FFFF)
+#define EWRAM_REGION            (EWRAM_START >> 24)
+#define EWRAM_MASK              (EWRAM_END - EWRAM_START)
 
-    IO_START            = 0x04000000,
-    IO_END              = 0x040003FF,
-    IO_REGION           = IO_START >> 24,
-    IO_MASK             = IO_END - IO_START,
+#define IWRAM_START             (0x03000000)
+#define IWRAM_END               (0x03007FFF)
+#define IWRAM_REGION            (IWRAM_START >> 24)
+#define IWRAM_MASK              (IWRAM_END - IWRAM_START)
 
-    PALRAM_START        = 0x05000000,
-    PALRAM_END          = 0x050003FF,
-    PALRAM_REGION       = PALRAM_START >> 24,
-    PALRAM_MASK         = PALRAM_END - PALRAM_START,
+#define IO_START                (0x04000000)
+#define IO_END                  (0x040003FF)
+#define IO_REGION               (IO_START >> 24)
+#define IO_MASK                 (IO_END - IO_START)
 
-    VRAM_START          = 0x06000000,
-    VRAM_END            = 0x06017FFF,
-    VRAM_REGION         = VRAM_START >> 24,
-    VRAM_MASK_1         = 0x00017FFF,
-    VRAM_MASK_2         = 0x0001FFFF,
+#define PALRAM_START            (0x05000000)
+#define PALRAM_END              (0x050003FF)
+#define PALRAM_REGION           (PALRAM_START >> 24)
+#define PALRAM_MASK             (PALRAM_END - PALRAM_START)
 
-    OAM_START           = 0x07000000,
-    OAM_END             = 0x070003FF,
-    OAM_REGION          = OAM_START >> 24,
-    OAM_MASK            = OAM_END - OAM_START,
+#define VRAM_START              (0x06000000)
+#define VRAM_END                (0x06017FFF)
+#define VRAM_REGION             (VRAM_START >> 24)
+#define VRAM_MASK_1             (0x00017FFF)
+#define VRAM_MASK_2             (0x0001FFFF)
 
-    CART_0_START        = 0x08000000,
-    CART_0_END          = 0x09FFFFFF,
-    CART_0_REGION_1     = CART_0_START >> 24,
-    CART_0_REGION_2     = CART_0_END >> 24,
+#define OAM_START               (0x07000000)
+#define OAM_END                 (0x070003FF)
+#define OAM_REGION              (OAM_START >> 24)
+#define OAM_MASK                (OAM_END - OAM_START)
 
-    CART_1_START        = 0x0A000000,
-    CART_1_END          = 0x0BFFFFFF,
-    CART_1_REGION_1     = CART_1_START >> 24,
-    CART_1_REGION_2     = CART_1_END >> 24,
+#define CART_0_START            (0x08000000)
+#define CART_0_END              (0x09FFFFFF)
+#define CART_0_REGION_1         (CART_0_START >> 24)
+#define CART_0_REGION_2         (CART_0_END >> 24)
 
-    CART_2_START        = 0x0C000000,
-    CART_2_END          = 0x0DFFFFFF,
-    CART_2_REGION_1     = CART_2_START >> 24,
-    CART_2_REGION_2     = CART_2_END >> 24,
+#define CART_1_START            (0x0A000000)
+#define CART_1_END              (0x0BFFFFFF)
+#define CART_1_REGION_1         (CART_1_START >> 24)
+#define CART_1_REGION_2         (CART_1_END >> 24)
 
-    CART_MASK           = CART_0_END - CART_0_START,
+#define CART_2_START            (0x0C000000)
+#define CART_2_END              (0x0DFFFFFF)
+#define CART_2_REGION_1         (CART_2_START >> 24)
+#define CART_2_REGION_2         (CART_2_END >> 24)
 
-    CART_SRAM_START     = 0x0E000000,
-    CART_SRAM_END       = 0x0E00FFFF,
-    CART_SRAM_REGION    = CART_SRAM_START >> 24,
-    CART_SRAM_MASK      = CART_SRAM_END - CART_SRAM_START,
-};
+#define CART_MASK               (CART_0_END - CART_0_START)
+#define CART_REGION_START       (CART_0_START >> 24)
+#define CART_REGION_END         (CART_2_END >> 24)
+
+#define SRAM_START              (0x0E000000)
+#define SRAM_END                (0x0E00FFFF)
+#define SRAM_SIZE               (SRAM_END - SRAM_START + 1)
+#define SRAM_MASK               (SRAM_END - SRAM_START)
+#define SRAM_REGION             (SRAM_START >> 24)
+
+#define FLASH_START             (0x0E000000)
+#define FLASH_END               (0x0E00FFFF)
+#define FLASH64_SIZE            (FLASH_END - FLASH_START + 1)
+#define FLASH128_SIZE           (FLASH64_SIZE * 2)
+#define FLASH_MASK              (FLASH_END - FLASH_START)
 
 /*
 ** The different timings at which a DMA transfer can occur.
@@ -141,6 +196,15 @@ void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_type 
 void mem_write16_raw(struct gba *gba, uint32_t addr, uint16_t val);
 void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_type access_type);
 void mem_write32_raw(struct gba *gba, uint32_t addr, uint32_t val);
+
+/* memory/storage/detect.c */
+void mem_backup_storage_init(struct gba *gba);
+uint8_t mem_backup_storage_read8(struct gba const *gba, uint32_t addr);
+void mem_backup_storage_write8(struct gba *gba, uint32_t addr, uint8_t value);
+void mem_backup_storage_write_to_disk(struct gba *gba);
+
+uint8_t mem_flash_read8(struct gba const *gba, uint32_t addr);
+void mem_flash_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /*
 ** The following memory-accessors are used by the PPU for fast memory access

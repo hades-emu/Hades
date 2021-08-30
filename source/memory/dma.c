@@ -43,7 +43,7 @@ mem_dma_transfer(
         channel = &gba->io.dma[i];
 
         if (channel->control.enable && channel->control.timing == 3) {
-            logln(HS_WARNING, "Unsupported special timing for DMA request");
+            //logln(HS_WARNING, "Unsupported special timing for DMA request");
         }
 
         // Skip channels that aren't enabled or that shouldn't happen at the given timing

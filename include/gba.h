@@ -50,7 +50,9 @@ struct gba
     ** Can therefore be used by all threads.
     */
     char const *rom_path;
-    char *save_path;
+    char *quicksave_path;
+    char *backup_storage_path;
+    FILE *backup_storage_file;
 
     /*
     ** The result of the video controller, used by the renderer to

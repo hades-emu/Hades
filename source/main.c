@@ -40,6 +40,7 @@ atomic_bool g_interrupt;
 bool g_verbose_global = true;
 bool g_verbose[HS_END] = {
     [HS_GLOBAL] = true,
+    [HS_WARNING] = true,
     [HS_ERROR] = true,
     [HS_MEMORY] = true,
 };

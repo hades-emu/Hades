@@ -32,7 +32,11 @@ quicksave(
 
     if (
            fwrite(&gba->core, sizeof(gba->core), 1, file) != 1
-        || fwrite(&gba->memory, sizeof(gba->memory), 1, file) != 1
+        || fwrite(gba->memory.ewram, sizeof(gba->memory.ewram), 1, file) != 1
+        || fwrite(gba->memory.iwram, sizeof(gba->memory.iwram), 1, file) != 1
+        || fwrite(gba->memory.palram, sizeof(gba->memory.palram), 1, file) != 1
+        || fwrite(gba->memory.vram, sizeof(gba->memory.vram), 1, file) != 1
+        || fwrite(gba->memory.oam, sizeof(gba->memory.oam), 1, file) != 1
         || fwrite(&gba->io, sizeof(gba->io), 1, file) != 1
         || fwrite(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
@@ -99,7 +103,11 @@ quickload(
 
     if (
            fread(&gba->core, sizeof(gba->core), 1, file) != 1
-        || fread(&gba->memory, sizeof(gba->memory), 1, file) != 1
+        || fread(gba->memory.ewram, sizeof(gba->memory.ewram), 1, file) != 1
+        || fread(gba->memory.iwram, sizeof(gba->memory.iwram), 1, file) != 1
+        || fread(gba->memory.palram, sizeof(gba->memory.palram), 1, file) != 1
+        || fread(gba->memory.vram, sizeof(gba->memory.vram), 1, file) != 1
+        || fread(gba->memory.oam, sizeof(gba->memory.oam), 1, file) != 1
         || fread(&gba->io, sizeof(gba->io), 1, file) != 1
         || fread(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
