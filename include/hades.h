@@ -291,6 +291,7 @@ void logln(enum modules module, char const *fmt, ...);
 void panic(enum modules module, char const *fmt, ...) __attribute__((noreturn));
 void unimplemented(enum modules module, char const *fmt, ...) __attribute__((noreturn));
 void disable_colors(void);
+void const *array_search(uint8_t const *haystack, size_t haystack_len, char const *needle, size_t needle_len);
 
 extern atomic_bool g_stop;
 extern atomic_bool g_interrupt;
