@@ -23,7 +23,7 @@
 # define hs_isatty(x)           _isatty(x)
 # define hs_mkdir(path)         CreateDirectoryA((path), NULL)
 # define hs_tick_count()        ((uint64_t)GetTickCount())
-# define hs_usleep(x)           Sleep(x)
+# define hs_msleep(x)           Sleep(x)
 #else
 # include <sys/stat.h>
 # include <unistd.h>
@@ -31,7 +31,7 @@
 
 # define hs_isatty(x)           isatty(x)
 # define hs_mkdir(path)         mkdir((path), 0755);
-# define hs_usleep(x)           usleep(x)
+# define hs_msleep(x)           usleep((x) * 1000)
 
 static
 inline
