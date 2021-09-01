@@ -10,16 +10,21 @@
 #include "hades.h"
 #include "gba.h"
 
+static uint32_t src_mask[4]   = {0x07FFFFFF, 0x0FFFFFFF, 0x0FFFFFFF, 0x0FFFFFFF};
+static uint32_t dst_mask[4]   = {0x07FFFFFF, 0x07FFFFFF, 0x07FFFFFF, 0x0FFFFFFF};
+static uint32_t count_mask[4] = {0x3FFF,     0x3FFF,     0x3FFF,     0xFFFF};
+
 void
 mem_dma_load(
     struct dma_channel *channel,
     uint32_t channel_idx
 ) {
     channel->internal_src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
-    channel->internal_src &= channel_idx ? 0x0FFFFFFF : 0x07FFFFFF;
+    channel->internal_src &= src_mask[channel_idx];
     channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
-    channel->internal_dst &= (channel_idx != 3) ? 0x0FFFFFFF : 0x07FFFFFF;
+    channel->internal_dst &= dst_mask[channel_idx];
     channel->internal_count = channel->count.raw;
+    channel->internal_count &= count_mask[channel_idx];
 }
 
 /*
@@ -31,7 +36,7 @@ mem_dma_transfer(
     enum dma_timings timing
 ) {
     size_t i;
-    bool prefetch_enabled;
+    bool prefetch_state;
 
     /*
     ** Disable prefetchng during DMA.
@@ -39,7 +44,7 @@ mem_dma_transfer(
     ** According to Fleroviux (https://github.com/fleroviux/) this
     ** leads to better accuracy but the reasons why aren't well known.
     */
-    prefetch_enabled = gba->memory.pbuffer.enabled;
+    prefetch_state = gba->memory.pbuffer.enabled;
     gba->memory.pbuffer.enabled = false;
 
     for (i = 0; i < 4; ++i) {
@@ -127,13 +132,14 @@ mem_dma_transfer(
 
         if (channel->control.repeat) {
             channel->internal_count = channel->count.raw;
+            channel->internal_count &= count_mask[i];
             if (reload) {
                 channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1);
-                channel->internal_dst &= (i != 3) ? 0x0FFFFFFF : 0x07FFFFFF;
+                channel->internal_dst &= dst_mask[i];
             }
         } else {
             channel->control.enable = false;
         }
     }
-    gba->memory.pbuffer.enabled = prefetch_enabled;
+    gba->memory.pbuffer.enabled = prefetch_state;
 }
