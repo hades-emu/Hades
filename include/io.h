@@ -166,9 +166,7 @@ struct dma_channel {
         uint16_t raw;
         uint8_t bytes[2];
     } control;
-} __packed;
-
-static_assert(sizeof(struct dma_channel) == 6 * sizeof(uint32_t));
+};
 
 struct timer {
     union {
