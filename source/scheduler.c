@@ -85,12 +85,13 @@ sched_process_events(
             break;
         }
 
-        event->callback(gba, core->cycles - event->at);
         if (event->repeat) {
             event->at += event->period;
         } else {
             event->active = false;
         }
+
+        event->callback(gba, core->cycles - event->at);
     }
 }
 

@@ -383,6 +383,7 @@ mem_io_write8(
         case IO_REG_WAITCNT:
         case IO_REG_WAITCNT + 1:
             io->waitcnt.bytes[addr - IO_REG_WAITCNT] = val;
+            gba->memory.pbuffer.enabled = io->waitcnt.gamepak_prefetch;
             mem_update_waitstates(gba);
             break;
         case IO_REG_IME:
@@ -390,6 +391,6 @@ mem_io_write8(
 
         /* System */
         case IO_REG_POSTFLG:                io->postflg = val; break;
-        case IO_REG_HALTCNT:                gba->core.halt = val + 1; break;
+        case IO_REG_HALTCNT:                gba->core.state = val + 1; break;
     }
 }

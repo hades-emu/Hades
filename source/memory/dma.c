@@ -31,6 +31,16 @@ mem_dma_transfer(
     enum dma_timings timing
 ) {
     size_t i;
+    bool prefetch_enabled;
+
+    /*
+    ** Disable prefetchng during DMA.
+    **
+    ** According to Fleroviux (https://github.com/fleroviux/) this
+    ** leads to better accuracy but the reasons why aren't well known.
+    */
+    prefetch_enabled = gba->memory.pbuffer.enabled;
+    gba->memory.pbuffer.enabled = false;
 
     for (i = 0; i < 4; ++i) {
         struct dma_channel *channel;
@@ -42,10 +52,6 @@ mem_dma_transfer(
 
         channel = &gba->io.dma[i];
 
-        if (channel->control.enable && channel->control.timing == 3) {
-            //logln(HS_WARNING, "Unsupported special timing for DMA request");
-        }
-
         // Skip channels that aren't enabled or that shouldn't happen at the given timing
         if (!channel->control.enable || channel->control.timing != timing) {
             continue;
@@ -56,10 +62,10 @@ mem_dma_transfer(
 
         // If both source and destination are in gamepak memory area, the DMA takes
         // two more internal cycles.
-        if (   (channel->internal_src >> 24) >= CART_0_REGION_1
-            && (channel->internal_src >> 24) <= CART_2_REGION_2
-            && (channel->internal_dst >> 24) >= CART_0_REGION_1
-            && (channel->internal_dst >> 24) <= CART_2_REGION_2
+        if (   ((channel->internal_src >> 24) & 0xF) >= CART_REGION_START
+            && ((channel->internal_src >> 24) & 0xF) <= CART_REGION_END
+            && ((channel->internal_dst >> 24) & 0xF) >= CART_REGION_START
+            && ((channel->internal_dst >> 24) & 0xF) <= CART_REGION_END
         ) {
             core_idle_for(gba, 2);
         }
@@ -88,7 +94,7 @@ mem_dma_transfer(
 
         logln(
             HS_DMA,
-            "DMA transfer from 0x%08x%c to 0x%08x%c (len=%#08x, unit_size=%u, channel %u)",
+            "DMA transfer from 0x%08x%c to 0x%08x%c (len=%#08x, unit_size=%u, channel %zu)",
             channel->internal_src,
             src_step > 0 ? '+' : '-',
             channel->internal_dst,
@@ -129,4 +135,5 @@ mem_dma_transfer(
             channel->control.enable = false;
         }
     }
+    gba->memory.pbuffer.enabled = prefetch_enabled;
 }

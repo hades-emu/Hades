@@ -88,7 +88,7 @@ debugger_cmd_registers(
         g_reset
     );
 
-    if (core->halt) {
+    if (core->state) {
         printf(" > %s%sHALTED%s <", g_light_red, g_bold, g_reset);
     }
     printf("\n");

@@ -72,8 +72,8 @@ core_next(
     // Scan for any pending interrupt
     core_scan_irq(gba);
 
-    switch (core->halt) {
-        case 0: // Run
+    switch (core->state) {
+        case CORE_RUN:
             if (core->cpsr.thumb) {
                 uint16_t op;
 
@@ -87,7 +87,7 @@ core_next(
                             unimplemented(HS_CORE, "thumb instruction \"%s\" isn't implemented.", thumb_insns[i].name);
                         }
                         thumb_insns[i].op(gba, op);
-                        goto end;
+                        return;
                     }
                 }
 
@@ -106,7 +106,7 @@ core_next(
                 if (!can_exec) {
                     core->pc += 4;
                     core->prefetch_access_type = SEQUENTIAL;
-                    goto end;
+                    return ;
                 }
 
                 for (i = 0; i < arm_insns_len; ++i) {
@@ -115,16 +115,15 @@ core_next(
                             unimplemented(HS_CORE, "ARM instruction \"%s\" isn't implemented.", arm_insns[i].name);
                         }
                         arm_insns[i].op(gba, op);
-                        goto end;
+                        return ;
                     }
                 }
 
                 panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
             }
-            end:
             break;
-        case 1: // Halt
-        case 2: // Stop
+        case CORE_HALT:
+        case CORE_STOP:
             core_idle(gba);
             break;
     }
@@ -143,6 +142,9 @@ core_idle_for(
     uint32_t cycles
 ) {
     gba->core.cycles += cycles;
+    if (gba->memory.pbuffer.enabled && !gba->memory.gamepak_bus_in_use) {
+        mem_prefetch_buffer_step(gba, cycles);
+    }
     timer_tick(gba, cycles);
 }
 
@@ -434,7 +436,7 @@ core_trigger_irq(
     enum arm_irq irq
 ) {
     gba->io.int_flag.raw |= (1 << irq);
-    gba->core.halt = 0;
+    gba->core.state = CORE_RUN;
 }
 
 /*

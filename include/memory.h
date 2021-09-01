@@ -57,6 +57,17 @@ struct flash {
     bool bank;
 };
 
+struct prefetch_buffer {
+    uint32_t head;
+    uint32_t tail;
+    uint32_t countdown;
+    uint32_t size;
+    uint32_t capacity;
+    uint32_t insn_len;
+    uint32_t reload;
+    bool enabled;
+};
+
 /*
 ** The overall memory of the Gameboy Advance.
 */
@@ -82,6 +93,12 @@ struct memory {
 
     // Flash memory
     struct flash flash;
+
+    // Prefetch
+    struct prefetch_buffer pbuffer;
+
+    // Set when the cartridge memory bus is in used
+    bool gamepak_bus_in_use;
 };
 
 /*
@@ -182,6 +199,8 @@ void mem_io_write8(struct gba *gba, uint32_t addr, uint8_t val);
 void mem_init(struct memory *memory);
 void mem_access(struct gba *gba, uint32_t addr, uint32_t size, enum access_type access_type);
 void mem_update_waitstates(struct gba const *gba);
+void mem_prefetch_buffer_access(struct gba *gba, uint32_t addr, uint32_t intended_cycles);
+void mem_prefetch_buffer_step(struct gba *gba, uint32_t cycles);
 uint8_t mem_read8(struct gba *gba, uint32_t addr, enum access_type access_type);
 uint8_t mem_read8_raw(struct gba const *gba, uint32_t addr);
 uint16_t mem_read16(struct gba *gba, uint32_t addr, enum access_type access_type);
