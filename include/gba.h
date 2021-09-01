@@ -59,9 +59,16 @@ struct gba
     ** print things on screen.
     **
     ** Can be accessed by both the logic and render thread.
+    **
+    ** We use two frambuffers for double buffering. Note that this is
+    ** unrelated to any double buffering the SDL can offer us on top of
+    ** this.
     */
-    uint32_t framebuffer[SCREEN_WIDTH * SCREEN_HEIGHT];
-    pthread_mutex_t framebuffer_mutex;
+    uint32_t *framebuffer_logic;
+    uint32_t *framebuffer_render;
+    pthread_mutex_t framebuffer_render_mutex;
+    uint32_t framebuffer_1[SCREEN_WIDTH * SCREEN_HEIGHT];
+    uint32_t framebuffer_2[SCREEN_WIDTH * SCREEN_HEIGHT];
 
     /*
     ** Frame limiter related stuff.

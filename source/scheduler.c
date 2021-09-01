@@ -188,6 +188,12 @@ sched_frame_limiter(
         goto end;
     }
 
+    /* Swap the render and logic framebuffers */
+    pthread_mutex_lock(&gba->framebuffer_render_mutex);
+    gba->framebuffer_render = gba->framebuffer_render == gba->framebuffer_1 ? gba->framebuffer_2 : gba->framebuffer_1;
+    gba->framebuffer_logic = gba->framebuffer_logic == gba->framebuffer_1 ? gba->framebuffer_2 : gba->framebuffer_1;
+    pthread_mutex_unlock(&gba->framebuffer_render_mutex);
+
     diff = hs_tick_count() - gba->previous_frame_tick;
 
     if (diff < 17 / gba->options.speed) { // One frame is supposed to take 16.6 millisecond

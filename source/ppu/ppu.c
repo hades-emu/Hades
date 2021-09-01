@@ -23,7 +23,7 @@ ppu_plot_pixel(
 
     fb_idx = SCREEN_WIDTH * y + x;
 
-    gba->framebuffer[fb_idx] = 0x00
+    gba->framebuffer_logic[fb_idx] = 0x00
         | (((uint32_t)c.red   << 3 ) | (((uint32_t)c.red   >> 2) & 0b111)) << 16
         | (((uint32_t)c.green << 3 ) | (((uint32_t)c.green >> 2) & 0b111)) << 8
         | (((uint32_t)c.blue  << 3 ) | (((uint32_t)c.blue  >> 2) & 0b111)) << 0
@@ -46,8 +46,6 @@ ppu_render_scanline(
     io = &gba->io;
     line = io->vcount.raw;
 
-    pthread_mutex_lock(&gba->framebuffer_mutex);
-
     bg.raw = io->dispcnt.blank ? 0xffff : mem_read16_raw(gba, PALRAM_START);
 
     for (x = 0; x < SCREEN_WIDTH; ++x) {
@@ -55,7 +53,7 @@ ppu_render_scanline(
     }
 
     if (io->dispcnt.blank) {
-        goto end;
+        return ;
     }
 
     switch (io->dispcnt.bg_mode) {
@@ -91,9 +89,6 @@ ppu_render_scanline(
             ppu_render_background_bitmap(gba, line, true);
             break;
     }
-
-end:
-    pthread_mutex_unlock(&gba->framebuffer_mutex);
 }
 
 /*
