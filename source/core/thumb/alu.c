@@ -430,9 +430,6 @@ core_thumb_alu(
 
             op2 &= 0xFF; // Keep only one byte
 
-            core_idle(gba);
-            core->prefetch_access_type = NON_SEQUENTIAL;
-
             switch (op2) {
                 case 0:
                     carry_out = core->cpsr.carry;
@@ -453,16 +450,14 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
-
             core_idle(gba);
+            core->prefetch_access_type = NON_SEQUENTIAL;
+
             break;
         case 0b0011:
             // LSR (Logical Shift Right)
 
             op2 &= 0xFF; // Keep only one byte
-
-            core_idle(gba);
-            core->prefetch_access_type = NON_SEQUENTIAL;
 
             switch (op2) {
                 case 0:
@@ -486,14 +481,12 @@ core_thumb_alu(
             core->registers[rd] = op1;
 
             core_idle(gba);
+            core->prefetch_access_type = NON_SEQUENTIAL;
             break;
         case 0b0100:
             // ASR (Arithmetic Shift Right)
 
             op2 &= 0xFF; // Keep only one byte
-
-            core_idle(gba);
-            core->prefetch_access_type = NON_SEQUENTIAL;
 
             switch (op2) {
                 case 0:
@@ -515,8 +508,9 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
-
             core_idle(gba);
+            core->prefetch_access_type = NON_SEQUENTIAL;
+
             break;
         case 0b0101:
             // ADC (Add with Carry) (op1 + op2 + carry)
@@ -547,9 +541,6 @@ core_thumb_alu(
         case 0b0111:
             // ROR (Rotate Right)
 
-            core_idle(gba);
-            core->prefetch_access_type = NON_SEQUENTIAL;
-
             if (op2 > 32) {
                 op2 = ((op2 - 1) % 32) + 1;
             }
@@ -566,8 +557,9 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
-
             core_idle(gba);
+            core->prefetch_access_type = NON_SEQUENTIAL;
+
             break;
         case 0b1000:
             // TST (as AND, but result is not written)
@@ -604,7 +596,7 @@ core_thumb_alu(
             break;
         case 0b1101:
             // MUL
-            core_arm_mul_idle_signed(gba, op2);
+            core_arm_mul_idle_signed(gba, op1);
             core->registers[rd] = op1 * op2;
             core->cpsr.zero = !(core->registers[rd]);
             core->cpsr.negative = bitfield_get(core->registers[rd], 31);

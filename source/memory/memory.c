@@ -13,6 +13,28 @@
 #include "core.h"
 #include "gba.h"
 
+/*
+** Region        Bus   Read      Write     Cycles   Note
+** ==================================================
+** BIOS ROM      32    8/16/32   -         1/1/1
+** Work RAM 32K  32    8/16/32   8/16/32   1/1/1
+** I/O           32    8/16/32   8/16/32   1/1/1
+** OAM           32    8/16/32   16/32     1/1/1    a
+** Work RAM 256K 16    8/16/32   8/16/32   3/3/6    b
+** Palette RAM   16    8/16/32   16/32     1/1/2    a
+** VRAM          16    8/16/32   16/32     1/1/2    a
+** GamePak ROM   16    8/16/32   -         5/5/8    b/c
+** GamePak Flash 16    8/16/32   16/32     5/5/8    b/c
+** GamePak SRAM  8     8         8         5        b
+**
+** Timing Notes:
+**
+**  a   Plus 1 cycle if GBA accesses video memory at the same time.
+**  b   Default waitstate settings, see System Control chapter.
+**  c   Separate timings for sequential, and non-sequential accesses.
+**
+** Source: GBATek
+*/
 static uint32_t access_time16[2][16] = {
     [NON_SEQUENTIAL]    = { 1, 1, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1 },
     [SEQUENTIAL]        = { 1, 1, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -35,6 +57,9 @@ mem_init(
     memset(memory, 0, sizeof(*memory));
 }
 
+/*
+** Set the waitstates for ROM/SRAM memory according to the content of REG_WAITCNT.
+*/
 void
 mem_update_waitstates(
     struct gba const *gba
@@ -73,26 +98,6 @@ mem_update_waitstates(
 ** Calculate and add to the current cycle counter the amount of cycles needed for as many bus accesses
 ** are needed to transfer a data of the given size and access type.
 **
-** Region        Bus   Read      Write     Cycles   Note
-** ==================================================
-** BIOS ROM      32    8/16/32   -         1/1/1
-** Work RAM 32K  32    8/16/32   8/16/32   1/1/1
-** I/O           32    8/16/32   8/16/32   1/1/1
-** OAM           32    8/16/32   16/32     1/1/1    a
-** Work RAM 256K 16    8/16/32   8/16/32   3/3/6    b
-** Palette RAM   16    8/16/32   16/32     1/1/2    a
-** VRAM          16    8/16/32   16/32     1/1/2    a
-** GamePak ROM   16    8/16/32   -         5/5/8    b/c
-** GamePak Flash 16    8/16/32   16/32     5/5/8    b/c
-** GamePak SRAM  8     8         8         5        b
-**
-** Timing Notes:
-**
-**  a   Plus 1 cycle if GBA accesses video memory at the same time.
-**  b   Default waitstate settings, see System Control chapter.
-**  c   Separate timings for sequential, and non-sequential accesses.
-**
-** Source: GBATek
 */
 void
 mem_access(
@@ -106,7 +111,7 @@ mem_access(
 
     page = (addr >> 24) & 0xF;
 
-    if (page >= CART_REGION_START && page <= CART_REGION_END && (addr & 0x1FFFF) == 0) {
+    if (page >= CART_REGION_START && page <= CART_REGION_END && !(addr & 0x1FFFF)) {
         access_type = NON_SEQUENTIAL;
     }
 
@@ -116,7 +121,97 @@ mem_access(
         cycles = access_time32[access_type][page];
     }
 
-    core_idle_for(gba, cycles);
+    gba->memory.gamepak_bus_in_use = (page >= CART_REGION_START && page <= CART_REGION_END);
+    if (gba->memory.gamepak_bus_in_use && gba->memory.pbuffer.enabled) {
+        mem_prefetch_buffer_access(gba, addr, cycles);
+    } else {
+        core_idle_for(gba, cycles);
+    }
+}
+
+void
+mem_prefetch_buffer_access(
+    struct gba *gba,
+    uint32_t addr,
+    uint32_t intended_cycles
+) {
+    struct prefetch_buffer *pbuffer;
+
+    pbuffer = &gba->memory.pbuffer;
+
+    if (pbuffer->tail == addr) {
+        if (pbuffer->size == 0) { // Finish to fetch if it isnt' done yet
+            gba->memory.gamepak_bus_in_use = false;
+            core_idle_for(gba, pbuffer->countdown);
+
+            pbuffer->tail += pbuffer->insn_len;
+            --pbuffer->size;
+        } else {
+            pbuffer->tail += pbuffer->insn_len;
+            --pbuffer->size;
+
+            gba->memory.gamepak_bus_in_use = false;
+            core_idle(gba);
+        }
+    } else {
+        // Do it first or it'll screw our pbuffer settings
+        core_idle_for(gba, intended_cycles);
+
+        if (gba->core.cpsr.thumb) {
+            pbuffer->insn_len = sizeof(uint16_t);
+            pbuffer->capacity = 8;
+            pbuffer->reload = access_time16[SEQUENTIAL][(addr >> 24) & 0xF];
+        } else {
+            pbuffer->insn_len = sizeof(uint32_t);
+            pbuffer->capacity = 4;
+            pbuffer->reload = access_time32[SEQUENTIAL][(addr >> 24) & 0xF];
+        }
+
+        pbuffer->countdown = pbuffer->reload;
+        pbuffer->tail = addr + pbuffer->insn_len;
+        pbuffer->head = pbuffer->tail;
+        pbuffer->size = 0;
+    }
+
+}
+
+void
+mem_prefetch_buffer_step(
+    struct gba *gba,
+    uint32_t cycles
+) {
+    struct prefetch_buffer *pbuffer;
+
+    pbuffer = &gba->memory.pbuffer;
+
+    while (cycles >= pbuffer->countdown && pbuffer->size < pbuffer->capacity) {
+        cycles -= pbuffer->countdown;
+        pbuffer->head += pbuffer->insn_len;
+        pbuffer->countdown = pbuffer->reload;
+        ++pbuffer->size;
+    }
+
+    if (pbuffer->size < pbuffer->capacity) {
+        pbuffer->countdown -= cycles;
+    }
+
+    /*
+    if (cycles >= pbuffer->countdown && pbuffer->index < pbuffer->capacity) {
+        uint32_t rem;
+
+        rem = cycles - pbuffer->countdown;
+        if (rem > pbuffer->countdown_reload) {
+            rem = pbuffer->countdown_reload;
+        }
+        pbuffer->head += pbuffer->insn_len;
+        pbuffer->index++;
+        pbuffer->countdown = pbuffer->countdown_reload - rem;
+        //printf("Looped! New Cycles: %u\n", cycles);
+    } else if (pbuffer->index < pbuffer->capacity) {
+        pbuffer->countdown -= cycles;
+    }
+    */
+
 }
 
 /*

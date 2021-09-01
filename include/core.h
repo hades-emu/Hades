@@ -23,6 +23,12 @@
 
 struct gba;
 
+enum core_states {
+    CORE_RUN = 0,
+    CORE_HALT = 1,
+    CORE_STOP = 2,
+};
+
 struct psr {
     union {
         struct {
@@ -119,7 +125,7 @@ struct core {
 
     struct psr cpsr;
 
-    uint32_t halt;                  // 0=Run, 1=Halt, 2=Stop
+    enum core_states state;                  // 0=Run, 1=Halt, 2=Stop
 
     uint64_t cycles;                // Amount of cycles spent by the CPU since initialization
 };
