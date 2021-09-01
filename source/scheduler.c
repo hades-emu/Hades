@@ -114,8 +114,6 @@ sched_add_event(
         }
     }
 
-    i = scheduler->events_size;
-
     // If no event are available, reallocate `scheduler->events`.
     scheduler->events_size += 5;
     scheduler->events = realloc(scheduler->events, scheduler->events_size * sizeof(struct scheduler_event));
