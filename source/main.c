@@ -289,10 +289,12 @@ main(
     memset(gba, 0, sizeof(*gba));
     gba->options.scale = 3; // Default window scale
     gba->options.speed = 1; // Default speed multiplier
+    gba->framebuffer_logic = gba->framebuffer_1;
+    gba->framebuffer_render = gba->framebuffer_2;
 
     rom = args_parse(argc, argv, &gba->options); /* Parse arguments. NOTE: this function exits on failure. */
 
-    pthread_mutex_init(&gba->framebuffer_mutex, NULL);
+    pthread_mutex_init(&gba->framebuffer_render_mutex, NULL);
     pthread_mutex_init(&gba->event_queue_mutex, NULL);
 
     core_arm_decode_insns();

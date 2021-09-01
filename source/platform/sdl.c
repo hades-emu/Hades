@@ -326,19 +326,19 @@ sdl_render_loop(
 
         sdl_handle_events(gba, &app);
 
-        pthread_mutex_lock(&gba->framebuffer_mutex);
+        pthread_mutex_lock(&gba->framebuffer_render_mutex);
 
         SDL_UpdateTexture(
             app.texture,
             NULL,
-            gba->framebuffer,
+            gba->framebuffer_render,
             240 * sizeof (uint32_t)
         );
 
         SDL_RenderClear(app.renderer);
         SDL_RenderCopy(app.renderer, app.texture, NULL, NULL);
 
-        pthread_mutex_unlock(&gba->framebuffer_mutex);
+        pthread_mutex_unlock(&gba->framebuffer_render_mutex);
 
         SDL_RenderPresent(app.renderer);
 
