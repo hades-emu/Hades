@@ -99,7 +99,7 @@ static
 void
 ppu_hdraw(
     struct gba *gba,
-    uint64_t extra_cycles __unused
+    union event_data data __unused
 ) {
     struct io *io;
 
@@ -120,7 +120,7 @@ ppu_hdraw(
         if (io->dispstat.vblank_irq) {
             core_trigger_irq(gba, IRQ_VBLANK);
         }
-        mem_dma_transfer(gba, DMA_TIMING_VBLANK);
+        mem_schedule_dma_transfer(gba, DMA_TIMING_VBLANK);
     }
 
     /* Trigger the VCOUNT IRQ */
@@ -138,7 +138,7 @@ static
 void
 ppu_hblank(
     struct gba *gba,
-    uint64_t extra_cycles __unused
+    union event_data data __unused
 ) {
     struct io *io;
 
@@ -155,7 +155,7 @@ ppu_hblank(
         core_trigger_irq(gba, IRQ_HBLANK);
     }
     if (io->vcount.raw < SCREEN_HEIGHT) {
-        mem_dma_transfer(gba, DMA_TIMING_HBLANK);
+        mem_schedule_dma_transfer(gba, DMA_TIMING_HBLANK);
     }
 }
 

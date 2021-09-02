@@ -194,24 +194,6 @@ mem_prefetch_buffer_step(
     if (pbuffer->size < pbuffer->capacity) {
         pbuffer->countdown -= cycles;
     }
-
-    /*
-    if (cycles >= pbuffer->countdown && pbuffer->index < pbuffer->capacity) {
-        uint32_t rem;
-
-        rem = cycles - pbuffer->countdown;
-        if (rem > pbuffer->countdown_reload) {
-            rem = pbuffer->countdown_reload;
-        }
-        pbuffer->head += pbuffer->insn_len;
-        pbuffer->index++;
-        pbuffer->countdown = pbuffer->countdown_reload - rem;
-        //printf("Looped! New Cycles: %u\n", cycles);
-    } else if (pbuffer->index < pbuffer->capacity) {
-        pbuffer->countdown -= cycles;
-    }
-    */
-
 }
 
 /*

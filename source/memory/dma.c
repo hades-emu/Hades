@@ -9,6 +9,7 @@
 
 #include "hades.h"
 #include "gba.h"
+#include "scheduler.h"
 
 static uint32_t src_mask[4]   = {0x07FFFFFF, 0x0FFFFFFF, 0x0FFFFFFF, 0x0FFFFFFF};
 static uint32_t dst_mask[4]   = {0x07FFFFFF, 0x07FFFFFF, 0x07FFFFFF, 0x0FFFFFFF};
@@ -30,11 +31,13 @@ mem_dma_load(
 /*
 ** Go through all DMA channels and process them (if they are enabled).
 */
+static
 void
-mem_dma_transfer(
+mem_do_dma_transfer(
     struct gba *gba,
-    enum dma_timings timing
+    union event_data data
 ) {
+    enum dma_timings timing;
     size_t i;
     bool prefetch_state;
 
@@ -42,11 +45,12 @@ mem_dma_transfer(
     ** Disable prefetchng during DMA.
     **
     ** According to Fleroviux (https://github.com/fleroviux/) this
-    ** leads to better accuracy but the reasons why aren't well known.
+    ** leads to better accuracy but the reasons why aren't well known yet.
     */
     prefetch_state = gba->memory.pbuffer.enabled;
     gba->memory.pbuffer.enabled = false;
 
+    timing = data.u32;
     for (i = 0; i < 4; ++i) {
         struct dma_channel *channel;
         enum access_type access;
@@ -94,7 +98,7 @@ mem_dma_transfer(
 
         // A count of 0 is treated as max length.
         if (channel->internal_count == 0) {
-            channel->internal_count = (i == 3 ? 0x10000 : 0x4000);
+            channel->internal_count = count_mask[i] + 1;
         }
 
         logln(
@@ -142,4 +146,19 @@ mem_dma_transfer(
         }
     }
     gba->memory.pbuffer.enabled = prefetch_state;
+}
+
+void
+mem_schedule_dma_transfer(
+    struct gba *gba,
+    enum dma_timings timing
+) {
+    sched_add_event(
+        gba,
+        NEW_FIX_EVENT_DATA(
+            gba->core.cycles + 3,
+            mem_do_dma_transfer,
+            (union event_data){ .u32 = timing }
+        )
+    );
 }
