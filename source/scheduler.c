@@ -183,16 +183,16 @@ sched_frame_limiter(
     uint64_t diff;
     uint64_t sleep_time;
 
-    // Early return if we are unbounded
-    if (!gba->options.speed) {
-        goto end;
-    }
-
-    /* Swap the render and logic framebuffers */
+    // Swap the render and logic framebuffers
     pthread_mutex_lock(&gba->framebuffer_render_mutex);
     gba->framebuffer_render = gba->framebuffer_render == gba->framebuffer_1 ? gba->framebuffer_2 : gba->framebuffer_1;
     gba->framebuffer_logic = gba->framebuffer_logic == gba->framebuffer_1 ? gba->framebuffer_2 : gba->framebuffer_1;
     pthread_mutex_unlock(&gba->framebuffer_render_mutex);
+
+    // Early return if we are unbounded
+    if (!gba->options.speed) {
+        goto end;
+    }
 
     diff = hs_tick_count() - gba->previous_frame_tick;
 
