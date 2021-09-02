@@ -91,7 +91,7 @@ sched_process_events(
             event->active = false;
         }
 
-        event->callback(gba, core->cycles - event->at);
+        event->callback(gba, event->data);
     }
 }
 
@@ -134,11 +134,9 @@ sched_run_for(
     uint64_t cycles
 ) {
     struct core *core;
-    struct scheduler *scheduler;
     uint64_t target;
 
     core = &gba->core;
-    scheduler = &gba->scheduler;
     target = core->cycles + cycles;
     while (!g_interrupt && core->cycles < target ) {
         uint64_t elapsed;
@@ -158,10 +156,6 @@ sched_run_for(
         }
 #endif
 
-        if (core->cycles >= scheduler->next_event) {
-            sched_process_events(gba);
-        }
-
         event_handle_all(gba);
     }
 }
@@ -178,7 +172,7 @@ sched_run_forever(
 void
 sched_frame_limiter(
     struct gba *gba,
-    uint64_t extra_cycles __unused
+    union event_data data __unused
 ) {
     uint64_t diff;
     uint64_t sleep_time;
@@ -210,7 +204,7 @@ end:
 void
 sched_save_to_disk(
     struct gba *gba,
-    uint64_t extra_cycles __unused
+    union event_data _ __unused
 ) {
     mem_backup_storage_write_to_disk(gba);
 }

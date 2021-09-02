@@ -189,7 +189,7 @@ struct dma_channel;
 
 /* memory/dma.c */
 void mem_dma_load(struct dma_channel *channel, uint32_t channel_idx);
-void mem_dma_transfer(struct gba *gba, enum dma_timings timing);
+void mem_schedule_dma_transfer(struct gba *gba, enum dma_timings timing);
 
 /* memory/io.c */
 uint8_t mem_io_read8(struct gba const *gba, uint32_t addr);

@@ -261,7 +261,7 @@ mem_io_write8(
         case IO_REG_DMA0CTL + 1:
             io->dma[0].control.bytes[1] = val;
             mem_dma_load(&io->dma[0], 0);
-            mem_dma_transfer(gba, DMA_TIMING_NOW);
+            mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
             break;
 
         /* DMA - Channel 1 */
@@ -279,7 +279,7 @@ mem_io_write8(
         case IO_REG_DMA1CTL + 1:
             io->dma[1].control.bytes[1] = val;
             mem_dma_load(&io->dma[1], 1);
-            mem_dma_transfer(gba, DMA_TIMING_NOW);
+            mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
             break;
 
         /* DMA - Channel 2 */
@@ -297,7 +297,7 @@ mem_io_write8(
         case IO_REG_DMA2CTL + 1:
             io->dma[2].control.bytes[1] = val;
             mem_dma_load(&io->dma[2], 2);
-            mem_dma_transfer(gba, DMA_TIMING_NOW);
+            mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
             break;
 
         /* DMA - Channel 3 */
@@ -315,7 +315,7 @@ mem_io_write8(
         case IO_REG_DMA3CTL + 1:
             io->dma[3].control.bytes[1] = val;
             mem_dma_load(&io->dma[3], 3);
-            mem_dma_transfer(gba, DMA_TIMING_NOW);
+            mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
             break;
 
         /* Timer 0 */

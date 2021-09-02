@@ -142,9 +142,15 @@ core_idle_for(
     uint32_t cycles
 ) {
     gba->core.cycles += cycles;
+
     if (gba->memory.pbuffer.enabled && !gba->memory.gamepak_bus_in_use) {
         mem_prefetch_buffer_step(gba, cycles);
     }
+
+    if (gba->core.cycles >= gba->scheduler.next_event) {
+        sched_process_events(gba);
+    }
+
     timer_tick(gba, cycles);
 }
 
