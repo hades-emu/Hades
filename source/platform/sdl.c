@@ -17,7 +17,7 @@
 #include "hades.h"
 #include "compat.h"
 #include "gba.h"
-#include "event.h"
+#include "message.h"
 
 struct sdl
 {
