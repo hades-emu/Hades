@@ -295,7 +295,7 @@ main(
     rom = args_parse(argc, argv, &gba->options); /* Parse arguments. NOTE: this function exits on failure. */
 
     pthread_mutex_init(&gba->framebuffer_render_mutex, NULL);
-    pthread_mutex_init(&gba->event_queue_mutex, NULL);
+    pthread_mutex_init(&gba->message_queue_mutex, NULL);
 
     core_arm_decode_insns();
     core_thumb_decode_insns();

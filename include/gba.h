@@ -16,7 +16,7 @@
 # include "debugger.h"
 # include "io.h"
 # include "scheduler.h"
-# include "event.h"
+# include "message.h"
 
 struct options
 {
@@ -39,11 +39,11 @@ struct gba
     struct options options;
 
     /*
-    ** The event queue, used by the render thread to communicate
+    ** The message queue, used by the render thread to communicate
     ** with the logic thread.
     */
-    struct event_queue event_queue;
-    pthread_mutex_t event_queue_mutex;
+    struct message_queue message_queue;
+    pthread_mutex_t message_queue_mutex;
 
     /*
     ** Read-only past initialization.

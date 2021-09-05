@@ -211,19 +211,19 @@ sdl_handle_events(
                 {
                     switch (event.key.keysym.sym) {
                         case SDLK_UP:
-                        case SDLK_w:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_UP, true)); break;
+                        case SDLK_w:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_UP, true)); break;
                         case SDLK_DOWN:
-                        case SDLK_s:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_DOWN, true)); break;
+                        case SDLK_s:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_DOWN, true)); break;
                         case SDLK_LEFT:
-                        case SDLK_a:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_LEFT, true)); break;
+                        case SDLK_a:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_LEFT, true)); break;
                         case SDLK_RIGHT:
-                        case SDLK_d:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_RIGHT, true)); break;
-                        case SDLK_p:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, true)); break;
-                        case SDLK_l:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, true)); break;
-                        case SDLK_e:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_L, true)); break;
-                        case SDLK_o:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_R, true)); break;
-                        case SDLK_BACKSPACE:        event_new(gba, NEW_EVENT_KEYINPUT(KEY_SELECT, true)); break;
-                        case SDLK_RETURN:           event_new(gba, NEW_EVENT_KEYINPUT(KEY_START, true)); break;
+                        case SDLK_d:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_RIGHT, true)); break;
+                        case SDLK_p:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_A, true)); break;
+                        case SDLK_l:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_B, true)); break;
+                        case SDLK_e:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_L, true)); break;
+                        case SDLK_o:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_R, true)); break;
+                        case SDLK_BACKSPACE:        message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_SELECT, true)); break;
+                        case SDLK_RETURN:           message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_START, true)); break;
                     }
                 }
                 break;
@@ -231,22 +231,22 @@ sdl_handle_events(
                 {
                     switch (event.key.keysym.sym) {
                         case SDLK_UP:
-                        case SDLK_w:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_UP, false)); break;
+                        case SDLK_w:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_UP, false)); break;
                         case SDLK_DOWN:
-                        case SDLK_s:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_DOWN, false)); break;
+                        case SDLK_s:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_DOWN, false)); break;
                         case SDLK_LEFT:
-                        case SDLK_a:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_LEFT, false)); break;
+                        case SDLK_a:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_LEFT, false)); break;
                         case SDLK_RIGHT:
-                        case SDLK_d:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_RIGHT, false)); break;
-                        case SDLK_p:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, false)); break;
-                        case SDLK_l:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, false)); break;
-                        case SDLK_e:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_L, false)); break;
-                        case SDLK_o:                event_new(gba, NEW_EVENT_KEYINPUT(KEY_R, false)); break;
-                        case SDLK_BACKSPACE:        event_new(gba, NEW_EVENT_KEYINPUT(KEY_SELECT, false)); break;
-                        case SDLK_RETURN:           event_new(gba, NEW_EVENT_KEYINPUT(KEY_START, false)); break;
+                        case SDLK_d:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_RIGHT, false)); break;
+                        case SDLK_p:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_A, false)); break;
+                        case SDLK_l:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_B, false)); break;
+                        case SDLK_e:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_L, false)); break;
+                        case SDLK_o:                message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_R, false)); break;
+                        case SDLK_BACKSPACE:        message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_SELECT, false)); break;
+                        case SDLK_RETURN:           message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_START, false)); break;
                         case SDLK_F2:               sdl_take_screenshot(app); break;
-                        case SDLK_F5:               event_new(gba, NEW_EVENT_QUICKSAVE()); break;
-                        case SDLK_F8:               event_new(gba, NEW_EVENT_QUICKLOAD()); break;
+                        case SDLK_F5:               message_new(gba, NEW_MESSAGE_QUICKSAVE()); break;
+                        case SDLK_F8:               message_new(gba, NEW_MESSAGE_QUICKLOAD()); break;
                         default:
                             break;
                     }
@@ -255,36 +255,36 @@ sdl_handle_events(
             case SDL_CONTROLLERBUTTONDOWN:
                 {
                     switch (event.cbutton.button) {
-                        case SDL_CONTROLLER_BUTTON_B:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, true)); break;
-                        case SDL_CONTROLLER_BUTTON_A:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, true)); break;
-                        case SDL_CONTROLLER_BUTTON_Y:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, true)); break;
-                        case SDL_CONTROLLER_BUTTON_X:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, true)); break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       event_new(gba, NEW_EVENT_KEYINPUT(KEY_LEFT, true)); break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      event_new(gba, NEW_EVENT_KEYINPUT(KEY_RIGHT, true)); break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         event_new(gba, NEW_EVENT_KEYINPUT(KEY_UP, true)); break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       event_new(gba, NEW_EVENT_KEYINPUT(KEY_DOWN, true)); break;
-                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    event_new(gba, NEW_EVENT_KEYINPUT(KEY_L, true)); break;
-                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   event_new(gba, NEW_EVENT_KEYINPUT(KEY_R, true)); break;
-                        case SDL_CONTROLLER_BUTTON_START:           event_new(gba, NEW_EVENT_KEYINPUT(KEY_START, true)); break;
-                        case SDL_CONTROLLER_BUTTON_BACK:            event_new(gba, NEW_EVENT_KEYINPUT(KEY_SELECT, true)); break;
+                        case SDL_CONTROLLER_BUTTON_B:               message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_A, true)); break;
+                        case SDL_CONTROLLER_BUTTON_A:               message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_B, true)); break;
+                        case SDL_CONTROLLER_BUTTON_Y:               message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_A, true)); break;
+                        case SDL_CONTROLLER_BUTTON_X:               message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_B, true)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_LEFT, true)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_RIGHT, true)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_UP, true)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_DOWN, true)); break;
+                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_L, true)); break;
+                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_R, true)); break;
+                        case SDL_CONTROLLER_BUTTON_START:           message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_START, true)); break;
+                        case SDL_CONTROLLER_BUTTON_BACK:            message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_SELECT, true)); break;
                     }
                 }
                 break;
             case SDL_CONTROLLERBUTTONUP:
                 {
                     switch (event.cbutton.button) {
-                        case SDL_CONTROLLER_BUTTON_B:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, false)); break;
-                        case SDL_CONTROLLER_BUTTON_A:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, false)); break;
-                        case SDL_CONTROLLER_BUTTON_Y:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_A, false)); break;
-                        case SDL_CONTROLLER_BUTTON_X:               event_new(gba, NEW_EVENT_KEYINPUT(KEY_B, false)); break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       event_new(gba, NEW_EVENT_KEYINPUT(KEY_LEFT, false)); break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      event_new(gba, NEW_EVENT_KEYINPUT(KEY_RIGHT, false)); break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         event_new(gba, NEW_EVENT_KEYINPUT(KEY_UP, false)); break;
-                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       event_new(gba, NEW_EVENT_KEYINPUT(KEY_DOWN, false)); break;
-                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    event_new(gba, NEW_EVENT_KEYINPUT(KEY_L, false)); break;
-                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   event_new(gba, NEW_EVENT_KEYINPUT(KEY_R, false)); break;
-                        case SDL_CONTROLLER_BUTTON_START:           event_new(gba, NEW_EVENT_KEYINPUT(KEY_START, false)); break;
-                        case SDL_CONTROLLER_BUTTON_BACK:            event_new(gba, NEW_EVENT_KEYINPUT(KEY_SELECT, false)); break;
+                        case SDL_CONTROLLER_BUTTON_B:               message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_A, false)); break;
+                        case SDL_CONTROLLER_BUTTON_A:               message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_B, false)); break;
+                        case SDL_CONTROLLER_BUTTON_Y:               message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_A, false)); break;
+                        case SDL_CONTROLLER_BUTTON_X:               message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_B, false)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_LEFT, false)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_RIGHT, false)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_UP:         message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_UP, false)); break;
+                        case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_DOWN, false)); break;
+                        case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_L, false)); break;
+                        case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_R, false)); break;
+                        case SDL_CONTROLLER_BUTTON_START:           message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_START, false)); break;
+                        case SDL_CONTROLLER_BUTTON_BACK:            message_new(gba, NEW_MESSAGE_KEYINPUT(KEY_SELECT, false)); break;
 #if SDL_VERSION_ATLEAST(2, 0, 14)
                         case SDL_CONTROLLER_BUTTON_MISC1:           sdl_take_screenshot(app); break;
 #endif

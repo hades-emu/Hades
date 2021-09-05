@@ -156,7 +156,7 @@ sched_run_for(
         }
 #endif
 
-        event_handle_all(gba);
+        message_handle_all(gba);
     }
 }
 

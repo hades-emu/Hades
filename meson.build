@@ -44,7 +44,7 @@ sources = files(
     'source/ppu/oam.c',
     'source/ppu/ppu.c',
     'source/ppu/window.c',
-    'source/event.c',
+    'source/message.c',
     'source/main.c',
     'source/scheduler.c',
     'source/timer.c',
