@@ -14,56 +14,17 @@
 ** Render the bitmap background of given index.
 */
 void
-ppu_render_background_bitmap(
-    struct gba *gba,
-    uint32_t line,
-    bool palette
-) {
-    uint32_t x;
-
-    for (x = 0; x < SCREEN_WIDTH; ++x) {
-        union color c;
-
-        if (palette) {
-            uint8_t palette_idx;
-
-            palette_idx = mem_read8_raw(gba, VRAM_START + (SCREEN_WIDTH * line + x) + 0xA000 * gba->io.dispcnt.frame);
-            c.raw = mem_read16_raw(gba, PALRAM_START + palette_idx * sizeof(union color));
-        } else {
-            c.raw = mem_read16_raw(gba, VRAM_START + (SCREEN_WIDTH * line + x) * sizeof(union color));
-        }
-
-        ppu_plot_pixel(gba, c, x, line);
-    }
-}
-
-/*
-** Render the affine background of given index.
-**
-** NOTE: As of now, this function is a stub.
-*/
-void
-ppu_render_background_affine(
-    struct gba *gba __unused,
-    uint32_t line __unused,
-    uint32_t bg_idx __unused
-) {
-    // TODO
-}
-
-/*
-** Render the text background of given index.
-*/
-void
 ppu_render_background_text(
-    struct gba *gba,
+    struct gba const *gba,
+    struct scanline *scanline,
     uint32_t line,
     uint32_t bg_idx
 ) {
     uint32_t x;
-    struct io *io;
+    struct io const *io;
 
     io = &gba->io;
+    scanline->top_idx = bg_idx;
     for (x = 0; x < SCREEN_WIDTH; ++x) {
         uint32_t tile_x; // X coord of the tile in the tilemap
         uint32_t tile_y; // Y coord of the tile in the tilemap
@@ -104,14 +65,12 @@ ppu_render_background_text(
                 break;
         }
 
-        tile.raw = mem_read16_raw(gba, VRAM_START + screen_addr + screen_idx * sizeof(union tile));
+        tile.raw = mem_vram_read16(gba, screen_addr + screen_idx * sizeof(union tile));
         chr_y ^= tile.vflip * 0b111;
         chr_x ^= tile.hflip * 0b111;
 
         if (io->bgcnt[bg_idx].palette_type) { // 256 colors, 1 palette
-            palette_idx = mem_read8_raw(gba,
-                VRAM_START + chrs_addr + tile.number * 64 + chr_y * 8 + chr_x
-            );
+            palette_idx = mem_vram_read8(gba, chrs_addr + tile.number * 64 + chr_y * 8 + chr_x);
         } else { // 16 colors, 16 palettes
 
             /*
@@ -120,22 +79,22 @@ ppu_render_background_text(
             **   * The upper 4 bits define the color of the right pixel
             */
 
-            palette_idx = mem_read8_raw(gba,
-                VRAM_START + chrs_addr + tile.number * 32 + chr_y * 4 + (chr_x >> 1)
-            );
+            palette_idx = mem_vram_read8(gba, chrs_addr + tile.number * 32 + chr_y * 4 + (chr_x >> 1));
             palette_idx >>= (chr_x % 2) * 4;
             palette_idx &= 0xF;
         }
 
         if (palette_idx) {
-            union color c;
+            struct rich_color c;
 
-            c.raw = mem_read16_raw(
+            c.raw = mem_palram_read16(
                 gba,
-                PALRAM_START + (tile.palette * 16 * !io->bgcnt[bg_idx].palette_type + palette_idx) * sizeof(union color)
+                (tile.palette * 16 * !io->bgcnt[bg_idx].palette_type + palette_idx) * sizeof(union color)
             );
 
-            ppu_plot_pixel(gba, c, x, line);
+            c.visible = true;
+            c.idx = bg_idx;
+            scanline->top[x] = c;
         }
     }
 }

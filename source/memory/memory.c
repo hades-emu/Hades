@@ -97,7 +97,6 @@ mem_update_waitstates(
 /*
 ** Calculate and add to the current cycle counter the amount of cycles needed for as many bus accesses
 ** are needed to transfer a data of the given size and access type.
-**
 */
 void
 mem_access(

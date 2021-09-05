@@ -7,6 +7,7 @@
 **
 \******************************************************************************/
 
+#include <string.h>
 #include "gba.h"
 #include "ppu.h"
 
@@ -24,13 +25,13 @@ int32_t sprite_size_x[16] = { 8, 16, 32, 64, 16, 32, 32, 64, 8, 8, 16, 32, 0, 0,
 int32_t sprite_size_y[16] = { 8, 16, 32, 64, 8, 8, 16, 32, 16, 32, 32, 64, 0, 0, 0, 0};
 
 /*
-** Render all the sprites of a given priority.
+** Pre-render all visible sprites.
 */
 void
-ppu_render_oam(
-    struct gba *gba,
-    int32_t line,
-    uint32_t prio
+ppu_prerender_oam(
+    struct gba const *gba,
+    struct scanline *scanline,
+    int32_t line
 ) {
     struct io const *io;
     int32_t oam_idx;
@@ -52,12 +53,12 @@ ppu_render_oam(
         int32_t sprite_sx;
         int32_t sprite_sy;
 
-        oam.raw[0] = *(uint16_t *)((uint8_t *)gba->memory.oam + (oam_idx * 4 + 0) * 2);
-        oam.raw[1] = *(uint16_t *)((uint8_t *)gba->memory.oam + (oam_idx * 4 + 1) * 2);
-        oam.raw[2] = *(uint16_t *)((uint8_t *)gba->memory.oam + (oam_idx * 4 + 2) * 2);
+        oam.raw[0] = mem_oam_read16(gba, (oam_idx * 4 + 0) * 2);
+        oam.raw[1] = mem_oam_read16(gba, (oam_idx * 4 + 1) * 2);
+        oam.raw[2] = mem_oam_read16(gba, (oam_idx * 4 + 2) * 2);
 
         // Skip OAM entries that should'nt be displayed
-        if (oam.priority != prio || (!oam.affine && oam.virt_dsize)) {
+        if (!oam.affine && oam.virt_dsize) {
             continue;
         }
 
@@ -87,10 +88,10 @@ ppu_render_oam(
             union oam_float pd;
 
             if (oam.affine) {
-                pa.raw = (int16_t)mem_read16_raw(gba, OAM_START + oam.affine_data_idx * 32 + 0x6);
-                pb.raw = (int16_t)mem_read16_raw(gba, OAM_START + oam.affine_data_idx * 32 + 0xe);
-                pc.raw = (int16_t)mem_read16_raw(gba, OAM_START + oam.affine_data_idx * 32 + 0x16);
-                pd.raw = (int16_t)mem_read16_raw(gba, OAM_START + oam.affine_data_idx * 32 + 0x1e);
+                pa.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x6);
+                pb.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0xe);
+                pc.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x16);
+                pd.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x1e);
             } else { // Identity matrix
                 pa = (union oam_float){ .integer = 1}; // 1,0
                 pb.raw = 0;
@@ -153,7 +154,7 @@ ppu_render_oam(
                 }
 
                 if (oam.color_256) { // 256 colors, 1 palette
-                    palette_idx = mem_read8_raw(gba, VRAM_START + tile_offset + chr_y * 8 + chr_x);
+                    palette_idx = mem_vram_read8(gba, tile_offset + chr_y * 8 + chr_x);
                 } else { // 16 colors, 16 palettes
 
                     /*
@@ -162,27 +163,44 @@ ppu_render_oam(
                     **   * The upper 4 bits define the color for the right pixel
                     */
 
-                    palette_idx = mem_read8_raw(gba, VRAM_START + tile_offset + chr_y * 4 + (chr_x >> 1));
+                    palette_idx = mem_vram_read8(gba, tile_offset + chr_y * 4 + (chr_x >> 1));
                     palette_idx >>= (chr_x % 2) * 4;
                     palette_idx &= 0xF;
                 }
 
                 if (palette_idx) {
-                    union color c;
+                    if (oam.mode == OAM_MODE_WINDOW) {
+                        scanline->win[2][win_ox + x] = true;
+                    } else {
+                        struct rich_color c;
 
-                    // 16-bits palette mode
-                    if (!oam.color_256) {
-                        palette_idx += oam.palette_num * 16;
+                        // 16-bits palette mode
+                        if (!oam.color_256) {
+                            palette_idx += oam.palette_num * 16;
+                        }
+
+                        c.raw = mem_palram_read16(gba, 0x200 + palette_idx * sizeof(union color));
+                        c.visible = true;
+                        c.idx = 4;
+                        c.force_blend = (oam.mode == OAM_MODE_BLEND);
+                        scanline->oam[oam.priority][win_ox + x] = c;
                     }
-
-                    c.raw = mem_read16_raw(
-                        gba,
-                        PALRAM_START + 0x200 + palette_idx * sizeof(union color)
-                    );
-
-                    ppu_plot_pixel(gba, c, win_ox + x, line);
                 }
             }
         }
     }
+}
+
+/*
+** Fill the content of the top layer with the sprites of the given priority.
+*/
+void
+ppu_render_oam(
+    struct gba const *gba,
+    struct scanline *scanline,
+    int32_t line,
+    uint32_t prio
+) {
+    memcpy(scanline->top, scanline->oam[prio], sizeof(scanline->top));
+    scanline->top_idx = 4;
 }

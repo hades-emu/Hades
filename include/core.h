@@ -32,17 +32,6 @@ enum core_states {
 struct psr {
     union {
         struct {
-#ifdef __BIG_ENDIAN__
-            uint32_t negative: 1;
-            uint32_t zero: 1;
-            uint32_t carry: 1;
-            uint32_t overflow: 1;
-            uint32_t : 20;
-            uint32_t irq_disable: 1;
-            uint32_t fiq_disable: 1;
-            uint32_t state: 1;
-            uint32_t mode: 5;
-#else
             uint32_t mode: 5;
             uint32_t thumb: 1;
             uint32_t fiq_disable: 1;
@@ -52,7 +41,6 @@ struct psr {
             uint32_t carry: 1;
             uint32_t zero: 1;
             uint32_t negative: 1;
-#endif
         };
         uint32_t raw;
     };

@@ -15,7 +15,6 @@ enum sched_event_type {
     SCHED_EVENT_REPEAT,
 };
 
-
 union event_data {
     uint8_t u8;
     uint16_t u16;

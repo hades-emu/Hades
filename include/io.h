@@ -49,6 +49,16 @@ enum io_regs {
     IO_REG_BG2VOFS      = 0x0400001A,
     IO_REG_BG3HOFS      = 0x0400001C,
     IO_REG_BG3VOFS      = 0x0400001E,
+    IO_REG_WIN0H        = 0x04000040,
+    IO_REG_WIN1H        = 0x04000042,
+    IO_REG_WIN0V        = 0x04000044,
+    IO_REG_WIN1V        = 0x04000046,
+    IO_REG_WININ        = 0x04000048,
+    IO_REG_WINOUT       = 0x0400004A,
+    IO_REG_MOSAIC       = 0x0400004C,
+    IO_REG_BLDCNT       = 0x04000050,
+    IO_REG_BLDALPHA     = 0x04000052,
+    IO_REG_BLDY         = 0x04000054,
 
     /* Sound */
 
@@ -212,7 +222,7 @@ struct io {
             uint8_t obj: 1;
             uint8_t win0: 1;
             uint8_t win1: 1;
-            uint8_t obj_win: 1;
+            uint8_t winobj: 1;
         } __packed;
         uint16_t raw;
         uint8_t bytes[2];
@@ -261,18 +271,146 @@ struct io {
         uint8_t bytes[2];
     } bgcnt[4];
 
+    // REG_BGXHOFF
     union {
         uint16_t raw;
         uint8_t bytes[2];
     } bg_hoffset[4];
 
+    // REG_BGYHOFF
     union {
         uint16_t raw;
         uint8_t bytes[2];
     } bg_voffset[4];
 
+    // REG_WINH
+    union {
+        struct {
+            uint16_t max: 8; // Exclusive
+            uint16_t min: 8; // Inclusive
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } winh[2];
+
+    // REG_WINY
+    union {
+        struct {
+            uint16_t max: 8; // Exclusive
+            uint16_t min: 8; // Inclusive
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } winv[2];
+
+    // REG_WININ
+    union {
+        struct {
+            union {
+                struct {
+                    uint16_t win0_bg: 4;
+                    uint16_t win0_obj: 1;
+                    uint16_t win0_effects: 1;
+                    uint16_t : 2;
+                } __packed;
+                uint8_t win0;
+            };
+            union {
+                struct {
+                    uint16_t win1_bg: 4;
+                    uint16_t win1_obj: 1;
+                    uint16_t win1_effects: 1;
+                    uint16_t : 2;
+                } __packed;
+                uint8_t win1;
+            };
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } winin;
+
+    // REG_WINOUT
+    union {
+        struct {
+            union {
+                struct {
+                    uint16_t winout_bg: 4;
+                    uint16_t winout_obj: 1;
+                    uint16_t winout_effects: 1;
+                    uint16_t : 2;
+                } __packed;
+                uint8_t winout;
+            };
+            union {
+                struct {
+                    uint16_t winobj_bg: 4;
+                    uint16_t winobj_obj: 1;
+                    uint16_t winobj_effects: 1;
+                    uint16_t : 2;
+                } __packed;
+                uint8_t winobj;
+            };
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } winout;
+
+    // REG_MOSAIC
+    union {
+        struct {
+            uint16_t bg_hsize: 4;
+            uint16_t bg_vise: 4;
+            uint16_t obj_hsize: 4;
+            uint16_t obj_vise: 4;
+            uint16_t : 16;
+        } __packed;
+        uint32_t raw;
+        uint8_t bytes[4];
+    } mosaic;
+
+    // REG_BLDCNT
+    union {
+        struct {
+            uint16_t top_bg: 4;
+            uint16_t top_oam: 1;
+            uint16_t top_backdrop: 1;
+            uint16_t mode: 2;
+            uint16_t bot_bg: 4;
+            uint16_t bot_oam: 1;
+            uint16_t bot_backdrop: 1;
+            uint16_t : 2;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bldcnt;
+
+    // REG_BLDALPHA
+    union {
+        struct {
+            uint16_t top_coef: 5;
+            uint16_t : 3;
+            uint16_t bot_coef: 6;
+            uint16_t : 3;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bldalpha;
+
+    // REG_BLDY
+    union {
+        struct {
+            uint16_t coef: 5;
+            uint16_t : 11;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bldy;
+
     // DMA Channels
     struct dma_channel dma[4];
+
+    // Timers
+    struct timer timers[4];
 
     // REG_KEYINPUT
     union {
@@ -292,9 +430,6 @@ struct io {
         uint16_t raw;
         uint8_t bytes[2];
     } keyinput;
-
-    // Timers
-    struct timer timers[4];
 
     // REG_RCNT
     union {

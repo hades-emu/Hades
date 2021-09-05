@@ -105,22 +105,19 @@ static char const * const modules_str[] = {
     }                                                       \
     while (0)
 
+/* Return the minimum between `a` and `b`. */
+# define min(a, b) ((a) > (b) ? (b) : (a))
+
 /* Return the size of static array */
 # define array_length(array) (sizeof(array) / sizeof(*(array)))
 
-/*
-** Get the `nth` bit of `val`.
-*/
+/* Get the `nth` bit of `val`. */
 # define bitfield_get(val, nth)                 ((typeof(val))(bool)((val) & (1 << (nth))))
 
-/*
-** Return the value of the bits from `start` (inclusive) to `end` (exclusive) of `val`.
-*/
+/* Return the value of the bits from `start` (inclusive) to `end` (exclusive) of `val`. */
 # define bitfield_get_range(val, start, end)    ((typeof(val))(((typeof(val))((val) << (sizeof(val) * 8 - (end)))) >> (sizeof(val) * 8 - (end) + (start))))
 
-/*
-** Set the `nth` bit of `val`.
-*/
+/* Set the `nth` bit of `val`. */
 # define bitfield_set(val, nth)                 ((val) |= (1 << (nth)))
 
 /*
@@ -276,6 +273,9 @@ isub32(
     return ((r < INT32_MIN) | (r > INT32_MAX));
 }
 
+/*
+** Return the value of value after being wrapped by `shift` amount.
+*/
 static inline
 uint32_t
 ror32(
@@ -283,6 +283,40 @@ ror32(
     uint32_t shift
 ) {
     return ((value >> shift) | (value << (32 - shift)));
+}
+
+/*
+** Like `memset()`, but operates with `uint16_t` pointers and values.
+*/
+static inline
+void
+memset16(
+    uint16_t *out,
+    uint16_t value,
+    size_t size
+) {
+    while (size) {
+        *out = value;
+        ++out;
+        --size;
+    }
+}
+
+/*
+** Like `memset()`, but operates with `uint32_t` pointers and values.
+*/
+static inline
+void
+memset32(
+    uint32_t *out,
+    uint32_t value,
+    size_t size
+) {
+    while (size) {
+        *out = value;
+        ++out;
+        --size;
+    }
 }
 
 /* utils.c */
