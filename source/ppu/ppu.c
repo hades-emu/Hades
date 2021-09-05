@@ -7,27 +7,146 @@
 **
 \******************************************************************************/
 
+#include <string.h>
 #include "gba.h"
+#include "ppu.h"
 
 /*
-** Set the calculated color in the framebuffer;
+** Initialize the content of the given `scanline` to a default, sane and working value.
 */
+static
 void
-ppu_plot_pixel(
-    struct gba *gba,
-    union color c,
-    uint32_t x,
-    uint32_t y
+ppu_initialize_scanline(
+    struct gba const *gba,
+    struct scanline *scanline
 ) {
-    uint32_t fb_idx;
+    struct rich_color backdrop;
+    uint32_t x;
 
-    fb_idx = SCREEN_WIDTH * y + x;
+    memset(scanline, 0x00, sizeof(*scanline));
 
-    gba->framebuffer_logic[fb_idx] = 0x00
-        | (((uint32_t)c.red   << 3 ) | (((uint32_t)c.red   >> 2) & 0b111)) << 16
-        | (((uint32_t)c.green << 3 ) | (((uint32_t)c.green >> 2) & 0b111)) << 8
-        | (((uint32_t)c.blue  << 3 ) | (((uint32_t)c.blue  >> 2) & 0b111)) << 0
-    ;
+    backdrop.visible = true;
+    backdrop.idx = 5;
+    backdrop.raw = (gba->io.dispcnt.blank ? 0x7fff : mem_read16_raw(gba, PALRAM_START));
+
+    for (x = 0; x < SCREEN_WIDTH; ++x) {
+        scanline->bot[x] = backdrop;
+    }
+
+    scanline->result = scanline->bot;
+}
+
+/*
+** Merge the current layer with any previous ones (using alpha blending) as stated in REG_BLDCNT.
+*/
+static
+void
+ppu_merge_layer(
+    struct gba const *gba,
+    struct scanline *scanline
+) {
+    uint32_t eva;
+    uint32_t evb;
+    uint32_t evy;
+    struct io const *io;
+    uint32_t x;
+
+    io = &gba->io;
+    eva = min(16, io->bldalpha.top_coef);
+    evb = min(16, io->bldalpha.bot_coef);
+    evy = min(16, io->bldy.coef);
+    for (x = 0; x < SCREEN_WIDTH; ++x) {
+        struct rich_color topc;
+        struct rich_color botc;
+        uint32_t mode;
+
+        topc = scanline->top[x];
+        botc = scanline->bot[x];
+
+        /* Skip transparent pixels */
+        if (!topc.visible) {
+            continue;
+        }
+
+        mode = gba->io.bldcnt.mode;
+
+        /* Apply windowing, if any */
+        if (io->dispcnt.win0 || io->dispcnt.win1 || io->dispcnt.winobj) {
+            uint8_t win_opts;
+
+            win_opts = ppu_find_top_window(gba, scanline, x);
+
+            /* Hide pixels that belong to a layer that this window doesn't show. */
+            if (!bitfield_get(win_opts, scanline->top_idx)) {
+                continue;
+            }
+
+            /* Windows can disable blending */
+            if (!bitfield_get(win_opts, 5)) {
+                mode = BLEND_OFF;
+            }
+        }
+
+        /* Sprite can force blending no matter what BLDCNT says */
+        if (topc.force_blend) {
+            mode = BLEND_ALPHA;
+        }
+
+        switch (mode) {
+            case BLEND_OFF:
+                scanline->bot[x] = topc;
+                break;
+            case BLEND_ALPHA:
+                {
+                    bool top_enabled;
+                    bool bot_enabled;
+
+                    top_enabled = bitfield_get(io->bldcnt.raw, scanline->top_idx) || topc.force_blend;
+                    bot_enabled = bitfield_get(io->bldcnt.raw, botc.idx + 8);
+
+                    /*
+                    ** If both the top and bot layers are enabled, blend the colors.
+                    ** Otherwise, the top layer takes priority.
+                    */
+
+                    if (top_enabled && bot_enabled && botc.visible) {
+                        scanline->bot[x].red = min(31, (topc.red * eva + botc.red * evb) >> 4);
+                        scanline->bot[x].green = min(31, (topc.green * eva + botc.green * evb) >> 4);
+                        scanline->bot[x].blue = min(31, (topc.blue * eva + botc.blue * evb) >> 4);
+                        scanline->bot[x].visible = true;
+                        scanline->bot[x].idx = scanline->top_idx;
+                    } else {
+                        scanline->bot[x] = topc;
+                    }
+                }
+                break;
+            case BLEND_LIGHT:
+                if (bitfield_get(io->bldcnt.raw, scanline->top_idx)) {
+                    scanline->bot[x].red = topc.red + (((31 - topc.red) * evy) >> 4);
+                    scanline->bot[x].green = topc.green + (((31 - topc.green) * evy) >> 4);
+                    scanline->bot[x].blue = topc.blue + (((31 - topc.blue) * evy) >> 4);
+                    scanline->bot[x].idx = topc.idx;
+                    scanline->bot[x].visible = true;
+                } else {
+                    scanline->bot[x] = topc;
+                }
+                break;
+            case BLEND_DARK:
+                if (bitfield_get(io->bldcnt.raw, scanline->top_idx)) {
+                    scanline->bot[x].red = topc.red - ((topc.red * evy) >> 4);
+                    scanline->bot[x].green = topc.green - ((topc.green * evy) >> 4);
+                    scanline->bot[x].blue = topc.blue - ((topc.blue * evy) >> 4);
+                    scanline->bot[x].idx = topc.idx;
+                    scanline->bot[x].visible = true;
+                } else {
+                    scanline->bot[x] = topc;
+                }
+                break;
+        }
+    }
+
+    /* Reset the top layer to full transparency */
+    memset(scanline->top, 0x00, sizeof(scanline->top));
 }
 
 /*
@@ -36,25 +155,15 @@ ppu_plot_pixel(
 static
 void
 ppu_render_scanline(
-    struct gba *gba
+    struct gba const *gba,
+    struct scanline *scanline
 ) {
-    struct io *io;
-    union color bg;
-    uint32_t x;
-    uint32_t line;
+    struct io const *io;
+    int32_t prio;
+    uint32_t y;
 
     io = &gba->io;
-    line = io->vcount.raw;
-
-    bg.raw = io->dispcnt.blank ? 0xffff : mem_read16_raw(gba, PALRAM_START);
-
-    for (x = 0; x < SCREEN_WIDTH; ++x) {
-        ppu_plot_pixel(gba, bg, x, line);
-    }
-
-    if (io->dispcnt.blank) {
-        return ;
-    }
+    y = gba->io.vcount.raw;
 
     switch (io->dispcnt.bg_mode) {
         case 0:
@@ -62,32 +171,71 @@ ppu_render_scanline(
         case 2:
             {
                 int32_t bg_idx;
-                int32_t prio;
 
                 for (prio = 3; prio >= 0; --prio) {
                     for (bg_idx = 3; bg_idx >= 0; --bg_idx) {
 
-                        // Only show enabled background that have the desired priority
+                        // Only render enabled background that have the desired priority
                         if (!bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) || io->bgcnt[bg_idx].priority != prio) {
                             continue;
                         }
 
                         if (io->dispcnt.bg_mode == 2 || (io->dispcnt.bg_mode == 1 && bg_idx == 2)) {
-                            ppu_render_background_affine(gba, line, bg_idx);
+                            //ppu_render_background_affine(gba, scanline->cur_bg, bg_idx);
                         } else {
-                            ppu_render_background_text(gba, line, bg_idx);
+                            ppu_render_background_text(gba, scanline, y, bg_idx);
                         }
+                        ppu_merge_layer(gba, scanline);
                     }
-                    ppu_render_oam(gba, line, prio);
+                    ppu_render_oam(gba, scanline, y, prio);
+                    ppu_merge_layer(gba, scanline);
                 }
             }
             break;
         case 3:
-            ppu_render_background_bitmap(gba, line, false);
+            for (prio = 3; prio >= 0; --prio) {
+                if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio) {
+                    ppu_render_background_bitmap(gba, scanline, y, 2, false);
+                    ppu_merge_layer(gba, scanline);
+                }
+                ppu_render_oam(gba, scanline, y, prio);
+                ppu_merge_layer(gba, scanline);
+            }
             break;
         case 4:
-            ppu_render_background_bitmap(gba, line, true);
+            for (prio = 3; prio >= 0; --prio) {
+                if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio) {
+                    ppu_render_background_bitmap(gba, scanline, y, 2, true);
+                }
+                ppu_render_oam(gba, scanline, y, prio);
+                ppu_merge_layer(gba, scanline);
+            }
             break;
+    }
+}
+
+/*
+** Compose the content of the framebuffer based on the content of `scanline->result` and/or the backdrop color.
+*/
+static
+void
+ppu_draw_scanline(
+    struct gba *gba,
+    struct scanline const *scanline
+) {
+    uint32_t x;
+    uint32_t y;
+
+    y = gba->io.vcount.raw;
+    for (x = 0; x < SCREEN_WIDTH; ++x) {
+        struct rich_color c;
+
+        c = scanline->result[x];
+        gba->framebuffer_logic[SCREEN_WIDTH * y + x] = 0x0
+            | (((uint32_t)c.red   << 3 ) | (((uint32_t)c.red   >> 2) & 0b111)) << 16
+            | (((uint32_t)c.green << 3 ) | (((uint32_t)c.green >> 2) & 0b111)) << 8
+            | (((uint32_t)c.blue  << 3 ) | (((uint32_t)c.blue  >> 2) & 0b111)) << 0
+        ;
     }
 }
 
@@ -145,7 +293,17 @@ ppu_hblank(
     io = &gba->io;
 
     if (io->vcount.raw < SCREEN_HEIGHT) {
-        ppu_render_scanline(gba);
+        struct scanline scanline;
+
+        ppu_initialize_scanline(gba, &scanline);
+        ppu_window_build_masks(gba, &scanline, io->vcount.raw);
+        ppu_prerender_oam(gba, &scanline, io->vcount.raw);
+
+        if (!gba->io.dispcnt.blank) {
+            ppu_render_scanline(gba, &scanline);
+        }
+
+        ppu_draw_scanline(gba, &scanline);
     }
 
     io->dispstat.hblank = true;

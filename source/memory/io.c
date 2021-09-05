@@ -47,6 +47,16 @@ mem_io_reg_name(
         case IO_REG_BG1HOFS:        return ("REG_BG1HOFS");
         case IO_REG_BG2HOFS:        return ("REG_BG2HOFS");
         case IO_REG_BG3HOFS:        return ("REG_BG3HOFS");
+        case IO_REG_WIN0H:          return ("REG_WIN0H");
+        case IO_REG_WIN1H:          return ("REG_WIN1H");
+        case IO_REG_WIN0V:          return ("REG_WIN0V");
+        case IO_REG_WIN1V:          return ("REG_WIN1V");
+        case IO_REG_WININ:          return ("REG_WININ");
+        case IO_REG_WINOUT:         return ("REG_WINOUT");
+        case IO_REG_MOSAIC:         return ("REG_MOSAIC");
+        case IO_REG_BLDCNT:         return ("REG_BLDMOD");
+        case IO_REG_BLDALPHA:       return ("REG_BLDALPHA");
+        case IO_REG_BLDY:           return ("REG_BLDY");
         case IO_REG_SOUNDBIAS:      return ("REG_SOUNDBIAS");
         case IO_REG_DMA0SAD_LO:     return ("REG_DMA0SAD_LO");
         case IO_REG_DMA0SAD_HI:     return ("REG_DMA0SAD_HI");
@@ -139,6 +149,14 @@ mem_io_read8(
         case IO_REG_BG3HOFS + 1:            return (io->bg_hoffset[3].bytes[1]);
         case IO_REG_BG3VOFS:                return (io->bg_voffset[3].bytes[0]);
         case IO_REG_BG3VOFS + 1:            return (io->bg_voffset[3].bytes[1]);
+        case IO_REG_WININ:                  return (io->winin.bytes[0]);
+        case IO_REG_WININ + 1:              return (io->winin.bytes[1]);
+        case IO_REG_WINOUT:                 return (io->winout.bytes[0]);
+        case IO_REG_WINOUT + 1:             return (io->winout.bytes[1]);
+        case IO_REG_BLDCNT:                 return (io->bldcnt.bytes[0]);
+        case IO_REG_BLDCNT + 1:             return (io->bldcnt.bytes[1]);
+        case IO_REG_BLDALPHA:               return (io->bldalpha.bytes[0]);
+        case IO_REG_BLDALPHA + 1:           return (io->bldalpha.bytes[1]);
 
         /* Sound */
         case IO_REG_SOUNDBIAS:              return (0x0);
@@ -245,6 +263,31 @@ mem_io_write8(
         case IO_REG_BG3VOFS:                io->bg_voffset[3].bytes[0] = val; break;
         case IO_REG_BG3VOFS + 1:            io->bg_voffset[3].bytes[1] = val; break;
 
+        /* Video - Windows */
+        case IO_REG_WIN0H:                  io->winh[0].bytes[0] = val; break;
+        case IO_REG_WIN0H + 1:              io->winh[0].bytes[1] = val; break;
+        case IO_REG_WIN1H:                  io->winh[1].bytes[0] = val; break;
+        case IO_REG_WIN1H + 1:              io->winh[1].bytes[1] = val; break;
+        case IO_REG_WIN0V:                  io->winv[0].bytes[0] = val; break;
+        case IO_REG_WIN0V + 1:              io->winv[0].bytes[1] = val; break;
+        case IO_REG_WIN1V:                  io->winv[1].bytes[0] = val; break;
+        case IO_REG_WIN1V + 1:              io->winv[1].bytes[1] = val; break;
+        case IO_REG_WININ:                  io->winin.bytes[0] = val; break;
+        case IO_REG_WININ + 1:              io->winin.bytes[1] = val; break;
+        case IO_REG_WINOUT:                 io->winout.bytes[0] = val; break;
+        case IO_REG_WINOUT + 1:             io->winout.bytes[1] = val; break;
+
+        /* Video - Mosaic */
+        case IO_REG_MOSAIC:                 io->mosaic.bytes[0] = val; break;
+        case IO_REG_MOSAIC + 1:             io->mosaic.bytes[1] = val; break;
+
+        /* Video - Effects */
+        case IO_REG_BLDCNT:                 io->bldcnt.bytes[0] = val; break;
+        case IO_REG_BLDCNT + 1:             io->bldcnt.bytes[1] = val; break;
+        case IO_REG_BLDALPHA:               io->bldalpha.bytes[0] = val; break;
+        case IO_REG_BLDALPHA + 1:           io->bldalpha.bytes[1] = val; break;
+        case IO_REG_BLDY:                   io->bldy.bytes[0] = val; break;
+        case IO_REG_BLDY + 1:               io->bldy.bytes[1] = val; break;
 
         /* DMA - Channel 0 */
         case IO_REG_DMA0SAD:                io->dma[0].src.bytes[0] = val; break;

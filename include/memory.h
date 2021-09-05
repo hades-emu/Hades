@@ -233,5 +233,8 @@ void mem_flash_write8(struct gba *gba, uint32_t addr, uint8_t val);
 # define mem_palram_read8(gba, addr)        ((gba)->memory.palram[(addr) & PALRAM_MASK])
 # define mem_vram_read8(gba, addr)          ((gba)->memory.vram[(addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2)])
 # define mem_oam_read8(gba, addr)           ((gba)->memory.oam[(addr) & OAM_MASK])
+# define mem_palram_read16(gba, addr)       (*(uint16_t *)((uint8_t *)(gba)->memory.palram + ((addr) & PALRAM_MASK)))
+# define mem_vram_read16(gba, addr)         (*(uint16_t *)((uint8_t *)(gba)->memory.vram + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))))
+# define mem_oam_read16(gba, addr)          (*(uint16_t *)((uint8_t *)(gba)->memory.oam + ((addr) & OAM_MASK)))
 
 #endif /* !MEMORY_H */
