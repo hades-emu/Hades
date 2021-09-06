@@ -90,18 +90,18 @@ gba_load_rom(
     extension = strrchr(gba->rom_path, '.');
 
     // Build the path pointing to the backup storage
-    // (aka path/to/rom.gba but ending with .hds instead)
+    // (aka path/to/rom.gba but ending with .save instead)
     gba->backup_storage_path = calloc(extension - gba->rom_path + 5, 1);
     hs_assert(gba->backup_storage_path);
     strncpy(gba->backup_storage_path, gba->rom_path, extension - gba->rom_path);
-    strcat(gba->backup_storage_path, ".hds");
+    strcat(gba->backup_storage_path, ".sav");
 
     // Build the path pointing to the quicksave
     // (aka path/to/rom.gba but ending with .qhds instead)
-    gba->quicksave_path = calloc(extension - gba->rom_path + 6, 1);
+    gba->quicksave_path = calloc(extension - gba->rom_path + 5, 1);
     hs_assert(gba->quicksave_path);
     strncpy(gba->quicksave_path, gba->rom_path, extension - gba->rom_path);
-    strcat(gba->quicksave_path, ".qhds");
+    strcat(gba->quicksave_path, ".hds");
 
     // Detect the kind of backup storage
     mem_backup_storage_init(gba);
