@@ -216,7 +216,7 @@ struct timer {
         uint8_t bytes[2];
     } control;
 
-    uint64_t internal_counter;
+    int64_t internal_counter;
 };
 
 /*

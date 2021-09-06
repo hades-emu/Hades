@@ -33,11 +33,11 @@ timer_tick(
         if (timer->control.count_up && i > 0) {
             timer->internal_counter += prev_overflow;
             timer->counter.raw = timer->internal_counter;
-            prev_overflow = (timer->internal_counter > (uint64_t)UINT16_MAX);
+            prev_overflow = (timer->internal_counter > (int64_t)UINT16_MAX);
         } else {
             timer->internal_counter += cycles;
             timer->counter.raw = timer->internal_counter >> scalers[timer->control.prescaler];
-            prev_overflow = ((timer->internal_counter >> scalers[timer->control.prescaler]) > (uint64_t)UINT16_MAX);
+            prev_overflow = ((timer->internal_counter >> scalers[timer->control.prescaler]) > (int64_t)UINT16_MAX);
         }
 
         if (prev_overflow) {
