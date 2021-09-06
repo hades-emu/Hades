@@ -417,7 +417,7 @@ mem_io_write8(
         case IO_REG_TM0CNT_HI:
             // Copy the reload value to the counter value if the enable bit changed from 0 to 1
             if (!io->timers[0].control.enable && (val & (1 << 7))) {
-                io->timers[0].internal_counter = io->timers[0].reload.raw;
+                io->timers[0].internal_counter = (int64_t)io->timers[0].reload.raw - 2;
                 io->timers[0].counter.raw = io->timers[0].reload.raw;
                 logln(HS_TIMER, "Timer 0 started with initial value %04x", io->timers[0].reload.raw);
             }
@@ -431,7 +431,7 @@ mem_io_write8(
         case IO_REG_TM1CNT_HI:
             // Copy the reload value to the counter value if the enable bit changed from 0 to 1
             if (!io->timers[1].control.enable && (val & (1 << 7))) {
-                io->timers[1].internal_counter = io->timers[1].reload.raw;
+                io->timers[1].internal_counter = (int64_t)io->timers[1].reload.raw - 2;
                 io->timers[1].counter.raw = io->timers[1].reload.raw;
                 logln(HS_TIMER, "Timer 1 started with initial value %04x", io->timers[1].reload.raw);
             }
@@ -444,7 +444,7 @@ mem_io_write8(
         case IO_REG_TM2CNT_HI:
             // Copy the reload value to the counter value if the enable bit changed from 0 to 1
             if (!io->timers[2].control.enable && (val & (1 << 7))) {
-                io->timers[2].internal_counter = io->timers[2].reload.raw;
+                io->timers[2].internal_counter = (int64_t)io->timers[2].reload.raw - 2;
                 io->timers[2].counter.raw = io->timers[2].reload.raw;
                 logln(HS_TIMER, "Timer 2 started with initial value %04x", io->timers[2].reload.raw);
             }
@@ -457,7 +457,7 @@ mem_io_write8(
         case IO_REG_TM3CNT_HI:
             // Copy the reload value to the counter value if the enable bit changed from 0 to 1
             if (!io->timers[3].control.enable && (val & (1 << 7))) {
-                io->timers[3].internal_counter = io->timers[3].reload.raw;
+                io->timers[3].internal_counter = (int64_t)io->timers[3].reload.raw - 2;
                 io->timers[3].counter.raw = io->timers[3].reload.raw;
                 logln(HS_TIMER, "Timer 3 started with initial value %04x", io->timers[3].reload.raw);
             }
