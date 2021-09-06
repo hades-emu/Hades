@@ -56,6 +56,7 @@ ppu_merge_layer(
     evb = min(16, io->bldalpha.bot_coef);
     evy = min(16, io->bldy.coef);
     for (x = 0; x < SCREEN_WIDTH; ++x) {
+        bool bot_enabled;
         struct rich_color topc;
         struct rich_color botc;
         uint32_t mode;
@@ -69,6 +70,7 @@ ppu_merge_layer(
         }
 
         mode = gba->io.bldcnt.mode;
+        bot_enabled = bitfield_get(io->bldcnt.raw, botc.idx + 8);
 
         /* Apply windowing, if any */
         if (io->dispcnt.win0 || io->dispcnt.win1 || io->dispcnt.winobj) {
@@ -88,7 +90,7 @@ ppu_merge_layer(
         }
 
         /* Sprite can force blending no matter what BLDCNT says */
-        if (topc.force_blend) {
+        if (topc.force_blend && bot_enabled) {
             mode = BLEND_ALPHA;
         }
 
@@ -99,16 +101,13 @@ ppu_merge_layer(
             case BLEND_ALPHA:
                 {
                     bool top_enabled;
-                    bool bot_enabled;
-
-                    top_enabled = bitfield_get(io->bldcnt.raw, scanline->top_idx) || topc.force_blend;
-                    bot_enabled = bitfield_get(io->bldcnt.raw, botc.idx + 8);
 
                     /*
                     ** If both the top and bot layers are enabled, blend the colors.
                     ** Otherwise, the top layer takes priority.
                     */
 
+                    top_enabled = bitfield_get(io->bldcnt.raw, scanline->top_idx) || topc.force_blend;
                     if (top_enabled && bot_enabled && botc.visible) {
                         scanline->bot[x].red = min(31, (topc.red * eva + botc.red * evb) >> 4);
                         scanline->bot[x].green = min(31, (topc.green * eva + botc.green * evb) >> 4);
