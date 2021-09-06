@@ -18,17 +18,16 @@
 # include "scheduler.h"
 # include "message.h"
 
-struct options
-{
-    bool debugger;      // True if the debugger is enabled
-    uint32_t scale;     // The GUI's framebuffer scaling factor
-    uint32_t speed;     // The emulator's speed multiplier.
-    bool headless;      // Run Hades without a GUI (aka text/debugger only)
-    uint32_t color;     // 0: auto, 1: never, 2: always
+struct options {
+    char const *bios_path;  // Path pointing to the BIOS dump
+    bool debugger;          // True if the debugger is enabled
+    uint32_t scale;         // The GUI's framebuffer scaling factor
+    uint32_t speed;         // The emulator's speed multiplier.
+    bool headless;          // Run Hades without a GUI (aka text/debugger only)
+    uint32_t color;         // 0: auto, 1: never, 2: always
 };
 
-struct gba
-{
+struct gba {
     struct core core;
     struct memory memory;
 #if ENABLE_DEBUGGER

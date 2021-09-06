@@ -29,6 +29,7 @@ hades <path/to/game.gba>
 ```
 Usage: ./hades [OPTION]... ROM
 Options:
+    -b, --bios=PATH                   path pointing to the bios dump (default: "bios.bin")
         --headless                    disable any graphical output
         --scale=SIZE                  scale the window size by SIZE (default: 3)
         --speed=SPEED                 bind the emulator's FPS to 60*SPEED. 0 means unbounded. (default: 1)
