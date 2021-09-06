@@ -6,7 +6,7 @@
 
 *A Nintendo Game Boy Advance emulator.*
 
-![](https://i.imgur.com/rC1ToLf.png)
+![](https://i.imgur.com/0SJmUXA.png)
 
 ## Download
 
