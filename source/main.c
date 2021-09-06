@@ -73,6 +73,7 @@ print_usage(
         "Usage: %s [OPTION]... ROM\n"
         "\n"
         "Options:\n"
+        "    -b, --bios=PATH                   path pointing to the bios dump (default: \"bios.bin\")\n"
 #if ENABLE_DEBUGGER
         "    -d, --debugger                    enable the debugger\n"
 #endif
@@ -110,6 +111,7 @@ args_parse(
         enum cli_options {
             CLI_HELP = 0,
             CLI_VERSION,
+            CLI_BIOS,
             CLI_COLOR,
             CLI_SPEED,
 #if ENABLE_SDL2
@@ -124,6 +126,7 @@ args_parse(
         static struct option long_options[] = {
             [CLI_HELP]      = { "help",         no_argument,        0,  0 },
             [CLI_VERSION]   = { "version",      no_argument,        0,  0 },
+            [CLI_BIOS]      = { "bios",         required_argument,  0,  0 },
             [CLI_COLOR]     = { "color",        optional_argument,  0,  0 },
             [CLI_SPEED]     = { "speed",        required_argument,  0,  0 },
 #if ENABLE_SDL2
@@ -139,6 +142,7 @@ args_parse(
         c = getopt_long(
             argc,
             argv,
+            "b:"
 #if ENABLE_DEBUGGER
             "d"
 #endif
@@ -161,6 +165,9 @@ args_parse(
                     case CLI_VERSION: // --version
                         printf("Hades v" HADES_VERSION "\n");
                         exit(EXIT_SUCCESS);
+                        break;
+                    case CLI_BIOS:
+                        options->bios_path = optarg;
                         break;
                     case CLI_COLOR: // --color
                         if (optarg) {
@@ -202,6 +209,9 @@ args_parse(
                         exit(EXIT_FAILURE);
                         break;
                 }
+                break;
+            case 'b':
+                options->bios_path = optarg;
                 break;
             case 'd':
                 options->debugger = true;
@@ -289,6 +299,7 @@ main(
     memset(gba, 0, sizeof(*gba));
     gba->options.scale = 3; // Default window scale
     gba->options.speed = 1; // Default speed multiplier
+    gba->options.bios_path = "bios.bin"; // Default BIOS path
     gba->framebuffer_logic = gba->framebuffer_1;
     gba->framebuffer_render = gba->framebuffer_2;
 
@@ -306,7 +317,7 @@ main(
     ppu_init(gba);
 
     /* Load the BIOS. NOTE: this function exits on failure. */
-    gba_load_bios(gba, "bios.bin");
+    gba_load_bios(gba, gba->options.bios_path);
 
     /* Load the given ROM. NOTE: this function exits on failure. */
     gba_load_rom(gba, rom);
