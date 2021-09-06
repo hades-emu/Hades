@@ -21,6 +21,10 @@ io_init(
 ) {
     memset(io, 0, sizeof(*io));
     io->keyinput.raw = 0x3FF; // Every button set to "released"
+    io->bg_pa[0].raw = 0x100;
+    io->bg_pd[0].raw = 0x100;
+    io->bg_pa[1].raw = 0x100;
+    io->bg_pd[1].raw = 0x100;
 }
 
 /*
@@ -47,6 +51,18 @@ mem_io_reg_name(
         case IO_REG_BG1HOFS:        return ("REG_BG1HOFS");
         case IO_REG_BG2HOFS:        return ("REG_BG2HOFS");
         case IO_REG_BG3HOFS:        return ("REG_BG3HOFS");
+        case IO_REG_BG2PA:          return ("REG_BG2PA");
+        case IO_REG_BG2PB:          return ("REG_BG2PB");
+        case IO_REG_BG2PC:          return ("REG_BG2PC");
+        case IO_REG_BG2PD:          return ("REG_BG2PD");
+        case IO_REG_BG2X:           return ("REG_BG2X");
+        case IO_REG_BG2Y:           return ("REG_BG2Y");
+        case IO_REG_BG3PA:          return ("REG_BG3PA");
+        case IO_REG_BG3PB:          return ("REG_BG3PB");
+        case IO_REG_BG3PC:          return ("REG_BG3PC");
+        case IO_REG_BG3PD:          return ("REG_BG3PD");
+        case IO_REG_BG3X:           return ("REG_BG3X");
+        case IO_REG_BG3Y:           return ("REG_BG3Y");
         case IO_REG_WIN0H:          return ("REG_WIN0H");
         case IO_REG_WIN1H:          return ("REG_WIN1H");
         case IO_REG_WIN0V:          return ("REG_WIN0V");
@@ -262,6 +278,40 @@ mem_io_write8(
         case IO_REG_BG3HOFS + 1:            io->bg_hoffset[3].bytes[1] = val; break;
         case IO_REG_BG3VOFS:                io->bg_voffset[3].bytes[0] = val; break;
         case IO_REG_BG3VOFS + 1:            io->bg_voffset[3].bytes[1] = val; break;
+
+        /* Video - Affine Background */
+        case IO_REG_BG2PA:                  io->bg_pa[0].bytes[0] = val; break;
+        case IO_REG_BG2PA + 1:              io->bg_pa[0].bytes[1] = val; break;
+        case IO_REG_BG2PB:                  io->bg_pb[0].bytes[0] = val; break;
+        case IO_REG_BG2PB + 1:              io->bg_pb[0].bytes[1] = val; break;
+        case IO_REG_BG2PC:                  io->bg_pc[0].bytes[0] = val; break;
+        case IO_REG_BG2PC + 1:              io->bg_pc[0].bytes[1] = val; break;
+        case IO_REG_BG2PD:                  io->bg_pd[0].bytes[0] = val; break;
+        case IO_REG_BG2PD + 1:              io->bg_pd[0].bytes[1] = val; break;
+        case IO_REG_BG2X:                   io->bg_x[0].bytes[0] = val; ppu_reload_affine_internal_registers(gba, 0); break;
+        case IO_REG_BG2X + 1:               io->bg_x[0].bytes[1] = val; ppu_reload_affine_internal_registers(gba, 0); break;
+        case IO_REG_BG2X + 2:               io->bg_x[0].bytes[2] = val; ppu_reload_affine_internal_registers(gba, 0); break;
+        case IO_REG_BG2X + 3:               io->bg_x[0].bytes[3] = val; ppu_reload_affine_internal_registers(gba, 0); break;
+        case IO_REG_BG2Y:                   io->bg_y[0].bytes[0] = val; break;
+        case IO_REG_BG2Y + 1:               io->bg_y[0].bytes[1] = val; ppu_reload_affine_internal_registers(gba, 0); break;
+        case IO_REG_BG2Y + 2:               io->bg_y[0].bytes[2] = val; ppu_reload_affine_internal_registers(gba, 0); break;
+        case IO_REG_BG2Y + 3:               io->bg_y[0].bytes[3] = val; ppu_reload_affine_internal_registers(gba, 0); break;
+        case IO_REG_BG3PA:                  io->bg_pa[1].bytes[0] = val; break;
+        case IO_REG_BG3PA + 1:              io->bg_pa[1].bytes[1] = val; break;
+        case IO_REG_BG3PB:                  io->bg_pb[1].bytes[0] = val; break;
+        case IO_REG_BG3PB + 1:              io->bg_pb[1].bytes[1] = val; break;
+        case IO_REG_BG3PC:                  io->bg_pc[1].bytes[0] = val; break;
+        case IO_REG_BG3PC + 1:              io->bg_pc[1].bytes[1] = val; break;
+        case IO_REG_BG3PD:                  io->bg_pd[1].bytes[0] = val; break;
+        case IO_REG_BG3PD + 1:              io->bg_pd[1].bytes[1] = val; break;
+        case IO_REG_BG3X:                   io->bg_x[1].bytes[0] = val; break;
+        case IO_REG_BG3X + 1:               io->bg_x[1].bytes[1] = val; ppu_reload_affine_internal_registers(gba, 1); break;
+        case IO_REG_BG3X + 2:               io->bg_x[1].bytes[2] = val; ppu_reload_affine_internal_registers(gba, 1); break;
+        case IO_REG_BG3X + 3:               io->bg_x[1].bytes[3] = val; ppu_reload_affine_internal_registers(gba, 1); break;
+        case IO_REG_BG3Y:                   io->bg_y[1].bytes[0] = val; break;
+        case IO_REG_BG3Y + 1:               io->bg_y[1].bytes[1] = val; ppu_reload_affine_internal_registers(gba, 1); break;
+        case IO_REG_BG3Y + 2:               io->bg_y[1].bytes[2] = val; ppu_reload_affine_internal_registers(gba, 1); break;
+        case IO_REG_BG3Y + 3:               io->bg_y[1].bytes[3] = val; ppu_reload_affine_internal_registers(gba, 1); break;
 
         /* Video - Windows */
         case IO_REG_WIN0H:                  io->winh[0].bytes[0] = val; break;

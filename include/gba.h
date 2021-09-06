@@ -35,6 +35,7 @@ struct gba
     struct debugger debugger;
 #endif
     struct io io;
+    struct ppu ppu;
     struct scheduler scheduler;
     struct options options;
 

@@ -49,6 +49,20 @@ enum io_regs {
     IO_REG_BG2VOFS      = 0x0400001A,
     IO_REG_BG3HOFS      = 0x0400001C,
     IO_REG_BG3VOFS      = 0x0400001E,
+
+    IO_REG_BG2PA        = 0x04000020,
+    IO_REG_BG2PB        = 0x04000022,
+    IO_REG_BG2PC        = 0x04000024,
+    IO_REG_BG2PD        = 0x04000026,
+    IO_REG_BG2X         = 0x04000028,
+    IO_REG_BG2Y         = 0x0400002C,
+    IO_REG_BG3PA        = 0x04000030,
+    IO_REG_BG3PB        = 0x04000032,
+    IO_REG_BG3PC        = 0x04000034,
+    IO_REG_BG3PD        = 0x04000036,
+    IO_REG_BG3X         = 0x04000038,
+    IO_REG_BG3Y         = 0x0400003C,
+
     IO_REG_WIN0H        = 0x04000040,
     IO_REG_WIN1H        = 0x04000042,
     IO_REG_WIN0V        = 0x04000044,
@@ -264,8 +278,8 @@ struct io {
             uint16_t mosaic: 1;
             uint16_t palette_type: 1;  // 0: 16/16, 1: 256/1
             uint16_t screen_base: 5;
-            uint16_t overflow: 1;
-            uint16_t screen_size: 2;
+            uint16_t wrap: 1;
+            uint16_t size: 2;
         } __packed;
         uint16_t raw;
         uint8_t bytes[2];
@@ -282,6 +296,42 @@ struct io {
         uint16_t raw;
         uint8_t bytes[2];
     } bg_voffset[4];
+
+    // REG_BGXPA
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bg_pa[2];
+
+    // REG_BGXPB
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bg_pb[2];
+
+    // REG_BGXPC
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bg_pc[2];
+
+    // REG_BGXPD
+    union {
+        uint16_t raw;
+        uint8_t bytes[2];
+    } bg_pd[2];
+
+    // REG_BGXX
+    union {
+        uint32_t raw;
+        uint8_t bytes[4];
+    } bg_x[2];
+
+    // REG_BGXY
+    union {
+        uint32_t raw;
+        uint8_t bytes[4];
+    } bg_y[2];
 
     // REG_WINH
     union {

@@ -210,6 +210,21 @@ sign_extend24(
 }
 
 /*
+** Sign-extend a 28-bits value to a signed 32-bit value.
+*/
+static inline
+int32_t
+sign_extend28(
+    uint32_t value
+) {
+    if ((value & 0x08000000) != 0) {
+        return ((int32_t)(value | 0xF0000000));
+    } else {
+        return ((int32_t)value);
+    }
+}
+
+/*
 ** Return the value of the carry bit when performing `a + b + c`.
 */
 static inline

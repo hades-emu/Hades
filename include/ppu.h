@@ -108,7 +108,7 @@ union oam_entry {
 
 static_assert(sizeof(union oam_entry) == 3 * sizeof(uint16_t));
 
-union oam_float {
+union affine_float {
     struct {
         uint8_t fraction;
         int8_t integer;
@@ -116,7 +116,12 @@ union oam_float {
     uint16_t raw;
 };
 
-static_assert(sizeof(union oam_float) == sizeof(uint16_t));
+static_assert(sizeof(union affine_float) == sizeof(uint16_t));
+
+struct ppu {
+    int32_t internal_px[2];
+    int32_t internal_py[2];
+};
 
 /* ppu/background/bitmap.c */
 void ppu_render_background_bitmap(struct gba const *gba, struct scanline *scanline, uint32_t line, uint32_t bg_idx, bool palette);
@@ -125,7 +130,9 @@ void ppu_render_background_bitmap(struct gba const *gba, struct scanline *scanli
 void ppu_render_background_text(struct gba const *gba, struct scanline *scanline, uint32_t line, uint32_t bg_idx);
 
 /* ppu/background/affine.c */
-void ppu_render_background_affine(struct gba const *gba, uint32_t line, uint32_t bg_idx);
+void ppu_render_background_affine(struct gba *gba, struct scanline *scanline, uint32_t line, uint32_t bg_idx);
+void ppu_reload_affine_internal_registers(struct gba *gba, uint32_t idx);
+void ppu_step_affine_internal_registers(struct gba *gba);
 
 /* ppu/oam.c */
 void ppu_prerender_oam(struct gba const *gba, struct scanline *scanline, int32_t line);

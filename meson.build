@@ -39,6 +39,7 @@ sources = files(
     'source/memory/dma.c',
     'source/memory/io.c',
     'source/memory/memory.c',
+    'source/ppu/background/affine.c',
     'source/ppu/background/bitmap.c',
     'source/ppu/background/text.c',
     'source/ppu/oam.c',

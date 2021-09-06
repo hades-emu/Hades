@@ -50,7 +50,7 @@ ppu_render_background_text(
         screen_addr = (uint32_t)io->bgcnt[bg_idx].screen_base * 0x800;
         chrs_addr = (uint32_t)io->bgcnt[bg_idx].character_base * 0x4000;
 
-        switch (io->bgcnt[bg_idx].screen_size) {
+        switch (io->bgcnt[bg_idx].size) {
             case 0b00: // 256x256 (32x32)
                 screen_idx = tile_y * 32 + tile_x;
                 break;
