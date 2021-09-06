@@ -30,7 +30,8 @@ ppu_window_build_masks(
         miny = gba->io.winv[idx].min;
         maxy = gba->io.winv[idx].max;
 
-        if (   (miny <= maxy && (y < miny || y >= maxy))
+        if (
+               (miny <= maxy && (y < miny || y >= maxy))
             || (miny > maxy  && (y >= miny || y < maxy))
         ) {
             continue;

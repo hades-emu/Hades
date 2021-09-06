@@ -155,7 +155,7 @@ ppu_merge_layer(
 static
 void
 ppu_render_scanline(
-    struct gba const *gba,
+    struct gba *gba,
     struct scanline *scanline
 ) {
     struct io const *io;
@@ -181,7 +181,7 @@ ppu_render_scanline(
                         }
 
                         if (io->dispcnt.bg_mode == 2 || (io->dispcnt.bg_mode == 1 && bg_idx == 2)) {
-                            //ppu_render_background_affine(gba, scanline->cur_bg, bg_idx);
+                            ppu_render_background_affine(gba, scanline, y, bg_idx);
                         } else {
                             ppu_render_background_text(gba, scanline, y, bg_idx);
                         }
@@ -269,6 +269,8 @@ ppu_hdraw(
             core_trigger_irq(gba, IRQ_VBLANK);
         }
         mem_schedule_dma_transfer(gba, DMA_TIMING_VBLANK);
+        ppu_reload_affine_internal_registers(gba, 0);
+        ppu_reload_affine_internal_registers(gba, 1);
     }
 
     /* Trigger the VCOUNT IRQ */
@@ -304,6 +306,7 @@ ppu_hblank(
         }
 
         ppu_draw_scanline(gba, &scanline);
+        ppu_step_affine_internal_registers(gba);
     }
 
     io->dispstat.hblank = true;

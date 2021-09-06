@@ -79,13 +79,12 @@ ppu_prerender_oam(
         }
 
         if (line >= win_oy && line < win_oy + win_sy) {
-            union oam_float px;
-            union oam_float py;
-
-            union oam_float pa;
-            union oam_float pb;
-            union oam_float pc;
-            union oam_float pd;
+            union affine_float px;
+            union affine_float py;
+            union affine_float pa;
+            union affine_float pb;
+            union affine_float pc;
+            union affine_float pd;
 
             if (oam.affine) {
                 pa.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x6);
@@ -93,10 +92,10 @@ ppu_prerender_oam(
                 pc.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x16);
                 pd.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x1e);
             } else { // Identity matrix
-                pa = (union oam_float){ .integer = 1}; // 1,0
+                pa = (union affine_float){ .integer = 1 }; // 1.0
                 pb.raw = 0;
                 pc.raw = 0;
-                pd = (union oam_float){ .integer = 1}; // 1,0
+                pd = (union affine_float){ .integer = 1 }; // 1.0
             }
 
             /*

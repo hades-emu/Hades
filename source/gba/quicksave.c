@@ -38,6 +38,7 @@ quicksave(
         || fwrite(gba->memory.vram, sizeof(gba->memory.vram), 1, file) != 1
         || fwrite(gba->memory.oam, sizeof(gba->memory.oam), 1, file) != 1
         || fwrite(&gba->io, sizeof(gba->io), 1, file) != 1
+        || fwrite(&gba->ppu, sizeof(gba->ppu), 1, file) != 1
         || fwrite(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
         goto err;
@@ -109,6 +110,7 @@ quickload(
         || fread(gba->memory.vram, sizeof(gba->memory.vram), 1, file) != 1
         || fread(gba->memory.oam, sizeof(gba->memory.oam), 1, file) != 1
         || fread(&gba->io, sizeof(gba->io), 1, file) != 1
+        || fread(&gba->ppu, sizeof(gba->ppu), 1, file) != 1
         || fread(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
         goto err;
