@@ -1,7 +1,3 @@
 [submodule "source/platform/gui/external/cimgui"]
 	path = source/platform/gui/external/cimgui
 	url = https://github.com/cimgui/cimgui.git
-[submodule "source/platform/gui/external/imgui_file_dialog"]
-	path = source/platform/gui/external/imgui_file_dialog
-	url = https://github.com/aiekick/ImGuiFileDialog.git
-	branch = Lib_Only
