@@ -9,7 +9,7 @@
 
 project(
     'Hades',
-    'cpp',
+    'c',
     version: '0.0.1',
     license: 'GPL-2.0-only',
     default_options: ['c_std=gnu17', 'buildtype=release'],

@@ -45,13 +45,14 @@ The build dependencies are:
 
   - `meson`
   - `ninja`
-  - `SDL2` and `SDL2_Image`
   - `GCC`
+  - `SDL2` and `SDL2_Image`
+  - `glew`
 
 On Ubuntu, you can install all those dependencies with:
 
 ```bash
-$ apt install meson ninja-build gcc libsdl2-dev libsdl2-image-dev
+$ apt install meson ninja-build gcc libsdl2-dev libsdl2-image-dev libglew-dev
 ```
 
 To build Hades, run:
