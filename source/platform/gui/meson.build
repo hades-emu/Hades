@@ -28,7 +28,7 @@ gui_dependencies = [
 
 if host_machine.system() == 'darwin'
     gui_dependencies += [
-        dependency('appleframework', required: true, modules: 'OpenGL')
+        dependency('appleframeworks', required: true, modules: 'OpenGL')
     ]
 else
     gui_dependencies += [
