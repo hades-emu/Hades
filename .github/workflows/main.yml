@@ -12,7 +12,7 @@ jobs:
       - name: 'Sync source code'
         uses: actions/checkout@v2
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Install Dependencies
         uses: msys2/setup-msys2@v2
         with:
@@ -39,7 +39,7 @@ jobs:
       - name: 'Sync source code'
         uses: actions/checkout@v2
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Install Dependencies
         run: |
           brew install meson ninja sdl2 sdl2_image
@@ -65,7 +65,7 @@ jobs:
       - name: 'Sync source code'
         uses: actions/checkout@v2
         with:
-          submodules: true
+          submodules: 'recursive'
       - name: Install Dependencies
         run: |
           sudo apt-get update
