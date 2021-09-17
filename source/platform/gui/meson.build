@@ -17,7 +17,6 @@ gui_incdir = include_directories(
 cflags += [
     '-DIMGUI_IMPL_API=extern "C"  ',
 ]
-cxxflags = cflags
 
 gui_dependencies = [
     dependency('threads', required: true, static: get_option('static_executable')),
@@ -45,7 +44,6 @@ hades = executable(
     dependencies: gui_dependencies,
     include_directories: [incdir, gui_incdir],
     c_args: cflags,
-    cpp_args: cxxflags,
     link_args: ldflags,
     link_with: libgba,
 )
