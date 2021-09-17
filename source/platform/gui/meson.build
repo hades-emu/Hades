@@ -21,7 +21,7 @@ cxxflags = cflags
 
 gui_dependencies = [
     dependency('threads', required: true, static: get_option('static_executable')),
-    dependency('opengl', version: '>=3', required: true, static: get_option('static_executable')),
+    dependency('gl', required: true, static: get_option('static_executable')),
     dependency('sdl2', version: '>=2', required: true, static: get_option('static_executable')),
     dependency('glew', required: true, static: get_option('static_executable')),
     meson.get_compiler('c').find_library('dl', required: true),

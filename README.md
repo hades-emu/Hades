@@ -47,6 +47,7 @@ The build dependencies are:
   - `ninja`
   - `GCC`
   - `SDL2` and `SDL2_Image`
+  - `OpenGL`
   - `glew`
 
 On Ubuntu, you can install all those dependencies with:
