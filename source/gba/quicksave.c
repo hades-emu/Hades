@@ -11,8 +11,8 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "gba.h"
-#include "scheduler.h"
+#include "gba/gba.h"
+#include "gba/scheduler.h"
 
 /*
 ** Save the current state of the emulator in the file pointed by `path`.
