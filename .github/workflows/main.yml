@@ -16,12 +16,20 @@ jobs:
       - name: Install Dependencies
         uses: msys2/setup-msys2@v2
         with:
-          install: mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-glew
+          install: make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-glew
       - name: Build Hades
         run: |
-          meson build -Dstatic_executable=true --werror
+          mkdir build
           cd build
-          ninja
+          cmake \
+            .. \
+            -G "Unix Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS="-s" \
+            -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
+            -DGLEW_USE_STATIC_LIBS=ON \
+            -DSDL2_STATIC=ON
+          make -j$(nproc)
       - name: Test Hades
         run: |
           cd build
@@ -42,12 +50,19 @@ jobs:
           submodules: 'recursive'
       - name: Install Dependencies
         run: |
-          brew install meson ninja sdl2 sdl2_image glew
+          brew install sdl2 sdl2_image glew
       - name: Build Hades
         run: |
-          CFLAGS="-Wno-microsoft-anon-tag" meson build --werror
+          mkdir build
           cd build
-          ninja
+          cmake \
+            .. \
+            -G "Unix Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS="-s" \
+            -DGLEW_USE_STATIC_LIBS=ON \
+            -DSDL2_STATIC=ON
+          make -j$(nproc)
       - name: Test Hades
         run: |
           cd build
@@ -69,12 +84,16 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson ninja-build libsdl2-dev libsdl2-image-dev libglew-dev
+          sudo apt-get install -y libsdl2-dev libsdl2-image-dev libglew-dev
       - name: Build Hades
         run: |
-          meson build --werror
+          mkdir build
           cd build
-          ninja
+          cmake \
+            .. \
+            -G "Unix Makefiles" \
+            -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
       - name: Test Hades
         run: |
           cd build

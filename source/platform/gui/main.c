@@ -295,10 +295,6 @@ gui_init(
     app->bg_color.z = 223.f / 255.f;
     app->bg_color.w = 1.00f;
 
-    /* Setup the ImGui File Dialog extension */
-    app->fs_dialog = IGFD_Create();
-    hs_assert(app->fs_dialog);
-
     /* Create the OpenGL texture that will hold the game's output */
     glGenTextures(1, &app->game_texture);
 
@@ -316,9 +312,6 @@ void
 gui_cleanup(
     struct app *app
 ) {
-    /* Cleanup the ImGui File Dialog extension */
-    IGFD_Destroy(app->fs_dialog);
-
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     igDestroyContext(NULL);

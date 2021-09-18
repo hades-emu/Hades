@@ -10,11 +10,6 @@
 #ifndef HADES_H
 # define HADES_H
 
-# define HADES_MAJOR    0
-# define HADES_MINOR    0
-# define HADES_PATCH    1
-# define HADES_VERSION  "0.0.1"
-
 # include <stdatomic.h>
 # include <stdio.h>
 # include <stdint.h>

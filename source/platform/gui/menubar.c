@@ -10,7 +10,6 @@
 #define _GNU_SOURCE
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <cimgui.h>
-#include <ImGuiFileDialog.h>
 #include <stdio.h>
 #include "hades.h"
 #include "gba/gba.h"
@@ -26,17 +25,7 @@ gui_main_menu_bar(
 
         /* File */
         if (igBeginMenu("File", true)) {
-            if (igMenuItemBool("Open", "Ctrl+O", false, true)) {
-                IGFD_OpenModal2(
-                    app->fs_dialog,
-                    "open_rom",
-                    "Choose a ROM file",
-                    ".gba",
-                    "",
-                    1,
-                    NULL,
-                    ImGuiFileDialogFlags_Default | ImGuiFileDialogFlags_DisableCreateDirectoryButton
-                );
+            if (igMenuItemBool("Open", "Ctrl+O", false, false)) {
             }
 
             if (igBeginMenu("Open Recent", false)) {
@@ -179,27 +168,6 @@ gui_main_menu_bar(
                 igCloseCurrentPopup();
             }
             igEndPopup();
-        }
-
-        if (IGFD_DisplayDialog(
-            app->fs_dialog,
-            "open_rom",
-            ImGuiWindowFlags_NoCollapse,
-            (ImVec2){.x = igGetFontSize() * 34.f, .y = igGetFontSize() * 18.f},
-            (ImVec2){.x = FLT_MAX, .y = FLT_MAX}
-        )) {
-            if (IGFD_IsOk(app->fs_dialog)) {
-                free(app->emulation.game_path);
-                hs_assert(-1 != asprintf(
-                    &app->emulation.game_path,
-                    "%s/%s",
-                    IGFD_GetCurrentPath(app->fs_dialog),
-                    IGFD_GetCurrentFileName(app->fs_dialog)
-                ));
-
-                gui_reload_game(app);
-            }
-            IGFD_CloseDialog(app->fs_dialog);
         }
 
         gui_errors(app);
