@@ -238,10 +238,10 @@ gui_init(
     /* High resolution */
     SDL_GetDisplayDPI(0, NULL, &app->dpi, NULL);
     dpi_factor = app->dpi / 96.f;
-    if (dpi_factor >= (uint)dpi_factor + 0.5f) {
-        app->gui_scale = (uint)dpi_factor + 1;
+    if (dpi_factor >= (int)dpi_factor + 0.5f) {
+        app->gui_scale = (int)dpi_factor + 1;
     } else {
-        app->gui_scale = (uint)dpi_factor ? (uint)dpi_factor : 1;
+        app->gui_scale = (int)dpi_factor ? (int)dpi_factor : 1;
     }
 
     /* Create the window */

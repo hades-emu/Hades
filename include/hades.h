@@ -102,10 +102,14 @@ static char const * const modules_str[] = {
     while (0)
 
 /* Return the minimum between `a` and `b`. */
-# define min(a, b)                              ((a) > (b) ? (b) : (a))
+# ifndef min
+#  define min(a, b)                              ((a) > (b) ? (b) : (a))
+# endif /* !min */
 
 /* Return the maximun between `a` and `b`. */
-# define max(a, b)                              ((a) > (b) ? (a) : (b))
+# ifndef max
+#  define max(a, b)                              ((a) > (b) ? (a) : (b))
+# endif /* !max */
 
 /* Return the size of static array */
 # define array_length(array)                    (sizeof(array) / sizeof(*(array)))
