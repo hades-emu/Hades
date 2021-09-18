@@ -4,7 +4,7 @@ project(hades_gui)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_FLAGS "-fms-extensions")
+set(CMAKE_C_FLAGS "-fms-extensions -Wno-microsoft-anon-tag")
 
 set(CIMGUI_DIR "${CMAKE_SOURCE_DIR}/external/cimgui/")
 set(IMGUI_DIR "${CIMGUI_DIR}/imgui")
@@ -42,13 +42,13 @@ add_executable(hades_gui
 # OpenGL
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
-
 # sdl2
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
 # Glew
 find_package(GLEW REQUIRED)
+include_directories(${GLEW_INCLUDE_DIRS})
 
 # pthread
 set(THREADS_PREFER_PTHREAD_FLAG ON)

@@ -64,7 +64,7 @@ jobs:
             -DCMAKE_C_FLAGS="-s" \
             -DGLEW_USE_STATIC_LIBS=ON \
             -DSDL2_STATIC=ON
-          make -j$(nproc)
+          make -j$(sysctl -n hw.availcpu)
       - name: Test Hades
         run: |
           cd build
