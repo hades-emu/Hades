@@ -11,8 +11,9 @@
 # define PLATFORM_GUI_H
 
 # include <stdio.h>
+# define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+# include <GL/glew.h>
 # include <SDL2/SDL.h>
-# include <GL/gl.h>
 # include <cimgui.h>
 
 struct gba;

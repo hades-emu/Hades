@@ -42,9 +42,10 @@ add_executable(hades_gui
 # OpenGL
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
+
 # sdl2
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_INCLUDE_DIR})
 
 # Glew
 find_package(GLEW REQUIRED)

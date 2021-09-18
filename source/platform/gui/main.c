@@ -8,6 +8,7 @@
 \******************************************************************************/
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include <GL/glew.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
 
@@ -17,9 +18,6 @@
 #ifdef _MSC_VER
 # include <windows.h>
 #endif
-
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 #include <pthread.h>
 #include <stdio.h>
@@ -39,8 +37,6 @@
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
 #include "platform/gui.h"
-
-int glewInit(void);
 
 /*
 ** Print the program's usage.

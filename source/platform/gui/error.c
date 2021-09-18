@@ -19,8 +19,8 @@ gui_new_error(
 ) {
     free(app->error);
     app->error = error;
+    logln(HS_ERROR, "Error: %s", app->error);
     igOpenPopup("Error", ImGuiPopupFlags_None);
-    logln(HS_ERROR, "Error: %s\n", app->error);
 }
 
 void

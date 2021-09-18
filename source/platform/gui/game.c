@@ -11,8 +11,8 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <errno.h>
 #include <stdio.h>
+#include <GL/glew.h>
 #include <cimgui.h>
-#include <GL/gl.h>
 #include "hades.h"
 #include "platform/gui.h"
 #include "gba/gba.h"
