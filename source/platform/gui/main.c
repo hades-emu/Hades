@@ -13,7 +13,7 @@
 #include <cimgui_impl.h>
 
 #define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #ifdef _MSC_VER
 # include <windows.h>

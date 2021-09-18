@@ -45,7 +45,7 @@ find_package(OpenGL REQUIRED)
 
 # sdl2
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_INCLUDE_DIR})
+include_directories(${SDL2_INCLUDE_DIR})
 
 # Glew
 find_package(GLEW REQUIRED)
@@ -55,7 +55,7 @@ include_directories(${GLEW_INCLUDE_DIRS})
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-target_link_libraries(hades_gui gba common OpenGL::GL GLEW::GLEW Threads::Threads ${SDL2_LIBRARIES})
+target_link_libraries(hades_gui gba common OpenGL::GL GLEW::GLEW Threads::Threads ${SDL2_LIBRARY})
 
 add_custom_command(
     TARGET hades_gui POST_BUILD
