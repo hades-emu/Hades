@@ -54,10 +54,11 @@ find_package(GLEW REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-target_link_libraries(hades_gui gba common OpenGL::OpenGL GLEW::GLEW Threads::Threads ${SDL2_LIBRARIES})
+target_link_libraries(hades_gui gba common OpenGL::GL GLEW::GLEW Threads::Threads ${SDL2_LIBRARIES})
 
 add_custom_command(
-        TARGET hades_gui POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                hades_gui
-                ${CMAKE_BINARY_DIR}/hades)
+    TARGET hades_gui POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        hades_gui
+        ${CMAKE_BINARY_DIR}/hades
+)

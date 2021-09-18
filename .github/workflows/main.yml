@@ -19,6 +19,7 @@ jobs:
           install: make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-glew
       - name: Build Hades
         run: |
+          cmake --version
           mkdir build
           cd build
           cmake \
@@ -53,6 +54,7 @@ jobs:
           brew install sdl2 sdl2_image glew
       - name: Build Hades
         run: |
+          cmake --version
           mkdir build
           cd build
           cmake \
@@ -87,6 +89,7 @@ jobs:
           sudo apt-get install -y libsdl2-dev libsdl2-image-dev libglew-dev
       - name: Build Hades
         run: |
+          cmake --version
           mkdir build
           cd build
           cmake \
