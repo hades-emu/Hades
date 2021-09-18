@@ -54,7 +54,7 @@ find_package(GLEW REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-target_link_libraries(hades_gui gba common OpenGL::OpenGL SDL2::SDL2 GLEW::GLEW Threads::Threads)
+target_link_libraries(hades_gui gba common OpenGL::OpenGL GLEW::GLEW Threads::Threads ${SDL2_LIBRARY})
 
 add_custom_command(
         TARGET hades_gui POST_BUILD
