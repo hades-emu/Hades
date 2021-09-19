@@ -59,7 +59,5 @@ target_link_libraries(hades_gui gba common OpenGL::GL GLEW::GLEW Threads::Thread
 
 add_custom_command(
     TARGET hades_gui POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        hades_gui
-        ${CMAKE_BINARY_DIR}/hades
-)
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:hades_gui> ${CMAKE_BINARY_DIR}/hades$<TARGET_FILE_SUFFIX:hades_gui>
+    )
