@@ -172,7 +172,7 @@ gui_main_menu_bar(
             spacing = igGetStyle()->ItemSpacing.x;
 
             igSameLine(igGetWindowWidth() - (app->menubar_fps_width + spacing * 2), 1);
-            igText("FPS: %u (%u%%)", app->emulation.fps, (uint)(app->emulation.fps / 60.0 * 100.0));
+            igText("FPS: %u (%u%%)", app->emulation.fps, (unsigned)(app->emulation.fps / 60.0 * 100.0));
             igGetItemRectSize(&out);
             app->menubar_fps_width = out.x;
         }
