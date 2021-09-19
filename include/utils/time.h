@@ -14,10 +14,26 @@
 
 # if defined (_WIN32) && !defined (__CYGWIN__)
 
+#  include <windows.h>
 #  include <sysinfoapi.h>
 #  include <synchapi.h>
 
-#  define hs_msleep(x)           Sleep(x)
+static
+inline
+void
+hs_usleep(
+    uint64_t x
+) {
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * x);
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+}
 
 static
 inline
