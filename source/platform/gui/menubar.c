@@ -12,6 +12,7 @@
 #include <cimgui.h>
 #include <stdio.h>
 #include <ImGuiFileDialog.h>
+#include <float.h>
 #include "hades.h"
 #include "gba/gba.h"
 #include "platform/gui.h"
@@ -49,6 +50,10 @@ gui_main_menu_bar(
                 }
                 igEndMenu();
             }
+
+            igSeparator();
+
+            igMenuItemBool("Screenshot", "F2", false, false);
 
             igSeparator();
 
