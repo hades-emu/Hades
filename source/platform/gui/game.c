@@ -335,7 +335,10 @@ gui_game_handle_events(
                     case SDLK_o:                gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_R, false)); break;
                     case SDLK_BACKSPACE:        gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_SELECT, false)); break;
                     case SDLK_RETURN:           gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_START, false)); break;
-                    //case SDLK_F2:               sdl_take_screenshot(app); break;
+                    case SDLK_F1:
+                        app->emulation.unbounded ^= 1;
+                        gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed * !app->emulation.unbounded));
+                        break;
                     case SDLK_F5:               gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_QUICKSAVE()); break;
                     case SDLK_F8:               gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_QUICKLOAD()); break;
                     default:

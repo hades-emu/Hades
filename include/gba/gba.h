@@ -58,6 +58,11 @@ struct message {
     size_t size;
 };
 
+struct message_run {
+    struct message super;
+    uint32_t speed; // 0 means unbounded (no fps cap).
+};
+
 struct message_keyinput {
     struct message super;
     enum keyinput key;
@@ -86,6 +91,7 @@ struct message_queue {
 
 struct gba {
     enum gba_state state;
+    uint32_t speed;
 
     struct core core;
     struct memory memory;
@@ -127,10 +133,13 @@ struct gba {
         .size = sizeof(struct message),                 \
     }))
 
-# define NEW_MESSAGE_RUN()                              \
-    (&((struct message){                                \
-        .type = MESSAGE_RUN,                            \
-        .size = sizeof(struct message),                 \
+# define NEW_MESSAGE_RUN(_speed)                        \
+    ((struct message *)&((struct message_run){          \
+        .super = (struct message){                      \
+            .size = sizeof(struct message_run),         \
+            .type = MESSAGE_RUN,                        \
+        },                                              \
+        .speed = (_speed),                              \
     }))
 
 # define NEW_MESSAGE_PAUSE()                            \

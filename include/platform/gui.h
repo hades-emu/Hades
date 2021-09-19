@@ -36,6 +36,7 @@ struct emulation {
     bool pause;
     bool enabled;
     uint32_t speed;
+    bool unbounded;
 };
 
 struct app {

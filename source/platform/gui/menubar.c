@@ -77,12 +77,12 @@ gui_main_menu_bar(
                 if (app->emulation.pause) {
                     gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_PAUSE());
                 } else {
-                    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN());
+                    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed));
                 }
             }
 
             /* Speed */
-            if (igBeginMenu("Speed", false)) {
+            if (igBeginMenu("Speed", true)) {
                 uint32_t x;
                 char const *speed[] = {
                     "Unbounded",
@@ -94,12 +94,17 @@ gui_main_menu_bar(
                 };
 
                 for (x = 0; x <= 5; ++x) {
-                    if (igMenuItemBool(speed[x], NULL, app->emulation.speed == x, false)) {
-                        app->emulation.speed = x;
-                    }
-
                     if (!x) {
+                        if (igMenuItemBool(speed[x], "F1", app->emulation.unbounded, true)) {
+                            app->emulation.unbounded ^= 1;
+                            gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed * !app->emulation.unbounded));
+                        }
                         igSeparator();
+                    } else {
+                        if (igMenuItemBool(speed[x], NULL, app->emulation.speed == x, !app->emulation.unbounded)) {
+                            app->emulation.speed = x;
+                            gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed));
+                        }
                     }
                 }
 

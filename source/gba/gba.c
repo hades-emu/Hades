@@ -12,6 +12,7 @@
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
 #include "gba/gba.h"
+#include "utils/time.h"
 
 /*
 ** Initialize the `gba` structure with sane, default values.
@@ -62,6 +63,13 @@ void
 gba_run(
     struct gba *gba
 ) {
+    uint64_t last_measured_time;
+    uint64_t accumulated_time;
+    uint64_t time_per_frame;
+
+    last_measured_time = hs_tick_count();
+    accumulated_time = 0;
+    time_per_frame = 0;
     while (true) {
         struct message_queue *mqueue;
         struct message *message;
@@ -128,7 +136,17 @@ gba_run(
                     break;
                 };
                 case MESSAGE_RUN: {
+                    struct message_run *message_run;
+
+                    message_run = (struct message_run *)message;
                     gba->state = GBA_STATE_RUN;
+                    gba->speed = message_run->speed;
+                    if (message_run->speed) {
+                        time_per_frame = 1.f/59.737f * 1000.f * 1000.f / (float)gba->speed;
+                        accumulated_time = 0;
+                    } else {
+                        time_per_frame = 0.f;
+                    }
                     break;
                 };
                 case MESSAGE_PAUSE: {
@@ -151,7 +169,6 @@ gba_run(
                         case KEY_START:     gba->io.keyinput.start = !message_keyinput->pressed; break;
                         case KEY_SELECT:    gba->io.keyinput.select = !message_keyinput->pressed; break;
                     };
-
                     break;
                 };
                 case MESSAGE_QUICKLOAD: {
@@ -172,8 +189,29 @@ gba_run(
 
         pthread_mutex_unlock(&gba->message_queue[FRONT_TO_EMULATOR].lock);
 
-        if (gba->state == GBA_STATE_RUN > 0) {
+        if (gba->state == GBA_STATE_RUN) {
             sched_run_for(gba, CYCLES_PER_FRAME);
+        }
+
+        /* Limit FPS */
+        if (gba->speed) {
+            uint64_t now;
+
+            now = hs_tick_count();
+            accumulated_time += now - last_measured_time;
+            last_measured_time = now;
+
+            if (accumulated_time < time_per_frame) {
+                hs_usleep(time_per_frame - accumulated_time);
+                now = hs_tick_count();
+                accumulated_time += now - last_measured_time;
+                last_measured_time = now;
+            }
+            hs_assert(accumulated_time >= time_per_frame);
+            accumulated_time -= time_per_frame;
+        } else {
+            last_measured_time = hs_tick_count();
+            accumulated_time = 0;
         }
     }
 }

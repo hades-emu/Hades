@@ -418,7 +418,7 @@ main(
     /* If a game was supplied in the CLI argument, launch it now */
     if (app.emulation.game_path) {
         gui_reload_game(&app);
-        gba_f2e_message_push(app.emulation.gba, NEW_MESSAGE_RUN());
+        gba_f2e_message_push(app.emulation.gba, NEW_MESSAGE_RUN(1));
     }
 
     app.run = true;
