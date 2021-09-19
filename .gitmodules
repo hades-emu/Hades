@@ -1,5 +1,5 @@
 [submodule "external/nativefiledialog"]
-	path = external/nativefiledialog
+	path = external/nfd
 	url = https://github.com/btzy/nativefiledialog-extended.git
 [submodule "external/cimgui"]
 	path = external/cimgui
