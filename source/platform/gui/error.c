@@ -49,7 +49,7 @@ gui_errors(
         NULL,
         ImGuiWindowFlags_Popup | ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar
     )) {
-        igText("Error: %s", app->error);
+        igTextWrapped("Error: %s", app->error);
         igSpacing();
         igSpacing();
         igSpacing();
