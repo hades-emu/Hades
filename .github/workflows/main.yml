@@ -95,7 +95,9 @@ jobs:
           cmake \
             .. \
             -G "Unix Makefiles" \
-            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_BUILD_TYPE=Release \
+            -DGLEW_USE_STATIC_LIBS=ON \
+            -DSDL2_STATIC=ON
           make -j$(nproc)
       - name: Test Hades
         run: |
