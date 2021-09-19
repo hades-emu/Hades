@@ -15,6 +15,7 @@
 # include <GL/glew.h>
 # include <SDL2/SDL.h>
 # include <cimgui.h>
+# include <ImGuiFileDialog.h>
 
 struct gba;
 
@@ -42,6 +43,8 @@ struct app {
     SDL_GLContext gl_context;
     ImGuiIO* ioptr;
     ImVec4 bg_color;
+
+    ImGuiFileDialog *fs_dialog;
 
     struct debugger debugger;
     struct emulation emulation;

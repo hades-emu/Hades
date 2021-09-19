@@ -8,6 +8,7 @@ set(CMAKE_C_FLAGS "-fms-extensions -Wno-microsoft-anon-tag")
 
 set(CIMGUI_DIR "${CMAKE_SOURCE_DIR}/external/cimgui/")
 set(IMGUI_DIR "${CIMGUI_DIR}/imgui")
+set(IGFD_DIR "${CMAKE_SOURCE_DIR}/external/imgui_file_dialog/")
 
 if (WIN32)
     add_definitions("-DIMGUI_IMPL_API=extern \"C\" __declspec\(dllexport\)")
@@ -19,9 +20,10 @@ add_definitions("-DHADES_VERSION=\"${HADES_VERSION}\"")
 
 include_directories(
     "${CMAKE_SOURCE_DIR}/include/"
-    "${CIMGUI_DIR}"
+    "${CIMGUI_DIR}/"
     "${CIMGUI_DIR}/generator/output/"
-    "${IMGUI_DIR}"
+    "${IMGUI_DIR}/"
+    "${IGFD_DIR}/"
 )
 
 add_executable(hades_gui
@@ -37,6 +39,7 @@ add_executable(hades_gui
     "${IMGUI_DIR}/imgui_widgets.cpp"
     "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
     "${IMGUI_DIR}/backends/imgui_impl_sdl.cpp"
+    "${IGFD_DIR}/ImGuiFileDialog.cpp"
 )
 
 # OpenGL

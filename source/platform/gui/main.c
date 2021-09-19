@@ -298,6 +298,10 @@ gui_init(
     app->controller = NULL;
     app->joystick_idx = -1;
     app->controller_connected = false;
+
+    /* Setup the ImGui File Dialog extension */
+    app->fs_dialog = IGFD_Create();
+    hs_assert(app->fs_dialog);
 }
 
 /*
@@ -308,6 +312,9 @@ void
 gui_cleanup(
     struct app *app
 ) {
+    /* Cleanup the ImGui File Dialog extension */
+    IGFD_Destroy(app->fs_dialog);
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     igDestroyContext(NULL);
