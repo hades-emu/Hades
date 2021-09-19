@@ -1,6 +1,7 @@
-[submodule "external/nativefiledialog"]
-	path = external/nfd
-	url = https://github.com/btzy/nativefiledialog-extended.git
 [submodule "external/cimgui"]
 	path = external/cimgui
 	url = https://github.com/cimgui/cimgui.git
+[submodule "external/imgui_file_dialog"]
+	path = external/imgui_file_dialog
+	url = https://github.com/aiekick/ImGuiFileDialog.git
+	branch = Lib_Only
