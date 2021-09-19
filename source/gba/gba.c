@@ -65,11 +65,9 @@ gba_run(
     while (true) {
         struct message_queue *mqueue;
         struct message *message;
-        uint64_t cycles_to_run;
 
         pthread_mutex_lock(&gba->message_queue[FRONT_TO_EMULATOR].lock);
 
-        cycles_to_run = 0;
         mqueue = &gba->message_queue[FRONT_TO_EMULATOR];
         message = mqueue->messages;
         while (mqueue->length) {
@@ -127,11 +125,14 @@ gba_run(
                 };
                 case MESSAGE_RESET: {
                     gba_reset(gba);
-                    cycles_to_run = 0;
                     break;
                 };
-                case MESSAGE_RUN_FRAME: {
-                    cycles_to_run = CYCLES_PER_FRAME;
+                case MESSAGE_RUN: {
+                    gba->state = GBA_STATE_RUN;
+                    break;
+                };
+                case MESSAGE_PAUSE: {
+                    gba->state = GBA_STATE_PAUSE;
                     break;
                 };
                 case MESSAGE_KEYINPUT: {
@@ -171,8 +172,8 @@ gba_run(
 
         pthread_mutex_unlock(&gba->message_queue[FRONT_TO_EMULATOR].lock);
 
-        if (cycles_to_run > 0) {
-            sched_run_for(gba, cycles_to_run);
+        if (gba->state == GBA_STATE_RUN > 0) {
+            sched_run_for(gba, CYCLES_PER_FRAME);
         }
     }
 }

@@ -16,6 +16,11 @@
 # include "gba/io.h"
 # include "gba/scheduler.h"
 
+enum gba_state {
+    GBA_STATE_PAUSE = 0,
+    GBA_STATE_RUN,
+};
+
 enum message_direction {
     FRONT_TO_EMULATOR = 0,
     EMULATOR_TO_FRONT = 1,
@@ -28,7 +33,8 @@ enum message_type {
     MESSAGE_LOAD_BACKUP,
     MESSAGE_BACKUP_TYPE,
     MESSAGE_RESET,
-    MESSAGE_RUN_FRAME,
+    MESSAGE_RUN,
+    MESSAGE_PAUSE,
     MESSAGE_KEYINPUT,
     MESSAGE_QUICKLOAD,
     MESSAGE_QUICKSAVE,
@@ -79,6 +85,8 @@ struct message_queue {
 };
 
 struct gba {
+    enum gba_state state;
+
     struct core core;
     struct memory memory;
     struct io io;
@@ -94,6 +102,7 @@ struct gba {
     ** The emulator's screen.
     */
     uint32_t framebuffer[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+    uint32_t framecounter;
 };
 
 # define NEW_MESSAGE_KEYINPUT(_key, _pressed)           \
@@ -118,9 +127,15 @@ struct gba {
         .size = sizeof(struct message),                 \
     }))
 
-# define NEW_MESSAGE_RUN_FRAME()                        \
+# define NEW_MESSAGE_RUN()                              \
     (&((struct message){                                \
-        .type = MESSAGE_RUN_FRAME,                      \
+        .type = MESSAGE_RUN,                            \
+        .size = sizeof(struct message),                 \
+    }))
+
+# define NEW_MESSAGE_PAUSE()                            \
+    (&((struct message){                                \
+        .type = MESSAGE_PAUSE,                          \
         .size = sizeof(struct message),                 \
     }))
 

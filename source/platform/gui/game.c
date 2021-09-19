@@ -212,9 +212,9 @@ gui_reload_game(
 
     if (!gui_load_bios(app) && !gui_load_rom(app) && !gui_load_save(app)) {
         app->emulation.enabled = true;
-
         gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RESET());
     }
+
     app->bg_color.x = 0.f;
     app->bg_color.y = 0.f;
     app->bg_color.z = 0.f;

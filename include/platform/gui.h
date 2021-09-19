@@ -31,6 +31,8 @@ struct emulation {
     FILE *backup_file;
     char const *bios_path;
 
+    uint32_t fps;
+
     bool pause;
     bool enabled;
     uint32_t speed;
@@ -51,6 +53,7 @@ struct app {
 
     GLuint game_texture;
     uint32_t menubar_height;
+    float menubar_fps_width;
 
     /* High resolution */
     float dpi;

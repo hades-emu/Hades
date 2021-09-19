@@ -53,10 +53,6 @@ gui_main_menu_bar(
 
             igSeparator();
 
-            igMenuItemBool("Screenshot", "F2", false, false);
-
-            igSeparator();
-
             igMenuItemBool("Key Bindings", NULL, false, false);
             igEndMenu();
         }
@@ -75,7 +71,15 @@ gui_main_menu_bar(
             igSeparator();
 
             /* Pause */
-            igMenuItemBoolPtr("Pause", NULL, &app->emulation.pause, app->emulation.enabled);
+            if (igMenuItemBool("Pause", NULL, app->emulation.pause, app->emulation.enabled)) {
+                app->emulation.pause ^= 1;
+
+                if (app->emulation.pause) {
+                    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_PAUSE());
+                } else {
+                    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN());
+                }
+            }
 
             /* Speed */
             if (igBeginMenu("Speed", false)) {
@@ -101,6 +105,9 @@ gui_main_menu_bar(
 
                 igEndMenu();
             }
+
+            /* Take a screenshot */
+            igMenuItemBool("Screenshot", "F2", false, false);
 
             /* Display Size */
             if (igBeginMenu("Display size", true)) {
@@ -155,6 +162,19 @@ gui_main_menu_bar(
         /* About */
         if (igMenuItemBool("About", NULL, true, true)) {
             igOpenPopup("About", ImGuiPopupFlags_None);
+        }
+
+        /* FPS Counter */
+        if (app->emulation.enabled && !app->emulation.pause) {
+            float spacing;
+            ImVec2 out;
+
+            spacing = igGetStyle()->ItemSpacing.x;
+
+            igSameLine(igGetWindowWidth() - (app->menubar_fps_width + spacing * 2), 1);
+            igText("FPS: %u (%u%%)", app->emulation.fps, (uint)(app->emulation.fps / 60.0 * 100.0));
+            igGetItemRectSize(&out);
+            app->menubar_fps_width = out.x;
         }
 
         /*

@@ -378,6 +378,7 @@ main(
 ) {
     pthread_t logic_thread;
     struct app app;
+    uint32_t last_fps_update;
 
     memset(&app, 0, sizeof(app));
     app.emulation.enabled = false;
@@ -417,11 +418,13 @@ main(
     /* If a game was supplied in the CLI argument, launch it now */
     if (app.emulation.game_path) {
         gui_reload_game(&app);
+        gba_f2e_message_push(app.emulation.gba, NEW_MESSAGE_RUN());
     }
 
     app.run = true;
     while (app.run) {
         SDL_Event event;
+        uint32_t now;
 
         /* Handle all SDL events */
         while (SDL_PollEvent(&event) != 0) {
@@ -479,9 +482,14 @@ main(
 
         }
 
-        /* Run one frame of emulation */
+        /* Update the FPS every second */
         if (app.emulation.enabled && !app.emulation.pause) {
-            gba_f2e_message_push(app.emulation.gba, NEW_MESSAGE_RUN_FRAME());
+            now = SDL_GetTicks();
+            if ((now - last_fps_update) >= 1000) {
+                app.emulation.fps = app.emulation.gba->framecounter;
+                app.emulation.gba->framecounter = 0;
+                last_fps_update = now;
+            }
         }
 
         /* Render the frame */
