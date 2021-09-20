@@ -30,6 +30,7 @@ jobs:
             -DCMAKE_C_FLAGS="-s" \
             -DCI_WIN32_PACKAGING=1
           make -j$(nproc)
+          ls -l dll/
       - name: Test Hades
         run: |
           cd build

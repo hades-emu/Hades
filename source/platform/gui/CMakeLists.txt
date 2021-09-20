@@ -81,5 +81,6 @@ if(CI_WIN32_PACKAGING)
     add_custom_command(
         TARGET hades_gui POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:hades_gui> ${CMAKE_BINARY_DIR}/dll/
+        COMMAND_EXPAND_LISTS
     )
 endif(CI_WIN32_PACKAGING)
