@@ -24,7 +24,7 @@ gui_new_error(
 }
 
 void
-gui_errors(
+gui_render_errors(
     struct app *app
 ) {
     ImVec4 title;

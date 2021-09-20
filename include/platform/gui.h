@@ -71,14 +71,21 @@ struct app {
 
 /* error.c */
 void gui_new_error(struct app *app, char *error);
-void gui_errors(struct app *app);
+void gui_render_errors(struct app *app);
 
-/* game.c */
-void gui_game_fullscreen(struct app *app);
+/* game/game.c */
 void gui_game_handle_events(struct app *app, SDL_Event *event);
-void gui_reload_game(struct app *app);
+void gui_game_reload(struct app *app);
+void gui_game_pause(struct app *app);
+void gui_game_run(struct app *app);
+
+/* game/render.c */
+void gui_render_game_fullscreen(struct app *app);
+
+/* game/screenshot.c */
+void gui_game_screenshot(struct app *app);
 
 /* menubar.c */
-void gui_main_menu_bar(struct app *app);
+void gui_render_menubar(struct app *app);
 
 #endif /* !PLATFORM_GUI_H */

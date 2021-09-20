@@ -259,7 +259,7 @@ gui_init(
     app->gl_context = SDL_GL_CreateContext(app->window);
 
     /* Enable VSync */
-    SDL_GL_SetSwapInterval(0);
+    SDL_GL_SetSwapInterval(1);
 
     /* Initialize OpenGL */
     if (glewInit()) {
@@ -339,16 +339,12 @@ gui_render_frame(
     ImGui_ImplSDL2_NewFrame(app->window);
     igNewFrame();
 
-    /* Draw the main menu bar */
-    gui_main_menu_bar(app);
+    /* Render the main menu bar */
+    gui_render_menubar(app);
 
-    /* Draw the game */
-    gui_game_fullscreen(app);
+    /* Render the game */
+    gui_render_game_fullscreen(app);
 
-    /* Draw any error modal */
-    gui_errors(app);
-
-    /* Render */
     igRender();
 
     SDL_GL_MakeCurrent(app->window, app->gl_context);
@@ -417,8 +413,8 @@ main(
 
     /* If a game was supplied in the CLI argument, launch it now */
     if (app.emulation.game_path) {
-        gui_reload_game(&app);
-        gba_f2e_message_push(app.emulation.gba, NEW_MESSAGE_RUN(1));
+        gui_game_reload(&app);
+        gui_game_run(&app);
     }
 
     app.run = true;

@@ -18,7 +18,7 @@
 #include "platform/gui.h"
 
 void
-gui_main_menu_bar(
+gui_render_menubar(
     struct app *app
 ) {
     ImVec2 menubar_size;
@@ -75,9 +75,9 @@ gui_main_menu_bar(
                 app->emulation.pause ^= 1;
 
                 if (app->emulation.pause) {
-                    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_PAUSE());
+                    gui_game_pause(app);
                 } else {
-                    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed));
+                    gui_game_run(app);
                 }
             }
 
@@ -112,7 +112,9 @@ gui_main_menu_bar(
             }
 
             /* Take a screenshot */
-            igMenuItemBool("Screenshot", "F2", false, false);
+            if (igMenuItemBool("Screenshot", "F2", false, true)) {
+                gui_game_screenshot(app);
+            }
 
             /* Display Size */
             if (igBeginMenu("Display size", true)) {
@@ -153,7 +155,7 @@ gui_main_menu_bar(
 
             /* Reset */
             if (igMenuItemBool("Reset", NULL, false, app->emulation.enabled)) {
-                gui_reload_game(app);
+                gui_game_reload(app);
             }
             igEndMenu();
         }
@@ -227,12 +229,12 @@ gui_main_menu_bar(
                     IGFD_GetCurrentFileName(app->fs_dialog)
                 ));
 
-                gui_reload_game(app);
+                gui_game_reload(app);
             }
             IGFD_CloseDialog(app->fs_dialog);
         }
 
-        gui_errors(app);
+        gui_render_errors(app);
 
         igEndMainMenuBar();
     }

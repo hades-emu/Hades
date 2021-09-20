@@ -104,10 +104,14 @@ struct gba {
     */
     struct message_queue message_queue[2];
 
-    /*
-    ** The emulator's screen.
-    */
+    /* The emulator's screen as it is being rendered. */
     uint32_t framebuffer[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+
+    /* The emulator's screen, refreshed each frame, used by the frontend */
+    uint32_t framebuffer_frontend[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+    pthread_mutex_t framebuffer_frontend_mutex;
+
+    /* The frame counter, used for FPS calculations. */
     uint32_t framecounter;
 };
 

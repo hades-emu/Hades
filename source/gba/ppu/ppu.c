@@ -258,6 +258,16 @@ ppu_hdraw(
     if (io->vcount.raw >= GBA_SCREEN_REAL_HEIGHT) {
         io->vcount.raw = 0;
         gba->framecounter += 1;
+
+        /*
+        ** Now that the frame is finished, we can copy the current framebuffer to
+        ** the one the frontend uses.
+        **
+        ** Doing it now will avoid tearing.
+        */
+        pthread_mutex_lock(&gba->framebuffer_frontend_mutex);
+        memcpy(gba->framebuffer_frontend, gba->framebuffer, sizeof(gba->framebuffer));
+        pthread_mutex_unlock(&gba->framebuffer_frontend_mutex);
     }
 
     io->dispstat.vcount_eq = (io->vcount.raw == io->dispstat.vcount_val );

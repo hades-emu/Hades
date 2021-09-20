@@ -32,7 +32,9 @@ include_directories(
 add_executable(hades_gui
     "main.c"
     "error.c"
-    "game.c"
+    "game/game.c"
+    "game/render.c"
+    "game/screenshot.c"
     "menubar.c"
     "${CIMGUI_DIR}/cimgui.cpp"
     "${IMGUI_DIR}/imgui.cpp"
@@ -53,6 +55,10 @@ find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 
+# sdl2_image
+find_package(SDL2_image REQUIRED)
+include_directories(${SDL2_IMAGE_INCLUDE_DIR})
+
 # Glew
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
@@ -61,7 +67,7 @@ include_directories(${GLEW_INCLUDE_DIRS})
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-target_link_libraries(hades_gui gba common OpenGL::GL GLEW::GLEW Threads::Threads ${SDL2_LIBRARY})
+target_link_libraries(hades_gui gba common OpenGL::GL GLEW::GLEW Threads::Threads ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
 
 add_custom_command(
     TARGET hades_gui POST_BUILD
