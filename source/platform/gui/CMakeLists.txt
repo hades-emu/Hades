@@ -69,8 +69,7 @@ find_package(Threads REQUIRED)
 
 target_link_libraries(
     hades_gui
-    gba common Threads::Threads
-    OpenGL::GL GLEW::GLEW ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
+    gba common Threads::Threads OpenGL::GL GLEW::GLEW ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
 )
 
 add_custom_command(
