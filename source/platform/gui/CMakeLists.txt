@@ -64,12 +64,23 @@ find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_DIRS})
 
 # pthread
-set(THREADS_PREFER_PTHREAD_FLAG ON)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads REQUIRED)
 
-target_link_libraries(hades_gui gba common OpenGL::GL GLEW::GLEW Threads::Threads ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
+target_link_libraries(
+    hades_gui
+    gba common Threads::Threads
+    OpenGL::GL GLEW::GLEW ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
+)
 
 add_custom_command(
     TARGET hades_gui POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:hades_gui> ${CMAKE_BINARY_DIR}/hades$<TARGET_FILE_SUFFIX:hades_gui>
+)
+
+if(CI_WIN32_PACKAGING)
+    add_custom_command(
+        TARGET hades_gui POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:hades_gui> ${CMAKE_BINARY_DIR}/dll/
     )
+endif(CI_WIN32_PACKAGING)

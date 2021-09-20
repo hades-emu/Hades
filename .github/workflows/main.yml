@@ -26,10 +26,7 @@ jobs:
             .. \
             -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_FLAGS="-s" \
-            -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" \
-            -DGLEW_USE_STATIC_LIBS=ON \
-            -DSDL2_STATIC=ON
+            -DCI_WIN32_PACKAGING
           make -j$(nproc)
       - name: Test Hades
         run: |
@@ -39,7 +36,9 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: hades-win64
-          path: build/hades.exe
+          path: |
+            build/hades.exe
+            build/dll/
           if-no-files-found: error
 
   mac-os:
@@ -62,8 +61,7 @@ jobs:
             -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS="-s" \
-            -DGLEW_USE_STATIC_LIBS=ON \
-            -DSDL2_STATIC=ON
+            -DGLEW_USE_STATIC_LIBS=ON
           make -j$(sysctl -n hw.availcpu)
       - name: Test Hades
         run: |
