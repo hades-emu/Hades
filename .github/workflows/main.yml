@@ -27,7 +27,7 @@ jobs:
             -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS="-s" \
-            -DCI_WIN32_PACKAGING
+            -DCI_WIN32_PACKAGING=1
           make -j$(nproc)
       - name: Test Hades
         run: |
