@@ -27,7 +27,6 @@ jobs:
             .. \
             -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_FLAGS="-s" \
             -DCI_WIN32_PACKAGING=1
           make -j$(nproc)
           ls -l dll/
@@ -41,7 +40,7 @@ jobs:
           name: hades-win64
           path: |
             build/hades.exe
-            build/dll/
+            build/dll/*
           if-no-files-found: error
 
   mac-os:
