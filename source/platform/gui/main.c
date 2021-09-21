@@ -13,7 +13,7 @@
 #include <cimgui_impl.h>
 
 #define SDL_MAIN_HANDLED
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #ifdef _MSC_VER
 # include <windows.h>
@@ -418,6 +418,7 @@ main(
     }
 
     app.run = true;
+    last_fps_update = SDL_GetTicks();
     while (app.run) {
         SDL_Event event;
         uint32_t now;

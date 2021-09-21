@@ -10,7 +10,7 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <stdio.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include "hades.h"
 #include "platform/gui.h"
 #include "gba/gba.h"

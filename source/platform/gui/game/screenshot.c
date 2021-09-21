@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <GL/glew.h>
-#include <SDL_image.h>
+#include <SDL2/SDL_image.h>
 #include "hades.h"
 #include "platform/gui.h"
 #include "gba/gba.h"

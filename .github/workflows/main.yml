@@ -19,17 +19,9 @@ jobs:
           install: make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-glew
       - name: Build Hades
         run: |
-          cmake --version
-          mkdir build
+          meson build -Dstatic_executable=true
           cd build
-          mkdir dll
-          cmake \
-            .. \
-            -G "Unix Makefiles" \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCI_WIN32_PACKAGING=1
-          make -j$(nproc)
-          ls -l dll/
+          ninja
       - name: Test Hades
         run: |
           cd build
@@ -38,9 +30,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: hades-win64
-          path: |
-            build/hades.exe
-            build/dll/*
+          path: build/hades.exe
           if-no-files-found: error
 
   mac-os:
@@ -55,16 +45,9 @@ jobs:
           brew install sdl2 sdl2_image glew
       - name: Build Hades
         run: |
-          cmake --version
-          mkdir build
+          CFLAGS="-Wno-microsoft-anon-tag" meson build --werror
           cd build
-          cmake \
-            .. \
-            -G "Unix Makefiles" \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_FLAGS="-s" \
-            -DGLEW_USE_STATIC_LIBS=ON
-          make -j$(sysctl -n hw.availcpu)
+          ninja
       - name: Test Hades
         run: |
           cd build
@@ -89,14 +72,9 @@ jobs:
           sudo apt-get install -y libsdl2-dev libsdl2-image-dev libglew-dev
       - name: Build Hades
         run: |
-          cmake --version
-          mkdir build
+          meson build --werror
           cd build
-          cmake \
-            .. \
-            -G "Unix Makefiles" \
-            -DCMAKE_BUILD_TYPE=Release
-          make -j$(nproc)
+          ninja
       - name: Test Hades
         run: |
           cd build
