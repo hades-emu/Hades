@@ -13,7 +13,6 @@
 
 cflags += [
     '-DIMGUI_IMPL_API=extern "C"  ',
-    '-DGLEW_STATIC',
 ]
 
 imgui_inc = include_directories(
@@ -26,7 +25,7 @@ imgui_inc = include_directories(
 imgui_dep = [
     dependency('sdl2', version: '>=2', required: true, static: get_option('static_executable')),
     dependency('SDL2_image', version: '>=2', required: true, static: get_option('static_executable')),
-    dependency('glew', required: true, static: true),
+    dependency('glew', required: true, static: get_option('static_executable')),
 ]
 
 if host_machine.system() == 'darwin'
@@ -47,6 +46,10 @@ endif
 
 # For some reasons, static sdl2 on windows fail if we do not explicitely ask for its dependencies
 if get_option('static_executable')
+    cflags += [
+        '-DGLEW_STATIC',
+    ]
+
     imgui_dep += [
         dependency('libpng', required: true, static: true),
         dependency('libjpeg', required: true, static: true),
@@ -54,33 +57,6 @@ if get_option('static_executable')
         dependency('libwebp', required: true, static: true),
     ]
 endif
-
-#dlopen_dlsym_test_code = '''
-##include <dlfcn.h>
-##include <stdlib.h>
-#
-#int
-#main(
-#    int argc,
-#    char const *argv[]
-#) {
-#    void *handle;
-#    void *f;
-#
-#    handle = dlopen(NULL, 0);
-#    f = dlsym(handle, "test");
-#    return (0);
-#}
-#'''
-#
-#libdl_dep = []
-#if cc.links(dlopen_dlsym_test_code, args: '-ldl')
-#    imgui_dep += [
-#        cc.find_library('dl'),
-#    ]
-#elif not cc.links(dlopen_dlsym_test_code)
-#    error('Failed to find libdl')
-#endif
 
 imgui = static_library(
     'imgui',

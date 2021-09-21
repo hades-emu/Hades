@@ -37,6 +37,7 @@
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
 #include "platform/gui.h"
+#include "utils/fs.h"
 
 /*
 ** Print the program's usage.
@@ -178,11 +179,9 @@ args_parse(
 
     switch (color) {
         case 0:
-/*
             if (!hs_isatty(1)) {
                 disable_colors();
             }
-*/
             break;
         case 1:
             disable_colors();
