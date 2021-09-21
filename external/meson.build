@@ -39,6 +39,33 @@ else
     ]
 endif
 
+dlopen_dlsym_test_code = '''
+#include <dlfcn.h>
+#include <stdlib.h>
+
+int
+main(
+    int argc,
+    char const *argv[]
+) {
+    void *handle;
+    void *f;
+
+    handle = dlopen(NULL, 0);
+    f = dlsym(handle, "test");
+    return (0);
+}
+'''
+
+libdl_dep = []
+if cc.links(dlopen_dlsym_test_code, args : '-ldl')
+    imgui_dep += [
+        cc.find_library('dl')
+    ]
+elif not cc.links(dlopen_dlsym_test_code)
+    error('Failed to find libdl')
+endif
+
 imgui = static_library(
     'imgui',
     'cimgui/cimgui.cpp',

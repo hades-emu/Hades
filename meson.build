@@ -28,6 +28,8 @@ if get_option('static_executable')
     ldflags += ['-static']
 endif
 
+cc = meson.get_compiler('c')
+
 ###############################
 ##   External Dependencies   ##
 ###############################
