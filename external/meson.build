@@ -13,6 +13,7 @@
 
 cflags += [
     '-DIMGUI_IMPL_API=extern "C"  ',
+    '-DGLEW_STATIC',
 ]
 
 imgui_inc = include_directories(
