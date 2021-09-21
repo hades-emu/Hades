@@ -13,7 +13,7 @@ project(
     'cpp',
     version: '0.0.1',
     license: 'GPL-2.0-only',
-    default_options: ['c_std=gnu17', 'buildtype=release'],
+    default_options: ['c_std=gnu17', 'cpp_std=c++11', 'buildtype=release'],
 )
 
 incdir = include_directories('include', 'source')
