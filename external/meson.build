@@ -26,7 +26,6 @@ imgui_dep = [
     dependency('sdl2', version: '>=2', required: true, static: get_option('static_executable')),
     dependency('SDL2_image', version: '>=2', required: true, static: get_option('static_executable')),
     dependency('glew', required: true, static: true),
-    meson.get_compiler('c').find_library('dl'),
 ]
 
 if host_machine.system() == 'darwin'
@@ -60,7 +59,7 @@ main(
 libdl_dep = []
 if cc.links(dlopen_dlsym_test_code, args : '-ldl')
     imgui_dep += [
-        cc.find_library('dl')
+        cc.find_library('dl'),
     ]
 elif not cc.links(dlopen_dlsym_test_code)
     error('Failed to find libdl')
