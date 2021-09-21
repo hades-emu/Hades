@@ -46,7 +46,7 @@ endif
 
 # For some reasons, static sdl2 on windows fail if we do not explicitely ask for its dependencies
 if get_option('static_executable')
-    dependencies += [
+    imgui_dep += [
         dependency('libpng', required: true, static: true),
         dependency('libjpeg', required: true, static: true),
         dependency('libtiff-4', required: true, static: true),
