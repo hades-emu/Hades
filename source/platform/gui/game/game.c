@@ -210,6 +210,7 @@ gui_game_reload(
 
     if (!load_bios(app) && !load_rom(app) && !load_save(app)) {
         app->emulation.enabled = true;
+        app->emulation.pause = 0;
         gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RESET());
     } else {
         app->emulation.enabled = false;
@@ -225,7 +226,7 @@ void
 gui_game_run(
     struct app *app
 ) {
-    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed));
+    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed * !app->emulation.unbounded));
 }
 
 void

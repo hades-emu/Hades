@@ -82,7 +82,7 @@ gui_render_menubar(
             }
 
             /* Speed */
-            if (igBeginMenu("Speed", true)) {
+            if (igBeginMenu("Speed", !app->emulation.pause)) {
                 uint32_t x;
                 char const *speed[] = {
                     "Unbounded",
@@ -97,13 +97,13 @@ gui_render_menubar(
                     if (!x) {
                         if (igMenuItemBool(speed[x], "F1", app->emulation.unbounded, true)) {
                             app->emulation.unbounded ^= 1;
-                            gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed * !app->emulation.unbounded));
+                            gui_game_run(app);
                         }
                         igSeparator();
                     } else {
                         if (igMenuItemBool(speed[x], NULL, app->emulation.speed == x, !app->emulation.unbounded)) {
                             app->emulation.speed = x;
-                            gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed));
+                            gui_game_run(app);
                         }
                     }
                 }
@@ -156,6 +156,7 @@ gui_render_menubar(
             /* Reset */
             if (igMenuItemBool("Reset", NULL, false, app->emulation.enabled)) {
                 gui_game_reload(app);
+                gui_game_run(app);
             }
             igEndMenu();
         }
@@ -228,8 +229,8 @@ gui_render_menubar(
                     IGFD_GetCurrentPath(app->fs_dialog),
                     IGFD_GetCurrentFileName(app->fs_dialog)
                 ));
-
                 gui_game_reload(app);
+                gui_game_run(app);
             }
             IGFD_CloseDialog(app->fs_dialog);
         }
