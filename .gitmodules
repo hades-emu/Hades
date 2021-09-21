@@ -5,3 +5,6 @@
 	path = external/imgui_file_dialog
 	url = https://github.com/aiekick/ImGuiFileDialog.git
 	branch = Lib_Only
+[submodule "external/frozen"]
+	path = external/frozen
+	url = https://github.com/cesanta/frozen.git
