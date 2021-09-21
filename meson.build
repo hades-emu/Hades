@@ -62,7 +62,7 @@ custom_target(
     'hades',
     output : 'hades',
     input : hades,
-    command : ['cp', '@INPUT@', '@OUTPUT@'],
+    command : ['cp', '@INPUT@', '@PLAINNAME@'],
     install : true,
     install_dir : 'subdir',
 )
