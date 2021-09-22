@@ -1,0 +1,138 @@
+/******************************************************************************\
+**
+**  This file is part of the Hades GBA Emulator, and is made available under
+**  the terms of the GNU General Public License version 2.
+**
+**  Copyright (C) 2021 - The Hades Authors
+**
+\******************************************************************************/
+
+#include <string.h>
+#include "gba/gba.h"
+#include "gba/scheduler.h"
+#include "gba/memory.h"
+
+void
+sched_init(
+    struct gba *gba
+) {
+    struct scheduler *scheduler;
+
+    scheduler = &gba->scheduler;
+
+    memset(scheduler, 0, sizeof(*scheduler));
+
+    // Pre-allocate 10 events
+    scheduler->events_size = 10;
+    scheduler->events = calloc(scheduler->events_size, sizeof(struct scheduler_event));
+    hs_assert(scheduler->events);
+}
+
+void
+sched_cleanup(
+    struct gba *gba
+) {
+    struct scheduler *scheduler;
+
+    scheduler = &gba->scheduler;
+    free(scheduler->events);
+    scheduler->events = NULL;
+    scheduler->events_size = 0;
+}
+
+void
+sched_process_events(
+    struct gba *gba
+) {
+    size_t i;
+    struct core *core;
+    struct scheduler *scheduler;
+    struct scheduler_event *event;
+
+    core = &gba->core;
+    scheduler = &gba->scheduler;
+    while (true) {
+        event = NULL;
+
+        // We want to fire all the events in the correct order, hence the complicated
+        // loop.
+        for (i = 0; i < scheduler->events_size; ++i) {
+
+            // Keep only the event that are active and should occure now
+            if (scheduler->events[i].active && scheduler->events[i].at <= core->cycles) {
+                if (!event || scheduler->events[i].at < event->at) {
+                    event = scheduler->events + i;
+                }
+            }
+        }
+
+        if (!event) {
+            break;
+        }
+
+        if (event->repeat) {
+            event->at += event->period;
+        } else {
+            event->active = false;
+        }
+
+        event->callback(gba, event->data);
+    }
+}
+
+void
+sched_add_event(
+    struct gba *gba,
+    struct scheduler_event event
+) {
+    struct scheduler *scheduler;
+    size_t i;
+
+    scheduler = &gba->scheduler;
+
+    // Try and reuse an inactive event
+    for (i = 0; i < scheduler->events_size; ++i) {
+        if (!scheduler->events[i].active) {
+            scheduler->events[i] = event;
+            scheduler->events[i].active = true;
+            goto end;
+        }
+    }
+
+    // If no event are available, reallocate `scheduler->events`.
+    scheduler->events_size += 5;
+    scheduler->events = realloc(scheduler->events, scheduler->events_size * sizeof(struct scheduler_event));
+    hs_assert(scheduler->events);
+
+    scheduler->events[i] = event;
+    scheduler->events[i].active = true;
+
+end:
+    if (event.at < scheduler->next_event) {
+        scheduler->next_event = event.at;
+    }
+}
+
+void
+sched_run_for(
+    struct gba *gba,
+    uint64_t cycles
+) {
+    struct core *core;
+    uint64_t target;
+
+    core = &gba->core;
+    target = core->cycles + cycles;
+    while (core->cycles < target ) {
+        uint64_t elapsed;
+        uint64_t old_cycles;
+
+        old_cycles = core->cycles;
+        core_next(gba);
+        elapsed = core->cycles - old_cycles;
+
+        if (!elapsed) {
+            logln(HS_WARNING, "No cycles elapsed during `core_next()`.");
+        }
+    }
+}
