@@ -55,6 +55,19 @@ gui_render_menubar(
                 igEndMenu();
             }
 
+            if (igMenuItemBool("Open BIOS", NULL, false, true)) {
+                IGFD_OpenModal2(
+                    app->fs_dialog,
+                    "open_bios",
+                    "Choose a BIOS file",
+                    ".bin",
+                    "",
+                    1,
+                    NULL,
+                    ImGuiFileDialogFlags_Default | ImGuiFileDialogFlags_DisableCreateDirectoryButton
+                );
+            }
+
             igSeparator();
 
             igMenuItemBool("Key Bindings", NULL, false, false);
@@ -239,6 +252,25 @@ gui_render_menubar(
                     IGFD_GetCurrentFileName(app->fs_dialog)
                 ));
                 gui_game_reload(app);
+            }
+            IGFD_CloseDialog(app->fs_dialog);
+        }
+
+        if (IGFD_DisplayDialog(
+            app->fs_dialog,
+            "open_bios",
+            ImGuiWindowFlags_NoCollapse,
+            (ImVec2){.x = igGetFontSize() * 34.f, .y = igGetFontSize() * 18.f},
+            (ImVec2){.x = FLT_MAX, .y = FLT_MAX}
+        )) {
+            if (IGFD_IsOk(app->fs_dialog)) {
+                free(app->emulation.bios_path);
+                hs_assert(-1 != asprintf(
+                    &app->emulation.bios_path,
+                    "%s/%s",
+                    IGFD_GetCurrentPath(app->fs_dialog),
+                    IGFD_GetCurrentFileName(app->fs_dialog)
+                ));
             }
             IGFD_CloseDialog(app->fs_dialog);
         }

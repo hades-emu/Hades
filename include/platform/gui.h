@@ -29,7 +29,7 @@ struct emulation {
     char *qsave_path;
     char *backup_path;
     FILE *backup_file;
-    char const *bios_path;
+    char *bios_path;
 
     uint32_t fps;
 

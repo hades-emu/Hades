@@ -214,13 +214,11 @@ gui_game_reload(
     if (!load_bios(app) && !load_rom(app) && !load_save(app)) {
         app->emulation.enabled = true;
         app->emulation.pause = false;
+        gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RESET());
         gui_game_run(app);
     } else {
         app->emulation.enabled = false;
     }
-
-    printf("END: %u\n", app->emulation.enabled);
-
 }
 
 void

@@ -392,7 +392,6 @@ main(
     app.emulation.enabled = false;
     app.emulation.speed = 1;
     app.emulation.gba = malloc(sizeof(*app.emulation.gba));
-    app.emulation.bios_path = "bios.bin";
     hs_assert(app.emulation.gba);
     gba_init(app.emulation.gba);
 
