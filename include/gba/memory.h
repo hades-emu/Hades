@@ -211,19 +211,13 @@ void mem_update_waitstates(struct gba const *gba);
 void mem_prefetch_buffer_access(struct gba *gba, uint32_t addr, uint32_t intended_cycles);
 void mem_prefetch_buffer_step(struct gba *gba, uint32_t cycles);
 uint8_t mem_read8(struct gba *gba, uint32_t addr, enum access_type access_type);
-uint8_t mem_read8_raw(struct gba const *gba, uint32_t addr);
 uint16_t mem_read16(struct gba *gba, uint32_t addr, enum access_type access_type);
-uint16_t mem_read16_raw(struct gba const *gba, uint32_t addr);
 uint32_t mem_read16_ror(struct gba *gba, uint32_t addr, enum access_type access_type);
 uint32_t mem_read32(struct gba *gba, uint32_t addr, enum access_type access_type);
-uint32_t mem_read32_raw(struct gba const *gba, uint32_t addr);
 uint32_t mem_read32_ror(struct gba *gba, uint32_t addr, enum access_type access_type);
 void mem_write8(struct gba *gba, uint32_t addr, uint8_t val, enum access_type access_type);
-void mem_write8_raw(struct gba *gba, uint32_t addr, uint8_t val);
 void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_type access_type);
-void mem_write16_raw(struct gba *gba, uint32_t addr, uint16_t val);
 void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_type access_type);
-void mem_write32_raw(struct gba *gba, uint32_t addr, uint32_t val);
 
 /* gba/memory/storage/detect.c */
 extern size_t backup_storage_sizes[];

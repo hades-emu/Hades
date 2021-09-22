@@ -27,7 +27,7 @@ ppu_initialize_scanline(
 
     backdrop.visible = true;
     backdrop.idx = 5;
-    backdrop.raw = (gba->io.dispcnt.blank ? 0x7fff : mem_read16_raw(gba, PALRAM_START));
+    backdrop.raw = (gba->io.dispcnt.blank ? 0x7fff : mem_palram_read16(gba, PALRAM_START));
 
     for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
         scanline->bot[x] = backdrop;
