@@ -28,7 +28,7 @@ load_bios(
     if (!file) {
         hs_assert(-1 != asprintf(
             &error_msg,
-            "failed to open %s: %s.",
+            "failed to open %s: %s.\n\nPlease download and select a valid Nintendo GBA Bios using \"File\" -> \"Open BIOS\".",
             app->emulation.bios_path,
             strerror(errno)
         ));
