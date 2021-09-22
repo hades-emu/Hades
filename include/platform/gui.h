@@ -76,6 +76,7 @@ struct app {
 void gui_game_handle_events(struct app *app, SDL_Event *event);
 void gui_game_reload(struct app *app);
 void gui_game_pause(struct app *app);
+void gui_game_write_backup(struct app *app);
 void gui_game_run(struct app *app);
 void gui_game_quicksave(struct app *app);
 void gui_game_quickload(struct app *app);

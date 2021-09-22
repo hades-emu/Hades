@@ -220,6 +220,28 @@ gui_game_reload(
     }
 }
 
+/*
+** Write the content of the backup storage on the disk.
+*/
+void
+gui_game_write_backup(
+    struct app *app
+) {
+    if (   app->emulation.backup_file
+        && app->emulation.gba->memory.backup_storage_data
+        && app->emulation.gba->memory.backup_storage_dirty
+    ) {
+        fseek(app->emulation.backup_file, 0, SEEK_SET);
+        fwrite(
+            app->emulation.gba->memory.backup_storage_data,
+            backup_storage_sizes[app->emulation.gba->memory.backup_storage_type],
+            1,
+            app->emulation.backup_file
+        );
+    }
+    app->emulation.gba->memory.backup_storage_dirty = false;
+}
+
 void
 gui_game_run(
     struct app *app

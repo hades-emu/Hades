@@ -170,7 +170,7 @@ struct memory {
     // Backup Storage
     uint8_t *backup_storage_data;
     enum backup_storage backup_storage_type;
-    bool backup_storage_dirty;
+    atomic_bool backup_storage_dirty;
 
     // Flash memory
     struct flash flash;

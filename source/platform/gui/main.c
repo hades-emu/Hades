@@ -498,6 +498,12 @@ main(
                 app.emulation.fps = app.emulation.gba->framecounter;
                 app.emulation.gba->framecounter = 0;
                 last_fps_update = now;
+
+                /*
+                ** We also want to store the content of the backup storage
+                ** on the disk every second (if it is dirty).
+                */
+                gui_game_write_backup(&app);
             }
         }
 
