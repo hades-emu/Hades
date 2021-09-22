@@ -10,10 +10,6 @@
 #ifndef HADES_H
 # define HADES_H
 
-# define HADES_MAJOR    0
-# define HADES_MINOR    0
-# define HADES_VERSION  "0.0.1"
-
 # include <stdatomic.h>
 # include <stdio.h>
 # include <stdint.h>
@@ -105,11 +101,20 @@ static char const * const modules_str[] = {
     }                                                       \
     while (0)
 
+# define STRINGIFY(...)   (#__VA_ARGS__)
+
 /* Return the minimum between `a` and `b`. */
-# define min(a, b) ((a) > (b) ? (b) : (a))
+# ifndef min
+#  define min(a, b)                              ((a) > (b) ? (b) : (a))
+# endif /* !min */
+
+/* Return the maximun between `a` and `b`. */
+# ifndef max
+#  define max(a, b)                              ((a) > (b) ? (a) : (b))
+# endif /* !max */
 
 /* Return the size of static array */
-# define array_length(array) (sizeof(array) / sizeof(*(array)))
+# define array_length(array)                    (sizeof(array) / sizeof(*(array)))
 
 /* Get the `nth` bit of `val`. */
 # define bitfield_get(val, nth)                 ((typeof(val))(bool)((val) & (1 << (nth))))
@@ -342,8 +347,6 @@ void unimplemented(enum modules module, char const *fmt, ...) __attribute__((nor
 void disable_colors(void);
 void const *array_search(uint8_t const *haystack, size_t haystack_len, char const *needle, size_t needle_len);
 
-extern atomic_bool g_stop;
-extern atomic_bool g_interrupt;
 extern bool g_verbose[HS_END];
 extern bool g_verbose_global;
 

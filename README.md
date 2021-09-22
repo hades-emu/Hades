@@ -4,9 +4,8 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/arignir/hades/badge/master)](https://www.codefactor.io/repository/github/arignir/hades/overview/master)
 [![Build](https://github.com/Arignir/Hades/actions/workflows/main.yml/badge.svg)](https://github.com/Arignir/Hades/actions/workflows/main.yml)
 
-*A Nintendo Game Boy Advance emulator.*
-
-![](https://i.imgur.com/0SJmUXA.png)
+<p align="center"><img src="https://i.imgur.com/0SJmUXA.png"></p>
+<p align="center"><i>A Nintendo Game Boy Advance emulator.</i></p>
 
 ## Download
 
@@ -16,28 +15,11 @@ Hades is still under heavy development, but you can download the latest nightly 
 
 You need a game ROM and a legitimate GameBoy Advance BIOS or a [replacement BIOS](https://github.com/Cult-of-GBA/BIOS/blob/master/bios.bin).
 
-Move your BIOS to the same folder than Hades and name it `bios.bin`.
+Sart Hades, then click on `File` -> `Open BIOS` and select the BIOS you downloaded above.
 
-You can now either drag and drop your GBA rom over `hades.exe` (Windows only) or open a terminal and run:
+You can now play all your favorite games! Click on `File` -> `Open` and select the ROM you want to run.
 
-```bash
-hades <path/to/game.gba>
-```
-
-**Usage:**
-
-```
-Usage: ./hades [OPTION]... ROM
-Options:
-    -b, --bios=PATH                   path pointing to the bios dump (default: "bios.bin")
-        --headless                    disable any graphical output
-        --scale=SIZE                  scale the window size by SIZE (default: 3)
-        --speed=SPEED                 bind the emulator's FPS to 60*SPEED. 0 means unbounded. (default: 1)
-        --color=[always|never|auto]   adjust color settings (default: auto)
-
-    -h, --help                        print this help and exit
-        --version                     print the version information and exit
-```
+Alternatively, you can also drag and drop your GBA rom over `hades.exe` (Windows only).
 
 ## Build
 
@@ -45,18 +27,21 @@ The build dependencies are:
 
   - `meson`
   - `ninja`
-  - `SDL2` and `SDL2_Image`
   - `GCC`
+  - `SDL2` and `SDL2_Image`
+  - `OpenGL`
+  - `glew`
 
 On Ubuntu, you can install all those dependencies with:
 
 ```bash
-$ apt install meson ninja-build gcc libsdl2-dev libsdl2-image-dev
+$ apt install meson ninja-build gcc libsdl2-dev libsdl2-image-dev libglew-dev
 ```
 
 To build Hades, run:
 
 ```bash
+git submodule update --init --recursive
 meson build
 cd build
 ninja

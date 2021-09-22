@@ -8,103 +8,246 @@
 \******************************************************************************/
 
 #include <string.h>
-#include <errno.h>
-#include <stdio.h>
-#include "gba.h"
-#include "memory.h"
 #include "hades.h"
+#include "gba/core/arm.h"
+#include "gba/core/thumb.h"
+#include "gba/gba.h"
+#include "utils/time.h"
 
 /*
-** Load the BIOS into the emulator's memory.
-**
-** This function exits on failure.
+** Initialize the `gba` structure with sane, default values.
 */
-int
-gba_load_bios(
-    struct gba *gba,
-    char const *bios_path
+void
+gba_init(
+    struct gba *gba
 ) {
-    FILE *file;
+    memset(gba, 0, sizeof(*gba));
 
-    file = fopen(bios_path, "rb");
-    if (!file) {
-        fprintf(stderr, "hades: can't open %s: %s.\n", bios_path, strerror(errno));
-        exit(EXIT_FAILURE);
-    }
+    /* Initialize the ARM decoder */
+    core_arm_decode_insns();
+    core_thumb_decode_insns();
 
-    fseek(file, 0, SEEK_END);
-    if (ftell(file) != 0x4000) {
-        fprintf(stderr, "hades: invalid bios.\n");
-        exit(EXIT_FAILURE);
-        return (-1);
-    }
-    rewind(file);
-
-    if (fread(gba->memory.bios, 1, 0x4000, file) != 0x4000) {
-        fprintf(stderr, "hades: failed to read %s: %s.\n", bios_path, strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    return (0);
+    pthread_mutex_init(&gba->message_queue.lock, NULL);
 }
 
 /*
-** Load the Game ROM into the emulator's memory.
-**
-** This function exits on failure.
-**
-** TODO: Ensure the loaded file is actually a GBA game.
+** Reset the GBA system to its initial state.
 */
-int
-gba_load_rom(
-    struct gba *gba,
-    char const *rom_path
+void
+gba_reset(
+    struct gba *gba
 ) {
-    FILE *file;
-    long file_len;
-    size_t len;
-    char *extension;
+    sched_cleanup(gba);
 
-    file = fopen(rom_path, "rb");
-    if (!file) {
-        fprintf(stderr, "hades: can't open %s: %s.\n", rom_path, strerror(errno));
-        exit(EXIT_FAILURE);
+    sched_init(gba);
+    mem_reset(&gba->memory);
+    io_init(&gba->io);
+    ppu_init(gba);
+    core_init(gba);
+}
+
+/*
+** Run the emulator, consuming messages that dictate what the emulator should do.
+**
+** Messages are used as a mono-directional communication between the frontend and the emulator.
+**
+** Those messages can be:
+**   - A new key was pressed
+**   - The user requested a quickload/quicksave
+**   - The emulator must run until the next frame, for one instruction, etc.
+**   - The emulator must pause, reset, etc.
+*/
+void
+gba_run(
+    struct gba *gba
+) {
+    uint64_t last_measured_time;
+    uint64_t accumulated_time;
+    uint64_t time_per_frame;
+
+    last_measured_time = hs_tick_count();
+    accumulated_time = 0;
+    time_per_frame = 0;
+    while (true) {
+        struct message_queue *mqueue;
+        struct message *message;
+
+        pthread_mutex_lock(&gba->message_queue.lock);
+
+        mqueue = &gba->message_queue;
+        message = mqueue->messages;
+        while (mqueue->length) {
+            switch (message->type) {
+                case MESSAGE_EXIT: {
+                    pthread_mutex_unlock(&gba->message_queue.lock);
+                    return ;
+                };
+                case MESSAGE_LOAD_BIOS: {
+                    struct message_data *message_data;
+
+                    message_data = (struct message_data *)message;
+                    memset(gba->memory.bios, 0, BIOS_MASK);
+                    memcpy(gba->memory.bios, message_data->data, min(message_data->size, BIOS_MASK));
+                    if (message_data->cleanup) {
+                        message_data->cleanup(message_data->data);
+                    }
+                    break;
+                };
+                case MESSAGE_LOAD_ROM: {
+                    struct message_data *message_data;
+
+                    message_data = (struct message_data *)message;
+                    memset(gba->memory.rom, 0, CART_SIZE);
+                    memcpy(gba->memory.rom, message_data->data, min(message_data->size, CART_SIZE));
+                    if (message_data->cleanup) {
+                        message_data->cleanup(message_data->data);
+                    }
+                    break;
+                };
+                case MESSAGE_LOAD_BACKUP: {
+                    struct message_data *message_data;
+
+                    message_data = (struct message_data *)message;
+                    memset(gba->memory.backup_storage_data, 0, backup_storage_sizes[gba->memory.backup_storage_type]);
+                    memcpy(
+                        gba->memory.backup_storage_data,
+                        message_data->data,
+                        min(message_data->size, backup_storage_sizes[gba->memory.backup_storage_type])
+                    );
+                    if (message_data->cleanup) {
+                        message_data->cleanup(message_data->data);
+                    }
+                    break;
+                };
+                case MESSAGE_BACKUP_TYPE: {
+                    struct message_backup_type *message_backup_type;
+
+                    message_backup_type = (struct message_backup_type *)message;
+                    if (message_backup_type->type == BACKUP_AUTODETECT) {
+                        mem_backup_storage_detect(gba);
+                    }
+                    mem_backup_storage_init(gba);
+                    break;
+                };
+                case MESSAGE_RESET: {
+                    gba_reset(gba);
+                    break;
+                };
+                case MESSAGE_RUN: {
+                    struct message_run *message_run;
+
+                    message_run = (struct message_run *)message;
+                    gba->state = GBA_STATE_RUN;
+                    gba->speed = message_run->speed;
+                    if (message_run->speed) {
+                        time_per_frame = 1.f/59.737f * 1000.f * 1000.f / (float)gba->speed;
+                        accumulated_time = 0;
+                    } else {
+                        time_per_frame = 0.f;
+                    }
+                    break;
+                };
+                case MESSAGE_PAUSE: {
+                    gba->state = GBA_STATE_PAUSE;
+                    break;
+                };
+                case MESSAGE_KEYINPUT: {
+                    struct message_keyinput *message_keyinput;
+
+                    message_keyinput = (struct message_keyinput *)message;
+                    switch (message_keyinput->key) {
+                        case KEY_A:         gba->io.keyinput.a = !message_keyinput->pressed; break;
+                        case KEY_B:         gba->io.keyinput.b = !message_keyinput->pressed; break;
+                        case KEY_L:         gba->io.keyinput.l = !message_keyinput->pressed; break;
+                        case KEY_R:         gba->io.keyinput.r = !message_keyinput->pressed; break;
+                        case KEY_UP:        gba->io.keyinput.up = !message_keyinput->pressed; break;
+                        case KEY_DOWN:      gba->io.keyinput.down = !message_keyinput->pressed; break;
+                        case KEY_RIGHT:     gba->io.keyinput.right = !message_keyinput->pressed; break;
+                        case KEY_LEFT:      gba->io.keyinput.left = !message_keyinput->pressed; break;
+                        case KEY_START:     gba->io.keyinput.start = !message_keyinput->pressed; break;
+                        case KEY_SELECT:    gba->io.keyinput.select = !message_keyinput->pressed; break;
+                    };
+                    break;
+                };
+                case MESSAGE_QUICKLOAD: {
+                    struct message_data *message_data;
+
+                    message_data = (struct message_data *)message;
+                    quickload(gba, (char const *)message_data->data);
+                    if (message_data->cleanup) {
+                        message_data->cleanup(message_data->data);
+                    }
+                    break;
+                };
+                case MESSAGE_QUICKSAVE: {
+                    struct message_data *message_data;
+
+                    message_data = (struct message_data *)message;
+                    quicksave(gba, (char const *)message_data->data);
+                    if (message_data->cleanup) {
+                        message_data->cleanup(message_data->data);
+                    }
+                    break;
+                };
+            }
+            mqueue->allocated_size -= message->size;
+            --mqueue->length;
+            message = (struct message *)((uint8_t *)message + message->size);
+        }
+        free(mqueue->messages);
+        mqueue->messages = NULL;
+
+        pthread_mutex_unlock(&gba->message_queue.lock);
+
+        if (gba->state == GBA_STATE_RUN) {
+            sched_run_for(gba, CYCLES_PER_FRAME);
+        }
+
+        /* Limit FPS */
+        if (gba->speed) {
+            uint64_t now;
+
+            now = hs_tick_count();
+            accumulated_time += now - last_measured_time;
+            last_measured_time = now;
+
+            if (accumulated_time < time_per_frame) {
+                hs_usleep(time_per_frame - accumulated_time);
+                now = hs_tick_count();
+                accumulated_time += now - last_measured_time;
+                last_measured_time = now;
+            }
+            hs_assert(accumulated_time >= time_per_frame);
+            accumulated_time -= time_per_frame;
+        } else {
+            last_measured_time = hs_tick_count();
+            accumulated_time = 0;
+        }
     }
+}
 
-    fseek(file, 0, SEEK_END);
-    file_len = ftell(file);
-    if (file_len > 0x2000000 || file_len < 192) {
-        fprintf(stderr, "hades: %s: invalid game.\n", rom_path);
-        exit(EXIT_FAILURE);
-    }
-    rewind(file);
+/*
+** Put the given message in the message queue.
+*/
+void
+gba_message_push(
+    struct gba *gba,
+    struct message *message
+) {
+    size_t new_size;
+    struct message_queue *mqueue;
 
-    len = fread(gba->memory.rom, 1, 0x2000000, file);
+    mqueue = &gba->message_queue;
+    pthread_mutex_lock(&gba->message_queue.lock);
 
-    if (len != file_len) {
-        fprintf(stderr, "hades: failed to read %s: %s.\n", rom_path, strerror(errno));
-        exit(EXIT_FAILURE);
-    }
+    new_size = mqueue->allocated_size + message->size;
 
-    gba->rom_path = rom_path;
-    extension = strrchr(gba->rom_path, '.');
+    mqueue->messages = realloc(mqueue->messages, new_size);
+    hs_assert(mqueue->messages);
+    memcpy((uint8_t *)mqueue->messages + mqueue->allocated_size, message, message->size);
 
-    // Build the path pointing to the backup storage
-    // (aka path/to/rom.gba but ending with .save instead)
-    gba->backup_storage_path = calloc(extension - gba->rom_path + 5, 1);
-    hs_assert(gba->backup_storage_path);
-    strncpy(gba->backup_storage_path, gba->rom_path, extension - gba->rom_path);
-    strcat(gba->backup_storage_path, ".sav");
+    mqueue->length += 1;
+    mqueue->allocated_size = new_size;
 
-    // Build the path pointing to the quicksave
-    // (aka path/to/rom.gba but ending with .qhds instead)
-    gba->quicksave_path = calloc(extension - gba->rom_path + 5, 1);
-    hs_assert(gba->quicksave_path);
-    strncpy(gba->quicksave_path, gba->rom_path, extension - gba->rom_path);
-    strcat(gba->quicksave_path, ".hds");
-
-    // Detect the kind of backup storage
-    mem_backup_storage_init(gba);
-
-    return (0);
+    pthread_mutex_unlock(&gba->message_queue.lock);
 }
