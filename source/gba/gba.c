@@ -27,9 +27,7 @@ gba_init(
     core_arm_decode_insns();
     core_thumb_decode_insns();
 
-    pthread_mutex_init(&gba->message_queue[0].lock, NULL);
-    pthread_mutex_init(&gba->message_queue[1].lock, NULL);
-
+    pthread_mutex_init(&gba->message_queue.lock, NULL);
 }
 
 /*
@@ -51,13 +49,13 @@ gba_reset(
 /*
 ** Run the emulator, consuming messages that dictate what the emulator should do.
 **
-** Messages are used as a bi-directional communications between the frontend and the emulator.
+** Messages are used as a mono-directional communication between the frontend and the emulator.
 **
 ** Those messages can be:
 **   - A new key was pressed
-**   - The user asked for a quickload/quicksave
-**   - The emulator must run until the next frame
-**   - The emulator must pause, reset, save the game, etc.
+**   - The user requested a quickload/quicksave
+**   - The emulator must run until the next frame, for one instruction, etc.
+**   - The emulator must pause, reset, etc.
 */
 void
 gba_run(
@@ -74,14 +72,14 @@ gba_run(
         struct message_queue *mqueue;
         struct message *message;
 
-        pthread_mutex_lock(&gba->message_queue[FRONT_TO_EMULATOR].lock);
+        pthread_mutex_lock(&gba->message_queue.lock);
 
-        mqueue = &gba->message_queue[FRONT_TO_EMULATOR];
+        mqueue = &gba->message_queue;
         message = mqueue->messages;
         while (mqueue->length) {
             switch (message->type) {
                 case MESSAGE_EXIT: {
-                    pthread_mutex_unlock(&gba->message_queue[FRONT_TO_EMULATOR].lock);
+                    pthread_mutex_unlock(&gba->message_queue.lock);
                     return ;
                 };
                 case MESSAGE_LOAD_BIOS: {
@@ -199,7 +197,7 @@ gba_run(
         free(mqueue->messages);
         mqueue->messages = NULL;
 
-        pthread_mutex_unlock(&gba->message_queue[FRONT_TO_EMULATOR].lock);
+        pthread_mutex_unlock(&gba->message_queue.lock);
 
         if (gba->state == GBA_STATE_RUN) {
             sched_run_for(gba, CYCLES_PER_FRAME);
@@ -229,18 +227,18 @@ gba_run(
 }
 
 /*
-** Put the given message in the "front to emulator" queue.
+** Put the given message in the message queue.
 */
 void
-gba_f2e_message_push(
+gba_message_push(
     struct gba *gba,
     struct message *message
 ) {
     size_t new_size;
     struct message_queue *mqueue;
 
-    mqueue = &gba->message_queue[FRONT_TO_EMULATOR];
-    pthread_mutex_lock(&gba->message_queue[FRONT_TO_EMULATOR].lock);
+    mqueue = &gba->message_queue;
+    pthread_mutex_lock(&gba->message_queue.lock);
 
     new_size = mqueue->allocated_size + message->size;
 
@@ -251,5 +249,5 @@ gba_f2e_message_push(
     mqueue->length += 1;
     mqueue->allocated_size = new_size;
 
-    pthread_mutex_unlock(&gba->message_queue[FRONT_TO_EMULATOR].lock);
+    pthread_mutex_unlock(&gba->message_queue.lock);
 }

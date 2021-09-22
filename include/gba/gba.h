@@ -21,11 +21,6 @@ enum gba_state {
     GBA_STATE_RUN,
 };
 
-enum message_direction {
-    FRONT_TO_EMULATOR = 0,
-    EMULATOR_TO_FRONT = 1,
-};
-
 enum message_type {
     MESSAGE_EXIT,
     MESSAGE_LOAD_BIOS,
@@ -100,9 +95,9 @@ struct gba {
     struct scheduler scheduler;
 
     /*
-    ** The message queue used by the frontend/emulator to communicate with each over.
+    ** The message queue used by the frontend to communicate with the emulator.
     */
-    struct message_queue message_queue[2];
+    struct message_queue message_queue;
 
     /* The emulator's screen as it is being rendered. */
     uint32_t framebuffer[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
@@ -213,6 +208,6 @@ struct gba {
 /* gba/gba.c */
 void gba_init(struct gba *gba);
 void gba_run(struct gba *gba);
-void gba_f2e_message_push(struct gba *gba, struct message *message);
+void gba_message_push(struct gba *gba, struct message *message);
 
 #endif /* GBA_GBA_H */
