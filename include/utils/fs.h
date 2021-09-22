@@ -18,15 +18,26 @@
 #  include <fileapi.h>
 #  include <stdio.h>
 
-#  define hs_isatty(x)           _isatty(x)
+#  define hs_isatty(x)           false
 #  define hs_mkdir(path)         CreateDirectoryA((path), NULL)
+
+static inline
+char const *
+hs_basename(
+    char const *path
+) {
+    char const *base;
+
+    base = strrchr(path, '\\');
+    return (base ? base + 1 : path);
+}
+
 # else
 #  include <sys/stat.h>
 #  include <unistd.h>
 
 #  define hs_isatty(x)           isatty(x)
 #  define hs_mkdir(path)         mkdir((path), 0755);
-# endif
 
 static inline
 char const *
@@ -38,5 +49,7 @@ hs_basename(
     base = strrchr(path, '/');
     return (base ? base + 1 : path);
 }
+
+# endif
 
 #endif /* UTILS_FS_H */
