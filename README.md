@@ -41,6 +41,7 @@ $ apt install meson ninja-build gcc libsdl2-dev libsdl2-image-dev libglew-dev
 To build Hades, run:
 
 ```bash
+git submodule update --init --recursive
 meson build
 cd build
 ninja
