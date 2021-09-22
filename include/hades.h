@@ -101,6 +101,8 @@ static char const * const modules_str[] = {
     }                                                       \
     while (0)
 
+# define STRINGIFY(...)   (#__VA_ARGS__)
+
 /* Return the minimum between `a` and `b`. */
 # ifndef min
 #  define min(a, b)                              ((a) > (b) ? (b) : (a))

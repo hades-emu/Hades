@@ -9,6 +9,7 @@
 
 #define _GNU_SOURCE
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include <string.h>
 #include <cimgui.h>
 #include <stdio.h>
 #include <ImGuiFileDialog.h>
@@ -40,12 +41,15 @@ gui_render_menubar(
                 );
             }
 
-            if (igBeginMenu("Open Recent", false)) {
+            if (igBeginMenu("Open Recent", app->recent_roms[0] != NULL)) {
                 uint32_t x;
 
-                for (x = 0; x < 5; ++x) {
-                    if (igMenuItemBool("xxx", NULL, false, true)) {
-
+                for (x = 0; x < ARRAY_LEN(app->recent_roms) && app->recent_roms[x]; ++x) {
+                    if (igMenuItemBool(basename(app->recent_roms[x]), NULL, false, true)) {
+                        free(app->emulation.game_path);
+                        app->emulation.game_path = strdup(app->recent_roms[x]);
+                        gui_game_reload(app);
+                        gui_game_run(app);
                     }
                 }
                 igEndMenu();
@@ -65,8 +69,14 @@ gui_render_menubar(
             igSeparator();
 
             /* Save & backups */
-            igMenuItemBool("Quick Save", "F5", false, false);
-            igMenuItemBool("Quick Load", "F8", false, false);
+            if (igMenuItemBool("Quick Save", "F5", false, app->emulation.enabled)) {
+                gui_game_quicksave(app);
+            }
+
+            if (igMenuItemBool("Quick Load", "F8", false, app->emulation.enabled)) {
+                gui_game_quickload(app);
+            }
+
             igMenuItemBool("Backup type", NULL, false, false);
             igSeparator();
 
@@ -82,7 +92,7 @@ gui_render_menubar(
             }
 
             /* Speed */
-            if (igBeginMenu("Speed", !app->emulation.pause)) {
+            if (igBeginMenu("Speed", !app->emulation.pause && app->emulation.enabled)) {
                 uint32_t x;
                 char const *speed[] = {
                     "Unbounded",
@@ -112,7 +122,7 @@ gui_render_menubar(
             }
 
             /* Take a screenshot */
-            if (igMenuItemBool("Screenshot", "F2", false, true)) {
+            if (igMenuItemBool("Screenshot", "F2", false, app->emulation.enabled)) {
                 gui_game_screenshot(app);
             }
 

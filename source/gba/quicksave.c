@@ -19,7 +19,7 @@
 */
 void
 quicksave(
-    struct gba *gba,
+    struct gba const *gba,
     char const *path
 ) {
     FILE *file;

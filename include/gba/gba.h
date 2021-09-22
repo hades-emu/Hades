@@ -125,16 +125,26 @@ struct gba {
         .pressed = (_pressed)                           \
     }))
 
-# define NEW_MESSAGE_QUICKSAVE()                        \
-    (&((struct message){                                \
-        .type = MESSAGE_QUICKSAVE,                      \
-        .size = sizeof(struct message),                 \
+# define NEW_MESSAGE_QUICKSAVE(_path)                   \
+    ((struct message *)&((struct message_data){         \
+        .super = (struct message){                      \
+            .size = sizeof(struct message_data),        \
+            .type = MESSAGE_QUICKSAVE,                  \
+        },                                              \
+        .data = (uint8_t *)strdup(_path),               \
+        .size = strlen(_path),                          \
+        .cleanup = free,                                \
     }))
 
-# define NEW_MESSAGE_QUICKLOAD()                        \
-    (&((struct message){                                \
-        .type = MESSAGE_QUICKLOAD,                      \
-        .size = sizeof(struct message),                 \
+# define NEW_MESSAGE_QUICKLOAD(_path)                   \
+    ((struct message *)&((struct message_data){         \
+        .super = (struct message){                      \
+            .size = sizeof(struct message_data),        \
+            .type = MESSAGE_QUICKLOAD,                  \
+        },                                              \
+        .data = (uint8_t *)strdup(_path),               \
+        .size = strlen(_path),                          \
+        .cleanup = free,                                \
     }))
 
 # define NEW_MESSAGE_RUN(_speed)                        \

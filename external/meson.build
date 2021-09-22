@@ -8,7 +8,7 @@
 ################################################################################
 
 ###############################
-##     Cimgui + IGFD         ##
+##       Cimgui + IGFD       ##
 ###############################
 
 cflags += [
@@ -73,5 +73,21 @@ imgui = static_library(
     dependencies: imgui_dep,
     c_args: cflags,
     cpp_args: cflags,
+    link_args: ldflags,
+)
+
+###############################
+##          Frozen           ##
+###############################
+
+frozen_inc = include_directories(
+    'frozen/'
+)
+
+frozen = static_library(
+    'frozen',
+    'frozen/frozen.c',
+    include_directories: frozen_inc,
+    c_args: cflags,
     link_args: ldflags,
 )

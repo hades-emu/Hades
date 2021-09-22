@@ -23,6 +23,87 @@ enum access_type {
 };
 
 /*
+** An enumeration of the different memory regions
+** and other informations associated with them.
+*/
+
+#define BIOS_START              (0x00000000)
+#define BIOS_END                (0x00003FFF)
+#define BIOS_REGION             (BIOS_START >> 24)
+#define BIOS_MASK               (BIOS_END - BIOS_START)
+#define BIOS_SIZE               (BIOS_END - BIOS_START + 1)
+
+#define EWRAM_START             (0x02000000)
+#define EWRAM_END               (0x0203FFFF)
+#define EWRAM_REGION            (EWRAM_START >> 24)
+#define EWRAM_MASK              (EWRAM_END - EWRAM_START)
+#define EWRAM_SIZE              (EWRAM_END - EWRAM_START + 1)
+
+#define IWRAM_START             (0x03000000)
+#define IWRAM_END               (0x03007FFF)
+#define IWRAM_REGION            (IWRAM_START >> 24)
+#define IWRAM_MASK              (IWRAM_END - IWRAM_START)
+#define IWRAM_SIZE              (IWRAM_END - IWRAM_START + 1)
+
+#define IO_START                (0x04000000)
+#define IO_END                  (0x040003FF)
+#define IO_REGION               (IO_START >> 24)
+#define IO_MASK                 (IO_END - IO_START)
+#define IO_SIZE                 (IO_END - IO_START + 1)
+
+#define PALRAM_START            (0x05000000)
+#define PALRAM_END              (0x050003FF)
+#define PALRAM_REGION           (PALRAM_START >> 24)
+#define PALRAM_MASK             (PALRAM_END - PALRAM_START)
+#define PALRAM_SIZE             (PALRAM_END - PALRAM_START + 1)
+
+#define VRAM_START              (0x06000000)
+#define VRAM_END                (0x06017FFF)
+#define VRAM_REGION             (VRAM_START >> 24)
+#define VRAM_MASK_1             (0x00017FFF)
+#define VRAM_MASK_2             (0x0001FFFF)
+#define VRAM_SIZE               (VRAM_END - VRAM_START + 1)
+
+#define OAM_START               (0x07000000)
+#define OAM_END                 (0x070003FF)
+#define OAM_REGION              (OAM_START >> 24)
+#define OAM_MASK                (OAM_END - OAM_START)
+#define OAM_SIZE                (OAM_END - OAM_START + 1)
+
+#define CART_0_START            (0x08000000)
+#define CART_0_END              (0x09FFFFFF)
+#define CART_0_REGION_1         (CART_0_START >> 24)
+#define CART_0_REGION_2         (CART_0_END >> 24)
+
+#define CART_1_START            (0x0A000000)
+#define CART_1_END              (0x0BFFFFFF)
+#define CART_1_REGION_1         (CART_1_START >> 24)
+#define CART_1_REGION_2         (CART_1_END >> 24)
+
+#define CART_2_START            (0x0C000000)
+#define CART_2_END              (0x0DFFFFFF)
+#define CART_2_REGION_1         (CART_2_START >> 24)
+#define CART_2_REGION_2         (CART_2_END >> 24)
+
+#define CART_MASK               (CART_0_END - CART_0_START)
+#define CART_SIZE               (CART_0_END - CART_0_START + 1)
+#define CART_REGION_START       (CART_0_START >> 24)
+#define CART_REGION_END         (CART_2_END >> 24)
+
+#define SRAM_START              (0x0E000000)
+#define SRAM_END                (0x0E00FFFF)
+#define SRAM_SIZE               (SRAM_END - SRAM_START + 1)
+#define SRAM_MASK               (SRAM_END - SRAM_START)
+#define SRAM_REGION             (SRAM_START >> 24)
+
+#define FLASH_START             (0x0E000000)
+#define FLASH_END               (0x0E00FFFF)
+#define FLASH64_SIZE            (FLASH_END - FLASH_START + 1)
+#define FLASH128_SIZE           (FLASH64_SIZE * 2)
+#define FLASH_MASK              (FLASH_END - FLASH_START)
+
+
+/*
 ** The different types of backup storage a game can use.
 */
 enum backup_storage {
@@ -74,17 +155,17 @@ struct prefetch_buffer {
 */
 struct memory {
     // General Internal Memory
-    uint8_t bios[0x4000];
-    uint8_t ewram[0x40000];
-    uint8_t iwram[0x8000];
+    uint8_t bios[BIOS_SIZE];
+    uint8_t ewram[EWRAM_SIZE];
+    uint8_t iwram[IWRAM_SIZE];
 
     // Internal Display Memory
-    uint8_t palram[0x400];
-    uint8_t vram[0x18000];
-    uint8_t oam[0x400];
+    uint8_t palram[PALRAM_SIZE];
+    uint8_t vram[VRAM_SIZE];
+    uint8_t oam[OAM_SIZE];
 
     // External Memory (Game Pak)
-    uint8_t rom[0x2000000];
+    uint8_t rom[CART_SIZE];
 
     // Backup Storage
     uint8_t *backup_storage_data;
@@ -100,80 +181,6 @@ struct memory {
     // Set when the cartridge memory bus is in used
     bool gamepak_bus_in_use;
 };
-
-/*
-** An enumeration of the different memory regions
-** and other informations associated with them.
-*/
-
-#define BIOS_START              (0x00000000)
-#define BIOS_END                (0x00003FFF)
-#define BIOS_REGION             (BIOS_START >> 24)
-#define BIOS_MASK               (BIOS_END - BIOS_START)
-#define BIOS_SIZE               (BIOS_END - BIOS_START + 1)
-
-#define EWRAM_START             (0x02000000)
-#define EWRAM_END               (0x0203FFFF)
-#define EWRAM_REGION            (EWRAM_START >> 24)
-#define EWRAM_MASK              (EWRAM_END - EWRAM_START)
-
-#define IWRAM_START             (0x03000000)
-#define IWRAM_END               (0x03007FFF)
-#define IWRAM_REGION            (IWRAM_START >> 24)
-#define IWRAM_MASK              (IWRAM_END - IWRAM_START)
-
-#define IO_START                (0x04000000)
-#define IO_END                  (0x040003FF)
-#define IO_REGION               (IO_START >> 24)
-#define IO_MASK                 (IO_END - IO_START)
-
-#define PALRAM_START            (0x05000000)
-#define PALRAM_END              (0x050003FF)
-#define PALRAM_REGION           (PALRAM_START >> 24)
-#define PALRAM_MASK             (PALRAM_END - PALRAM_START)
-
-#define VRAM_START              (0x06000000)
-#define VRAM_END                (0x06017FFF)
-#define VRAM_REGION             (VRAM_START >> 24)
-#define VRAM_MASK_1             (0x00017FFF)
-#define VRAM_MASK_2             (0x0001FFFF)
-
-#define OAM_START               (0x07000000)
-#define OAM_END                 (0x070003FF)
-#define OAM_REGION              (OAM_START >> 24)
-#define OAM_MASK                (OAM_END - OAM_START)
-
-#define CART_0_START            (0x08000000)
-#define CART_0_END              (0x09FFFFFF)
-#define CART_0_REGION_1         (CART_0_START >> 24)
-#define CART_0_REGION_2         (CART_0_END >> 24)
-
-#define CART_1_START            (0x0A000000)
-#define CART_1_END              (0x0BFFFFFF)
-#define CART_1_REGION_1         (CART_1_START >> 24)
-#define CART_1_REGION_2         (CART_1_END >> 24)
-
-#define CART_2_START            (0x0C000000)
-#define CART_2_END              (0x0DFFFFFF)
-#define CART_2_REGION_1         (CART_2_START >> 24)
-#define CART_2_REGION_2         (CART_2_END >> 24)
-
-#define CART_MASK               (CART_0_END - CART_0_START)
-#define CART_SIZE               (CART_0_END - CART_0_START + 1)
-#define CART_REGION_START       (CART_0_START >> 24)
-#define CART_REGION_END         (CART_2_END >> 24)
-
-#define SRAM_START              (0x0E000000)
-#define SRAM_END                (0x0E00FFFF)
-#define SRAM_SIZE               (SRAM_END - SRAM_START + 1)
-#define SRAM_MASK               (SRAM_END - SRAM_START)
-#define SRAM_REGION             (SRAM_START >> 24)
-
-#define FLASH_START             (0x0E000000)
-#define FLASH_END               (0x0E00FFFF)
-#define FLASH64_SIZE            (FLASH_END - FLASH_START + 1)
-#define FLASH128_SIZE           (FLASH64_SIZE * 2)
-#define FLASH_MASK              (FLASH_END - FLASH_START)
 
 /*
 ** The different timings at which a DMA transfer can occur.
@@ -231,8 +238,8 @@ uint8_t mem_flash_read8(struct gba const *gba, uint32_t addr);
 void mem_flash_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /* gba/quicksave.c */
-void quicksave(struct gba *gba, char const *path);
-void quickload(struct gba *gba, char const *path);
+void quicksave(struct gba const *gba, char const *);
+void quickload(struct gba *gba, char const *);
 
 /*
 ** The following memory-accessors are used by the PPU for fast memory access

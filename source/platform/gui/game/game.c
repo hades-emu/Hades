@@ -183,6 +183,8 @@ gui_game_reload(
     char *extension;
     size_t base_len;
 
+    gui_push_recent_roms(app);
+
     free(app->emulation.qsave_path);
     free(app->emulation.backup_path);
 
@@ -237,6 +239,20 @@ gui_game_pause(
 }
 
 void
+gui_game_quicksave(
+    struct app *app
+) {
+    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_QUICKSAVE(app->emulation.qsave_path));
+}
+
+void
+gui_game_quickload(
+    struct app *app
+) {
+    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_QUICKLOAD(app->emulation.qsave_path));
+}
+
+void
 gui_game_handle_events(
     struct app *app,
     SDL_Event *event
@@ -277,13 +293,14 @@ gui_game_handle_events(
                 case SDLK_o:                gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_R, false)); break;
                 case SDLK_BACKSPACE:        gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_SELECT, false)); break;
                 case SDLK_RETURN:           gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_START, false)); break;
-                case SDLK_F1:
+                case SDLK_F1: {
                     app->emulation.unbounded ^= 1;
                     gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RUN(app->emulation.speed * !app->emulation.unbounded));
                     break;
+                };
                 case SDLK_F2:               gui_game_screenshot(app); break;
-                case SDLK_F5:               gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_QUICKSAVE()); break;
-                case SDLK_F8:               gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_QUICKLOAD()); break;
+                case SDLK_F5:               gui_game_quicksave(app); break;
+                case SDLK_F8:               gui_game_quickload(app); break;
                 default:
                     break;
             }

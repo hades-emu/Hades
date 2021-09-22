@@ -172,11 +172,23 @@ gba_run(
                     break;
                 };
                 case MESSAGE_QUICKLOAD: {
-                    //quickload(gba, gba->quicksave_path);
+                    struct message_data *message_data;
+
+                    message_data = (struct message_data *)message;
+                    quickload(gba, (char const *)message_data->data);
+                    if (message_data->cleanup) {
+                        message_data->cleanup(message_data->data);
+                    }
                     break;
                 };
                 case MESSAGE_QUICKSAVE: {
-                    //quicksave(gba, gba->quicksave_path);
+                    struct message_data *message_data;
+
+                    message_data = (struct message_data *)message;
+                    quicksave(gba, (char const *)message_data->data);
+                    if (message_data->cleanup) {
+                        message_data->cleanup(message_data->data);
+                    }
                     break;
                 };
             }

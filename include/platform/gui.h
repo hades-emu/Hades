@@ -65,25 +65,35 @@ struct app {
     SDL_JoystickID joystick_idx;
     bool controller_connected;
 
+    /* Recently opened ROMs */
+    char *recent_roms[5];
+
     /* Error handling */
     char *error;
 };
-
-/* error.c */
-void gui_new_error(struct app *app, char *error);
-void gui_render_errors(struct app *app);
 
 /* game/game.c */
 void gui_game_handle_events(struct app *app, SDL_Event *event);
 void gui_game_reload(struct app *app);
 void gui_game_pause(struct app *app);
 void gui_game_run(struct app *app);
+void gui_game_quicksave(struct app *app);
+void gui_game_quickload(struct app *app);
 
 /* game/render.c */
 void gui_render_game_fullscreen(struct app *app);
 
 /* game/screenshot.c */
 void gui_game_screenshot(struct app *app);
+
+/* config.c */
+void gui_push_recent_roms(struct app *app);
+void gui_load_config(struct app *app);
+void gui_save_config(struct app *app);
+
+/* error.c */
+void gui_new_error(struct app *app, char *error);
+void gui_render_errors(struct app *app);
 
 /* menubar.c */
 void gui_render_menubar(struct app *app);

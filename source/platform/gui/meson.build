@@ -12,14 +12,15 @@ hades = executable(
     'game/game.c',
     'game/render.c',
     'game/screenshot.c',
+    'config.c',
     'error.c',
     'main.c',
     'menubar.c',
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
     ],
-    link_with: [libgba, imgui, libcommon],
-    include_directories: [incdir, imgui_inc],
+    link_with: [libgba, imgui, libcommon, frozen],
+    include_directories: [incdir, imgui_inc, frozen_inc],
     c_args: cflags,
     link_args: ldflags,
 )

@@ -385,6 +385,8 @@ main(
 
     args_parse(&app, argc, argv);
 
+    gui_load_config(&app);
+
     /* Initialize the SDL, OpenGL and ImGUI */
     gui_init(&app);
 
@@ -493,4 +495,6 @@ main(
     }
 
     gui_cleanup(&app);
+
+    gui_save_config(&app);
 }
