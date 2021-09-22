@@ -100,7 +100,7 @@ args_parse(
         c = getopt_long(
             argc,
             argv,
-            "b:hv",
+            "hvb:",
             long_options,
             &option_index
         );
@@ -121,7 +121,7 @@ args_parse(
                         exit(EXIT_SUCCESS);
                         break;
                     case CLI_BIOS:
-                        app->emulation.bios_path = optarg;
+                        app->emulation.bios_path = strdup(optarg);
                         break;
                     case CLI_COLOR: // --color
                         if (optarg) {
@@ -149,7 +149,7 @@ args_parse(
                 }
                 break;
             case 'b':
-                app->emulation.bios_path = optarg;
+                app->emulation.bios_path = strdup(optarg);
                 break;
             case 'h':
                 print_usage(stdout, name);
@@ -395,9 +395,9 @@ main(
     hs_assert(app.emulation.gba);
     gba_init(app.emulation.gba);
 
-    args_parse(&app, argc, argv);
-
     gui_load_config(&app);
+
+    args_parse(&app, argc, argv);
 
     /* Initialize the SDL, OpenGL and ImGUI */
     gui_init(&app);
