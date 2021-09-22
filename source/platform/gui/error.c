@@ -19,8 +19,7 @@ gui_new_error(
 ) {
     free(app->error);
     app->error = error;
-    logln(HS_ERROR, "Error: %s", app->error);
-    igOpenPopup("Error", ImGuiPopupFlags_None);
+    app->open_error = true;
 }
 
 void
@@ -28,6 +27,12 @@ gui_render_errors(
     struct app *app
 ) {
     ImVec4 title;
+
+    if (app->open_error) {
+        app->open_error = false;
+        igOpenPopup("Error", ImGuiPopupFlags_None);
+        logln(HS_ERROR, "Error: %s", app->error);
+    }
 
     // #B2354E
     title = (ImVec4){

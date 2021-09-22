@@ -284,12 +284,6 @@ gui_init(
     ImGui_ImplSDL2_InitForOpenGL(app->window, app->gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    /* Set the default background color */
-    app->bg_color.x = 176.f / 255.f;
-    app->bg_color.y = 124.f / 255.f;
-    app->bg_color.z = 223.f / 255.f;
-    app->bg_color.w = 1.00f;
-
     /* Create the OpenGL texture that will hold the game's output */
     glGenTextures(1, &app->game_texture);
 
@@ -333,6 +327,8 @@ void
 gui_render_frame(
     struct app *app
 ) {
+    ImVec4 bg;
+
     /* Create the new frame */
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame(app->window);
@@ -342,13 +338,30 @@ gui_render_frame(
     gui_render_menubar(app);
 
     /* Render the game */
-    gui_render_game_fullscreen(app);
+    if (app->emulation.enabled) {
+        gui_render_game_fullscreen(app);
+    }
+
+    gui_render_errors(app);
 
     igRender();
 
+    // Change the background color depending on wether the game is active or not
+    if (app->emulation.enabled) {
+        bg.x = 0.f;
+        bg.y = 0.f;
+        bg.z = 0.f;
+        bg.w = 1.f;
+    } else {
+        bg.x = 176.f / 255.f;
+        bg.y = 124.f / 255.f;
+        bg.z = 223.f / 255.f;
+        bg.w = 1.00f;
+    }
+
     SDL_GL_MakeCurrent(app->window, app->gl_context);
     glViewport(0, 0, (int)app->ioptr->DisplaySize.x, (int)app->ioptr->DisplaySize.y);
-    glClearColor(app->bg_color.x, app->bg_color.y, app->bg_color.z, app->bg_color.w);
+    glClearColor(bg.x, bg.y, bg.z, bg.w);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
@@ -415,7 +428,6 @@ main(
     /* If a game was supplied in the CLI argument, launch it now */
     if (app.emulation.game_path) {
         gui_game_reload(&app);
-        gui_game_run(&app);
     }
 
     app.run = true;

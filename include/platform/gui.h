@@ -45,7 +45,6 @@ struct app {
     SDL_Window *window;
     SDL_GLContext gl_context;
     ImGuiIO* ioptr;
-    ImVec4 bg_color;
 
     ImGuiFileDialog *fs_dialog;
 
@@ -69,6 +68,7 @@ struct app {
     char *recent_roms[5];
 
     /* Error handling */
+    bool open_error;
     char *error;
 };
 

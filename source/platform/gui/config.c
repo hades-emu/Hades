@@ -62,7 +62,9 @@ gui_save_config(
     );
 }
 
-
+/*
+** Push the current game's path at the top of the "Open recent" list.
+*/
 void
 gui_push_recent_roms(
     struct app *app

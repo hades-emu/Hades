@@ -16,6 +16,7 @@
 #include <float.h>
 #include "hades.h"
 #include "gba/gba.h"
+#include "utils/fs.h"
 #include "platform/gui.h"
 
 void
@@ -45,11 +46,10 @@ gui_render_menubar(
                 uint32_t x;
 
                 for (x = 0; x < ARRAY_LEN(app->recent_roms) && app->recent_roms[x]; ++x) {
-                    if (igMenuItemBool(basename(app->recent_roms[x]), NULL, false, true)) {
+                    if (igMenuItemBool(hs_basename(app->recent_roms[x]), NULL, false, true)) {
                         free(app->emulation.game_path);
                         app->emulation.game_path = strdup(app->recent_roms[x]);
                         gui_game_reload(app);
-                        gui_game_run(app);
                     }
                 }
                 igEndMenu();
@@ -166,7 +166,6 @@ gui_render_menubar(
             /* Reset */
             if (igMenuItemBool("Reset", NULL, false, app->emulation.enabled)) {
                 gui_game_reload(app);
-                gui_game_run(app);
             }
             igEndMenu();
         }
@@ -240,12 +239,9 @@ gui_render_menubar(
                     IGFD_GetCurrentFileName(app->fs_dialog)
                 ));
                 gui_game_reload(app);
-                gui_game_run(app);
             }
             IGFD_CloseDialog(app->fs_dialog);
         }
-
-        gui_render_errors(app);
 
         igEndMainMenuBar();
     }

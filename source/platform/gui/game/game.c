@@ -28,7 +28,7 @@ load_bios(
     if (!file) {
         hs_assert(-1 != asprintf(
             &error_msg,
-            "failed to open %s: %s.\n",
+            "failed to open %s: %s.",
             app->emulation.bios_path,
             strerror(errno)
         ));
@@ -51,7 +51,7 @@ load_bios(
     if (fread(data, 1, BIOS_SIZE, file) != BIOS_SIZE) {
         hs_assert(-1 != asprintf(
             &error_msg,
-            "failed to read %s: %s.\n",
+            "failed to read %s: %s.",
             app->emulation.bios_path,
             strerror(errno)
         ));
@@ -79,7 +79,7 @@ load_rom(
     if (!file) {
         hs_assert(-1 != asprintf(
             &error_msg,
-            "failed to open %s: %s.\n",
+            "failed to open %s: %s.",
             app->emulation.game_path,
             strerror(errno)
         ));
@@ -103,7 +103,7 @@ load_rom(
     if (fread(data, 1, CART_SIZE, file) != file_len) {
         hs_assert(-1 != asprintf(
             &error_msg,
-            "failed to read %s: %s.\n",
+            "failed to read %s: %s.",
             app->emulation.game_path,
             strerror(errno)
         ));
@@ -149,7 +149,6 @@ load_save(
             logln(HS_GLOBAL, "Save data successfully loaded.");
             gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_LOAD_BACKUP(data, file_len, free));
         }
-
     } else {
         logln(HS_WARNING, "Failed to open the save file. A new one is created instead.");
 
@@ -158,7 +157,7 @@ load_save(
         if (!app->emulation.backup_file) {
             hs_assert(-1 != asprintf(
                 &error_msg,
-                "failed to create %s: %s.\n",
+                "failed to create %s: %s.",
                 app->emulation.backup_path,
                 strerror(errno)
             ));
@@ -210,18 +209,18 @@ gui_game_reload(
         app->emulation.game_path
     ));
 
+    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_PAUSE());
+    gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RESET());
     if (!load_bios(app) && !load_rom(app) && !load_save(app)) {
         app->emulation.enabled = true;
-        app->emulation.pause = 0;
-        gba_f2e_message_push(app->emulation.gba, NEW_MESSAGE_RESET());
+        app->emulation.pause = false;
+        gui_game_run(app);
     } else {
         app->emulation.enabled = false;
     }
 
-    app->bg_color.x = 0.f;
-    app->bg_color.y = 0.f;
-    app->bg_color.z = 0.f;
-    app->bg_color.w = 1.f;
+    printf("END: %u\n", app->emulation.enabled);
+
 }
 
 void

@@ -10,6 +10,7 @@
 #ifndef UTILS_FS_H
 # define UTILS_FS_H
 
+# include <string.h>
 # include "hades.h"
 
 # if defined (_WIN32) && !defined (__CYGWIN__)
@@ -26,5 +27,16 @@
 #  define hs_isatty(x)           isatty(x)
 #  define hs_mkdir(path)         mkdir((path), 0755);
 # endif
+
+static inline
+char const *
+hs_basename(
+    char const *path
+) {
+    char const *base;
+
+    base = strrchr(path, '/');
+    return (base ? base + 1 : path);
+}
 
 #endif /* UTILS_FS_H */
