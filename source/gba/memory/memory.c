@@ -254,7 +254,7 @@ mem_prefetch_buffer_step(
                         (mem_backup_storage_read8((gba), (addr) + 1) <<  8) |               \
                         (mem_backup_storage_read8((gba), (addr) + 2) << 16) |               \
                         (mem_backup_storage_read8((gba), (addr) + 3) << 24)                 \
-                    ),                                                                       \
+                    ),                                                                      \
                     uint16_t: (                                                             \
                         (mem_backup_storage_read8((gba), (addr) + 0) <<  0) |               \
                         (mem_backup_storage_read8((gba), (addr) + 1) <<  8)                 \
@@ -265,6 +265,7 @@ mem_prefetch_buffer_step(
             default:                                                                        \
                 logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);                   \
                 _ret = 0;                                                                   \
+                break;                                                                      \
         };                                                                                  \
         _ret;                                                                               \
     })
@@ -278,7 +279,7 @@ mem_prefetch_buffer_step(
     ({                                                                                          \
         switch ((addr) >> 24) {                                                                 \
             case BIOS_REGION:                                                                   \
-                *(T *)((uint8_t *)((gba)->memory.bios) + ((addr) & BIOS_MASK)) = (T)(val);      \
+                /* Ignore writes attempts to the bios memory. */                                \
                 break;                                                                          \
             case EWRAM_REGION:                                                                  \
                 *(T *)((uint8_t *)((gba)->memory.ewram) + ((addr) & EWRAM_MASK)) = (T)(val);    \
@@ -289,16 +290,18 @@ mem_prefetch_buffer_step(
             case IO_REGION:                                                                     \
                 _Generic(val,                                                                   \
                     uint32_t: ({                                                                \
-                        mem_io_write8(gba, (addr) + 0, (uint8_t)((val) >>  0));                 \
-                        mem_io_write8(gba, (addr) + 1, (uint8_t)((val) >>  8));                 \
-                        mem_io_write8(gba, (addr) + 2, (uint8_t)((val) >> 16));                 \
-                        mem_io_write8(gba, (addr) + 3, (uint8_t)((val) >> 24));                 \
+                        mem_io_write8((gba), (addr) + 0, (uint8_t)((val) >>  0));               \
+                        mem_io_write8((gba), (addr) + 1, (uint8_t)((val) >>  8));               \
+                        mem_io_write8((gba), (addr) + 2, (uint8_t)((val) >> 16));               \
+                        mem_io_write8((gba), (addr) + 3, (uint8_t)((val) >> 24));               \
                     }),                                                                         \
                     uint16_t: ({                                                                \
-                        mem_io_write8(gba, (addr) + 0, (uint8_t)((val) >>  0));                 \
-                        mem_io_write8(gba, (addr) + 1, (uint8_t)((val) >>  8));                 \
+                        mem_io_write8((gba), (addr) + 0, (uint8_t)((val) >>  0));               \
+                        mem_io_write8((gba), (addr) + 1, (uint8_t)((val) >>  8));               \
                     }),                                                                         \
-                    default: mem_io_write8((gba), (addr), (val))                                \
+                    default: ({                                                                 \
+                        mem_io_write8((gba), (addr), (val));                                    \
+                    })                                                                          \
                 );                                                                              \
                 break;                                                                          \
             case PALRAM_REGION:                                                                 \
@@ -311,25 +314,27 @@ mem_prefetch_buffer_step(
                 *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK)) = (T)(val);        \
                 break;                                                                          \
             case CART_REGION_START ... CART_REGION_END:                                         \
-                *(T *)((uint8_t *)((gba)->memory.rom) + ((addr) & CART_MASK)) = (T)(val);       \
+                /* Ignore writes attempts to the cartridge memory. */                           \
                 break;                                                                          \
             case SRAM_REGION:                                                                   \
                 _Generic(val,                                                                   \
                     uint32_t: ({                                                                \
-                        mem_backup_storage_write8(gba, (addr) + 0, (uint8_t)((val) >>  0));     \
-                        mem_backup_storage_write8(gba, (addr) + 1, (uint8_t)((val) >>  8));     \
-                        mem_backup_storage_write8(gba, (addr) + 2, (uint8_t)((val) >> 16));     \
-                        mem_backup_storage_write8(gba, (addr) + 3, (uint8_t)((val) >> 24));     \
-                    }),                                                                           \
+                        mem_backup_storage_write8((gba), (addr) + 0, (uint8_t)((val) >>  0));   \
+                        mem_backup_storage_write8((gba), (addr) + 1, (uint8_t)((val) >>  8));   \
+                        mem_backup_storage_write8((gba), (addr) + 2, (uint8_t)((val) >> 16));   \
+                        mem_backup_storage_write8((gba), (addr) + 3, (uint8_t)((val) >> 24));   \
+                    }),                                                                         \
                     uint16_t: ({                                                                \
-                        mem_backup_storage_write8(gba, (addr) + 0, (uint8_t)((val) >>  0));     \
-                        mem_backup_storage_write8(gba, (addr) + 1, (uint8_t)((val) >>  8));     \
-                    }),                                                                           \
-                    default: mem_backup_storage_write8((gba), (addr), (val))                    \
+                        mem_backup_storage_write8((gba), (addr) + 0, (uint8_t)((val) >>  0));   \
+                        mem_backup_storage_write8((gba), (addr) + 1, (uint8_t)((val) >>  8));   \
+                    }),                                                                         \
+                    default: ({                                                                 \
+                        mem_backup_storage_write8((gba), (addr), (val));                        \
+                    })                                                                          \
                 );                                                                              \
                 break;                                                                          \
             default:                                                                            \
-                logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);                       \
+                logln(HS_MEMORY, "Invalid write at address 0x%08x", addr);                      \
         };                                                                                      \
     })
 
