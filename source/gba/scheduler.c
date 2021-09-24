@@ -44,27 +44,36 @@ void
 sched_process_events(
     struct gba *gba
 ) {
-    size_t i;
     struct core *core;
     struct scheduler *scheduler;
     struct scheduler_event *event;
+    uint64_t next_event;
+    size_t i;
 
     core = &gba->core;
     scheduler = &gba->scheduler;
     while (true) {
         event = NULL;
 
+        next_event = UINT64_MAX;
+
         // We want to fire all the events in the correct order, hence the complicated
         // loop.
         for (i = 0; i < scheduler->events_size; ++i) {
 
             // Keep only the event that are active and should occure now
-            if (scheduler->events[i].active && scheduler->events[i].at <= core->cycles) {
-                if (!event || scheduler->events[i].at < event->at) {
-                    event = scheduler->events + i;
+            if (scheduler->events[i].active) {
+                if (scheduler->events[i].at <= core->cycles) {
+                    if (!event || scheduler->events[i].at < event->at) {
+                        event = scheduler->events + i;
+                    }
+                } else if (scheduler->events[i].at < next_event) {
+                    next_event = scheduler->events[i].at;
                 }
             }
         }
+
+        scheduler->next_event = next_event;
 
         if (!event) {
             break;
