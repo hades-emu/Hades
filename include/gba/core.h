@@ -210,7 +210,6 @@ struct psr core_spsr_get(struct core const *core, enum arm_modes mode);
 void core_spsr_set(struct core *core, enum arm_modes mode, struct psr psr);
 void core_switch_mode(struct core *core, enum arm_modes mode);
 uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool *update_carry);
-bool core_compute_cond(struct core *core, uint32_t cond);
 void core_trigger_irq(struct gba *gba, enum arm_irq irq);
 void core_scan_irq(struct gba *gba);
 

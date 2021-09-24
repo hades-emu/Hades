@@ -246,7 +246,7 @@ gui_init(
         SDL_WINDOWPOS_CENTERED,
         GBA_SCREEN_WIDTH * 3 * app->gui_scale,
         (GBA_SCREEN_HEIGHT * 3 + 19.f) * app->gui_scale ,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI
+        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_RENDERER_PRESENTVSYNC
     );
 
     if (!app->window) {
@@ -495,8 +495,7 @@ main(
         if (app.emulation.enabled && !app.emulation.pause) {
             now = SDL_GetTicks();
             if ((now - last_fps_update) >= 1000) {
-                app.emulation.fps = app.emulation.gba->framecounter;
-                app.emulation.gba->framecounter = 0;
+                app.emulation.fps = atomic_exchange(&app.emulation.gba->framecounter, 0);
                 last_fps_update = now;
 
                 /*

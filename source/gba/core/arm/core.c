@@ -10,7 +10,7 @@
 #include "gba/gba.h"
 #include "gba/core/arm.h"
 
-static struct hs_arm_encoded_insn arm_encoded_insns[] = {
+static struct hs_arm_insn const arm_insns[] = {
 
     // Data processing
     { "and_reg1",   "xxxx_000_0000_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
@@ -131,27 +131,25 @@ static struct hs_arm_encoded_insn arm_encoded_insns[] = {
     {"swp",         "xxxx_00010_b_00nnnndddd00001001mmmm",              core_arm_swp},
 };
 
-struct hs_arm_insn arm_insns[ARRAY_LEN(arm_encoded_insns)] = { 0 };
+static size_t const arm_insns_len = ARRAY_LEN(arm_insns);
 
-size_t arm_insns_len = ARRAY_LEN(arm_encoded_insns);
+void (*arm_lut[4096])(struct gba *gba, uint32_t op) = { 0 };
+bool cond_lut[256];
 
 void
 core_arm_decode_insns(void)
 {
+    struct hs_arm_decoded_insn arm_decoded_insns[arm_insns_len];
     size_t i;
 
-    i = 0;
-    while (i < arm_insns_len) {
-        struct hs_arm_encoded_insn *encoded_insn;
-        struct hs_arm_insn *decoded_insn;
+    for (i = 0; i < arm_insns_len; ++i) {
+        struct hs_arm_insn const *encoded_insn;
+        struct hs_arm_decoded_insn *decoded_insn;
         size_t j;
         size_t k;
 
-        encoded_insn = arm_encoded_insns + i;
-        decoded_insn = arm_insns + i;
-
-        decoded_insn->name = encoded_insn->name;
-        decoded_insn->op = encoded_insn->op;
+        encoded_insn = arm_insns + i;
+        decoded_insn = arm_decoded_insns + i;
 
         /*
         ** Decode the user-friendly string mask into two values: decoded_insn->mask and decoded_insn->value.
@@ -192,17 +190,68 @@ core_arm_decode_insns(void)
         */
         j = 0;
         while (j < i) {
-            if (!(((decoded_insn->value ^ arm_insns[j].value) & decoded_insn->mask) & arm_insns[j].mask)) {
+            if (!(((decoded_insn->value ^ arm_decoded_insns[j].value) & decoded_insn->mask) & arm_decoded_insns[j].mask)) {
                 panic(
                     HS_CORE,
                     "instruction \"%s\" collides with \"%s\".",
-                    decoded_insn->name,
+                    encoded_insn->name,
                     arm_insns[j].name
                 );
             }
             ++j;
         }
+    }
 
-        ++i;
+    /*
+    ** Build the lookup table for ARM instructions.
+    */
+
+    for (i = 0; i < ARRAY_LEN(arm_lut); ++i) {
+        uint32_t op;
+        size_t j;
+
+        op = ((i & 0xFF0) << 16) | ((i & 0xF) << 4);
+        for (j = 0; j < arm_insns_len; ++j) {
+            if ((op & arm_decoded_insns[j].mask & 0x0FF000F0) == (arm_decoded_insns[j].value & 0x0FF000F0)) {
+
+                // Check for double matches, which means the LUT is too small and ambiguous.
+                hs_assert(!arm_lut[i]);
+                arm_lut[i] = arm_insns[j].op;
+            }
+        }
+    }
+
+    /*
+    ** Build the conditions lookup table for ARM instructions.
+    */
+
+    for (i = 0; i < ARRAY_LEN(cond_lut); ++i) {
+        bool o;
+        bool c;
+        bool z;
+        bool n;
+
+        o = bitfield_get(i, 4);
+        c = bitfield_get(i, 5);
+        z = bitfield_get(i, 6);
+        n = bitfield_get(i, 7);
+        switch (bitfield_get_range(i, 0, 4)) {
+            case COND_EQ: cond_lut[i] = z; break;
+            case COND_NE: cond_lut[i] = !z; break;
+            case COND_CS: cond_lut[i] = c; break;
+            case COND_CC: cond_lut[i] = !c; break;
+            case COND_MI: cond_lut[i] = n; break;
+            case COND_PL: cond_lut[i] = !n; break;
+            case COND_VS: cond_lut[i] = o; break;
+            case COND_VC: cond_lut[i] = !o; break;
+            case COND_HI: cond_lut[i] = c && !z; break;
+            case COND_LS: cond_lut[i] = !c || z; break;
+            case COND_GE: cond_lut[i] = n == o; break;
+            case COND_LT: cond_lut[i] = n != o; break;
+            case COND_GT: cond_lut[i] = !z && (n == o); break;
+            case COND_LE: cond_lut[i] = z || (n != o); break;
+            case COND_AL: cond_lut[i] = true; break;
+            default:      cond_lut[i] = false; break;
+        }
     }
 }

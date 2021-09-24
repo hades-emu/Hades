@@ -10,7 +10,7 @@
 #include "gba/gba.h"
 #include "gba/core/thumb.h"
 
-struct hs_thumb_encoded_insn thumb_encoded_insns[] = {
+static struct hs_thumb_insn const thumb_insns[] = {
     // Move shifted register
     { "lsl",            "00000yyyyysssddd",          core_thumb_lsl},
     { "lsr",            "00001yyyyysssddd",          core_thumb_lsr},
@@ -27,22 +27,7 @@ struct hs_thumb_encoded_insn thumb_encoded_insns[] = {
     { "sub_imm",        "00111dddxxxxxxxx",          core_thumb_sub_imm},
 
     // ALU operations
-    { "and",            "0100000000sssddd",          core_thumb_alu},
-    { "eor",            "0100000001sssddd",          core_thumb_alu},
-    { "lsl",            "0100000010sssddd",          core_thumb_alu},
-    { "lsr",            "0100000011sssddd",          core_thumb_alu},
-    { "asr",            "0100000100sssddd",          core_thumb_alu},
-    { "adc",            "0100000101sssddd",          core_thumb_alu},
-    { "sbc",            "0100000110sssddd",          core_thumb_alu},
-    { "ror",            "0100000111sssddd",          core_thumb_alu},
-    { "tst",            "0100001000sssddd",          core_thumb_alu},
-    { "neg",            "0100001001sssddd",          core_thumb_alu},
-    { "cmp",            "0100001010sssddd",          core_thumb_alu},
-    { "cmn",            "0100001011sssddd",          core_thumb_alu},
-    { "orr",            "0100001100sssddd",          core_thumb_alu},
-    { "mul",            "0100001101sssddd",          core_thumb_alu},
-    { "bic",            "0100001110sssddd",          core_thumb_alu},
-    { "mvn",            "0100001111sssddd",          core_thumb_alu},
+    { "alu",            "010000xxxxsssddd",          core_thumb_alu},
 
     // Hi register operations/Branch exchange
     { "add_hi_reg",     "01000100hhsssddd",          core_thumb_hi_add},
@@ -111,27 +96,24 @@ struct hs_thumb_encoded_insn thumb_encoded_insns[] = {
     { "bl_2",           "11111xxxxxxxxxxx",          core_thumb_branch_link},
 };
 
-struct hs_thumb_insn thumb_insns[ARRAY_LEN(thumb_encoded_insns)] = { 0 };
+static size_t const thumb_insns_len = ARRAY_LEN(thumb_insns);
 
-size_t thumb_insns_len = ARRAY_LEN(thumb_encoded_insns);
+void (*thumb_lut[256])(struct gba *gba, uint16_t op) = { 0 };
 
 void
 core_thumb_decode_insns(void)
 {
+    struct hs_thumb_decoded_insn thumb_decoded_insns[thumb_insns_len];
     size_t i;
 
-    i = 0;
-    while (i < thumb_insns_len) {
-        struct hs_thumb_encoded_insn *encoded_insn;
-        struct hs_thumb_insn *decoded_insn;
+    for (i = 0; i < thumb_insns_len; ++i) {
+        struct hs_thumb_insn const *encoded_insn;
+        struct hs_thumb_decoded_insn *decoded_insn;
         size_t j;
         size_t k;
 
-        encoded_insn = thumb_encoded_insns + i;
-        decoded_insn = thumb_insns + i;
-
-        decoded_insn->name = encoded_insn->name;
-        decoded_insn->op = encoded_insn->op;
+        encoded_insn = thumb_insns + i;
+        decoded_insn = thumb_decoded_insns + i;
 
         /*
         ** Decode the user-friendly string mask into two values: decoded_insn->mask and decoded_insn->value.
@@ -172,16 +154,34 @@ core_thumb_decode_insns(void)
         */
         j = 0;
         while (j < i) {
-            if (!(((decoded_insn->value ^ thumb_insns[j].value) & decoded_insn->mask) & thumb_insns[j].mask)) {
+            if (!(((decoded_insn->value ^ thumb_decoded_insns[j].value) & decoded_insn->mask) & thumb_decoded_insns[j].mask)) {
                 panic(
                     HS_CORE,
                     "instruction \"%s\" collides with \"%s\".",
-                    decoded_insn->name,
+                    encoded_insn->name,
                     thumb_insns[j].name
                 );
             }
             ++j;
         }
-        ++i;
+    }
+
+    /*
+    ** Build the lookup table for thumb instructions.
+    */
+
+    for (i = 0; i < ARRAY_LEN(thumb_lut); ++i) {
+        uint16_t op;
+        size_t j;
+
+        op = i << 8;
+        for (j = 0; j < thumb_insns_len; ++j) {
+            if ((op & thumb_decoded_insns[j].mask & 0xFF00) == (thumb_decoded_insns[j].value & 0xFF00)) {
+
+                // Check for double matches, which means the LUT is too small and ambiguous.
+                hs_assert(!thumb_lut[i]);
+                thumb_lut[i] = thumb_insns[j].op;
+            }
+        }
     }
 }

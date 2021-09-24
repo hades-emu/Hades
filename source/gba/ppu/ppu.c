@@ -257,7 +257,7 @@ ppu_hdraw(
     ++io->vcount.raw;
     if (io->vcount.raw >= GBA_SCREEN_REAL_HEIGHT) {
         io->vcount.raw = 0;
-        gba->framecounter += 1;
+        ++gba->framecounter;
 
         /*
         ** Now that the frame is finished, we can copy the current framebuffer to
