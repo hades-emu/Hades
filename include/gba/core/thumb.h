@@ -15,21 +15,18 @@
 
 struct gba;
 
-struct hs_thumb_encoded_insn {
+struct hs_thumb_insn {
     char const *name;
     char const *mask;
     void (*op)(struct gba *gba, uint16_t op);
 };
 
-struct hs_thumb_insn {
-    char const *name;
+struct hs_thumb_decoded_insn {
     uint16_t mask;
     uint16_t value;
-    void (*op)(struct gba *gba, uint16_t op);
 };
 
-extern struct hs_thumb_insn thumb_insns[];
-extern size_t thumb_insns_len;
+extern void (*thumb_lut[256])(struct gba *gba, uint16_t op);
 
 /* gba/thumb/alu.c */
 

@@ -15,18 +15,19 @@
 
 struct gba;
 
-struct hs_arm_encoded_insn {
+struct hs_arm_insn {
     char const *name;
     char const *mask;
     void (*op)(struct gba *gba, uint32_t op);
 };
 
-struct hs_arm_insn {
-    char const *name;
+struct hs_arm_decoded_insn {
     uint32_t mask;
     uint32_t value;
-    void (*op)(struct gba *gba, uint32_t op);
 };
+
+extern void (*arm_lut[4096])(struct gba *gba, uint32_t op);
+extern bool cond_lut[256];
 
 /* core/arm/alu.c */
 void core_arm_alu(struct gba *gba, uint32_t op);
@@ -58,8 +59,5 @@ void core_arm_swi(struct gba *gba, uint32_t op);
 
 /* core/arm/swp.c */
 void core_arm_swp(struct gba *gba, uint32_t op);
-
-extern struct hs_arm_insn arm_insns[];
-extern size_t arm_insns_len;
 
 #endif /* !CORE_ARM_H */

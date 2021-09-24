@@ -9,6 +9,7 @@
 
 #include "hades.h"
 #include "gba/gba.h"
+#include "gba/core/arm.h"
 
 /*
 ** Implement the unconditional branch instruction.
@@ -66,14 +67,14 @@ core_thumb_branch_cond(
     uint16_t op
 ) {
     struct core *core;
-    bool can_exec;
+    size_t idx;
     int32_t label;
 
     core = &gba->core;
     label = ((int32_t)(int8_t)bitfield_get_range(op, 0, 8)) << 1;
-    can_exec = core_compute_cond(core, bitfield_get_range(op, 8, 12));
+    idx = (bitfield_get_range(core->cpsr.raw, 28, 32) << 4) | bitfield_get_range(op, 8, 12);
 
-    if (can_exec) {
+    if (cond_lut[idx]) {
         core->pc += label;
         core_reload_pipeline(gba);
     } else {

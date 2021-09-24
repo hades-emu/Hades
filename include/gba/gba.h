@@ -10,6 +10,7 @@
 #ifndef GBA_GBA_H
 # define GBA_GBA_H
 
+# include <stdatomic.h>
 # include "gba/core.h"
 # include "gba/memory.h"
 # include "gba/ppu.h"
@@ -107,7 +108,7 @@ struct gba {
     pthread_mutex_t framebuffer_frontend_mutex;
 
     /* The frame counter, used for FPS calculations. */
-    uint32_t framecounter;
+    atomic_uint framecounter;
 };
 
 # define NEW_MESSAGE_KEYINPUT(_key, _pressed)           \

@@ -64,8 +64,6 @@ core_next(
     struct gba *gba
 ) {
     struct core *core;
-    size_t i;
-    bool can_exec;
 
     core = &gba->core;
 
@@ -81,45 +79,38 @@ core_next(
                 core->prefetch[0] = core->prefetch[1];
                 core->prefetch[1] = mem_read16(gba, core->pc, core->prefetch_access_type);
 
-                for (i = 0; i < thumb_insns_len; ++i) {
-                    if ((op & thumb_insns[i].mask) == thumb_insns[i].value) {
-                        if (!thumb_insns[i].op) {
-                            unimplemented(HS_CORE, "thumb instruction \"%s\" isn't implemented.", thumb_insns[i].name);
-                        }
-                        thumb_insns[i].op(gba, op);
-                        return;
-                    }
+                if (unlikely(thumb_lut[op >> 8] == NULL)) {
+                    panic(HS_CORE, "Unknown Thumb op-code 0x%04x (pc=0x%08x).", op, core->pc);
                 }
 
-                panic(HS_CORE, "Unknown thumb op-code 0x%04x (pc=0x%08x).", op);
+                thumb_lut[op >> 8](gba, op);
             } else {
+                size_t idx;
                 uint32_t op;
 
                 op = core->prefetch[0];
                 core->prefetch[0] = core->prefetch[1];
                 core->prefetch[1] = mem_read32(gba, core->pc, core->prefetch_access_type);
 
-                can_exec = core_compute_cond(core, op >> 28);
+                /*
+                ** Test if the conditions required to execute the instruction are met
+                ** Ignore instructions where the conditions aren't met.
+                */
 
-                // Test if the conditions required to execute the instruction are met
-                // Ignore instructions where the conditions aren't met.
-                if (!can_exec) {
+                idx = (bitfield_get_range(core->cpsr.raw, 28, 32) << 4) | (bitfield_get_range(op, 28, 32));
+                if (!cond_lut[idx]) {
                     core->pc += 4;
                     core->prefetch_access_type = SEQUENTIAL;
                     return ;
                 }
 
-                for (i = 0; i < arm_insns_len; ++i) {
-                    if ((op & arm_insns[i].mask) == arm_insns[i].value) {
-                        if (!arm_insns[i].op) {
-                            unimplemented(HS_CORE, "ARM instruction \"%s\" isn't implemented.", arm_insns[i].name);
-                        }
-                        arm_insns[i].op(gba, op);
-                        return ;
-                    }
+                idx = ((op >> 16) & 0xFF0) | ((op >> 4) & 0x00F);
+
+                if (unlikely(arm_lut[idx] == NULL)) {
+                    panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
                 }
 
-                panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
+                arm_lut[idx](gba, op);
             }
             break;
         case CORE_HALT:
@@ -590,30 +581,4 @@ core_compute_shift(
     }
 
     return (value);
-}
-
-bool
-core_compute_cond(
-    struct core *core,
-    uint32_t cond
-) {
-    switch (cond) {
-        case COND_EQ: return (core->cpsr.zero);
-        case COND_NE: return (!core->cpsr.zero);
-        case COND_CS: return (core->cpsr.carry);
-        case COND_CC: return (!core->cpsr.carry);
-        case COND_MI: return (core->cpsr.negative);
-        case COND_PL: return (!core->cpsr.negative);
-        case COND_VS: return (core->cpsr.overflow);
-        case COND_VC: return (!core->cpsr.overflow);
-        case COND_HI: return (core->cpsr.carry && !core->cpsr.zero);
-        case COND_LS: return (!core->cpsr.carry || core->cpsr.zero);
-        case COND_GE: return (core->cpsr.negative == core->cpsr.overflow);
-        case COND_LT: return (core->cpsr.negative != core->cpsr.overflow);
-        case COND_GT: return (!core->cpsr.zero && (core->cpsr.negative == core->cpsr.overflow));
-        case COND_LE: return (core->cpsr.zero || (core->cpsr.negative != core->cpsr.overflow));
-        case COND_AL: return (true);
-        default:
-            panic(HS_CORE, "Unknown cond %u\n", cond);
-    }
 }
