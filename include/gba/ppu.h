@@ -114,7 +114,7 @@ union affine_float {
         uint8_t fraction;
         int8_t integer;
     } __packed;
-    uint16_t raw;
+    int16_t raw;
 };
 
 static_assert(sizeof(union affine_float) == sizeof(uint16_t));
