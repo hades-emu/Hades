@@ -79,8 +79,8 @@ ppu_prerender_oam(
         }
 
         if (line >= win_oy && line < win_oy + win_sy) {
-            union affine_float px;
-            union affine_float py;
+            int32_t px;
+            int32_t py;
             union affine_float pa;
             union affine_float pb;
             union affine_float pc;
@@ -101,10 +101,10 @@ ppu_prerender_oam(
             /*
             ** We pre-compute PX and PY for x=0 and simply add the difference when X is increased.
             */
-            px.raw = pa.raw * -(win_sx / 2) + pb.raw * ((line - win_oy) - (win_sy / 2)) + ((sprite_sx / 2) << 8);
-            py.raw = pc.raw * -(win_sx / 2) + pd.raw * ((line - win_oy) - (win_sy / 2)) + ((sprite_sy / 2) << 8);
+            px = pa.raw * -(win_sx / 2) + pb.raw * ((line - win_oy) - (win_sy / 2)) + ((sprite_sx / 2) << 8);
+            py = pc.raw * -(win_sx / 2) + pd.raw * ((line - win_oy) - (win_sy / 2)) + ((sprite_sy / 2) << 8);
 
-            for (x = 0; x < win_sx; ++x, px.raw += pa.raw, py.raw += pc.raw) {
+            for (x = 0; x < win_sx; ++x, px += pa.raw, py += pc.raw) {
                 uint32_t palette_idx;
                 uint32_t chr_x;  // X coordinate of the pixel within the tile (0-7)
                 uint32_t chr_y;  // Y coordinate of the pixel within the tile (0-7)
@@ -118,15 +118,15 @@ ppu_prerender_oam(
                     continue;
                 }
 
-                tile_x = px.integer / 8;
-                tile_y = py.integer / 8;
-                chr_x = px.integer & 7;
-                chr_y = py.integer & 7;
+                tile_x = (px >> 8) / 8;
+                tile_y = (py >> 8) / 8;
+                chr_x = (px >> 8) % 8;
+                chr_y = (py >> 8) % 8;
 
                 // Filter out pixels that are rotated/shred/scaled outside of their sprite.
                 if (
-                       px.integer < 0 || tile_x >= sprite_sx / 8
-                    || py.integer < 0 || tile_y >= sprite_sy / 8
+                       px < 0 || tile_x >= sprite_sx / 8
+                    || py < 0 || tile_y >= sprite_sy / 8
                 ) {
                     continue;
                 }
