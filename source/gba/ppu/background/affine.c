@@ -85,13 +85,12 @@ ppu_render_background_affine(
         chr_x = tile_x % 8;
         chr_y = tile_y % 8;
 
-        px += pa;
-        py += pc;
-
         if (io->bgcnt[bg_idx].wrap) {
             tile_x = tile_x >= 0 ? (tile_x % bg_size) : (bg_size + (tile_x % bg_size));
             tile_y = tile_y >= 0 ? (tile_y % bg_size) : (bg_size + (tile_y % bg_size));
         } else if (tile_x < 0 || tile_x >= bg_size || tile_y < 0 || tile_y >= bg_size) {
+            px += pa;
+            py += pc;
             continue;
         }
 
@@ -106,5 +105,8 @@ ppu_render_background_affine(
             c.idx = bg_idx;
             scanline->top[x] = c;
         }
+
+        px += pa;
+        py += pc;
     }
 }
