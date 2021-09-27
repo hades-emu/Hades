@@ -47,7 +47,7 @@ static_assert(sizeof(union color) == sizeof(uint16_t));
 
 struct rich_color {
     union color;
-    uint8_t idx: 6; // 0-4 for bgs, 5 for OAM
+    uint8_t idx: 6; // 0-3 for bgs, 4 for OAM, 5 for BD
     uint8_t visible: 1;
     uint8_t force_blend: 1; // Only useful for OAM
 };

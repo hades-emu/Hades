@@ -55,6 +55,7 @@ ppu_merge_layer(
     eva = min(16, io->bldalpha.top_coef);
     evb = min(16, io->bldalpha.bot_coef);
     evy = min(16, io->bldy.coef);
+
     for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
         bool bot_enabled;
         struct rich_color topc;

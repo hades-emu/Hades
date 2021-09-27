@@ -31,11 +31,13 @@ ppu_render_background_bitmap(
             c.raw = mem_palram_read16(gba, palette_idx * sizeof(union color));
             c.visible = true;
             c.idx = bg_idx;
+            c.force_blend = false;
             scanline->top[x] = c;
         } else {
             c.raw = mem_vram_read16(gba, (GBA_SCREEN_WIDTH * line + x) * sizeof(union color));
             c.visible = true;
             c.idx = bg_idx;
+            c.force_blend = false;
             scanline->top[x] = c;
         }
     }
