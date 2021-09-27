@@ -183,12 +183,6 @@ gui_render_menubar(
             igEndMenu();
         }
 
-        /* Emulation */
-        if (igBeginMenu("Debug", false)) {
-            igMenuItemBoolPtr("Enable Debugger", NULL, &app->debugger.enabled, true);
-            igEndMenu();
-        }
-
         /* About */
         if (igMenuItemBool("About", NULL, true, true)) {
             igOpenPopup("About", ImGuiPopupFlags_None);
