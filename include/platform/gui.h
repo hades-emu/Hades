@@ -19,10 +19,6 @@
 
 struct gba;
 
-struct debugger {
-    bool enabled;
-};
-
 struct emulation {
     struct gba *gba;
     char *game_path;
@@ -49,7 +45,6 @@ struct app {
 
     ImGuiFileDialog *fs_dialog;
 
-    struct debugger debugger;
     struct emulation emulation;
 
     GLuint game_texture;
