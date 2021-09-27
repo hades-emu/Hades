@@ -43,6 +43,7 @@ gba_reset(
     mem_reset(&gba->memory);
     io_init(&gba->io);
     ppu_init(gba);
+    apu_init(gba);
     core_init(gba);
 }
 
@@ -189,6 +190,14 @@ gba_run(
                     }
                     break;
                 };
+                case MESSAGE_AUDIO_RESAMPLE_FREQ: {
+                    struct message_audio_freq *message_audio_freq;
+
+                    message_audio_freq = (struct message_audio_freq *)message;
+                    gba->apu.resample_frequency = message_audio_freq->refill_frequency;
+                    break;
+                };
+
             }
             mqueue->allocated_size -= message->size;
             --mqueue->length;

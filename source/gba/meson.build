@@ -9,6 +9,7 @@
 
 libgba = static_library(
     'gba',
+    'apu/apu.c',
     'core/arm/alu.c',
     'core/arm/bdt.c',
     'core/arm/branch.c',

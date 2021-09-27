@@ -15,6 +15,7 @@
 # include "gba/memory.h"
 # include "gba/ppu.h"
 # include "gba/io.h"
+# include "gba/apu.h"
 # include "gba/scheduler.h"
 
 enum gba_state {
@@ -34,6 +35,7 @@ enum message_type {
     MESSAGE_KEYINPUT,
     MESSAGE_QUICKLOAD,
     MESSAGE_QUICKSAVE,
+    MESSAGE_AUDIO_RESAMPLE_FREQ,
 };
 
 enum keyinput {
@@ -77,6 +79,11 @@ struct message_data {
     void (*cleanup)(void *);
 };
 
+struct message_audio_freq {
+    struct message super;
+    uint64_t refill_frequency;
+};
+
 struct message_queue {
     struct message *messages;
     size_t length;
@@ -93,6 +100,7 @@ struct gba {
     struct memory memory;
     struct io io;
     struct ppu ppu;
+    struct apu apu;
     struct scheduler scheduler;
 
     /*
@@ -204,6 +212,15 @@ struct gba {
         .data = (_data),                                \
         .size = (_size),                                \
         .cleanup = (_cleanup),                          \
+    }))
+
+# define NEW_MESSAGE_AUDIO_RESAMPLE_FREQ(_freq)         \
+    ((struct message *)&((struct message_audio_freq){   \
+        .super = (struct message){                      \
+            .size = sizeof(struct message_audio_freq),  \
+            .type = MESSAGE_AUDIO_RESAMPLE_FREQ,        \
+        },                                              \
+        .refill_frequency = (_freq),                    \
     }))
 
 /* gba/gba.c */

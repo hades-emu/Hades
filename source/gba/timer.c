@@ -42,12 +42,17 @@ timer_tick(
         if (prev_overflow) {
             timer->internal_counter = timer->reload.raw;
             timer->counter.raw = timer->reload.raw;
+
             logln(
                 HS_TIMER,
                 "Timer %u overflowed. Reloading with value %04x",
                 i,
                 timer->reload.raw
             );
+
+            if (i == 0 || i == 1) {
+                apu_on_timer_overflow(gba, i);
+            }
 
             if (timer->control.irq) {
                 core_trigger_irq(gba, IRQ_TIMER0 + i);

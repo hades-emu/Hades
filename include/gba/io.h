@@ -63,7 +63,12 @@ enum io_regs {
 
     /* Sound */
 
+    IO_REG_SOUNDCNT_L   = 0x04000080,
+    IO_REG_SOUNDCNT_H   = 0x04000082,
+    IO_REG_SOUNDCNT_X   = 0x04000084,
     IO_REG_SOUNDBIAS    = 0x04000088,
+    IO_REG_FIFO_A       = 0x040000A0,
+    IO_REG_FIFO_B       = 0x040000A4,
 
     /* DMA Transfer Channels */
 
@@ -118,7 +123,6 @@ enum io_regs {
     IO_REG_TM3CNT_HI    = 0x0400010E,
 
     /* Input */
-
     IO_REG_KEYINPUT     = 0x04000130,
 
     /* Serial Communication (2) */
@@ -445,6 +449,52 @@ struct io {
         uint16_t raw;
         uint8_t bytes[2];
     } bldy;
+
+    // REG_SOUNDCNT_L
+    union {
+        struct {
+            uint16_t master_sound_right: 3;
+            uint16_t : 1;
+            uint16_t master_sound_left: 3;
+            uint16_t : 1;
+            uint16_t enable_sound_right: 4;
+            uint16_t enable_sound_left: 4;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } soundcnt_l;
+
+    // REG_SOUNDCNT_H
+    union {
+        struct {
+            uint16_t volume_sounds: 2;
+            uint16_t volume_fifo_a: 1;
+            uint16_t volume_fifo_b: 1;
+            uint16_t : 4;
+            uint16_t enable_fifo_a_right: 1;
+            uint16_t enable_fifo_a_left: 1;
+            uint16_t timer_fifo_a: 1;
+            uint16_t reset_fifo_a: 1;
+            uint16_t enable_fifo_b_right: 1;
+            uint16_t enable_fifo_b_left: 1;
+            uint16_t timer_fifo_b: 1;
+            uint16_t reset_fifo_b: 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } soundcnt_h;
+
+    // REG_SOUNDCNT_X
+    union {
+        struct {
+            uint16_t sound_on: 4;
+            uint16_t : 3;
+            uint16_t master_fifo_enable: 1;
+            uint16_t : 8;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } soundcnt_x;
 
     // DMA Channels
     struct dma_channel dma[4];

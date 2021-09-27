@@ -45,7 +45,7 @@ jobs:
           brew install meson ninja sdl2 sdl2_image glew
       - name: Build Hades
         run: |
-          CFLAGS="-Wno-microsoft-anon-tag" meson build --werror
+          meson build --werror
           cd build
           ninja
       - name: Test Hades

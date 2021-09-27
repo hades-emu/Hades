@@ -271,6 +271,14 @@ gui_game_quickload(
 }
 
 void
+gui_game_set_audio_settings(
+    struct app *app,
+    uint64_t resample_freq
+) {
+    gba_message_push(app->emulation.gba, NEW_MESSAGE_AUDIO_RESAMPLE_FREQ(resample_freq));
+}
+
+void
 gui_game_handle_events(
     struct app *app,
     SDL_Event *event
