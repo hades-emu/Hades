@@ -73,7 +73,12 @@ mem_io_reg_name(
         case IO_REG_BLDCNT:         return ("REG_BLDMOD");
         case IO_REG_BLDALPHA:       return ("REG_BLDALPHA");
         case IO_REG_BLDY:           return ("REG_BLDY");
+        case IO_REG_SOUNDCNT_L:     return ("REG_SOUNDCNT_L");
+        case IO_REG_SOUNDCNT_H:     return ("REG_SOUNDCNT_H");
+        case IO_REG_SOUNDCNT_X:     return ("REG_SOUNDCNT_X");
         case IO_REG_SOUNDBIAS:      return ("REG_SOUNDBIAS");
+        case IO_REG_FIFO_A:         return ("REG_FIFO_A");
+        case IO_REG_FIFO_B:         return ("REG_FIFO_B");
         case IO_REG_DMA0SAD_LO:     return ("REG_DMA0SAD_LO");
         case IO_REG_DMA0SAD_HI:     return ("REG_DMA0SAD_HI");
         case IO_REG_DMA0DAD_LO:     return ("REG_DMA0DAD_LO");
@@ -175,6 +180,12 @@ mem_io_read8(
         case IO_REG_BLDALPHA + 1:           return (io->bldalpha.bytes[1]);
 
         /* Sound */
+        case IO_REG_SOUNDCNT_L:             return (io->soundcnt_l.bytes[0]);
+        case IO_REG_SOUNDCNT_L + 1:         return (io->soundcnt_l.bytes[1]);
+        case IO_REG_SOUNDCNT_H:             return (io->soundcnt_h.bytes[0]);
+        case IO_REG_SOUNDCNT_H + 1:         return (io->soundcnt_h.bytes[1]);
+        case IO_REG_SOUNDCNT_X:             return (io->soundcnt_x.bytes[0]);
+        case IO_REG_SOUNDCNT_X + 1:         return (io->soundcnt_x.bytes[1]);
         case IO_REG_SOUNDBIAS:              return (0x0);
         case IO_REG_SOUNDBIAS + 1:          return (0b10);
 
@@ -338,6 +349,36 @@ mem_io_write8(
         case IO_REG_BLDALPHA + 1:           io->bldalpha.bytes[1] = val; break;
         case IO_REG_BLDY:                   io->bldy.bytes[0] = val; break;
         case IO_REG_BLDY + 1:               io->bldy.bytes[1] = val; break;
+
+        /* Sound */
+        case IO_REG_SOUNDCNT_L:             io->soundcnt_l.bytes[0] = val; break;
+        case IO_REG_SOUNDCNT_L + 1:         io->soundcnt_l.bytes[1] = val; break;
+        case IO_REG_SOUNDCNT_H:             io->soundcnt_h.bytes[0] = val; break;
+        case IO_REG_SOUNDCNT_H + 1:
+            io->soundcnt_h.bytes[1] = val;
+            if (io->soundcnt_h.reset_fifo_a) {
+                apu_reset_fifo(gba, FIFO_A);
+                io->soundcnt_h.reset_fifo_a = false;
+            }
+            if (io->soundcnt_h.reset_fifo_b) {
+                apu_reset_fifo(gba, FIFO_B);
+                io->soundcnt_h.reset_fifo_b = false;
+            }
+        break;
+        case IO_REG_SOUNDCNT_X:             io->soundcnt_x.bytes[0] = val; break;
+        case IO_REG_SOUNDCNT_X + 1:         io->soundcnt_x.bytes[1] = val; break;
+        case IO_REG_FIFO_A + 0:
+        case IO_REG_FIFO_A + 1:
+        case IO_REG_FIFO_A + 2:
+        case IO_REG_FIFO_A + 3:
+            apu_fifo_write8(gba, FIFO_A, val);
+            break;
+        case IO_REG_FIFO_B + 0:
+        case IO_REG_FIFO_B + 1:
+        case IO_REG_FIFO_B + 2:
+        case IO_REG_FIFO_B + 3:
+            apu_fifo_write8(gba, FIFO_B, val);
+            break;
 
         /* DMA - Channel 0 */
         case IO_REG_DMA0SAD:                io->dma[0].src.bytes[0] = val; break;

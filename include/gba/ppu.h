@@ -18,6 +18,7 @@
 # define GBA_SCREEN_REAL_HEIGHT     228
 # define CYCLES_PER_PIXEL           4
 # define CYCLES_PER_FRAME           (CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT)
+# define CYCLES_PER_SECOND          (16 * 1024 * 1024)
 
 enum oam_mode {
     OAM_MODE_NORMAL,

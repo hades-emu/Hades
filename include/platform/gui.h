@@ -44,6 +44,7 @@ struct app {
 
     SDL_Window *window;
     SDL_GLContext gl_context;
+    SDL_AudioDeviceID audio_device;
     ImGuiIO* ioptr;
 
     ImGuiFileDialog *fs_dialog;
@@ -80,6 +81,7 @@ void gui_game_write_backup(struct app *app);
 void gui_game_run(struct app *app);
 void gui_game_quicksave(struct app *app);
 void gui_game_quickload(struct app *app);
+void gui_game_set_audio_settings(struct app *app, uint64_t resample_freq);
 
 /* game/render.c */
 void gui_render_game_fullscreen(struct app *app);

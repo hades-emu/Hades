@@ -189,6 +189,33 @@ args_parse(
     }
 }
 
+static
+void
+gui_audio_callback(
+    void *raw_app,
+    uint8_t *raw_stream,
+    int raw_stream_len
+) {
+    struct app *app;
+    struct gba *gba;
+    int16_t *stream;
+    size_t len;
+    size_t i;
+
+    app = raw_app;
+    gba = app->emulation.gba;
+    stream = (int16_t *)raw_stream;
+    len = raw_stream_len / (2 * sizeof(*stream));
+
+    pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
+    for (i = 0; i < len; ++i) {
+        stream[0] = apu_rbuffer_pop(&gba->apu.channel_left)  << 2;
+        stream[1] = apu_rbuffer_pop(&gba->apu.channel_right) << 2;
+        stream += 2;
+    }
+    pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
+}
+
 /*
 ** Initialize the SDL, OpenGL and ImGUI.
 */
@@ -197,15 +224,42 @@ void
 gui_init(
     struct app *app
 ) {
+    SDL_AudioSpec want;
+    SDL_AudioSpec have;
     float dpi_factor;
     ImFontConfig *cfg;
     char const* glsl_version;
 
     /* Initialize the SDL */
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) < 0) {
         fprintf(stderr, "Failed to init the SDL: %s\n", SDL_GetError());
         exit(EXIT_FAILURE);
     }
+
+    /* Setup Audio */
+    want.freq = 48000;
+    want.samples = 2048;
+    want.format = AUDIO_S16;
+    want.channels = 2;
+    want.callback = gui_audio_callback;
+    want.userdata = app;
+
+    app->audio_device = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+
+    if (!app->audio_device) {
+        fprintf(stderr, "Failed to init the audio device: %s\n", SDL_GetError());
+        exit(EXIT_FAILURE);
+    } else if (have.format != want.format) {
+        fprintf(stderr, "The desired audio sample format isn't available.\n");
+        exit(EXIT_FAILURE);
+    } else if (have.channels != want.channels) {
+        fprintf(stderr, "Stereo output isn't available.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    gui_game_set_audio_settings(app, CYCLES_PER_SECOND / have.freq);
+
+    SDL_PauseAudioDevice(app->audio_device, SDL_FALSE);
 
     /* Decide which OpenGL version to use */
 #if __APPLE__
@@ -305,6 +359,9 @@ void
 gui_cleanup(
     struct app *app
 ) {
+    if (app->emulation.backup_file) {
+        fclose(app->emulation.backup_file);
+    }
     /* Cleanup the ImGui File Dialog extension */
     IGFD_Destroy(app->fs_dialog);
 
@@ -316,6 +373,7 @@ gui_cleanup(
 
     SDL_GL_DeleteContext(app->gl_context);
     SDL_DestroyWindow(app->window);
+    SDL_CloseAudioDevice(app->audio_device);
     SDL_Quit();
 }
 

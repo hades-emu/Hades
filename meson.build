@@ -19,6 +19,7 @@ project(
 incdir = include_directories('include', 'source')
 cflags = [
     '-fms-extensions',
+    '-Wno-microsoft-anon-tag',
     '-DHADES_VERSION="@0@"'.format(meson.project_version()),
 ]
 ldflags = []

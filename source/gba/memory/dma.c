@@ -113,21 +113,17 @@ mem_do_dma_transfer(
             i
         );
 
-        if (channel->internal_dst == 0x040000A0 || channel->internal_dst == 0x040000A4) {
-            logln(HS_DMA, "FIFO transfer -- Ignored");
-        } else {
-            access = NON_SEQUENTIAL;
-            while (channel->internal_count > 0) {
-                if (unit_size == 4) {
-                    mem_write32(gba, channel->internal_dst, mem_read32(gba, channel->internal_src, access), access);
-                } else { // unit_size == 2
-                    mem_write16(gba, channel->internal_dst, mem_read16(gba, channel->internal_src, access), access);
-                }
-                channel->internal_src += src_step;
-                channel->internal_dst += dst_step;
-                channel->internal_count -= 1;
-                access = SEQUENTIAL;
+        access = NON_SEQUENTIAL;
+        while (channel->internal_count > 0) {
+            if (unit_size == 4) {
+                mem_write32(gba, channel->internal_dst, mem_read32(gba, channel->internal_src, access), access);
+            } else { // unit_size == 2
+                mem_write16(gba, channel->internal_dst, mem_read16(gba, channel->internal_src, access), access);
             }
+            channel->internal_src += src_step;
+            channel->internal_dst += dst_step;
+            channel->internal_count -= 1;
+            access = SEQUENTIAL;
         }
 
         if (channel->control.irq_end) {
@@ -156,9 +152,90 @@ mem_schedule_dma_transfer(
     sched_add_event(
         gba,
         NEW_FIX_EVENT_DATA(
-            gba->core.cycles + 3,
+            gba->core.cycles + 2,
             mem_do_dma_transfer,
             (union event_data){ .u32 = timing }
         )
+    );
+}
+
+static
+void
+mem_do_dma_fifo_transfer(
+    struct gba *gba,
+    union event_data data
+) {
+    struct dma_channel *channel;
+    enum access_type access;
+    int32_t src_step;
+    bool reload;
+
+    channel = &gba->io.dma[data.u32];
+
+    // Skip channels that aren't enabled or that shouldn't happen at the given timing
+    if (!channel->control.enable || channel->control.timing != DMA_TIMING_SPECIAL) {
+        return;
+    }
+
+    // All DMA take at least two internal cycles.
+    core_idle_for(gba, 2);
+
+    switch (channel->control.src_ctl) {
+        case 0b00:      src_step = 4; break;
+        case 0b01:      src_step = -4; break;
+        case 0b10:      src_step = 0; break;
+        case 0b11:      src_step = 0; break;
+    }
+
+    //channel->internal_count = 4;
+    hs_assert(channel->internal_dst == channel->dst.raw);
+
+    access = NON_SEQUENTIAL;
+    while (channel->internal_count > 0) {
+        mem_write32(gba, channel->internal_dst, mem_read32(gba, channel->internal_src, access), access);
+        channel->internal_src += src_step;
+        channel->internal_count -= 1;
+        access = SEQUENTIAL;
+    }
+
+    if (channel->control.irq_end) {
+        core_trigger_irq(gba, IRQ_DMA0 + data.u32);
+    }
+
+    if (channel->control.repeat) {
+        channel->internal_count = 4;
+    } else {
+        channel->control.enable = false;
+    }
+}
+
+void
+mem_schedule_dma_fifo(
+    struct gba *gba,
+    uint32_t dma_channel_idx
+) {
+    sched_add_event(
+        gba,
+        NEW_FIX_EVENT_DATA(
+            gba->core.cycles + 2,
+            mem_do_dma_fifo_transfer,
+            (union event_data){ .u32 = dma_channel_idx }
+        )
+    );
+}
+
+bool
+mem_dma_is_fifo(
+    struct gba const *gba,
+    uint32_t dma_channel_idx,
+    uint32_t fifo_idx
+) {
+    struct dma_channel const *dma;
+
+    dma = &gba->io.dma[dma_channel_idx];
+    return (
+           dma->control.enable
+        && dma->control.timing == DMA_TIMING_SPECIAL
+        && dma->dst.raw == (fifo_idx == FIFO_A ? IO_REG_FIFO_A : IO_REG_FIFO_B)
     );
 }
