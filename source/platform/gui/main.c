@@ -198,19 +198,19 @@ gui_audio_callback(
 ) {
     struct app *app;
     struct gba *gba;
-    int16_t *stream;
+    float *stream;
     size_t len;
     size_t i;
 
     app = raw_app;
     gba = app->emulation.gba;
-    stream = (int16_t *)raw_stream;
+    stream = (float *)raw_stream;
     len = raw_stream_len / (2 * sizeof(*stream));
 
     pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
     for (i = 0; i < len; ++i) {
-        stream[0] = apu_rbuffer_pop(&gba->apu.channel_left)  << 2;
-        stream[1] = apu_rbuffer_pop(&gba->apu.channel_right) << 2;
+        stream[0] = apu_rbuffer_pop(&gba->apu.channel_left);
+        stream[1] = apu_rbuffer_pop(&gba->apu.channel_right);
         stream += 2;
     }
     pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
@@ -239,7 +239,7 @@ gui_init(
     /* Setup Audio */
     want.freq = 48000;
     want.samples = 2048;
-    want.format = AUDIO_S16;
+    want.format = AUDIO_F32;
     want.channels = 2;
     want.callback = gui_audio_callback;
     want.userdata = app;

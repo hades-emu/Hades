@@ -82,7 +82,7 @@ static
 void
 apu_rbuffer_push(
     struct apu_rbuffer *rbuffer,
-    int16_t val
+    float val
 ) {
     if (rbuffer->size < APU_RBUFFER_CAPACITY) {
         rbuffer->data[rbuffer->write_idx] = val;
@@ -91,11 +91,11 @@ apu_rbuffer_push(
     }
 }
 
-int16_t
+float
 apu_rbuffer_pop(
     struct apu_rbuffer *rbuffer
 ) {
-    int16_t val;
+    float val;
 
     val = rbuffer->data[rbuffer->read_idx];
     if (rbuffer->size > 0) {
@@ -147,7 +147,7 @@ apu_resample(
     struct gba *gba,
     union event_data data
 ) {
-    static float fifo_volume[2] = {2.f, 4.f};
+    static float fifo_volume[2] = {0.5f, 1.f};
     int16_t sample_l;
     int16_t sample_r;
 
@@ -160,23 +160,20 @@ apu_resample(
     sample_l += gba->apu.latch[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_left * fifo_volume[gba->io.soundcnt_h.volume_fifo_b];
     sample_r += gba->apu.latch[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_right * fifo_volume[gba->io.soundcnt_h.volume_fifo_b];
 
-    sample_l += 0x200;
-    sample_r += 0x200;
-
-    if (sample_l < 0) {
-        sample_l = 0;
-    } else if (sample_l > 0x3ff) {
-        sample_l = 0x3ff;
+    if (sample_l < -0x200) {
+        sample_l = -0x200;
+    } else if (sample_l > 0x200) {
+        sample_l = 0x200;
     }
 
-    if (sample_r < 0) {
-        sample_r = 0;
-    } else if (sample_r > 0x3ff) {
-        sample_r = 0x3ff;
+    if (sample_r < -0x200) {
+        sample_r = -0x200;
+    } else if (sample_r > 0x200) {
+        sample_r = 0x200;
     }
 
     pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
-    apu_rbuffer_push(&gba->apu.channel_left, sample_l);
-    apu_rbuffer_push(&gba->apu.channel_right, sample_r);
+    apu_rbuffer_push(&gba->apu.channel_left, sample_l / (float)0x200);
+    apu_rbuffer_push(&gba->apu.channel_right, sample_r / (float)0x200);
     pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
 }

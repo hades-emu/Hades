@@ -168,7 +168,6 @@ mem_do_dma_fifo_transfer(
     struct dma_channel *channel;
     enum access_type access;
     int32_t src_step;
-    bool reload;
 
     channel = &gba->io.dma[data.u32];
 
