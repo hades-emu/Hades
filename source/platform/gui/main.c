@@ -198,13 +198,13 @@ gui_audio_callback(
 ) {
     struct app *app;
     struct gba *gba;
-    float *stream;
+    int16_t *stream;
     size_t len;
     size_t i;
 
     app = raw_app;
     gba = app->emulation.gba;
-    stream = (float *)raw_stream;
+    stream = (int16_t *)raw_stream;
     len = raw_stream_len / (2 * sizeof(*stream));
 
     pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
@@ -239,7 +239,7 @@ gui_init(
     /* Setup Audio */
     want.freq = 48000;
     want.samples = 2048;
-    want.format = AUDIO_F32;
+    want.format = AUDIO_S16;
     want.channels = 2;
     want.callback = gui_audio_callback;
     want.userdata = app;

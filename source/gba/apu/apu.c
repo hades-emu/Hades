@@ -82,7 +82,7 @@ static
 void
 apu_rbuffer_push(
     struct apu_rbuffer *rbuffer,
-    float val
+    int16_t val
 ) {
     if (rbuffer->size < APU_RBUFFER_CAPACITY) {
         rbuffer->data[rbuffer->write_idx] = val;
@@ -91,11 +91,11 @@ apu_rbuffer_push(
     }
 }
 
-float
+int16_t
 apu_rbuffer_pop(
     struct apu_rbuffer *rbuffer
 ) {
-    float val;
+    int16_t val;
 
     val = rbuffer->data[rbuffer->read_idx];
     if (rbuffer->size > 0) {
@@ -173,7 +173,7 @@ apu_resample(
     }
 
     pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
-    apu_rbuffer_push(&gba->apu.channel_left, sample_l / (float)0x200);
-    apu_rbuffer_push(&gba->apu.channel_right, sample_r / (float)0x200);
+    apu_rbuffer_push(&gba->apu.channel_left, sample_l << 6);
+    apu_rbuffer_push(&gba->apu.channel_right, sample_r << 6);
     pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
 }
