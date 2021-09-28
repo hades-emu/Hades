@@ -11,6 +11,8 @@
 #include "gba/gba.h"
 #include "gba/ppu.h"
 
+static void ppu_merge_layer(struct gba const *gba, struct scanline *scanline);
+
 /*
 ** Initialize the content of the given `scanline` to a default, sane and working value.
 */
@@ -34,30 +36,13 @@ ppu_initialize_scanline(
     }
 
     /*
-    ** The only layer that `ppu_merge_layer` will never merge is the backdrop layer so we do it
-    ** here instead.
-    **
-    ** XXX: A more elegant solution would be better, it's a bit hackish as it is right now.
+    ** The only layer that `ppu_merge_layer` will never merge is the backdrop layer so we force
+    ** it here instead (if that's useful).
     */
 
-    if (gba->io.bldcnt.mode == BLEND_LIGHT) {
-        uint32_t evy;
-
-        evy = min(16, gba->io.bldy.coef);
-        for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
-            scanline->bot[x].red = backdrop.red + (((31 - backdrop.red) * evy) >> 4);
-            scanline->bot[x].green = backdrop.green + (((31 - backdrop.green) * evy) >> 4);
-            scanline->bot[x].blue = backdrop.blue + (((31 - backdrop.blue) * evy) >> 4);
-        }
-    } else if (gba->io.bldcnt.mode == BLEND_DARK) {
-        uint32_t evy;
-
-        evy = min(16, gba->io.bldy.coef);
-        for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
-            scanline->bot[x].red = backdrop.red - ((backdrop.red * evy) >> 4);
-            scanline->bot[x].green = backdrop.green - ((backdrop.green * evy) >> 4);
-            scanline->bot[x].blue = backdrop.blue - ((backdrop.blue * evy) >> 4);
-        }
+    if (gba->io.bldcnt.mode == BLEND_LIGHT || gba->io.bldcnt.mode == BLEND_DARK) {
+        memcpy(scanline->top, scanline->bot, sizeof(scanline->top));
+        ppu_merge_layer(gba, scanline);
     }
 
     scanline->result = scanline->bot;
