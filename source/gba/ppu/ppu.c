@@ -33,6 +33,33 @@ ppu_initialize_scanline(
         scanline->bot[x] = backdrop;
     }
 
+    /*
+    ** The only layer that `ppu_merge_layer` will never merge is the backdrop layer so we do it
+    ** here instead.
+    **
+    ** XXX: A more elegant solution would be better, it's a bit hackish as it is right now.
+    */
+
+    if (gba->io.bldcnt.mode == BLEND_LIGHT) {
+        uint32_t evy;
+
+        evy = min(16, gba->io.bldy.coef);
+        for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
+            scanline->bot[x].red = backdrop.red + (((31 - backdrop.red) * evy) >> 4);
+            scanline->bot[x].green = backdrop.green + (((31 - backdrop.green) * evy) >> 4);
+            scanline->bot[x].blue = backdrop.blue + (((31 - backdrop.blue) * evy) >> 4);
+        }
+    } else if (gba->io.bldcnt.mode == BLEND_DARK) {
+        uint32_t evy;
+
+        evy = min(16, gba->io.bldy.coef);
+        for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
+            scanline->bot[x].red = backdrop.red - ((backdrop.red * evy) >> 4);
+            scanline->bot[x].green = backdrop.green - ((backdrop.green * evy) >> 4);
+            scanline->bot[x].blue = backdrop.blue - ((backdrop.blue * evy) >> 4);
+        }
+    }
+
     scanline->result = scanline->bot;
 }
 
