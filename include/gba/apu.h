@@ -29,7 +29,7 @@ struct fifo {
 # define APU_RBUFFER_CAPACITY (4096)
 
 struct apu_rbuffer {
-    float data[APU_RBUFFER_CAPACITY];
+    int16_t data[APU_RBUFFER_CAPACITY];
     size_t read_idx;
     size_t write_idx;
     size_t size;
@@ -50,7 +50,7 @@ struct apu {
 void apu_init(struct gba *gba);
 void apu_reset_fifo(struct gba *gba, enum fifo_idx fifo_idx);
 void apu_fifo_write8(struct gba *gba, enum fifo_idx fifo_idx, uint8_t val);
-float apu_rbuffer_pop(struct apu_rbuffer *rbuffer);
+int16_t apu_rbuffer_pop(struct apu_rbuffer *rbuffer);
 void apu_on_timer_overflow(struct gba *gba, uint32_t timer_id);
 
 #endif /* !GBA_APU_H */
