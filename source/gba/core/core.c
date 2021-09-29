@@ -141,8 +141,6 @@ core_idle_for(
     if (gba->core.cycles >= gba->scheduler.next_event) {
         sched_process_events(gba);
     }
-
-    timer_tick(gba, cycles);
 }
 
 /*

@@ -25,6 +25,10 @@ io_init(
     io->bg_pd[0].raw = 0x100;
     io->bg_pa[1].raw = 0x100;
     io->bg_pd[1].raw = 0x100;
+    io->timers[0].handler = INVALID_EVENT_HANDLE;
+    io->timers[1].handler = INVALID_EVENT_HANDLE;
+    io->timers[2].handler = INVALID_EVENT_HANDLE;
+    io->timers[3].handler = INVALID_EVENT_HANDLE;
 }
 
 /*
@@ -200,23 +204,43 @@ mem_io_read8(
         case IO_REG_DMA3CTL + 1:            return (io->dma[3].control.bytes[1]);
 
         /* Timer 0 */
-        case IO_REG_TM0CNT_LO:              return (io->timers[0].counter.bytes[0]);
-        case IO_REG_TM0CNT_LO + 1:          return (io->timers[0].counter.bytes[1]);
+        case IO_REG_TM0CNT_LO:
+        case IO_REG_TM0CNT_LO + 1: {
+            uint16_t val;
+
+            val = timer_update_counter(gba, 0);
+            return (val >> (8 *addr - IO_REG_TM0CNT_LO));
+        };
         case IO_REG_TM0CNT_HI:              return (io->timers[0].control.bytes[0]);
 
         /* Timer 1 */
-        case IO_REG_TM1CNT_LO:              return (io->timers[1].counter.bytes[0]);
-        case IO_REG_TM1CNT_LO + 1:          return (io->timers[1].counter.bytes[1]);
+        case IO_REG_TM1CNT_LO:
+        case IO_REG_TM1CNT_LO + 1: {
+            uint16_t val;
+
+            val = timer_update_counter(gba, 1);
+            return (val >> (8 *addr - IO_REG_TM0CNT_LO));
+        };
         case IO_REG_TM1CNT_HI:              return (io->timers[1].control.bytes[0]);
 
         /* Timer 2 */
-        case IO_REG_TM2CNT_LO:              return (io->timers[2].counter.bytes[0]);
-        case IO_REG_TM2CNT_LO + 1:          return (io->timers[2].counter.bytes[1]);
+        case IO_REG_TM2CNT_LO:
+        case IO_REG_TM2CNT_LO + 1: {
+            uint16_t val;
+
+            val = timer_update_counter(gba, 2);
+            return (val >> (8 *addr - IO_REG_TM0CNT_LO));
+        };
         case IO_REG_TM2CNT_HI:              return (io->timers[2].control.bytes[0]);
 
         /* Timer 3 */
-        case IO_REG_TM3CNT_LO:              return (io->timers[3].counter.bytes[0]);
-        case IO_REG_TM3CNT_LO + 1:          return (io->timers[3].counter.bytes[1]);
+        case IO_REG_TM3CNT_LO:
+        case IO_REG_TM3CNT_LO + 1: {
+            uint16_t val;
+
+            val = timer_update_counter(gba, 3);
+            return (val >> (8 *addr - IO_REG_TM0CNT_LO));
+        };
         case IO_REG_TM3CNT_HI:              return (io->timers[3].control.bytes[0]);
 
         /* Key Input */
@@ -455,55 +479,86 @@ mem_io_write8(
         /* Timer 0 */
         case IO_REG_TM0CNT_LO:              io->timers[0].reload.bytes[0] = val; break;
         case IO_REG_TM0CNT_LO + 1:          io->timers[0].reload.bytes[1] = val; break;
-        case IO_REG_TM0CNT_HI:
-            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
-            if (!io->timers[0].control.enable && (val & (1 << 7))) {
-                io->timers[0].internal_counter = (int64_t)io->timers[0].reload.raw - 2;
-                io->timers[0].counter.raw = io->timers[0].reload.raw;
-                logln(HS_TIMER, "Timer 0 started with initial value %04x", io->timers[0].reload.raw);
-            }
+        case IO_REG_TM0CNT_HI: {
+            bool old_enable;
+            bool new_enable;
+
+            old_enable = io->timers[0].control.enable;
+            new_enable = bitfield_get(val, 7);
+
             io->timers[0].control.bytes[0] = val;
+
+            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
+            if (!old_enable && new_enable) {
+                timer_start(gba, 0);
+            } else if (old_enable && !new_enable) {
+                timer_stop(gba, 0);
+            }
             break;
-        case IO_REG_TM0CNT_HI + 1:          io->timers[0].control.bytes[1] = val; break;
+        };
 
         /* Timer 1 */
         case IO_REG_TM1CNT_LO:              io->timers[1].reload.bytes[0] = val; break;
         case IO_REG_TM1CNT_LO + 1:          io->timers[1].reload.bytes[1] = val; break;
-        case IO_REG_TM1CNT_HI:
-            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
-            if (!io->timers[1].control.enable && (val & (1 << 7))) {
-                io->timers[1].internal_counter = (int64_t)io->timers[1].reload.raw - 2;
-                io->timers[1].counter.raw = io->timers[1].reload.raw;
-                logln(HS_TIMER, "Timer 1 started with initial value %04x", io->timers[1].reload.raw);
-            }
+        case IO_REG_TM1CNT_HI: {
+            bool old_enable;
+            bool new_enable;
+
+            old_enable = io->timers[1].control.enable;
+            new_enable = bitfield_get(val, 7);
+
             io->timers[1].control.bytes[0] = val;
+
+            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
+            if (!old_enable && new_enable) {
+                timer_start(gba, 1);
+            } else if (old_enable && !new_enable) {
+                timer_stop(gba, 1);
+            }
             break;
+        };
 
         /* Timer 2 */
         case IO_REG_TM2CNT_LO:              io->timers[2].reload.bytes[0] = val; break;
         case IO_REG_TM2CNT_LO + 1:          io->timers[2].reload.bytes[1] = val; break;
-        case IO_REG_TM2CNT_HI:
-            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
-            if (!io->timers[2].control.enable && (val & (1 << 7))) {
-                io->timers[2].internal_counter = (int64_t)io->timers[2].reload.raw - 2;
-                io->timers[2].counter.raw = io->timers[2].reload.raw;
-                logln(HS_TIMER, "Timer 2 started with initial value %04x", io->timers[2].reload.raw);
-            }
+        case IO_REG_TM2CNT_HI: {
+            bool old_enable;
+            bool new_enable;
+
+            old_enable = io->timers[2].control.enable;
+            new_enable = bitfield_get(val, 7);
+
             io->timers[2].control.bytes[0] = val;
+
+            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
+            if (!old_enable && new_enable) {
+                timer_start(gba, 2);
+            } else if (old_enable && !new_enable) {
+                timer_stop(gba, 2);
+            }
             break;
+        };
 
         /* Timer 3 */
         case IO_REG_TM3CNT_LO:              io->timers[3].reload.bytes[0] = val; break;
         case IO_REG_TM3CNT_LO + 1:          io->timers[3].reload.bytes[1] = val; break;
-        case IO_REG_TM3CNT_HI:
-            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
-            if (!io->timers[3].control.enable && (val & (1 << 7))) {
-                io->timers[3].internal_counter = (int64_t)io->timers[3].reload.raw - 2;
-                io->timers[3].counter.raw = io->timers[3].reload.raw;
-                logln(HS_TIMER, "Timer 3 started with initial value %04x", io->timers[3].reload.raw);
-            }
+        case IO_REG_TM3CNT_HI: {
+            bool old_enable;
+            bool new_enable;
+
+            old_enable = io->timers[3].control.enable;
+            new_enable = bitfield_get(val, 7);
+
             io->timers[3].control.bytes[0] = val;
+
+            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
+            if (!old_enable && new_enable) {
+                timer_start(gba, 3);
+            } else if (old_enable && !new_enable) {
+                timer_stop(gba, 3);
+            }
             break;
+        };
 
         /* Serial Communication (2) */
         case IO_REG_RCNT:
