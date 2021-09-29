@@ -11,6 +11,7 @@
 # define GBA_IO_H
 
 # include "hades.h"
+# include "gba/scheduler.h"
 
 /*
 ** An enumeration of all IO registers.
@@ -210,7 +211,7 @@ struct timer {
         uint8_t bytes[2];
     } control;
 
-    int64_t internal_counter;
+    event_handler_t handler;
 };
 
 /*
@@ -611,6 +612,8 @@ struct gba;
 void io_init(struct io *io);
 
 /* gba/timer.c */
-void timer_tick(struct gba *, uint32_t cycles);
+void timer_start(struct gba *gba, uint32_t timer_idx);
+void timer_stop(struct gba *gba, uint32_t timer_idx);
+uint16_t timer_update_counter(struct gba const *gba, uint32_t timer_idx);
 
 #endif /* GBA_IO_H */

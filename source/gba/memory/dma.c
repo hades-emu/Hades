@@ -152,7 +152,7 @@ mem_schedule_dma_transfer(
     sched_add_event(
         gba,
         NEW_FIX_EVENT_DATA(
-            gba->core.cycles + 2,
+            gba->core.cycles + 3,
             mem_do_dma_transfer,
             (union event_data){ .u32 = timing }
         )
@@ -216,7 +216,7 @@ mem_schedule_dma_fifo(
     sched_add_event(
         gba,
         NEW_FIX_EVENT_DATA(
-            gba->core.cycles + 2,
+            gba->core.cycles + 3,
             mem_do_dma_fifo_transfer,
             (union event_data){ .u32 = dma_channel_idx }
         )

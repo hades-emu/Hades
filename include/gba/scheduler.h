@@ -10,6 +10,16 @@
 #ifndef GBA_SCHEDULER_H
 # define GBA_SCHEDULER_H
 
+# define INVALID_EVENT_HANDLE   ((size_t)(-1))
+
+typedef size_t event_handler_t;
+
+enum sched_event_kind {
+    EVENT_HBLANK,
+    EVENT_HDRAW,
+    EVENT_APU,
+};
+
 enum sched_event_type {
     SCHED_EVENT_FIXED,
     SCHED_EVENT_REPEAT,
@@ -44,7 +54,8 @@ struct scheduler {
 /* gba/scheduler.c */
 void sched_init(struct gba *gba);
 void sched_cleanup(struct gba *gba);
-void sched_add_event(struct gba *gba, struct scheduler_event event);
+event_handler_t sched_add_event(struct gba *gba, struct scheduler_event event);
+void sched_cancel_event(struct gba *gba, event_handler_t handler);
 void sched_process_events(struct gba *gba);
 void sched_run_for(struct gba *gba, uint64_t cycles);
 
@@ -78,14 +89,14 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
         .callback = (_callback),                    \
     }
 
-# define NEW_FIX_EVENT_DATA(_at, _callback, _data)  \
-    (struct scheduler_event){                       \
-        .active = true,                             \
-        .repeat = false,                            \
-        .at = (_at),                                \
-        .period = 0,                                \
-        .data = (_data),                            \
-        .callback = (_callback),                    \
+# define NEW_REPEAT_EVENT_DATA(_at, _period, _callback, _data)  \
+    (struct scheduler_event){                                   \
+        .active = true,                                         \
+        .repeat = true,                                         \
+        .at = (_at),                                            \
+        .period = (_period),                                    \
+        .data = (_data),                                        \
+        .callback = (_callback),                                \
     }
 
 #endif /* !GBA_SCHEDULER_H */

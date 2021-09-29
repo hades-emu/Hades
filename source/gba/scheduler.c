@@ -22,8 +22,8 @@ sched_init(
 
     memset(scheduler, 0, sizeof(*scheduler));
 
-    // Pre-allocate 10 events
-    scheduler->events_size = 10;
+    // Pre-allocate 64 events
+    scheduler->events_size = 64;
     scheduler->events = calloc(scheduler->events_size, sizeof(struct scheduler_event));
     hs_assert(scheduler->events);
 }
@@ -81,6 +81,11 @@ sched_process_events(
 
         if (event->repeat) {
             event->at += event->period;
+
+            if (event->at < scheduler->next_event) {
+                scheduler->next_event = event->at;
+            }
+
         } else {
             event->active = false;
         }
@@ -89,7 +94,7 @@ sched_process_events(
     }
 }
 
-void
+event_handler_t
 sched_add_event(
     struct gba *gba,
     struct scheduler_event event
@@ -120,6 +125,24 @@ end:
     if (event.at < scheduler->next_event) {
         scheduler->next_event = event.at;
     }
+
+    return (i);
+}
+
+void
+sched_cancel_event(
+    struct gba *gba,
+    event_handler_t handler
+) {
+    struct scheduler *scheduler;
+
+    scheduler = &gba->scheduler;
+
+    if (scheduler->events[handler].active) {
+        scheduler->events[handler].active = false;
+    }
+
+    // TODO: update `scheduler->next_event`? Is it worth it?
 }
 
 void
