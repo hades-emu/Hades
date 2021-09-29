@@ -41,8 +41,10 @@ ppu_initialize_scanline(
     */
 
     if (gba->io.bldcnt.mode == BLEND_LIGHT || gba->io.bldcnt.mode == BLEND_DARK) {
+        scanline->top_idx = 5;
         memcpy(scanline->top, scanline->bot, sizeof(scanline->top));
         ppu_merge_layer(gba, scanline);
+        scanline->top_idx = 0;
     }
 
     scanline->result = scanline->bot;
@@ -86,7 +88,7 @@ ppu_merge_layer(
         bot_enabled = bitfield_get(io->bldcnt.raw, botc.idx + 8);
 
         /* Apply windowing, if any */
-        if (io->dispcnt.win0 || io->dispcnt.win1 || io->dispcnt.winobj) {
+        if (scanline->top_idx <= 4 && (io->dispcnt.win0 || io->dispcnt.win1 || io->dispcnt.winobj)) {
             uint8_t win_opts;
 
             win_opts = ppu_find_top_window(gba, scanline, x);
