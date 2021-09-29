@@ -226,7 +226,6 @@ gba_run(
                 accumulated_time += now - last_measured_time;
                 last_measured_time = now;
             }
-            hs_assert(accumulated_time >= time_per_frame);
             accumulated_time -= time_per_frame;
         } else {
             last_measured_time = hs_tick_count();
