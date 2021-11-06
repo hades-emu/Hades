@@ -173,7 +173,7 @@ apu_resample(
     }
 
     pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
-    apu_rbuffer_push(&gba->apu.channel_left, sample_l << 6);
-    apu_rbuffer_push(&gba->apu.channel_right, sample_r << 6);
+    apu_rbuffer_push(&gba->apu.channel_left, (int16_t)((uint16_t)sample_l << 6));
+    apu_rbuffer_push(&gba->apu.channel_right, (int16_t)((uint16_t)sample_r << 6));
     pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
 }

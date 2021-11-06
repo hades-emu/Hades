@@ -45,6 +45,8 @@ gui_load_config(
     if (!app->emulation.bios_path) {
         app->emulation.bios_path = strdup("bios.bin");
     }
+
+    free(data);
 }
 
 void

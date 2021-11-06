@@ -44,7 +44,7 @@ core_thumb_branch_link(
     core = &gba->core;
 
     if (!h) {
-        core->lr = core->pc + (sign_extend11(offset) << 12);
+        core->lr = core->pc + (int32_t)((uint32_t)sign_extend11(offset) << 12);
         core->pc += 2;
         core->prefetch_access_type = SEQUENTIAL;
     } else {
@@ -71,7 +71,7 @@ core_thumb_branch_cond(
     int32_t label;
 
     core = &gba->core;
-    label = ((int32_t)(int8_t)bitfield_get_range(op, 0, 8)) << 1;
+    label = (int32_t)((uint32_t)((int32_t)(int8_t)bitfield_get_range(op, 0, 8)) << 1);
     idx = (bitfield_get_range(core->cpsr.raw, 28, 32) << 4) | bitfield_get_range(op, 8, 12);
 
     if (cond_lut[idx]) {
