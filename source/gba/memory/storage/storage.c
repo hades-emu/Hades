@@ -32,23 +32,21 @@ void
 mem_backup_storage_detect(
     struct gba *gba
 ) {
-    //size_t read;
-
     if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "EEPROM_", 7)) {
         logln(HS_GLOBAL, "Detected EEPROM memory. This memory is unsupported yet.");
         gba->memory.backup_storage_type = BACKUP_EEPROM;
     } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_", 5)) {
         logln(HS_GLOBAL, "Detected SRAM memory");
         gba->memory.backup_storage_type = BACKUP_SRAM;
+    } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH1M_", 8)) {
+        logln(HS_GLOBAL, "Detected Flash 128 kilobytes / 1 megabit");
+        gba->memory.backup_storage_type = BACKUP_FLASH128;
     } else if (
            array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH_", 6)
         || array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH512_", 9)
     ) {
         logln(HS_GLOBAL, "Detected Flash 64 kilobytes / 512 kilobits");
         gba->memory.backup_storage_type = BACKUP_FLASH64;
-    } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH1M_", 8)) {
-        logln(HS_GLOBAL, "Detected Flash 128 kilobytes / 1 megabit");
-        gba->memory.backup_storage_type = BACKUP_FLASH128;
     } else {
         logln(HS_GLOBAL, "No backup storage detected. Defaulting to SRAM.");
         gba->memory.backup_storage_type = BACKUP_SRAM;

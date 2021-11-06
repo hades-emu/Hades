@@ -117,7 +117,7 @@ static char const * const modules_str[] = {
 # define array_length(array)                    (sizeof(array) / sizeof(*(array)))
 
 /* Get the `nth` bit of `val`. */
-# define bitfield_get(val, nth)                 ((typeof(val))(bool)((val) & (1 << (nth))))
+# define bitfield_get(val, nth)                 ((typeof(val))(bool)((val) & (1u << (nth))))
 
 /* Return the value of the bits from `start` (inclusive) to `end` (exclusive) of `val`. */
 # define bitfield_get_range(val, start, end)    ((typeof(val))(((typeof(val))((val) << (sizeof(val) * 8 - (end)))) >> (sizeof(val) * 8 - (end) + (start))))
@@ -302,7 +302,11 @@ ror32(
     uint32_t value,
     uint32_t shift
 ) {
-    return ((value >> shift) | (value << (32 - shift)));
+    if (shift) {
+        return ((value >> shift) | (value << (32 - shift)));
+    } else {
+        return (value);
+    }
 }
 
 /*

@@ -22,7 +22,7 @@ core_arm_branch(
     int32_t offset;
 
     core = &gba->core;
-    offset = sign_extend24(op & 0xFFFFFF) << 2u;
+    offset = (int32_t)((uint32_t)sign_extend24(op & 0xFFFFFF) << 2u);
 
     /*
     ** If the link bit (24) is set, the old PC is written in the link register.

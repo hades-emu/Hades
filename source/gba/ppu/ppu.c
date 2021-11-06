@@ -246,7 +246,7 @@ ppu_draw_scanline(
         struct rich_color c;
 
         c = scanline->result[x];
-        gba->framebuffer[GBA_SCREEN_WIDTH * y + x] = 0xFF << 24
+        gba->framebuffer[GBA_SCREEN_WIDTH * y + x] = 0xFF000000
             | (((uint32_t)c.red   << 3 ) | (((uint32_t)c.red   >> 2) & 0b111)) << 0
             | (((uint32_t)c.green << 3 ) | (((uint32_t)c.green >> 2) & 0b111)) << 8
             | (((uint32_t)c.blue  << 3 ) | (((uint32_t)c.blue  >> 2) & 0b111)) << 16
