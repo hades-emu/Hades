@@ -19,34 +19,32 @@ gui_load_config(
 
     data = json_fread("./hades-config.json");
 
-    if (!data) {
-        return ;
-    }
+    if (data) {
+        json_scanf(
+            data,
+            strlen(data),
+            STRINGIFY({
+                recent_roms_0: %Q,
+                recent_roms_1: %Q,
+                recent_roms_2: %Q,
+                recent_roms_3: %Q,
+                recent_roms_4: %Q,
+                bios: %Q,
+            }),
+            &app->recent_roms[0],
+            &app->recent_roms[1],
+            &app->recent_roms[2],
+            &app->recent_roms[3],
+            &app->recent_roms[4],
+            &app->emulation.bios_path
+        );
 
-    json_scanf(
-        data,
-        strlen(data),
-        STRINGIFY({
-            recent_roms_0: %Q,
-            recent_roms_1: %Q,
-            recent_roms_2: %Q,
-            recent_roms_3: %Q,
-            recent_roms_4: %Q,
-            bios: %Q,
-        }),
-        &app->recent_roms[0],
-        &app->recent_roms[1],
-        &app->recent_roms[2],
-        &app->recent_roms[3],
-        &app->recent_roms[4],
-        &app->emulation.bios_path
-    );
+        free(data);
+    }
 
     if (!app->emulation.bios_path) {
         app->emulation.bios_path = strdup("bios.bin");
     }
-
-    free(data);
 }
 
 void
