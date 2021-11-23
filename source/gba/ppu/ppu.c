@@ -286,7 +286,7 @@ ppu_hdraw(
     }
 
     io->dispstat.vcount_eq = (io->vcount.raw == io->dispstat.vcount_val );
-    io->dispstat.vblank = (io->vcount.raw >= GBA_SCREEN_HEIGHT);
+    io->dispstat.vblank = (io->vcount.raw >= GBA_SCREEN_HEIGHT && io->vcount.raw < GBA_SCREEN_REAL_HEIGHT - 1);
     io->dispstat.hblank = false;
 
     /* Trigger the VBLANK IRQ & DMA transfer */
@@ -337,10 +337,14 @@ ppu_hblank(
 
     io->dispstat.hblank = true;
 
-    /* Trigger the HBLANK IRQ & DMA transfer */
+    /*
+    ** Trigger the HBLANK IRQ & DMA transfer
+    */
+
     if (io->dispstat.hblank_irq) {
         core_trigger_irq(gba, IRQ_HBLANK);
     }
+
     if (io->vcount.raw < GBA_SCREEN_HEIGHT) {
         mem_schedule_dma_transfer(gba, DMA_TIMING_HBLANK);
     }
@@ -367,7 +371,7 @@ ppu_init(
     sched_add_event(
         gba,
         NEW_REPEAT_EVENT(
-            CYCLES_PER_PIXEL * GBA_SCREEN_WIDTH,            // Timing of first trigger
+            CYCLES_PER_PIXEL * GBA_SCREEN_WIDTH + 46,       // Timing of first trigger
             CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Period
             ppu_hblank
         )
