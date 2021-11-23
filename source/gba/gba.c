@@ -168,6 +168,8 @@ gba_run(
                         case KEY_START:     gba->io.keyinput.start = !message_keyinput->pressed; break;
                         case KEY_SELECT:    gba->io.keyinput.select = !message_keyinput->pressed; break;
                     };
+
+                    io_scan_keypad_irq(gba);
                     break;
                 };
                 case MESSAGE_QUICKLOAD: {

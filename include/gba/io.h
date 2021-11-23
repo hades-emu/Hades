@@ -125,6 +125,7 @@ enum io_regs {
 
     /* Input */
     IO_REG_KEYINPUT     = 0x04000130,
+    IO_REG_KEYCNT       = 0x04000132,
 
     /* Serial Communication (2) */
     IO_REG_RCNT         = 0x04000134,
@@ -522,6 +523,27 @@ struct io {
         uint8_t bytes[2];
     } keyinput;
 
+    // REG_KEYCNT
+    union {
+        struct {
+            uint16_t a: 1;
+            uint16_t b: 1;
+            uint16_t select: 1;
+            uint16_t start: 1;
+            uint16_t right: 1;
+            uint16_t left: 1;
+            uint16_t up: 1;
+            uint16_t down: 1;
+            uint16_t r: 1;
+            uint16_t l: 1;
+            uint16_t : 4;
+            uint16_t irq_enable: 1;
+            uint16_t irq_cond: 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } keycnt;
+
     // REG_RCNT
     union {
         uint16_t raw;
@@ -610,6 +632,7 @@ struct gba;
 
 /* gba/memory/io.c */
 void io_init(struct io *io);
+void io_scan_keypad_irq(struct gba *gba);
 
 /* gba/timer.c */
 void timer_start(struct gba *gba, uint32_t timer_idx);

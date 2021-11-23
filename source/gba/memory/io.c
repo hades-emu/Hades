@@ -116,6 +116,7 @@ mem_io_reg_name(
         case IO_REG_TM3CNT_LO:      return ("REG_TM3CNT_LO");
         case IO_REG_TM3CNT_HI:      return ("REG_TM3CNT_HI");
         case IO_REG_KEYINPUT:       return ("REG_KEYINPUT");
+        case IO_REG_KEYCNT:         return ("REG_KEYCNT");
         case IO_REG_IE:             return ("REG_IE");
         case IO_REG_IF:             return ("REG_IF");
         case IO_REG_WAITCNT:        return ("REG_WAITCNT");
@@ -246,6 +247,8 @@ mem_io_read8(
         /* Key Input */
         case IO_REG_KEYINPUT:               return (io->keyinput.bytes[0]);
         case IO_REG_KEYINPUT + 1:           return (io->keyinput.bytes[1]);
+        case IO_REG_KEYCNT:                 return (io->keycnt.bytes[0]);
+        case IO_REG_KEYCNT + 1:             return (io->keycnt.bytes[1]);
 
         case IO_REG_RCNT:                   return (io->rcnt.bytes[0]);
         case IO_REG_RCNT + 1:               return (io->rcnt.bytes[1]);
@@ -564,6 +567,14 @@ mem_io_write8(
         case IO_REG_RCNT:
         case IO_REG_RCNT + 1:               io->rcnt.bytes[addr - IO_REG_RCNT] = val; break;
 
+        /* Keypad input */
+        case IO_REG_KEYCNT:
+        case IO_REG_KEYCNT + 1: {
+            io->keycnt.bytes[addr - IO_REG_KEYCNT] = val;
+            io_scan_keypad_irq(gba);
+            break;
+        };
+
         /* Interrupt */
         case IO_REG_IE:
         case IO_REG_IE + 1:                 io->int_enabled.bytes[addr - IO_REG_IE] = val; break;
@@ -581,5 +592,22 @@ mem_io_write8(
         /* System */
         case IO_REG_POSTFLG:                io->postflg = val; break;
         case IO_REG_HALTCNT:                gba->core.state = val + 1; break;
+    }
+}
+
+/*
+** Check if the keyinput IO register matches the mask and condition described by
+** the keycnt register and fire an IRQ if it is the case.
+*/
+void
+io_scan_keypad_irq(
+    struct gba *gba
+) {
+    if (gba->io.keycnt.irq_enable) {
+        if (   (gba->io.keycnt.irq_cond && (~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF) == (gba->io.keycnt.raw & 0x3FF))  // Logical AND
+            || (!gba->io.keycnt.irq_cond && ~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF)  // Logical OR
+        ) {
+            core_trigger_irq(gba, IRQ_KEYPAD);
+        }
     }
 }
