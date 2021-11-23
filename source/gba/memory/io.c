@@ -490,6 +490,7 @@ mem_io_write8(
             new_enable = bitfield_get(val, 7);
 
             io->timers[0].control.bytes[0] = val;
+            io->timers[0].control.count_up = false;  // Timer 0 cannot use the count_up bit.
 
             // Copy the reload value to the counter value if the enable bit changed from 0 to 1
             if (!old_enable && new_enable) {
