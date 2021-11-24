@@ -110,11 +110,11 @@ ppu_merge_layer(
         }
 
         switch (mode) {
-            case BLEND_OFF:
+            case BLEND_OFF: {
                 scanline->bot[x] = topc;
                 break;
-            case BLEND_ALPHA:
-                {
+            };
+            case BLEND_ALPHA: {
                     bool top_enabled;
 
                     /*
@@ -124,17 +124,17 @@ ppu_merge_layer(
 
                     top_enabled = bitfield_get(io->bldcnt.raw, scanline->top_idx) || topc.force_blend;
                     if (top_enabled && bot_enabled && botc.visible) {
-                        scanline->bot[x].red = min(31, (topc.red * eva + botc.red * evb) >> 4);
-                        scanline->bot[x].green = min(31, (topc.green * eva + botc.green * evb) >> 4);
-                        scanline->bot[x].blue = min(31, (topc.blue * eva + botc.blue * evb) >> 4);
+                        scanline->bot[x].red = min(31, ((uint32_t)topc.red * eva + (uint32_t)botc.red * evb) >> 4);
+                        scanline->bot[x].green = min(31, ((uint32_t)topc.green * eva + (uint32_t)botc.green * evb) >> 4);
+                        scanline->bot[x].blue = min(31, ((uint32_t)topc.blue * eva + (uint32_t)botc.blue * evb) >> 4);
                         scanline->bot[x].visible = true;
                         scanline->bot[x].idx = scanline->top_idx;
                     } else {
                         scanline->bot[x] = topc;
                     }
-                }
                 break;
-            case BLEND_LIGHT:
+            };
+            case BLEND_LIGHT: {
                 if (bitfield_get(io->bldcnt.raw, scanline->top_idx)) {
                     scanline->bot[x].red = topc.red + (((31 - topc.red) * evy) >> 4);
                     scanline->bot[x].green = topc.green + (((31 - topc.green) * evy) >> 4);
@@ -145,7 +145,8 @@ ppu_merge_layer(
                     scanline->bot[x] = topc;
                 }
                 break;
-            case BLEND_DARK:
+            };
+            case BLEND_DARK: {
                 if (bitfield_get(io->bldcnt.raw, scanline->top_idx)) {
                     scanline->bot[x].red = topc.red - ((topc.red * evy) >> 4);
                     scanline->bot[x].green = topc.green - ((topc.green * evy) >> 4);
@@ -156,6 +157,7 @@ ppu_merge_layer(
                     scanline->bot[x] = topc;
                 }
                 break;
+            };
         }
     }
 
