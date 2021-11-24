@@ -138,27 +138,30 @@ core_arm_mull(
 
     core_idle(gba);
 
-    switch ((u << 1) | a) {
+    switch (((uint32_t)u << 1) | a) {
         // UMULL
-        case 0b00:
+        case 0b00: {
             core_arm_mul_idle_unsigned(gba, core->registers[rs]);
             ures = (uint64_t)core->registers[rm] * (uint64_t)core->registers[rs];
             break;
+        };
         // UMLAL
-        case 0b01:
+        case 0b01: {
             core_arm_mul_idle_unsigned(gba, core->registers[rs]);
             core_idle(gba);
             ures = (uint64_t)core->registers[rd_lo] | ((uint64_t)core->registers[rd_hi] << 32);
             ures += (uint64_t)core->registers[rm] * (uint64_t)core->registers[rs];
             break;
+        };
         // SMULL
-        case 0b10:
+        case 0b10: {
             core_arm_mul_idle_signed(gba, core->registers[rs]);
             ires = (int64_t)(int32_t)core->registers[rm] * (int64_t)(int32_t)core->registers[rs];
             ures = ires;
             break;
+        };
         // SMLAL
-        case 0b11:
+        default: {
             core_arm_mul_idle_signed(gba, core->registers[rs]);
             core_idle(gba);
             ures = (uint64_t)core->registers[rd_lo] | ((uint64_t)core->registers[rd_hi] << 32);
@@ -166,6 +169,7 @@ core_arm_mull(
             ires += (int64_t)(int32_t)core->registers[rm] * (int64_t)(int32_t)core->registers[rs];
             ures = ires;
             break;
+        };
     }
 
     core->registers[rd_lo] = ures & 0xFFFFFFFF;
