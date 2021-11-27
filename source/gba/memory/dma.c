@@ -40,6 +40,8 @@ mem_do_dma_transfer(
     enum dma_timings timing;
     size_t i;
     bool prefetch_state;
+    bool dma_was_enabled;
+    bool first;
 
     /*
     ** Disable prefetchng during DMA.
@@ -49,6 +51,10 @@ mem_do_dma_transfer(
     */
     prefetch_state = gba->memory.pbuffer.enabled;
     gba->memory.pbuffer.enabled = false;
+
+    dma_was_enabled = gba->core.processing_dma;
+    gba->core.processing_dma = true;
+    first = !dma_was_enabled;
 
     timing = data.u32;
     for (i = 0; i < 4; ++i) {
@@ -66,16 +72,17 @@ mem_do_dma_transfer(
             continue;
         }
 
-        // All DMA take at least two internal cycles.
-        core_idle_for(gba, 2);
+        // The first DMA take at least two internal cycles
+        // (Supposedly to transition from CPU to DMA)
+        if (first) {
+            core_idle_for(gba, 2);
+            first = false;
+        }
 
-        // If both source and destination are in gamepak memory area, the DMA takes
-        // two more internal cycles.
-        if (   ((channel->internal_src >> 24) & 0xF) >= CART_REGION_START
-            && ((channel->internal_src >> 24) & 0xF) <= CART_REGION_END
-            && ((channel->internal_dst >> 24) & 0xF) >= CART_REGION_START
-            && ((channel->internal_dst >> 24) & 0xF) <= CART_REGION_END
-        ) {
+        bool src_in_gamepak = (((channel->internal_src >> 24) & 0xF) >= CART_REGION_START && ((channel->internal_src >> 24) & 0xF) <= CART_REGION_END);
+        bool dst_in_gamepak = (((channel->internal_dst >> 24) & 0xF) >= CART_REGION_START && ((channel->internal_dst >> 24) & 0xF) <= CART_REGION_END);
+
+        if ((src_in_gamepak && dst_in_gamepak)) {
             core_idle_for(gba, 2);
         }
 
@@ -142,6 +149,7 @@ mem_do_dma_transfer(
         }
     }
     gba->memory.pbuffer.enabled = prefetch_state;
+    gba->core.processing_dma = dma_was_enabled;
 }
 
 void
@@ -149,14 +157,14 @@ mem_schedule_dma_transfer(
     struct gba *gba,
     enum dma_timings timing
 ) {
-    sched_add_event(
-        gba,
-        NEW_FIX_EVENT_DATA(
-            gba->core.cycles + 3,
-            mem_do_dma_transfer,
-            (union event_data){ .u32 = timing }
-        )
-    );
+        sched_add_event(
+            gba,
+            NEW_FIX_EVENT_DATA(
+                gba->core.cycles + 3,
+                mem_do_dma_transfer,
+                (union event_data){ .u32 = timing }
+            )
+        );
 }
 
 static

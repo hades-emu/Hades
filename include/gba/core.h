@@ -108,14 +108,16 @@ struct core {
         uint32_t bank_registers[28];
     };
 
-    uint32_t prefetch[2];              // The next instruction to be executed
+    uint32_t prefetch[2];                   // The next instruction to be executed
     enum access_type prefetch_access_type;
 
     struct psr cpsr;
 
-    enum core_states state;                  // 0=Run, 1=Halt, 2=Stop
+    enum core_states state;                 // 0=Run, 1=Halt, 2=Stop
 
-    uint64_t cycles;                // Amount of cycles spent by the CPU since initialization
+    uint64_t cycles;                        // Amount of cycles spent by the CPU since initialization
+
+    bool processing_dma;                    // The core is waiting for a DMA to complete.
 };
 
 /*
