@@ -70,6 +70,10 @@ core_next(
     // Scan for any pending interrupt
     core_scan_irq(gba);
 
+    if (core->pc - 4 == 0x0800a784) {
+        printf("BREAKPOINT HIT: R0=%08x R1=%08x R2=%08x\n", core->r0, core->r1, core->r2);
+    }
+
     switch (core->state) {
         case CORE_RUN:
             if (core->cpsr.thumb) {

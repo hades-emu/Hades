@@ -350,6 +350,10 @@ ppu_hblank(
     if (io->vcount.raw < GBA_SCREEN_HEIGHT) {
         mem_schedule_dma_transfer(gba, DMA_TIMING_HBLANK);
     }
+
+    if (io->vcount.raw >= 2 && io->vcount.raw <= GBA_SCREEN_HEIGHT + 2) {
+        mem_schedule_dma_video(gba);
+    }
 }
 
 /*
