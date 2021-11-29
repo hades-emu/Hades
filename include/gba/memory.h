@@ -201,6 +201,7 @@ void mem_dma_load(struct dma_channel *channel, uint32_t channel_idx);
 void mem_schedule_dma_transfer(struct gba *gba, enum dma_timings timing);
 bool mem_dma_is_fifo(struct gba const *gba, uint32_t dma_channel_idx, uint32_t fifo_idx);
 void mem_schedule_dma_fifo(struct gba *gba, uint32_t dma_channel_idx);
+void mem_schedule_dma_video(struct gba *gba);
 
 /* gba/memory/io.c */
 uint8_t mem_io_read8(struct gba const *gba, uint32_t addr);
