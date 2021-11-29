@@ -283,13 +283,12 @@ mem_do_dma_video_transfer(
         core_idle_for(gba, 2);
     }
 
-        bool src_in_gamepak = (((channel->internal_src >> 24) & 0xF) >= CART_REGION_START && ((channel->internal_src >> 24) & 0xF) <= CART_REGION_END);
-        bool dst_in_gamepak = (((channel->internal_dst >> 24) & 0xF) >= CART_REGION_START && ((channel->internal_dst >> 24) & 0xF) <= CART_REGION_END);
+    bool src_in_gamepak = (((channel->internal_src >> 24) & 0xF) >= CART_REGION_START && ((channel->internal_src >> 24) & 0xF) <= CART_REGION_END);
+    bool dst_in_gamepak = (((channel->internal_dst >> 24) & 0xF) >= CART_REGION_START && ((channel->internal_dst >> 24) & 0xF) <= CART_REGION_END);
 
-        if ((src_in_gamepak && dst_in_gamepak)) {
-            core_idle_for(gba, 2);
-        }
-
+    if ((src_in_gamepak && dst_in_gamepak)) {
+        core_idle_for(gba, 2);
+    }
 
     reload = false;
     unit_size = channel->control.unit_size ? 4 : 2; // In  bytes
