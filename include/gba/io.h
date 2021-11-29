@@ -128,6 +128,7 @@ enum io_regs {
     IO_REG_KEYCNT       = 0x04000132,
 
     /* Serial Communication (2) */
+    IO_REG_SIOCNT       = 0x04000128,
     IO_REG_RCNT         = 0x04000134,
 
     /* Interrupts */
@@ -543,6 +544,25 @@ struct io {
         uint16_t raw;
         uint8_t bytes[2];
     } keycnt;
+
+    // REG_SIOCNT
+    union {
+        struct {
+            uint16_t shift_clock: 1;
+            uint16_t internal_shift_clock: 1;
+            uint16_t si_state: 1;
+            uint16_t so_during_inactivity: 1;
+            uint16_t : 3;
+            uint16_t start: 1;
+            uint16_t : 4;
+            uint16_t transfer_length: 1;
+            uint16_t : 1;
+            uint16_t irq: 1;
+            uint16_t : 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } siocnt;
 
     // REG_RCNT
     union {

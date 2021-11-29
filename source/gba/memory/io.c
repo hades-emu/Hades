@@ -123,6 +123,8 @@ mem_io_reg_name(
         case IO_REG_IME:            return ("REG_IME");
         case IO_REG_POSTFLG:        return ("REG_POSTFLG");
         case IO_REG_HALTCNT:        return ("REG_HALTCNT");
+        case IO_REG_SIOCNT:         return ("REG_SIOCNT");
+        case IO_REG_RCNT:           return ("REG_RCNT");
         default:                    return ("UNKNOWN");
     }
 };
@@ -250,6 +252,9 @@ mem_io_read8(
         case IO_REG_KEYCNT:                 return (io->keycnt.bytes[0]);
         case IO_REG_KEYCNT + 1:             return (io->keycnt.bytes[1]);
 
+        /* Serial communication */
+        case IO_REG_SIOCNT:                 return (io->siocnt.bytes[0]);
+        case IO_REG_SIOCNT + 1:             return (io->siocnt.bytes[1]);
         case IO_REG_RCNT:                   return (io->rcnt.bytes[0]);
         case IO_REG_RCNT + 1:               return (io->rcnt.bytes[1]);
 
@@ -564,7 +569,19 @@ mem_io_write8(
             break;
         };
 
-        /* Serial Communication (2) */
+        /* Serial communication */
+        case IO_REG_SIOCNT:
+        case IO_REG_SIOCNT + 1: {
+            io->siocnt.bytes[addr - IO_REG_SIOCNT] = val;
+
+            /* Stub */
+            if (io->siocnt.start && io->siocnt.irq) {
+                core_trigger_irq(gba, IRQ_SERIAL);
+            }
+            io->siocnt.start = false;
+            break;
+        };
+
         case IO_REG_RCNT:
         case IO_REG_RCNT + 1:               io->rcnt.bytes[addr - IO_REG_RCNT] = val; break;
 
