@@ -77,22 +77,22 @@ mem_update_waitstates(
     io = &gba->io;
 
     // 16 bit, non seq
-    access_time16[NON_SEQUENTIAL][CART_0_REGION_1]  = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws0_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_0_REGION_2]  = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws0_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_1_REGION_1]  = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws1_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_1_REGION_2]  = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws1_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_2_REGION_1]  = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws2_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_2_REGION_2]  = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws2_nonseq];
-    access_time16[NON_SEQUENTIAL][SRAM_REGION]      = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
+    access_time16[NON_SEQUENTIAL][CART_0_REGION_1] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws0_nonseq];
+    access_time16[NON_SEQUENTIAL][CART_0_REGION_2] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws0_nonseq];
+    access_time16[NON_SEQUENTIAL][CART_1_REGION_1] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws1_nonseq];
+    access_time16[NON_SEQUENTIAL][CART_1_REGION_2] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws1_nonseq];
+    access_time16[NON_SEQUENTIAL][CART_2_REGION_1] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws2_nonseq];
+    access_time16[NON_SEQUENTIAL][CART_2_REGION_2] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws2_nonseq];
+    access_time16[NON_SEQUENTIAL][SRAM_REGION]     = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
 
     // 16 bit, seq
-    access_time16[SEQUENTIAL][CART_0_REGION_1]  = 1 + (io->waitcnt.ws0_seq ? 1 : 2);
-    access_time16[SEQUENTIAL][CART_0_REGION_2]  = 1 + (io->waitcnt.ws0_seq ? 1 : 2);
-    access_time16[SEQUENTIAL][CART_1_REGION_1]  = 1 + (io->waitcnt.ws1_seq ? 1 : 4);
-    access_time16[SEQUENTIAL][CART_1_REGION_2]  = 1 + (io->waitcnt.ws1_seq ? 1 : 4);
-    access_time16[SEQUENTIAL][CART_2_REGION_1]  = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
-    access_time16[SEQUENTIAL][CART_2_REGION_2]  = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
-    access_time16[SEQUENTIAL][SRAM_REGION]      = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
+    access_time16[SEQUENTIAL][CART_0_REGION_1] = 1 + (io->waitcnt.ws0_seq ? 1 : 2);
+    access_time16[SEQUENTIAL][CART_0_REGION_2] = 1 + (io->waitcnt.ws0_seq ? 1 : 2);
+    access_time16[SEQUENTIAL][CART_1_REGION_1] = 1 + (io->waitcnt.ws1_seq ? 1 : 4);
+    access_time16[SEQUENTIAL][CART_1_REGION_2] = 1 + (io->waitcnt.ws1_seq ? 1 : 4);
+    access_time16[SEQUENTIAL][CART_2_REGION_1] = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
+    access_time16[SEQUENTIAL][CART_2_REGION_2] = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
+    access_time16[SEQUENTIAL][SRAM_REGION]     = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
 
     // Update for 32-bit too.
     for (x = CART_0_REGION_1; x <= SRAM_REGION; ++x) {
