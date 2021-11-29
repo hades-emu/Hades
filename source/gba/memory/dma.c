@@ -274,8 +274,6 @@ mem_do_dma_video_transfer(
         return;
     }
 
-    printf("YES! %u\n", gba->io.vcount.raw);
-
     dma_was_enabled = gba->core.processing_dma;
     gba->core.processing_dma = true;
 
@@ -315,16 +313,12 @@ mem_do_dma_video_transfer(
         channel->internal_count = count_mask[3] + 1;
     }
 
-    printf("SRC_CTL=%u\n", channel->control.src_ctl);
-    printf("SRC=%08x DST=%08x SRC STEP=%i DST STEP=%i LEN=%u\n", channel->internal_src, channel->internal_dst, src_step, dst_step, channel->internal_count);
-
     access = NON_SEQUENTIAL;
     while (channel->internal_count > 0) {
         if (unit_size == 4) {
             mem_write32(gba, channel->internal_dst, mem_read32(gba, channel->internal_src, access), access);
         } else { // unit_size == 2
             mem_write16(gba, channel->internal_dst, mem_read16(gba, channel->internal_src, access), access);
-            printf("WRITING %04x to %08x\n", mem_read16(gba, channel->internal_src, access), channel->internal_dst);
         }
         channel->internal_src += src_step;
         channel->internal_dst += dst_step;
@@ -336,7 +330,7 @@ mem_do_dma_video_transfer(
         core_trigger_irq(gba, IRQ_DMA3);
     }
 
-    if (channel->control.repeat) {
+    if (channel->control.repeat && gba->io.vcount.raw < GBA_SCREEN_HEIGHT + 1) {
         channel->internal_count = channel->count.raw;
         channel->internal_count &= count_mask[3];
         if (reload) {
