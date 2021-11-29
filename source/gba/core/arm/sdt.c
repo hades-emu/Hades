@@ -131,8 +131,6 @@ core_arm_hsdt(
     uint32_t rn;
 
     core = &gba->core;
-    core->pc += 4;
-    core->prefetch_access_type = NON_SEQUENTIAL;
 
     rd = bitfield_get_range(op, 12, 16);
     rn = bitfield_get_range(op, 16, 20);
@@ -148,6 +146,9 @@ core_arm_hsdt(
     } else {
         offset = core->registers[bitfield_get_range(op, 0, 4)];
     }
+
+    core->prefetch_access_type = NON_SEQUENTIAL;
+    core->pc += 4;
 
     /*
     ** If bit 23 is set, the offset must be added to the base.
