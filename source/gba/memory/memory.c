@@ -223,14 +223,14 @@ mem_prefetch_buffer_step(
             case IO_REGION:                                                                 \
                 _ret = _Generic(_ret,                                                       \
                     uint32_t: (                                                             \
-                        ((uint32_t)mem_io_read8((gba), (addr) + 0) <<  0) |                 \
-                        ((uint32_t)mem_io_read8((gba), (addr) + 1) <<  8) |                 \
-                        ((uint32_t)mem_io_read8((gba), (addr) + 2) << 16) |                 \
-                        ((uint32_t)mem_io_read8((gba), (addr) + 3) << 24)                   \
+                        ((T)mem_io_read8((gba), (addr) + 0) <<  0) |                        \
+                        ((T)mem_io_read8((gba), (addr) + 1) <<  8) |                        \
+                        ((T)mem_io_read8((gba), (addr) + 2) << 16) |                        \
+                        ((T)mem_io_read8((gba), (addr) + 3) << 24)                          \
                     ),                                                                      \
                     uint16_t: (                                                             \
-                        ((int16_t)mem_io_read8((gba), (addr) + 0) <<  0) |                  \
-                        ((int16_t)mem_io_read8((gba), (addr) + 1) <<  8)                    \
+                        ((T)mem_io_read8((gba), (addr) + 0) <<  0) |                        \
+                        ((T)mem_io_read8((gba), (addr) + 1) <<  8)                          \
                     ),                                                                      \
                     default: mem_io_read8((gba), (addr))                                    \
                 );                                                                          \
@@ -250,14 +250,14 @@ mem_prefetch_buffer_step(
             case SRAM_REGION:                                                               \
                 _ret = _Generic(_ret,                                                       \
                     uint32_t: (                                                             \
-                        (mem_backup_storage_read8((gba), (addr) + 0) <<  0) |               \
-                        (mem_backup_storage_read8((gba), (addr) + 1) <<  8) |               \
-                        (mem_backup_storage_read8((gba), (addr) + 2) << 16) |               \
-                        (mem_backup_storage_read8((gba), (addr) + 3) << 24)                 \
+                        ((T)mem_backup_storage_read8((gba), (addr) + 0) <<  0) |            \
+                        ((T)mem_backup_storage_read8((gba), (addr) + 1) <<  8) |            \
+                        ((T)mem_backup_storage_read8((gba), (addr) + 2) << 16) |            \
+                        ((T)mem_backup_storage_read8((gba), (addr) + 3) << 24)              \
                     ),                                                                      \
                     uint16_t: (                                                             \
-                        (mem_backup_storage_read8((gba), (addr) + 0) <<  0) |               \
-                        (mem_backup_storage_read8((gba), (addr) + 1) <<  8)                 \
+                        ((T)mem_backup_storage_read8((gba), (addr) + 0) <<  0) |            \
+                        ((T)mem_backup_storage_read8((gba), (addr) + 1) <<  8)              \
                     ),                                                                      \
                     default: mem_backup_storage_read8((gba), (addr))                        \
                 );                                                                          \
