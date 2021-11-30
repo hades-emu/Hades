@@ -62,6 +62,11 @@ ppu_prerender_oam(
             continue;
         }
 
+        // Skip OAM entries of index < 512 for BG 3-5
+        if (io->dispcnt.bg_mode >= 3 && io->dispcnt.bg_mode <= 5 && oam.tile_idx < 512) {
+            continue;
+        }
+
         win_oy = oam.coord_y;
         win_ox = sign_extend9(oam.coord_x);
         sprite_sx = sprite_size_x[(oam.size_high << 2) | oam.size_low];

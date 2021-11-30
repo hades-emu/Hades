@@ -272,6 +272,7 @@ ppu_hdraw(
 
     /* Increment VCOUNT */
     ++io->vcount.raw;
+
     if (io->vcount.raw >= GBA_SCREEN_REAL_HEIGHT) {
         io->vcount.raw = 0;
         ++gba->framecounter;
@@ -287,7 +288,7 @@ ppu_hdraw(
         pthread_mutex_unlock(&gba->framebuffer_frontend_mutex);
     }
 
-    io->dispstat.vcount_eq = (io->vcount.raw == io->dispstat.vcount_val );
+    io->dispstat.vcount_eq = (io->vcount.raw == io->dispstat.vcount_val);
     io->dispstat.vblank = (io->vcount.raw >= GBA_SCREEN_HEIGHT && io->vcount.raw < GBA_SCREEN_REAL_HEIGHT - 1);
     io->dispstat.hblank = false;
 
@@ -309,8 +310,7 @@ ppu_hdraw(
 
 /*
 ** Called when the PPU enters HBlank, this function updates some IO registers
-** to reflect the progress of the PPU, eventually triggers an IRQ, and render
-** the current scanline.
+** to reflect the progress of the PPU and eventually triggers an IRQ.
 */
 static
 void
