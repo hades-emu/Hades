@@ -111,27 +111,37 @@ ppu_prerender_oam(
 
             for (x = 0; x < win_sx; ++x, px += pa.raw, py += pc.raw) {
                 uint32_t palette_idx;
+                int32_t rel_x;   // X coordinate of the pixel within the sprite
+                int32_t rel_y;   // Y coordinate of the pixel within the sprite
                 uint32_t chr_x;  // X coordinate of the pixel within the tile (0-7)
                 uint32_t chr_y;  // Y coordinate of the pixel within the tile (0-7)
                 uint32_t tile_x; // X coordinate of the tile within the sprite
                 uint32_t tile_y; // Y coordinate of the tile within the sprite
                 uint32_t tile_offset;
-                uint32_t tile_size;
+                uint32_t tile_size; // In bytes
 
                 // Filter-out pixels that are outside of the screen
                 if (win_ox + x < 0 || win_ox + x >= GBA_SCREEN_WIDTH) {
                     continue;
                 }
 
-                tile_x = (px >> 8) / 8;
-                tile_y = (py >> 8) / 8;
-                chr_x = (px >> 8) % 8;
-                chr_y = (py >> 8) % 8;
+                rel_x = (px >> 8);
+                rel_y = (py >> 8);
+
+                if (oam.mosaic) {
+                    rel_x = (win_ox + rel_x) / (io->mosaic.obj_hsize + 1) * (io->mosaic.obj_hsize + 1) - win_ox;
+                    rel_y = (win_oy + rel_y) / (io->mosaic.obj_vsize + 1) * (io->mosaic.obj_vsize + 1) - win_oy;
+                }
+
+                tile_x = rel_x / 8;
+                tile_y = rel_y / 8;
+                chr_x = rel_x % 8;
+                chr_y = rel_y % 8;
 
                 // Filter out pixels that are rotated/shred/scaled outside of their sprite.
                 if (
-                       px < 0 || tile_x >= sprite_sx / 8
-                    || py < 0 || tile_y >= sprite_sy / 8
+                       rel_x < 0 || tile_x >= sprite_sx / 8
+                    || rel_y < 0 || tile_y >= sprite_sy / 8
                 ) {
                     continue;
                 }

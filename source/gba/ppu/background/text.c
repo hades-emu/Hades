@@ -26,6 +26,8 @@ ppu_render_background_text(
     io = &gba->io;
     scanline->top_idx = bg_idx;
     for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
+        int32_t rel_x;   // X coord of the pixel within the bg
+        int32_t rel_y;   // Y coord of the pixel within the bg
         uint32_t tile_x; // X coord of the tile in the tilemap
         uint32_t tile_y; // Y coord of the tile in the tilemap
         uint32_t chr_x;  // X coord of the pixel we want to render within the tile
@@ -38,14 +40,25 @@ ppu_render_background_text(
         bool up_x;
         bool up_y;
 
-        tile_x = ((x + io->bg_hoffset[bg_idx].raw) / 8);
-        tile_y = ((line + io->bg_voffset[bg_idx].raw) / 8);
+        rel_x = x;
+        rel_y = line;
+
+        if (io->bgcnt[bg_idx].mosaic) {
+            rel_x = x / (io->mosaic.bg_hsize + 1) * (io->mosaic.bg_hsize + 1);
+            rel_y = line / (io->mosaic.bg_vsize + 1) * (io->mosaic.bg_vsize + 1);
+        }
+
+        rel_x += io->bg_hoffset[bg_idx].raw;
+        rel_y += io->bg_voffset[bg_idx].raw;
+
+        tile_x = (rel_x / 8);
+        tile_y = (rel_y / 8);
         up_x = bitfield_get(tile_x, 5);
         up_y = bitfield_get(tile_y, 5);
         tile_x %= 32;
         tile_y %= 32;
-        chr_x  = (x + io->bg_hoffset[bg_idx].raw) % 8;
-        chr_y  = (line + io->bg_voffset[bg_idx].raw) % 8;
+        chr_x  = rel_x % 8;
+        chr_y  = rel_y % 8;
 
         screen_addr = (uint32_t)io->bgcnt[bg_idx].screen_base * 0x800;
         chrs_addr = (uint32_t)io->bgcnt[bg_idx].character_base * 0x4000;
