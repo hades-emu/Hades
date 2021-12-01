@@ -32,7 +32,7 @@ ppu_initialize_scanline(
     backdrop.raw = (gba->io.dispcnt.blank ? 0x7fff : mem_palram_read16(gba, PALRAM_START));
 
     for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
-        scanline->bot[x] = backdrop;
+        scanline->result[x] = backdrop;
     }
 
     /*
@@ -42,12 +42,11 @@ ppu_initialize_scanline(
 
     if (gba->io.bldcnt.mode == BLEND_LIGHT || gba->io.bldcnt.mode == BLEND_DARK) {
         scanline->top_idx = 5;
-        memcpy(scanline->top, scanline->bot, sizeof(scanline->top));
+        memcpy(scanline->top, scanline->result, sizeof(scanline->top));
+        memcpy(scanline->bot, scanline->result, sizeof(scanline->top));
         ppu_merge_layer(gba, scanline);
         scanline->top_idx = 0;
     }
-
-    scanline->result = scanline->bot;
 }
 
 /*
@@ -84,6 +83,8 @@ ppu_merge_layer(
             continue;
         }
 
+        scanline->bot[x] = scanline->top[x];
+
         mode = gba->io.bldcnt.mode;
         bot_enabled = bitfield_get(io->bldcnt.raw, botc.idx + 8);
 
@@ -111,7 +112,7 @@ ppu_merge_layer(
 
         switch (mode) {
             case BLEND_OFF: {
-                scanline->bot[x] = topc;
+                scanline->result[x] = topc;
                 break;
             };
             case BLEND_ALPHA: {
@@ -124,37 +125,37 @@ ppu_merge_layer(
 
                     top_enabled = bitfield_get(io->bldcnt.raw, scanline->top_idx) || topc.force_blend;
                     if (top_enabled && bot_enabled && botc.visible) {
-                        scanline->bot[x].red = min(31, ((uint32_t)topc.red * eva + (uint32_t)botc.red * evb) >> 4);
-                        scanline->bot[x].green = min(31, ((uint32_t)topc.green * eva + (uint32_t)botc.green * evb) >> 4);
-                        scanline->bot[x].blue = min(31, ((uint32_t)topc.blue * eva + (uint32_t)botc.blue * evb) >> 4);
-                        scanline->bot[x].visible = true;
-                        scanline->bot[x].idx = scanline->top_idx;
+                        scanline->result[x].red = min(31, ((uint32_t)topc.red * eva + (uint32_t)botc.red * evb) >> 4);
+                        scanline->result[x].green = min(31, ((uint32_t)topc.green * eva + (uint32_t)botc.green * evb) >> 4);
+                        scanline->result[x].blue = min(31, ((uint32_t)topc.blue * eva + (uint32_t)botc.blue * evb) >> 4);
+                        scanline->result[x].visible = true;
+                        scanline->result[x].idx = scanline->top_idx;
                     } else {
-                        scanline->bot[x] = topc;
+                        scanline->result[x] = topc;
                     }
                 break;
             };
             case BLEND_LIGHT: {
                 if (bitfield_get(io->bldcnt.raw, scanline->top_idx)) {
-                    scanline->bot[x].red = topc.red + (((31 - topc.red) * evy) >> 4);
-                    scanline->bot[x].green = topc.green + (((31 - topc.green) * evy) >> 4);
-                    scanline->bot[x].blue = topc.blue + (((31 - topc.blue) * evy) >> 4);
-                    scanline->bot[x].idx = topc.idx;
-                    scanline->bot[x].visible = true;
+                    scanline->result[x].red = topc.red + (((31 - topc.red) * evy) >> 4);
+                    scanline->result[x].green = topc.green + (((31 - topc.green) * evy) >> 4);
+                    scanline->result[x].blue = topc.blue + (((31 - topc.blue) * evy) >> 4);
+                    scanline->result[x].idx = topc.idx;
+                    scanline->result[x].visible = true;
                 } else {
-                    scanline->bot[x] = topc;
+                    scanline->result[x] = topc;
                 }
                 break;
             };
             case BLEND_DARK: {
                 if (bitfield_get(io->bldcnt.raw, scanline->top_idx)) {
-                    scanline->bot[x].red = topc.red - ((topc.red * evy) >> 4);
-                    scanline->bot[x].green = topc.green - ((topc.green * evy) >> 4);
-                    scanline->bot[x].blue = topc.blue - ((topc.blue * evy) >> 4);
-                    scanline->bot[x].idx = topc.idx;
-                    scanline->bot[x].visible = true;
+                    scanline->result[x].red = topc.red - ((topc.red * evy) >> 4);
+                    scanline->result[x].green = topc.green - ((topc.green * evy) >> 4);
+                    scanline->result[x].blue = topc.blue - ((topc.blue * evy) >> 4);
+                    scanline->result[x].idx = topc.idx;
+                    scanline->result[x].visible = true;
                 } else {
-                    scanline->bot[x] = topc;
+                    scanline->result[x] = topc;
                 }
                 break;
             };

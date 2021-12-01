@@ -58,7 +58,7 @@ struct scanline {
     struct rich_color bot[GBA_SCREEN_WIDTH];
     struct rich_color oam[4][GBA_SCREEN_WIDTH];
     bool win[3][GBA_SCREEN_WIDTH];
-    struct rich_color *result;
+    struct rich_color result[GBA_SCREEN_WIDTH];
     uint32_t top_idx;
 };
 
