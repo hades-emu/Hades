@@ -127,7 +127,8 @@ struct ppu {
 };
 
 /* gba/ppu/background/bitmap.c */
-void ppu_render_background_bitmap(struct gba const *gba, struct scanline *scanline, uint32_t line, uint32_t bg_idx, bool palette);
+void ppu_render_background_bitmap(struct gba const *gba, struct scanline *scanline, bool palette);
+void ppu_render_background_bitmap_small(struct gba const *gba, struct scanline *scanline);
 
 /* gba/ppu/background/text.c */
 void ppu_render_background_text(struct gba const *gba, struct scanline *scanline, uint32_t line, uint32_t bg_idx);
