@@ -212,7 +212,7 @@ ppu_render_scanline(
         case 3:
             for (prio = 3; prio >= 0; --prio) {
                 if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio) {
-                    ppu_render_background_bitmap(gba, scanline, y, 2, false);
+                    ppu_render_background_bitmap(gba, scanline, false);
                     ppu_merge_layer(gba, scanline);
                 }
                 ppu_render_oam(gba, scanline, y, prio);
@@ -222,7 +222,17 @@ ppu_render_scanline(
         case 4:
             for (prio = 3; prio >= 0; --prio) {
                 if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio) {
-                    ppu_render_background_bitmap(gba, scanline, y, 2, true);
+                    ppu_render_background_bitmap(gba, scanline, true);
+                    ppu_merge_layer(gba, scanline);
+                }
+                ppu_render_oam(gba, scanline, y, prio);
+                ppu_merge_layer(gba, scanline);
+            }
+            break;
+        case 5:
+            for (prio = 3; prio >= 0; --prio) {
+                if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio && y < 128) {
+                    ppu_render_background_bitmap_small(gba, scanline);
                     ppu_merge_layer(gba, scanline);
                 }
                 ppu_render_oam(gba, scanline, y, prio);
