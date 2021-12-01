@@ -406,9 +406,9 @@ struct io {
     union {
         struct {
             uint16_t bg_hsize: 4;
-            uint16_t bg_vise: 4;
+            uint16_t bg_vsize: 4;
             uint16_t obj_hsize: 4;
-            uint16_t obj_vise: 4;
+            uint16_t obj_vsize: 4;
             uint16_t : 16;
         } __packed;
         uint32_t raw;
