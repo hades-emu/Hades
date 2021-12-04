@@ -72,7 +72,7 @@ ppu_render_background_affine(
     screen_addr = (uint32_t)io->bgcnt[bg_idx].screen_base * 0x800;
     chrs_addr = (uint32_t)io->bgcnt[bg_idx].character_base * 0x4000;
 
-    for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
+    for (x = 0; x < GBA_SCREEN_WIDTH; ++x, px += pa, py += pc) {
         uint32_t palette_idx;
         uint32_t tile_idx;
         int32_t tile_x;
@@ -82,17 +82,16 @@ ppu_render_background_affine(
 
         tile_x = px >> 8;
         tile_y = py >> 8;
-        chr_x = tile_x % 8;
-        chr_y = tile_y % 8;
 
         if (io->bgcnt[bg_idx].wrap) {
             tile_x = tile_x >= 0 ? (tile_x % bg_size) : (bg_size + (tile_x % bg_size));
             tile_y = tile_y >= 0 ? (tile_y % bg_size) : (bg_size + (tile_y % bg_size));
         } else if (tile_x < 0 || tile_x >= bg_size || tile_y < 0 || tile_y >= bg_size) {
-            px += pa;
-            py += pc;
             continue;
         }
+
+        chr_x = tile_x % 8;
+        chr_y = tile_y % 8;
 
         tile_idx = mem_vram_read8(gba, screen_addr + (tile_y / 8) * (bg_size / 8) + (tile_x / 8));
         palette_idx = mem_vram_read8(gba, chrs_addr + tile_idx * 64 + chr_y * 8 + chr_x);
@@ -106,8 +105,5 @@ ppu_render_background_affine(
             c.force_blend = false;
             scanline->top[x] = c;
         }
-
-        px += pa;
-        py += pc;
     }
 }
