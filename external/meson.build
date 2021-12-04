@@ -53,7 +53,7 @@ if get_option('static_executable')
     imgui_dep += [
         dependency('libpng', required: true, static: true),
         dependency('libjpeg', required: true, static: true),
-        dependency('libLerc', required: true, static: true),
+        dependency('lerc', required: true, static: true),
         dependency('libtiff-4', required: true, static: true),
         dependency('libwebp', required: true, static: true),
     ]
