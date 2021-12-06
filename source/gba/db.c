@@ -11,6 +11,10 @@
 #include "gba/gba.h"
 #include "gba/db.h"
 
+/*
+** Source:
+**   - https://github.com/profi200/open_agb_firm/issues/9
+*/
 static struct game_entry game_database[] = {
     (struct game_entry){.code = "BJB", .storage = BACKUP_EEPROM_4K, .flags = FLAGS_NONE, .title = "007 - Everything or Nothing"},
     (struct game_entry){.code = "BFB", .storage = BACKUP_SRAM,      .flags = FLAGS_NONE, .title = "2 Disney Games - Disney Sports Skateboarding + Football"},
