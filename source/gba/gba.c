@@ -12,6 +12,7 @@
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
 #include "gba/gba.h"
+#include "gba/db.h"
 #include "utils/time.h"
 
 /*
@@ -99,10 +100,12 @@ gba_run(
 
                     message_data = (struct message_data *)message;
                     memset(gba->memory.rom, 0, CART_SIZE);
-                    memcpy(gba->memory.rom, message_data->data, min(message_data->size, CART_SIZE));
+                    gba->memory.rom_size = min(message_data->size, CART_SIZE);
+                    memcpy(gba->memory.rom, message_data->data, gba->memory.rom_size);
                     if (message_data->cleanup) {
                         message_data->cleanup(message_data->data);
                     }
+                    db_lookup_game(gba);
                     break;
                 };
                 case MESSAGE_LOAD_BACKUP: {
@@ -124,7 +127,7 @@ gba_run(
                     struct message_backup_type *message_backup_type;
 
                     message_backup_type = (struct message_backup_type *)message;
-                    if (message_backup_type->type == BACKUP_AUTODETECT) {
+                    if (message_backup_type->type == BACKUP_AUTO_DETECT) {
                         mem_backup_storage_detect(gba);
                     }
                     mem_backup_storage_init(gba);

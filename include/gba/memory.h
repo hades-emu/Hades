@@ -102,16 +102,25 @@ enum access_type {
 #define FLASH128_SIZE           (FLASH64_SIZE * 2)
 #define FLASH_MASK              (FLASH_END - FLASH_START)
 
+#define EEPROM_4K_SIZE          (0x200)
+#define EEPROM_4K_ADDR_MASK     (0x1FF)
+#define EEPROM_4K_ADDR_LEN      (6)
+#define EEPROM_64K_SIZE         (0x2000)
+#define EEPROM_64K_ADDR_MASK    (0x1FFF)
+#define EEPROM_64K_ADDR_LEN     (14)
 
 /*
 ** The different types of backup storage a game can use.
 */
 enum backup_storage {
-    BACKUP_AUTODETECT = 0,  // Only used when setting the backup storage type
-    BACKUP_EEPROM = 1,
-    BACKUP_SRAM = 2,
-    BACKUP_FLASH64 = 3,
-    BACKUP_FLASH128 = 4,
+    BACKUP_AUTO_DETECT = -1,
+
+    BACKUP_NONE = 0,
+    BACKUP_EEPROM_4K = 1,
+    BACKUP_EEPROM_64K = 2,
+    BACKUP_SRAM = 3,
+    BACKUP_FLASH64 = 4,
+    BACKUP_FLASH128 = 5,
 };
 
 enum flash_state {
@@ -137,6 +146,35 @@ struct flash {
     enum flash_state state;
     bool identity_mode;
     bool bank;
+};
+
+enum eeprom_state {
+    EEPROM_STATE_READY,
+    EEPROM_STATE_CMD,
+    EEPROM_STATE_TRANSFER_ADDR,
+    EEPROM_STATE_TRANSFER_DATA,
+    EEPROM_STATE_TRANSFER_JUNK,
+    EEPROM_STATE_END,
+};
+
+enum eeprom_cmd {
+    EEPROM_CMD_READ,
+    EEPROM_CMD_WRITE,
+};
+
+struct eeprom {
+    uint32_t mask;
+    uint32_t range;
+
+    enum eeprom_state state;
+    enum eeprom_cmd cmd;
+
+    uint32_t address_mask;
+    uint32_t address_len;
+
+    uint32_t transfer_address;
+    uint64_t transfer_data;
+    uint32_t transfer_len;
 };
 
 struct prefetch_buffer {
@@ -166,6 +204,7 @@ struct memory {
 
     // External Memory (Game Pak)
     uint8_t rom[CART_SIZE];
+    size_t rom_size;
 
     // Backup Storage
     uint8_t *backup_storage_data;
@@ -174,6 +213,9 @@ struct memory {
 
     // Flash memory
     struct flash flash;
+
+    // EEPROM memory
+    struct eeprom eeprom;
 
     // Prefetch
     struct prefetch_buffer pbuffer;
@@ -222,17 +264,21 @@ void mem_write8(struct gba *gba, uint32_t addr, uint8_t val, enum access_type ac
 void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_type access_type);
 void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_type access_type);
 
-/* gba/memory/storage/detect.c */
+/* gba/memory/storage/eeprom.c */
+uint8_t mem_eeprom_read8(struct gba *gba);
+void mem_eeprom_write8(struct gba *gba, bool val);
+
+/* gba/memory/storage/flash.c */
+uint8_t mem_flash_read8(struct gba const *gba, uint32_t addr);
+void mem_flash_write8(struct gba *gba, uint32_t addr, uint8_t val);
+
+/* gba/memory/storage/storage.c */
 extern size_t backup_storage_sizes[];
 void mem_backup_storage_detect(struct gba *gba);
 void mem_backup_storage_init(struct gba *gba);
 uint8_t mem_backup_storage_read8(struct gba const *gba, uint32_t addr);
 void mem_backup_storage_write8(struct gba *gba, uint32_t addr, uint8_t value);
 void mem_backup_storage_write_to_disk(struct gba *gba);
-
-/* gba/memory/storage/flash.c */
-uint8_t mem_flash_read8(struct gba const *gba, uint32_t addr);
-void mem_flash_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /* gba/quicksave.c */
 void quicksave(struct gba const *gba, char const *);

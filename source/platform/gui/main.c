@@ -34,6 +34,7 @@
 
 #include "hades.h"
 #include "gba/gba.h"
+#include "gba/db.h"
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
 #include "platform/gui.h"
@@ -561,6 +562,15 @@ main(
                 ** on the disk every second (if it is dirty).
                 */
                 gui_game_write_backup(&app);
+
+                /*
+                ** We also update the Window's name with the game title
+                */
+                if (app.emulation.gba->game_entry) {
+                    SDL_SetWindowTitle(app.window, app.emulation.gba->game_entry->title);
+                } else {
+                    SDL_SetWindowTitle(app.window, "Hades");
+                }
             }
         }
 

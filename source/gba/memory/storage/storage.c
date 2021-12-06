@@ -7,18 +7,36 @@
 **
 \******************************************************************************/
 
+/*
+** References:
+**   - https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html
+**   - https://densinh.github.io/DenSinH/emulation/2021/02/01/gba-eeprom.html
+*/
+
 #define _GNU_SOURCE
 #include <string.h>
 #include <errno.h>
 #include "gba/gba.h"
+#include "gba/db.h"
 
 size_t backup_storage_sizes[] = {
-    [BACKUP_AUTODETECT] = 0,
-    [BACKUP_EEPROM] = 0, // TODO
+    [BACKUP_NONE] = 0,
+    [BACKUP_EEPROM_4K] = EEPROM_4K_SIZE,
+    [BACKUP_EEPROM_64K] = EEPROM_64K_SIZE,
     [BACKUP_SRAM] = SRAM_SIZE,
     [BACKUP_FLASH64] = FLASH64_SIZE,
     [BACKUP_FLASH128] = FLASH128_SIZE,
 };
+
+static
+char const *backup_storage_names[] = {
+    [BACKUP_EEPROM_4K] = "EEPROM 4K",
+    [BACKUP_EEPROM_64K] = "EEPROM 64K",
+    [BACKUP_SRAM] = "SRAM",
+    [BACKUP_FLASH64] = "FLASH 64K",
+    [BACKUP_FLASH128] = "FLASH 128K",
+};
+
 
 /*
 ** Detect the kind of storage the loaded ROM uses, and open/setup the save file.
@@ -32,24 +50,80 @@ void
 mem_backup_storage_detect(
     struct gba *gba
 ) {
-    if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "EEPROM_", 7)) {
-        logln(HS_GLOBAL, "Detected EEPROM memory. This memory is unsupported yet.");
-        gba->memory.backup_storage_type = BACKUP_EEPROM;
-    } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_", 5)) {
+    if (gba->game_entry) {
+        gba->memory.backup_storage_type = gba->game_entry->storage;
+        goto setup_storage;
+    }
+
+    /*
+    ** Auto-detection algorithm are very simple: they look for a bunch of strings in the game's ROM.
+    */
+
+    if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "EEPROM_V", 7)) {
+        logln(HS_GLOBAL, "Detected EEPROM 64K memory.");
+        logln(HS_WARNING, "If you are having issues with corrupted saves, try EEPROM 8K instead.");
+        gba->memory.backup_storage_type = BACKUP_EEPROM_64K;
+    } else if (
+           array_search(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_V", 5)
+        || array_search(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_F_V", 5)
+    ) {
         logln(HS_GLOBAL, "Detected SRAM memory");
         gba->memory.backup_storage_type = BACKUP_SRAM;
-    } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH1M_", 8)) {
+    } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH1M_V", 8)) {
         logln(HS_GLOBAL, "Detected Flash 128 kilobytes / 1 megabit");
         gba->memory.backup_storage_type = BACKUP_FLASH128;
     } else if (
-           array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH_", 6)
-        || array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH512_", 9)
+           array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH_V", 6)
+        || array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH512_V", 9)
     ) {
         logln(HS_GLOBAL, "Detected Flash 64 kilobytes / 512 kilobits");
         gba->memory.backup_storage_type = BACKUP_FLASH64;
     } else {
-        logln(HS_GLOBAL, "No backup storage detected. Defaulting to SRAM.");
-        gba->memory.backup_storage_type = BACKUP_SRAM;
+        gba->memory.backup_storage_type = BACKUP_NONE;
+    }
+
+setup_storage:
+
+    if (gba->memory.backup_storage_type > BACKUP_NONE) {
+        logln(
+            HS_GLOBAL,
+            "Backup memory is %s%s%s%s.",
+            g_light_magenta,
+            backup_storage_names[gba->memory.backup_storage_type],
+            g_reset,
+            gba->game_entry ? "" : " (auto detected)"
+        );
+    } else {
+        logln(HS_GLOBAL, "No backup storage%s.", gba->game_entry ? "" : " (auto detected)");
+    }
+
+    if (   gba->memory.backup_storage_type == BACKUP_EEPROM_4K
+        || gba->memory.backup_storage_type == BACKUP_EEPROM_64K
+    ) {
+
+        /*
+        ** Those are masks applied to the address of any ROM data transfers
+        ** to know if it's targetting the ROM or the EEPROM.
+        ** They depend on the ROM's size.
+        **
+        ** A data transfer is going to the EEPROM iff (addr & eeprom.mask) == eeprom.range.
+        */
+
+        if (gba->memory.rom_size > 16 * 1024 * 1024) {
+            gba->memory.eeprom.mask = 0x01FFFF00;
+            gba->memory.eeprom.range = 0x01FFFF00;
+        } else {
+            gba->memory.eeprom.mask = 0xFF000000;
+            gba->memory.eeprom.range = 0x0d000000;
+        }
+
+        if (gba->memory.backup_storage_type == BACKUP_EEPROM_4K) {
+            gba->memory.eeprom.address_mask = EEPROM_4K_ADDR_MASK;
+            gba->memory.eeprom.address_len = EEPROM_4K_ADDR_LEN;
+        } else { // EEPROM_64K
+            gba->memory.eeprom.address_mask = EEPROM_64K_ADDR_MASK;
+            gba->memory.eeprom.address_len = EEPROM_64K_ADDR_LEN;
+        }
     }
 }
 
@@ -59,8 +133,12 @@ mem_backup_storage_init(
 ) {
     free(gba->memory.backup_storage_data);
 
-    gba->memory.backup_storage_data = calloc(1, backup_storage_sizes[gba->memory.backup_storage_type]);
-    hs_assert(gba->memory.backup_storage_data);
+    if (gba->memory.backup_storage_type > BACKUP_NONE) {
+        gba->memory.backup_storage_data = calloc(1, backup_storage_sizes[gba->memory.backup_storage_type]);
+        hs_assert(gba->memory.backup_storage_data);
+    } else {
+        gba->memory.backup_storage_data = NULL;
+    }
 }
 
 uint8_t
@@ -69,8 +147,6 @@ mem_backup_storage_read8(
     uint32_t addr
 ) {
     switch (gba->memory.backup_storage_type) {
-        case BACKUP_EEPROM:
-            break;
         case BACKUP_FLASH64:
         case BACKUP_FLASH128:
             return (mem_flash_read8(gba, addr));
@@ -79,10 +155,8 @@ mem_backup_storage_read8(
             return (gba->memory.backup_storage_data[addr & SRAM_MASK]);
             break;
         default:
-            logln(HS_WARNING, "Unsupported backup storage accessed.");
-            break;
+            return (0);
     }
-    return (0);
 }
 
 void
@@ -91,20 +165,16 @@ mem_backup_storage_write8(
     uint32_t addr,
     uint8_t val
 ) {
-    gba->memory.backup_storage_dirty = true;
-
     switch (gba->memory.backup_storage_type) {
-        case BACKUP_EEPROM:
-            break;
         case BACKUP_FLASH64:
         case BACKUP_FLASH128:
             mem_flash_write8(gba, addr, val);
             break;
         case BACKUP_SRAM:
             gba->memory.backup_storage_data[addr & SRAM_MASK] = val;
+            gba->memory.backup_storage_dirty = true;
             break;
         default:
-            logln(HS_WARNING, "Unsupported backup storage accessed.");
             break;
     }
 }
