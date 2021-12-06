@@ -92,6 +92,8 @@ struct message_queue {
     pthread_mutex_t lock;
 };
 
+struct game_entry;
+
 struct gba {
     enum gba_state state;
     uint32_t speed;
@@ -102,6 +104,8 @@ struct gba {
     struct ppu ppu;
     struct apu apu;
     struct scheduler scheduler;
+
+    struct game_entry *game_entry; // Entry in the game database, if it exists.
 
     /*
     ** The message queue used by the frontend to communicate with the emulator.
@@ -183,14 +187,14 @@ struct gba {
         .cleanup = (_cleanup),                          \
     }))
 
-# define NEW_MESSAGE_LOAD_ROM(_data, _cleanup)          \
+# define NEW_MESSAGE_LOAD_ROM(_data, _size, _cleanup)   \
     ((struct message *)&((struct message_data){         \
         .super = (struct message){                      \
             .size = sizeof(struct message_data),        \
             .type = MESSAGE_LOAD_ROM,                   \
         },                                              \
         .data = (_data),                                \
-        .size = (CART_SIZE),                            \
+        .size = (_size),                                \
         .cleanup = (_cleanup),                          \
     }))
 

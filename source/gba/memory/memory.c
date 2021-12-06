@@ -62,6 +62,10 @@ mem_reset(
     memset(&memory->pbuffer, 0, sizeof(memory->pbuffer));
     memset(&memory->flash, 0, sizeof(memory->flash));
     memory->gamepak_bus_in_use = false;
+    memory->eeprom.state = EEPROM_STATE_READY;
+    memory->eeprom.transfer_address = 0;
+    memory->eeprom.transfer_data = 0;
+    memory->eeprom.transfer_len = 0;
 }
 
 /*
@@ -244,9 +248,17 @@ mem_prefetch_buffer_step(
             case OAM_REGION:                                                                \
                 _ret = *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK));        \
                 break;                                                                      \
-            case CART_REGION_START ... CART_REGION_END:                                     \
-                _ret = *(T *)((uint8_t *)((gba)->memory.rom) + ((addr) & CART_MASK));       \
+            case CART_REGION_START ... CART_REGION_END: {                                   \
+                if (   ((addr) & (gba)->memory.eeprom.mask) == (gba)->memory.eeprom.range   \
+                    && ((gba)->memory.backup_storage_type == BACKUP_EEPROM_4K               \
+                    || (gba)->memory.backup_storage_type == BACKUP_EEPROM_64K)              \
+                ) {                                                                         \
+                    _ret = mem_eeprom_read8(gba);                                           \
+                } else {                                                                    \
+                    _ret = *(T *)((uint8_t *)((gba)->memory.rom) + ((addr) & CART_MASK));   \
+                }                                                                           \
                 break;                                                                      \
+            };                                                                              \
             case SRAM_REGION:                                                               \
                 _ret = _Generic(_ret,                                                       \
                     uint32_t: (                                                             \
@@ -313,9 +325,17 @@ mem_prefetch_buffer_step(
             case OAM_REGION:                                                                    \
                 *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK)) = (T)(val);        \
                 break;                                                                          \
-            case CART_REGION_START ... CART_REGION_END:                                         \
+            case CART_REGION_START ... CART_REGION_END: {                                       \
+                if (   ((addr) & (gba)->memory.eeprom.mask) == (gba)->memory.eeprom.range       \
+                    && ((gba)->memory.backup_storage_type == BACKUP_EEPROM_4K                   \
+                    || (gba)->memory.backup_storage_type == BACKUP_EEPROM_64K)                  \
+                ) {                                                                             \
+                    mem_eeprom_write8((gba), (val) & 1);                                        \
+                }                                                                               \
+                                                                                                \
                 /* Ignore writes attempts to the cartridge memory. */                           \
                 break;                                                                          \
+            };                                                                                  \
             case SRAM_REGION:                                                                   \
                 _Generic(val,                                                                   \
                     uint32_t: ({                                                                \

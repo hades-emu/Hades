@@ -56,6 +56,7 @@ mem_flash_write8(
             case FLASH_CMD_ERASE_CHIP: {
                 if (flash->state == FLASH_STATE_ERASE) {
                     memset(gba->memory.backup_storage_data, 0xFF, backup_storage_sizes[gba->memory.backup_storage_type]);
+                    gba->memory.backup_storage_dirty = true;
                 }
                 break;
             };
@@ -72,9 +73,11 @@ mem_flash_write8(
 
         addr &= 0xF000;
         memset(gba->memory.backup_storage_data + addr + flash->bank * FLASH64_SIZE, 0xFF, 0x1000);
+        gba->memory.backup_storage_dirty = true;
         flash->state = FLASH_STATE_READY;
     } else if (flash->state == FLASH_STATE_WRITE) {
         gba->memory.backup_storage_data[addr + flash->bank * FLASH64_SIZE] = val;
+        gba->memory.backup_storage_dirty = true;
         flash->state = FLASH_STATE_READY;
     } else if (flash->state == FLASH_STATE_BANK && addr == 0x0) {
         flash->bank = val;

@@ -62,7 +62,7 @@ ppu_prerender_oam(
             continue;
         }
 
-        // Skip OAM entries of index < 512 for BG 3-5
+        // Skip OAM entries of index < 512 for BG mode 3-5
         if (io->dispcnt.bg_mode >= 3 && io->dispcnt.bg_mode <= 5 && oam.tile_idx < 512) {
             continue;
         }

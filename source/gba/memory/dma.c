@@ -20,9 +20,9 @@ mem_dma_load(
     struct dma_channel *channel,
     uint32_t channel_idx
 ) {
-    channel->internal_src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
+    channel->internal_src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1);
     channel->internal_src &= src_mask[channel_idx];
-    channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1); // TODO Investigate why the alignment is needed
+    channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1);
     channel->internal_dst &= dst_mask[channel_idx];
     channel->internal_count = channel->count.raw;
     channel->internal_count &= count_mask[channel_idx];

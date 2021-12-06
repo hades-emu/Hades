@@ -97,10 +97,10 @@ load_rom(
 
     rewind(file);
 
-    data = calloc(1, CART_SIZE);
+    data = calloc(1, file_len);
     hs_assert(data);
 
-    if (fread(data, 1, CART_SIZE, file) != file_len) {
+    if (fread(data, 1, file_len, file) != file_len) {
         hs_assert(-1 != asprintf(
             &error_msg,
             "failed to read %s: %s.",
@@ -112,8 +112,8 @@ load_rom(
         return (true);
     }
 
-    gba_message_push(app->emulation.gba, NEW_MESSAGE_LOAD_ROM(data, free));
-    gba_message_push(app->emulation.gba, NEW_MESSAGE_BACKUP_TYPE(BACKUP_AUTODETECT));
+    gba_message_push(app->emulation.gba, NEW_MESSAGE_LOAD_ROM(data, file_len, free));
+    gba_message_push(app->emulation.gba, NEW_MESSAGE_BACKUP_TYPE(BACKUP_AUTO_DETECT));
 
     return (false);
 }
