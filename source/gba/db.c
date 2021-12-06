@@ -14,6 +14,8 @@
 /*
 ** Source:
 **   - https://github.com/profi200/open_agb_firm/issues/9
+**
+** Thanks Zayd for sharing this list with me :)
 */
 static struct game_entry game_database[] = {
     (struct game_entry){.code = "BJB", .storage = BACKUP_EEPROM_4K, .flags = FLAGS_NONE, .title = "007 - Everything or Nothing"},
