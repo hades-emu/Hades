@@ -588,8 +588,18 @@ mem_io_write8(
         /* Keypad input */
         case IO_REG_KEYCNT:
         case IO_REG_KEYCNT + 1: {
+            bool old_cond;
+            uint32_t old_mask;
+
+            old_mask = io->keycnt.mask;
+            old_cond = io_evaluate_keypad_cond(gba);
             io->keycnt.bytes[addr - IO_REG_KEYCNT] = val;
-            io_scan_keypad_irq(gba);
+
+            if (   (!old_cond && io_evaluate_keypad_cond(gba))  // Trigger an IRQ if the keypad condition switches to true.
+                || (((old_mask ^ io->keycnt.mask) & io->keycnt.mask))  // Trigger an IRQ on a new mask that extends the current one
+            ) {
+                io_scan_keypad_irq(gba);
+            }
             break;
         };
 
@@ -613,6 +623,15 @@ mem_io_write8(
     }
 }
 
+bool
+io_evaluate_keypad_cond(
+    struct gba *gba
+) {
+    return ((gba->io.keycnt.irq_cond && (~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF) == (gba->io.keycnt.raw & 0x3FF))  // Logical AND
+        || (!gba->io.keycnt.irq_cond && ~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF)  // Logical OR
+    );
+}
+
 /*
 ** Check if the keyinput IO register matches the mask and condition described by
 ** the keycnt register and fire an IRQ if it is the case.
@@ -621,11 +640,7 @@ void
 io_scan_keypad_irq(
     struct gba *gba
 ) {
-    if (gba->io.keycnt.irq_enable) {
-        if (   (gba->io.keycnt.irq_cond && (~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF) == (gba->io.keycnt.raw & 0x3FF))  // Logical AND
-            || (!gba->io.keycnt.irq_cond && ~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF)  // Logical OR
-        ) {
-            core_trigger_irq(gba, IRQ_KEYPAD);
-        }
+    if (gba->io.keycnt.irq_enable && io_evaluate_keypad_cond(gba)) {
+        core_trigger_irq(gba, IRQ_KEYPAD);
     }
 }
