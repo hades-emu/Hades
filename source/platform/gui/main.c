@@ -499,17 +499,19 @@ main(
             ImGui_ImplSDL2_ProcessEvent(&event);
 
             switch (event.type) {
-                case SDL_QUIT:
+                case SDL_QUIT: {
                     app.run = false;
                     break;
-                case SDL_WINDOWEVENT:
+                };
+                case SDL_WINDOWEVENT: {
                     if (event.window.event == SDL_WINDOWEVENT_CLOSE
                         && event.window.windowID == SDL_GetWindowID(app.window)
                     ) {
                         app.run = false;
                     }
                     break;
-                case SDL_CONTROLLERDEVICEADDED:
+                };
+                case SDL_CONTROLLERDEVICEADDED: {
                     if (!app.controller_connected) {
                         SDL_Joystick *joystick;
 
@@ -526,7 +528,8 @@ main(
                         );
                     }
                     break;
-                case SDL_CONTROLLERDEVICEREMOVED:
+                };
+                case SDL_CONTROLLERDEVICEREMOVED: {
                     if (event.cdevice.which >= 0 && event.cdevice.which == app.joystick_idx) {
                         logln(
                             HS_GLOBAL,
@@ -541,13 +544,13 @@ main(
                         app.controller_connected = false;
                     }
                     break;
+                };
             }
 
             /* Transfer SDL events to the game */
             if (app.emulation.enabled && !app.emulation.pause) {
                 gui_game_handle_events(&app, &event);
             }
-
         }
 
         /* Update the FPS every second */
