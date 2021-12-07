@@ -527,16 +527,7 @@ struct io {
     // REG_KEYCNT
     union {
         struct {
-            uint16_t a: 1;
-            uint16_t b: 1;
-            uint16_t select: 1;
-            uint16_t start: 1;
-            uint16_t right: 1;
-            uint16_t left: 1;
-            uint16_t up: 1;
-            uint16_t down: 1;
-            uint16_t r: 1;
-            uint16_t l: 1;
+            uint16_t mask: 10;
             uint16_t : 4;
             uint16_t irq_enable: 1;
             uint16_t irq_cond: 1;
@@ -652,6 +643,7 @@ struct gba;
 
 /* gba/memory/io.c */
 void io_init(struct io *io);
+bool io_evaluate_keypad_cond(struct gba *gba);
 void io_scan_keypad_irq(struct gba *gba);
 
 /* gba/timer.c */

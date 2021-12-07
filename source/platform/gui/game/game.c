@@ -285,6 +285,12 @@ gui_game_handle_events(
 ) {
     switch (event->type) {
         case SDL_KEYDOWN: {
+
+            /* Ignore repeat keys */
+            if (event->key.repeat) {
+                break;
+            }
+
             switch (event->key.keysym.sym) {
                 case SDLK_UP:
                 case SDLK_w:                gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_UP, true)); break;
@@ -304,6 +310,12 @@ gui_game_handle_events(
             break;
         };
         case SDL_KEYUP: {
+
+            /* Ignore repeat keys */
+            if (event->key.repeat) {
+                break;
+            }
+
             switch (event->key.keysym.sym) {
                 case SDLK_UP:
                 case SDLK_w:                gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_UP, false)); break;
