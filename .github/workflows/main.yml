@@ -19,9 +19,10 @@ jobs:
           install: make mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-glew mingw-w64-x86_64-lerc
       - name: Build Hades
         run: |
-          meson build -Dstatic_executable=true
+          meson build
           cd build
           ninja
+          ls -lR
       - name: Test Hades
         run: |
           cd build
