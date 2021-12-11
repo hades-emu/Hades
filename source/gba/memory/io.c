@@ -29,6 +29,7 @@ io_init(
     io->timers[1].handler = INVALID_EVENT_HANDLE;
     io->timers[2].handler = INVALID_EVENT_HANDLE;
     io->timers[3].handler = INVALID_EVENT_HANDLE;
+    io->soundbias.bias = 0x200;
 }
 
 /*
@@ -193,8 +194,10 @@ mem_io_read8(
         case IO_REG_SOUNDCNT_H + 1:         return (io->soundcnt_h.bytes[1]);
         case IO_REG_SOUNDCNT_X:             return (io->soundcnt_x.bytes[0]);
         case IO_REG_SOUNDCNT_X + 1:         return (io->soundcnt_x.bytes[1]);
-        case IO_REG_SOUNDBIAS:              return (0x0);
-        case IO_REG_SOUNDBIAS + 1:          return (0b10);
+        case IO_REG_SOUNDBIAS:              return (io->soundbias.bytes[0]);
+        case IO_REG_SOUNDBIAS + 1:          return (io->soundbias.bytes[1]);
+        case IO_REG_SOUNDBIAS + 2:          return (io->soundbias.bytes[2]);
+        case IO_REG_SOUNDBIAS + 3:          return (io->soundbias.bytes[3]);
 
         /* DMA */
         case IO_REG_DMA0CTL:                return (io->dma[0].control.bytes[0]);
@@ -386,19 +389,27 @@ mem_io_write8(
         case IO_REG_SOUNDCNT_L:             io->soundcnt_l.bytes[0] = val; break;
         case IO_REG_SOUNDCNT_L + 1:         io->soundcnt_l.bytes[1] = val; break;
         case IO_REG_SOUNDCNT_H:             io->soundcnt_h.bytes[0] = val; break;
-        case IO_REG_SOUNDCNT_H + 1:
+        case IO_REG_SOUNDCNT_H + 1: {
             io->soundcnt_h.bytes[1] = val;
+
             if (io->soundcnt_h.reset_fifo_a) {
                 apu_reset_fifo(gba, FIFO_A);
                 io->soundcnt_h.reset_fifo_a = false;
             }
+
             if (io->soundcnt_h.reset_fifo_b) {
                 apu_reset_fifo(gba, FIFO_B);
                 io->soundcnt_h.reset_fifo_b = false;
             }
-        break;
+
+            break;
+        };
         case IO_REG_SOUNDCNT_X:             io->soundcnt_x.bytes[0] = val; break;
         case IO_REG_SOUNDCNT_X + 1:         io->soundcnt_x.bytes[1] = val; break;
+        case IO_REG_SOUNDBIAS:              io->soundbias.bytes[0] = val; break;
+        case IO_REG_SOUNDBIAS + 1:          io->soundbias.bytes[1] = val; break;
+        case IO_REG_SOUNDBIAS + 2:          io->soundbias.bytes[2] = val; break;
+        case IO_REG_SOUNDBIAS + 3:          io->soundbias.bytes[3] = val; break;
         case IO_REG_FIFO_A + 0:
         case IO_REG_FIFO_A + 1:
         case IO_REG_FIFO_A + 2:
@@ -619,7 +630,13 @@ mem_io_write8(
 
         /* System */
         case IO_REG_POSTFLG:                io->postflg = val; break;
-        case IO_REG_HALTCNT:                gba->core.state = val + 1; break;
+        case IO_REG_HALTCNT: {
+            gba->core.state = (val >> 7) + 1;
+            if (gba->core.state == CORE_STOP) {
+                ppu_render_black_screen(gba);
+            }
+            break;
+        };
     }
 }
 

@@ -361,7 +361,7 @@ struct io {
                     uint16_t : 2;
                 } __packed;
                 uint8_t win0;
-            };
+            } __packed;
             union {
                 struct {
                     uint16_t win1_bg: 4;
@@ -370,7 +370,7 @@ struct io {
                     uint16_t : 2;
                 } __packed;
                 uint8_t win1;
-            };
+            } __packed;
         } __packed;
         uint16_t raw;
         uint8_t bytes[2];
@@ -498,6 +498,18 @@ struct io {
         uint16_t raw;
         uint8_t bytes[2];
     } soundcnt_x;
+
+    // REG_SOUNDBIAS
+    union {
+        struct {
+            uint32_t bias: 10;
+            uint32_t : 4;
+            uint32_t resolution: 2;
+            uint32_t : 16;
+        } __packed;
+        uint32_t raw;
+        uint8_t bytes[4];
+    } soundbias;
 
     // DMA Channels
     struct dma_channel dma[4];

@@ -155,7 +155,7 @@ sched_run_for(
 
     core = &gba->core;
     target = core->cycles + cycles;
-    while (core->cycles < target ) {
+    while (core->cycles < target) {
         uint64_t elapsed;
         uint64_t old_cycles;
 
@@ -164,7 +164,10 @@ sched_run_for(
         elapsed = core->cycles - old_cycles;
 
         if (!elapsed) {
-            logln(HS_WARNING, "No cycles elapsed during `core_next()`.");
+            if (core->state != CORE_STOP) {
+                logln(HS_WARNING, "No cycles elapsed during `core_next()`.");
+            }
+            break;
         }
     }
 }

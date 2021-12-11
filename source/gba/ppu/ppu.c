@@ -83,8 +83,6 @@ ppu_merge_layer(
             continue;
         }
 
-        scanline->bot[x] = scanline->top[x];
-
         mode = gba->io.bldcnt.mode;
         bot_enabled = bitfield_get(io->bldcnt.raw, botc.idx + 8);
 
@@ -110,29 +108,31 @@ ppu_merge_layer(
             mode = BLEND_ALPHA;
         }
 
+        scanline->bot[x] = scanline->top[x];
+
         switch (mode) {
             case BLEND_OFF: {
                 scanline->result[x] = topc;
                 break;
             };
             case BLEND_ALPHA: {
-                    bool top_enabled;
+                bool top_enabled;
 
-                    /*
-                    ** If both the top and bot layers are enabled, blend the colors.
-                    ** Otherwise, the top layer takes priority.
-                    */
+                /*
+                ** If both the top and bot layers are enabled, blend the colors.
+                ** Otherwise, the top layer takes priority.
+                */
 
-                    top_enabled = bitfield_get(io->bldcnt.raw, scanline->top_idx) || topc.force_blend;
-                    if (top_enabled && bot_enabled && botc.visible) {
-                        scanline->result[x].red = min(31, ((uint32_t)topc.red * eva + (uint32_t)botc.red * evb) >> 4);
-                        scanline->result[x].green = min(31, ((uint32_t)topc.green * eva + (uint32_t)botc.green * evb) >> 4);
-                        scanline->result[x].blue = min(31, ((uint32_t)topc.blue * eva + (uint32_t)botc.blue * evb) >> 4);
-                        scanline->result[x].visible = true;
-                        scanline->result[x].idx = scanline->top_idx;
-                    } else {
-                        scanline->result[x] = topc;
-                    }
+                top_enabled = bitfield_get(io->bldcnt.raw, scanline->top_idx) || topc.force_blend;
+                if (top_enabled && bot_enabled && botc.visible) {
+                    scanline->result[x].red = min(31, ((uint32_t)topc.red * eva + (uint32_t)botc.red * evb) >> 4);
+                    scanline->result[x].green = min(31, ((uint32_t)topc.green * eva + (uint32_t)botc.green * evb) >> 4);
+                    scanline->result[x].blue = min(31, ((uint32_t)topc.blue * eva + (uint32_t)botc.blue * evb) >> 4);
+                    scanline->result[x].visible = true;
+                    scanline->result[x].idx = scanline->top_idx;
+                } else {
+                    scanline->result[x] = topc;
+                }
                 break;
             };
             case BLEND_LIGHT: {
@@ -419,4 +419,16 @@ ppu_init(
             ppu_hblank
         )
     );
+}
+
+/*
+** Called when the CPU enters stop-mode to render the screen black.
+*/
+void
+ppu_render_black_screen(
+    struct gba *gba
+) {
+    pthread_mutex_lock(&gba->framebuffer_frontend_mutex);
+    memset(gba->framebuffer_frontend, 0x00, sizeof(gba->framebuffer));
+    pthread_mutex_unlock(&gba->framebuffer_frontend_mutex);
 }

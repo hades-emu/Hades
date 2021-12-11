@@ -114,8 +114,8 @@ core_next(
             }
             break;
         case CORE_HALT:
-        case CORE_STOP:
             core_idle(gba);
+        case CORE_STOP:
             break;
     }
 }
@@ -431,7 +431,6 @@ core_trigger_irq(
     enum arm_irq irq
 ) {
     gba->io.int_flag.raw |= (1 << irq);
-    gba->core.state = CORE_RUN;
 }
 
 /*
@@ -456,7 +455,16 @@ core_scan_irq(
             "IRQ signal sent (0x%04x)",
             gba->io.int_flag.raw
         );
-        core_interrupt(gba, VEC_IRQ, MODE_IRQ);
+
+        if (gba->core.state == CORE_HALT) {
+            gba->core.state = CORE_RUN;
+        } else if (gba->core.state == CORE_STOP && gba->io.int_flag.keypad) {
+            gba->core.state = CORE_RUN;
+        }
+
+        if (gba->core.state == CORE_RUN) {
+            core_interrupt(gba, VEC_IRQ, MODE_IRQ);
+        }
     }
 }
 
