@@ -144,6 +144,7 @@ void ppu_render_oam(struct gba const *gba, struct scanline *scanline, int32_t li
 
 /* gba/ppu/ppu.c */
 void ppu_init(struct gba *);
+void ppu_render_black_screen(struct gba *gba);
 
 /* gba/ppu/window.c */
 void ppu_window_build_masks(struct gba const *gba, struct scanline *scanline, uint32_t y);
