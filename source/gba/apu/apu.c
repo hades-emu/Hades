@@ -148,11 +148,11 @@ apu_resample(
     union event_data data
 ) {
     static float fifo_volume[2] = {0.5f, 1.f};
-    int16_t sample_l;
-    int16_t sample_r;
+    int32_t sample_l;
+    int32_t sample_r;
 
-    sample_l = 0;
-    sample_r = 0;
+    sample_l = gba->io.soundbias.bias;
+    sample_r = gba->io.soundbias.bias;
 
     sample_l += gba->apu.latch[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_left * fifo_volume[gba->io.soundcnt_h.volume_fifo_a];
     sample_r += gba->apu.latch[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_right * fifo_volume[gba->io.soundcnt_h.volume_fifo_a];
@@ -160,20 +160,14 @@ apu_resample(
     sample_l += gba->apu.latch[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_left * fifo_volume[gba->io.soundcnt_h.volume_fifo_b];
     sample_r += gba->apu.latch[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_right * fifo_volume[gba->io.soundcnt_h.volume_fifo_b];
 
-    if (sample_l < -0x200) {
-        sample_l = -0x200;
-    } else if (sample_l > 0x200) {
-        sample_l = 0x200;
-    }
+    sample_l = max(min(sample_l, 0x3FF), 0) - 0x200;
+    sample_r = max(min(sample_r, 0x3FF), 0) - 0x200;
 
-    if (sample_r < -0x200) {
-        sample_r = -0x200;
-    } else if (sample_r > 0x200) {
-        sample_r = 0x200;
-    }
+    sample_l *= 32; // Otherwise we can't hear much
+    sample_r *= 32;
 
     pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
-    apu_rbuffer_push(&gba->apu.channel_left, (int16_t)((uint16_t)sample_l << 6));
-    apu_rbuffer_push(&gba->apu.channel_right, (int16_t)((uint16_t)sample_r << 6));
+    apu_rbuffer_push(&gba->apu.channel_left, (int16_t)sample_l);
+    apu_rbuffer_push(&gba->apu.channel_right, (int16_t)sample_r);
     pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
 }
