@@ -20,7 +20,7 @@ hades = executable(
         dependency('threads', required: true, static: get_option('static_executable')),
     ],
     link_with: [libgba, imgui, libcommon, frozen],
-    include_directories: [incdir, imgui_inc, frozen_inc],
+    include_directories: [incdir, imgui_inc, frozen_inc, stb_inc],
     c_args: cflags,
     link_args: ldflags,
 )

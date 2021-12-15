@@ -80,6 +80,7 @@ static char const * const modules_str[] = {
 };
 
 /* Panic if the given constant expression evaluates to `false`. */
+# undef static_assert
 # define static_assert(e)                                   \
     _Static_assert(                                         \
         e,                                                  \

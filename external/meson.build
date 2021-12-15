@@ -44,19 +44,6 @@ if host_machine.system() != 'windows'
     ]
 endif
 
-# For some reasons, static sdl2 on windows fail if we do not explicitely ask for its dependencies
-if get_option('static_executable')
-    cflags += [
-        '-DGLEW_STATIC',
-    ]
-
-    imgui_dep += [
-        dependency('libpng', required: true, static: true),
-        dependency('libjpeg', required: true, static: true),
-        dependency('libwebp', required: true, static: true),
-    ]
-endif
-
 imgui = static_library(
     'imgui',
     'cimgui/cimgui.cpp',
@@ -89,4 +76,12 @@ frozen = static_library(
     include_directories: frozen_inc,
     c_args: cflags,
     link_args: ldflags,
+)
+
+###############################
+##            STB            ##
+###############################
+
+stb_inc = include_directories(
+    'stb/'
 )
