@@ -24,7 +24,6 @@ imgui_inc = include_directories(
 
 imgui_dep = [
     dependency('sdl2', version: '>=2', required: true, static: get_option('static_executable')),
-    dependency('SDL2_image', version: '>=2', required: true, static: get_option('static_executable')),
     dependency('glew', required: true, static: get_option('static_executable')),
 ]
 
