@@ -37,6 +37,12 @@ else
     ]
 endif
 
+if get_option('static_executable')
+    cflags += [
+        '-DGLEW_STATIC',
+    ]
+endif
+
 if host_machine.system() != 'windows'
     imgui_dep += [
         cc.find_library('dl'),
