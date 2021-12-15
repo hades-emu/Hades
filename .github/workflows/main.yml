@@ -22,7 +22,6 @@ jobs:
           meson build
           cd build
           ninja
-          ls -lR
       - name: Test Hades
         run: |
           cd build
