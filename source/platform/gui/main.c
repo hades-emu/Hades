@@ -245,16 +245,10 @@ gui_init(
     want.callback = gui_audio_callback;
     want.userdata = app;
 
-    app->audio_device = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+    app->audio_device = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
 
     if (!app->audio_device) {
         fprintf(stderr, "Failed to init the audio device: %s\n", SDL_GetError());
-        exit(EXIT_FAILURE);
-    } else if (have.format != want.format) {
-        fprintf(stderr, "The desired audio sample format isn't available.\n");
-        exit(EXIT_FAILURE);
-    } else if (have.channels != want.channels) {
-        fprintf(stderr, "Stereo output isn't available.\n");
         exit(EXIT_FAILURE);
     }
 
