@@ -7,11 +7,8 @@
 **
 \******************************************************************************/
 
-#define _GNU_SOURCE
-#include <errno.h>
-#include <stdio.h>
-#include <GL/glew.h>
-#include <SDL2/SDL_image.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 #include "hades.h"
 #include "platform/gui.h"
 #include "gba/gba.h"
@@ -23,40 +20,41 @@ gui_game_screenshot(
 ) {
     time_t now;
     struct tm *now_info;
-    char file_name[256];
-    SDL_Surface *screenshot;
+    char filename[256];
     int out;
 
     time(&now);
     now_info = localtime(&now);
 
     hs_mkdir("screenshots");
-    strftime(file_name, sizeof(file_name), "screenshots/%Y-%m-%d_%Hh%Mm%Ss.png", now_info);
-
-    screenshot = SDL_CreateRGBSurface(0, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, 32, 0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
+    strftime(filename, sizeof(filename), "screenshots/%Y-%m-%d_%Hh%Mm%Ss.png", now_info);
 
     pthread_mutex_lock(&app->emulation.gba->framebuffer_frontend_mutex);
-    memcpy(screenshot->pixels, app->emulation.gba->framebuffer_frontend, sizeof(app->emulation.gba->framebuffer_frontend));
+    out = stbi_write_png(
+        filename,
+        GBA_SCREEN_WIDTH,
+        GBA_SCREEN_HEIGHT,
+        4,
+        app->emulation.gba->framebuffer_frontend,
+        GBA_SCREEN_WIDTH * sizeof(uint32_t)
+    );
     pthread_mutex_unlock(&app->emulation.gba->framebuffer_frontend_mutex);
 
-    out = IMG_SavePNG(screenshot, file_name);
-    SDL_FreeSurface(screenshot);
-
-    if (!out) {
+    if (out) {
         logln(
             HS_GLOBAL,
             "Screenshot saved in %s%s%s...",
             g_light_green,
-            file_name,
+            filename,
             g_reset
         );
     } else {
         logln(
             HS_ERROR,
-            "%sError: failed to save screenshot in %s%s%s!%s",
+            "%sError: failed to save screenshot in %s%s%s.%s",
             g_light_red,
             g_light_green,
-            file_name,
+            filename,
             g_light_red,
             g_reset
         );

@@ -16,7 +16,7 @@ jobs:
       - name: Install Dependencies
         uses: msys2/setup-msys2@v2
         with:
-          install: make mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-glew mingw-w64-x86_64-lerc
+          install: make mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-glew
       - name: Build Hades
         run: |
           meson build -Dstatic_executable=true
@@ -42,7 +42,7 @@ jobs:
           submodules: 'recursive'
       - name: Install Dependencies
         run: |
-          brew install meson ninja sdl2 sdl2_image glew
+          brew install meson ninja sdl2 glew
       - name: Build Hades
         run: |
           meson build --werror
@@ -69,7 +69,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson ninja-build libsdl2-dev libsdl2-image-dev libglew-dev
+          sudo apt-get install -y meson ninja-build libsdl2-dev libglew-dev
       - name: Build Hades
         run: |
           meson build --werror
