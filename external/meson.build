@@ -24,7 +24,6 @@ imgui_inc = include_directories(
 
 imgui_dep = [
     dependency('sdl2', version: '>=2', required: true, static: get_option('static_executable')),
-    dependency('SDL2_image', version: '>=2', required: true, static: get_option('static_executable')),
     dependency('glew', required: true, static: get_option('static_executable')),
 ]
 
@@ -38,23 +37,15 @@ else
     ]
 endif
 
-if host_machine.system() != 'windows'
-    imgui_dep += [
-        cc.find_library('dl'),
-    ]
-endif
-
-# For some reasons, static sdl2 on windows fail if we do not explicitely ask for its dependencies
 if get_option('static_executable')
     cflags += [
         '-DGLEW_STATIC',
     ]
+endif
 
+if host_machine.system() != 'windows'
     imgui_dep += [
-        dependency('libpng', required: true, static: true),
-        dependency('libjpeg', required: true, static: true),
-        dependency('libtiff-4', required: true, static: true),
-        dependency('libwebp', required: true, static: true),
+        cc.find_library('dl'),
     ]
 endif
 
@@ -90,4 +81,12 @@ frozen = static_library(
     include_directories: frozen_inc,
     c_args: cflags,
     link_args: ldflags,
+)
+
+###############################
+##            STB            ##
+###############################
+
+stb_inc = include_directories(
+    'stb/'
 )

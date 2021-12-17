@@ -8,3 +8,6 @@
 [submodule "external/frozen"]
 	path = external/frozen
 	url = https://github.com/cesanta/frozen.git
+[submodule "external/stb"]
+	path = external/stb
+	url = https://github.com/nothings/stb.git
