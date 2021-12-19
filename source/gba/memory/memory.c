@@ -218,6 +218,8 @@ mem_openbus_read(
     uint32_t val;
     uint32_t shift;
 
+    logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);
+
     shift = addr & 0x3;
     if (gba->core.cpsr.thumb) {
         uint32_t pc;
@@ -284,7 +286,6 @@ mem_openbus_read(
                     }                                                                       \
                     _ret = (gba)->memory.bus_bios >> (8 * (align));                         \
                 } else {                                                                    \
-                    logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);               \
                     _ret = mem_openbus_read((gba), (addr));                                 \
                 }                                                                           \
                 break;                                                                      \
@@ -345,10 +346,10 @@ mem_openbus_read(
                     default: mem_backup_storage_read8((gba), (addr))                        \
                 );                                                                          \
                 break;                                                                      \
-            default:                                                                        \
-                logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);                   \
+            default: {                                                                      \
                 _ret = mem_openbus_read((gba), (addr));                                     \
                 break;                                                                      \
+            }                                                                               \
         };                                                                                  \
         _ret;                                                                               \
     })
@@ -424,8 +425,10 @@ mem_openbus_read(
                     })                                                                          \
                 );                                                                              \
                 break;                                                                          \
-            default:                                                                            \
+            default: {                                                                          \
                 logln(HS_MEMORY, "Invalid write at address 0x%08x", addr);                      \
+                break;                                                                          \
+            };                                                                                  \
         };                                                                                      \
     })
 
