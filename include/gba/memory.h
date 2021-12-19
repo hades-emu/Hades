@@ -258,6 +258,7 @@ void mem_access(struct gba *gba, uint32_t addr, uint32_t size, enum access_type 
 void mem_update_waitstates(struct gba const *gba);
 void mem_prefetch_buffer_access(struct gba *gba, uint32_t addr, uint32_t intended_cycles);
 void mem_prefetch_buffer_step(struct gba *gba, uint32_t cycles);
+uint32_t mem_openbus_read(struct gba const *gba, uint32_t addr);
 uint8_t mem_read8(struct gba *gba, uint32_t addr, enum access_type access_type);
 uint16_t mem_read16(struct gba *gba, uint32_t addr, enum access_type access_type);
 uint32_t mem_read16_ror(struct gba *gba, uint32_t addr, enum access_type access_type);
