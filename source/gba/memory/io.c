@@ -177,19 +177,29 @@ mem_io_read8(
         case IO_REG_SOUNDCNT_H:             return (io->soundcnt_h.bytes[0]);
         case IO_REG_SOUNDCNT_H + 1:         return (io->soundcnt_h.bytes[1]);
         case IO_REG_SOUNDCNT_X:             return (io->soundcnt_x.bytes[0]);
-        case IO_REG_SOUNDCNT_X + 1:         return (io->soundcnt_x.bytes[1]);
+        case IO_REG_SOUNDCNT_X + 1:
+        case IO_REG_SOUNDCNT_X + 2:
+        case IO_REG_SOUNDCNT_X + 3:         return (0);
         case IO_REG_SOUNDBIAS:              return (io->soundbias.bytes[0]);
         case IO_REG_SOUNDBIAS + 1:          return (io->soundbias.bytes[1]);
-        case IO_REG_SOUNDBIAS + 2:          return (io->soundbias.bytes[2]);
-        case IO_REG_SOUNDBIAS + 3:          return (io->soundbias.bytes[3]);
+        case IO_REG_SOUNDBIAS + 2:
+        case IO_REG_SOUNDBIAS + 3:          return (0);
 
         /* DMA */
+        case IO_REG_DMA0CNT:
+        case IO_REG_DMA0CNT + 1:            return (0);
         case IO_REG_DMA0CTL:                return (io->dma[0].control.bytes[0]);
         case IO_REG_DMA0CTL + 1:            return (io->dma[0].control.bytes[1]);
+        case IO_REG_DMA1CNT:
+        case IO_REG_DMA1CNT + 1:            return (0);
         case IO_REG_DMA1CTL:                return (io->dma[1].control.bytes[0]);
         case IO_REG_DMA1CTL + 1:            return (io->dma[1].control.bytes[1]);
+        case IO_REG_DMA2CNT:
+        case IO_REG_DMA2CNT + 1:            return (0);
         case IO_REG_DMA2CTL:                return (io->dma[2].control.bytes[0]);
         case IO_REG_DMA2CTL + 1:            return (io->dma[2].control.bytes[1]);
+        case IO_REG_DMA3CNT:
+        case IO_REG_DMA3CNT + 1:            return (0);
         case IO_REG_DMA3CTL:                return (io->dma[3].control.bytes[0]);
         case IO_REG_DMA3CTL + 1:            return (io->dma[3].control.bytes[1]);
 
@@ -202,6 +212,7 @@ mem_io_read8(
             return (val >> (8 * (addr - IO_REG_TM0CNT_LO)));
         };
         case IO_REG_TM0CNT_HI:              return (io->timers[0].control.bytes[0]);
+        case IO_REG_TM0CNT_HI + 1:          return (0);
 
         /* Timer 1 */
         case IO_REG_TM1CNT_LO:
@@ -212,6 +223,7 @@ mem_io_read8(
             return (val >> (8 * (addr - IO_REG_TM1CNT_LO)));
         };
         case IO_REG_TM1CNT_HI:              return (io->timers[1].control.bytes[0]);
+        case IO_REG_TM1CNT_HI + 1:          return (0);
 
         /* Timer 2 */
         case IO_REG_TM2CNT_LO:
@@ -222,6 +234,7 @@ mem_io_read8(
             return (val >> (8 * (addr - IO_REG_TM2CNT_LO)));
         };
         case IO_REG_TM2CNT_HI:              return (io->timers[2].control.bytes[0]);
+        case IO_REG_TM2CNT_HI + 1:          return (0);
 
         /* Timer 3 */
         case IO_REG_TM3CNT_LO:
@@ -232,6 +245,7 @@ mem_io_read8(
             return (val >> (8 * (addr - IO_REG_TM3CNT_LO)));
         };
         case IO_REG_TM3CNT_HI:              return (io->timers[3].control.bytes[0]);
+        case IO_REG_TM3CNT_HI + 1:          return (0);
 
         /* Key Input */
         case IO_REG_KEYINPUT:               return (io->keyinput.bytes[0]);
@@ -252,8 +266,12 @@ mem_io_read8(
         case IO_REG_IF + 1:                 return (io->int_flag.bytes[1]);
         case IO_REG_WAITCNT:                return (io->waitcnt.bytes[0]);
         case IO_REG_WAITCNT + 1:            return (io->waitcnt.bytes[1]);
+        case IO_REG_WAITCNT + 2:
+        case IO_REG_WAITCNT + 3:            return (0);
         case IO_REG_IME:                    return (io->ime.bytes[0]);
-        case IO_REG_IME + 1:                return (io->ime.bytes[1]);
+        case IO_REG_IME + 1:
+        case IO_REG_IME + 2:
+        case IO_REG_IME + 3:                return (0);
 
         /* System */
         case IO_REG_POSTFLG:                return (io->postflg);
@@ -387,9 +405,17 @@ mem_io_write8(
         case IO_REG_BLDY + 1:               io->bldy.bytes[1] = val; break;
 
         /* Sound */
-        case IO_REG_SOUNDCNT_L:             io->soundcnt_l.bytes[0] = val; break;
+        case IO_REG_SOUNDCNT_L: {
+            val &= 0x77;
+            io->soundcnt_l.bytes[0] = val;
+            break;
+        };
         case IO_REG_SOUNDCNT_L + 1:         io->soundcnt_l.bytes[1] = val; break;
-        case IO_REG_SOUNDCNT_H:             io->soundcnt_h.bytes[0] = val; break;
+        case IO_REG_SOUNDCNT_H: {
+            val &= 0x0F;
+            io->soundcnt_h.bytes[0] = val;
+            break;
+        };
         case IO_REG_SOUNDCNT_H + 1: {
             io->soundcnt_h.bytes[1] = val;
 
@@ -405,8 +431,11 @@ mem_io_write8(
 
             break;
         };
-        case IO_REG_SOUNDCNT_X:             io->soundcnt_x.bytes[0] = val; break;
-        case IO_REG_SOUNDCNT_X + 1:         io->soundcnt_x.bytes[1] = val; break;
+        case IO_REG_SOUNDCNT_X: {
+            val &= 0x80;
+            io->soundcnt_x.bytes[0] = val;
+            break;
+        };
         case IO_REG_SOUNDBIAS:              io->soundbias.bytes[0] = val; break;
         case IO_REG_SOUNDBIAS + 1:          io->soundbias.bytes[1] = val; break;
         case IO_REG_SOUNDBIAS + 2:          io->soundbias.bytes[2] = val; break;
