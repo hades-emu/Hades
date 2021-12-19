@@ -113,8 +113,10 @@ core_next(
                 arm_lut[idx](gba, op);
             }
             break;
-        case CORE_HALT:
+        case CORE_HALT: {
             core_idle(gba);
+            break;
+        };
         case CORE_STOP:
             break;
     }
@@ -318,7 +320,7 @@ core_switch_mode(
                 core->r14_und = core->lr;
                 break;
             default:
-                panic(HS_CORE, "core_switch_mode(): unsupported mode (%u)", mode);
+                panic(HS_CORE, "core_switch_mode(): unsupported mode (%u)", core->cpsr.mode);
                 break;
         }
 
@@ -445,25 +447,35 @@ void
 core_scan_irq(
     struct gba *gba
 ) {
-    if (
-           !gba->core.cpsr.irq_disable
-        && (gba->io.ime.raw & 0b1)
-        && (gba->io.int_enabled.raw & gba->io.int_flag.raw)
-    ) {
-        logln(
-            HS_IRQ,
-            "IRQ signal sent (0x%04x)",
-            gba->io.int_flag.raw
-        );
+    if (gba->io.int_enabled.raw & gba->io.int_flag.raw) {
+        switch (gba->core.state) {
+            case CORE_RUN: {
+                if (
+                       !gba->core.cpsr.irq_disable
+                    && (gba->io.ime.raw & 0b1)
+                ) {
+                    logln(
+                        HS_IRQ,
+                        "IRQ signal sent (0x%04x)",
+                        gba->io.int_flag.raw
+                    );
 
-        if (gba->core.state == CORE_HALT) {
-            gba->core.state = CORE_RUN;
-        } else if (gba->core.state == CORE_STOP && gba->io.int_flag.keypad) {
-            gba->core.state = CORE_RUN;
-        }
-
-        if (gba->core.state == CORE_RUN) {
-            core_interrupt(gba, VEC_IRQ, MODE_IRQ);
+                    if (gba->core.state == CORE_RUN) {
+                        core_interrupt(gba, VEC_IRQ, MODE_IRQ);
+                    }
+                }
+                break;
+            };
+            case CORE_HALT: {
+                gba->core.state = CORE_RUN;
+                break;
+            };
+            case CORE_STOP: {
+                if (gba->io.int_flag.keypad) {
+                    gba->core.state = CORE_RUN;
+                }
+                break;
+            };
         }
     }
 }
