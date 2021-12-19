@@ -303,29 +303,29 @@ mem_io_write8(
         case IO_REG_DISPSTAT:               io->dispstat.bytes[0] = val; break;
         case IO_REG_DISPSTAT + 1:           io->dispstat.bytes[1] = val; break;
         case IO_REG_BG0CNT:                 io->bgcnt[0].bytes[0] = val; break;
-        case IO_REG_BG0CNT + 1: {
-            val &= 0xDF;
-            io->bgcnt[0].bytes[1] = val;
-            break;
-        };
+        case IO_REG_BG0CNT + 1:             io->bgcnt[0].bytes[1] = val & 0xDF; break;
         case IO_REG_BG1CNT:                 io->bgcnt[1].bytes[0] = val; break;
-        case IO_REG_BG1CNT + 1: {
-            val &= 0xDF;
-            io->bgcnt[1].bytes[1] = val;
-            break;
-        };
+        case IO_REG_BG1CNT + 1:             io->bgcnt[1].bytes[1] = val & 0xDF; break;
         case IO_REG_BG2CNT:                 io->bgcnt[2].bytes[0] = val; break;
         case IO_REG_BG2CNT + 1:             io->bgcnt[2].bytes[1] = val; break;
         case IO_REG_BG3CNT:                 io->bgcnt[3].bytes[0] = val; break;
         case IO_REG_BG3CNT + 1:             io->bgcnt[3].bytes[1] = val; break;
         case IO_REG_BG0HOFS:                io->bg_hoffset[0].bytes[0] = val; break;
+        case IO_REG_BG0HOFS + 1:            io->bg_hoffset[0].bytes[1] = val & 0x1; break;
         case IO_REG_BG0VOFS:                io->bg_voffset[0].bytes[0] = val; break;
+        case IO_REG_BG0VOFS + 1:            io->bg_voffset[0].bytes[1] = val & 0x1; break;
         case IO_REG_BG1HOFS:                io->bg_hoffset[1].bytes[0] = val; break;
+        case IO_REG_BG1HOFS + 1:            io->bg_hoffset[1].bytes[1] = val & 0x1; break;
         case IO_REG_BG1VOFS:                io->bg_voffset[1].bytes[0] = val; break;
+        case IO_REG_BG1VOFS + 1:            io->bg_voffset[1].bytes[1] = val & 0x1; break;
         case IO_REG_BG2HOFS:                io->bg_hoffset[2].bytes[0] = val; break;
+        case IO_REG_BG2HOFS + 1:            io->bg_hoffset[2].bytes[1] = val & 0x1; break;
         case IO_REG_BG2VOFS:                io->bg_voffset[2].bytes[0] = val; break;
+        case IO_REG_BG2VOFS + 1:            io->bg_voffset[2].bytes[1] = val & 0x1; break;
         case IO_REG_BG3HOFS:                io->bg_hoffset[3].bytes[0] = val; break;
+        case IO_REG_BG3HOFS + 1:            io->bg_hoffset[3].bytes[1] = val & 0x1; break;
         case IO_REG_BG3VOFS:                io->bg_voffset[3].bytes[0] = val; break;
+        case IO_REG_BG3VOFS + 1:            io->bg_voffset[3].bytes[1] = val & 0x1; break;
 
         /* Video - Affine Background */
         case IO_REG_BG2PA:                  io->bg_pa[0].bytes[0] = val; break;
@@ -370,18 +370,10 @@ mem_io_write8(
         case IO_REG_WIN0V + 1:              io->winv[0].bytes[1] = val; break;
         case IO_REG_WIN1V:                  io->winv[1].bytes[0] = val; break;
         case IO_REG_WIN1V + 1:              io->winv[1].bytes[1] = val; break;
-        case IO_REG_WININ:
-        case IO_REG_WININ + 1: {
-            val &= 0x3F;
-            io->winin.bytes[addr - IO_REG_WININ] = val;
-            break;
-        };
-        case IO_REG_WINOUT:
-        case IO_REG_WINOUT + 1: {
-            val &= 0x3F;
-            io->winout.bytes[addr - IO_REG_WINOUT] = val;
-            break;
-        };
+        case IO_REG_WININ:                  io->winin.bytes[0] = val & 0x3F; break;
+        case IO_REG_WININ + 1:              io->winin.bytes[1] = val & 0x3F; break;
+        case IO_REG_WINOUT:                 io->winout.bytes[0] = val & 0x3F; break;
+        case IO_REG_WINOUT + 1:             io->winout.bytes[1] = val & 0x3F; break;
 
         /* Video - Mosaic */
         case IO_REG_MOSAIC:                 io->mosaic.bytes[0] = val; break;
@@ -389,32 +381,16 @@ mem_io_write8(
 
         /* Video - Effects */
         case IO_REG_BLDCNT:                 io->bldcnt.bytes[0] = val; break;
-        case IO_REG_BLDCNT + 1: {
-            val &= 0x3F;
-            io->bldcnt.bytes[1] = val;
-            break;
-        };
-        case IO_REG_BLDALPHA:
-        case IO_REG_BLDALPHA + 1: {
-            val &= 0x1F;
-            io->bldalpha.bytes[addr - IO_REG_BLDALPHA] = val;
-            break;
-        };
+        case IO_REG_BLDCNT + 1:             io->bldcnt.bytes[1] = val & 0x3F; break;
+        case IO_REG_BLDALPHA:               io->bldalpha.bytes[0] = val & 0x1F; break;
+        case IO_REG_BLDALPHA + 1:           io->bldalpha.bytes[1] = val & 0x1F; break;
         case IO_REG_BLDY:                   io->bldy.bytes[0] = val; break;
         case IO_REG_BLDY + 1:               io->bldy.bytes[1] = val; break;
 
         /* Sound */
-        case IO_REG_SOUNDCNT_L: {
-            val &= 0x77;
-            io->soundcnt_l.bytes[0] = val;
-            break;
-        };
+        case IO_REG_SOUNDCNT_L:             io->soundcnt_l.bytes[0] = val; break;
         case IO_REG_SOUNDCNT_L + 1:         io->soundcnt_l.bytes[1] = val; break;
-        case IO_REG_SOUNDCNT_H: {
-            val &= 0x0F;
-            io->soundcnt_h.bytes[0] = val;
-            break;
-        };
+        case IO_REG_SOUNDCNT_H:             io->soundcnt_h.bytes[0] = val & 0x0F; break;
         case IO_REG_SOUNDCNT_H + 1: {
             io->soundcnt_h.bytes[1] = val;
 
@@ -430,11 +406,7 @@ mem_io_write8(
 
             break;
         };
-        case IO_REG_SOUNDCNT_X: {
-            val &= 0x80;
-            io->soundcnt_x.bytes[0] = val;
-            break;
-        };
+        case IO_REG_SOUNDCNT_X:             io->soundcnt_x.bytes[0] = val & 0x80; break;
         case IO_REG_SOUNDBIAS:              io->soundbias.bytes[0] = val; break;
         case IO_REG_SOUNDBIAS + 1:          io->soundbias.bytes[1] = val; break;
         case IO_REG_SOUNDBIAS + 2:          io->soundbias.bytes[2] = val; break;
@@ -442,15 +414,17 @@ mem_io_write8(
         case IO_REG_FIFO_A + 0:
         case IO_REG_FIFO_A + 1:
         case IO_REG_FIFO_A + 2:
-        case IO_REG_FIFO_A + 3:
+        case IO_REG_FIFO_A + 3: {
             apu_fifo_write8(gba, FIFO_A, val);
             break;
+        };
         case IO_REG_FIFO_B + 0:
         case IO_REG_FIFO_B + 1:
         case IO_REG_FIFO_B + 2:
-        case IO_REG_FIFO_B + 3:
+        case IO_REG_FIFO_B + 3: {
             apu_fifo_write8(gba, FIFO_B, val);
             break;
+        };
 
         /* DMA - Channel 0 */
         case IO_REG_DMA0SAD:                io->dma[0].src.bytes[0] = val; break;
@@ -463,17 +437,13 @@ mem_io_write8(
         case IO_REG_DMA0DAD + 3:            io->dma[0].dst.bytes[3] = val; break;
         case IO_REG_DMA0CNT:                io->dma[0].count.bytes[0] = val; break;
         case IO_REG_DMA0CNT + 1:            io->dma[0].count.bytes[1] = val; break;
-        case IO_REG_DMA0CTL: {
-            val &= 0xE0;
-            io->dma[0].control.bytes[0] = val;
-            break;
-        };
-        case IO_REG_DMA0CTL + 1:
-            val &= 0xF7;
-            io->dma[0].control.bytes[1] = val;
+        case IO_REG_DMA0CTL:                io->dma[0].control.bytes[0] = val & 0xE0; break;
+        case IO_REG_DMA0CTL + 1: {
+            io->dma[0].control.bytes[1] = val & 0xF7;
             mem_dma_load(&io->dma[0], 0);
             mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
             break;
+        };
 
         /* DMA - Channel 1 */
         case IO_REG_DMA1SAD:                io->dma[1].src.bytes[0] = val; break;
@@ -486,17 +456,13 @@ mem_io_write8(
         case IO_REG_DMA1DAD + 3:            io->dma[1].dst.bytes[3] = val; break;
         case IO_REG_DMA1CNT:                io->dma[1].count.bytes[0] = val; break;
         case IO_REG_DMA1CNT + 1:            io->dma[1].count.bytes[1] = val; break;
-        case IO_REG_DMA1CTL: {
-            val &= 0xE0;
-            io->dma[1].control.bytes[0] = val;
-            break;
-        };
-        case IO_REG_DMA1CTL + 1:
-            val &= 0xF7;
-            io->dma[1].control.bytes[1] = val;
+        case IO_REG_DMA1CTL:                io->dma[1].control.bytes[0] = val & 0xE0; break;
+        case IO_REG_DMA1CTL + 1: {
+            io->dma[1].control.bytes[1] = val & 0xF7;
             mem_dma_load(&io->dma[1], 1);
             mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
             break;
+        };
 
         /* DMA - Channel 2 */
         case IO_REG_DMA2SAD:                io->dma[2].src.bytes[0] = val; break;
@@ -509,17 +475,13 @@ mem_io_write8(
         case IO_REG_DMA2DAD + 3:            io->dma[2].dst.bytes[3] = val; break;
         case IO_REG_DMA2CNT:                io->dma[2].count.bytes[0] = val; break;
         case IO_REG_DMA2CNT + 1:            io->dma[2].count.bytes[1] = val; break;
-        case IO_REG_DMA2CTL: {
-            val &= 0xE0;
-            io->dma[2].control.bytes[0] = val;
-            break;
-        };
-        case IO_REG_DMA2CTL + 1:
-            val &= 0xF7;
-            io->dma[2].control.bytes[1] = val;
+        case IO_REG_DMA2CTL:                io->dma[2].control.bytes[0] = val & 0xE0; break;
+        case IO_REG_DMA2CTL + 1: {
+            io->dma[2].control.bytes[1] = val & 0xF7;
             mem_dma_load(&io->dma[2], 2);
             mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
             break;
+        };
 
         /* DMA - Channel 3 */
         case IO_REG_DMA3SAD:                io->dma[3].src.bytes[0] = val; break;
@@ -532,16 +494,13 @@ mem_io_write8(
         case IO_REG_DMA3DAD + 3:            io->dma[3].dst.bytes[3] = val; break;
         case IO_REG_DMA3CNT:                io->dma[3].count.bytes[0] = val; break;
         case IO_REG_DMA3CNT + 1:            io->dma[3].count.bytes[1] = val; break;
-        case IO_REG_DMA3CTL: {
-            val &= 0xE0;
-            io->dma[3].control.bytes[0] = val;
-            break;
-        };
-        case IO_REG_DMA3CTL + 1:
+        case IO_REG_DMA3CTL:                io->dma[3].control.bytes[0] = val & 0xE0; break;
+        case IO_REG_DMA3CTL + 1: {
             io->dma[3].control.bytes[1] = val;
             mem_dma_load(&io->dma[3], 3);
             mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
             break;
+        };
 
         /* Timer 0 */
         case IO_REG_TM0CNT_LO:              io->timers[0].reload.bytes[0] = val; break;
@@ -668,11 +627,12 @@ mem_io_write8(
         case IO_REG_IF:                     io->int_flag.bytes[0] &= ~val; break;
         case IO_REG_IF + 1:                 io->int_flag.bytes[1] &= ~val; break;
         case IO_REG_WAITCNT:
-        case IO_REG_WAITCNT + 1:
+        case IO_REG_WAITCNT + 1: {
             io->waitcnt.bytes[addr - IO_REG_WAITCNT] = val;
             gba->memory.pbuffer.enabled = io->waitcnt.gamepak_prefetch;
             mem_update_waitstates(gba);
             break;
+        };
         case IO_REG_IME:
         case IO_REG_IME + 1:                io->ime.bytes[addr - IO_REG_IME] = val; break;
 
