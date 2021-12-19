@@ -71,8 +71,10 @@ core_arm_msr(
         struct psr spsr;
 
         spsr = core_spsr_get(core, core->cpsr.mode);
-        spsr.raw = (spsr.raw & ~mask) | (val & mask);
-        core_spsr_set(core, core->cpsr.mode, spsr);
+        if (spsr.raw != core->cpsr.raw) {
+            spsr.raw = (spsr.raw & ~mask) | (val & mask);
+            core_spsr_set(core, core->cpsr.mode, spsr);
+        }
     } else { // Set CPSR
         struct psr new_cpsr;
 
@@ -81,11 +83,8 @@ core_arm_msr(
             mask &= 0xFF000000;
         }
 
-        new_cpsr = core->cpsr;
-        new_cpsr.raw = (new_cpsr.raw & ~mask) | (val & mask);
-        if (new_cpsr.mode != core->cpsr.mode) {
-            core_switch_mode(core, new_cpsr.mode);
-        }
+        new_cpsr.raw = (core->cpsr.raw & ~mask) | (val & mask);
+        core_switch_mode(core, new_cpsr.mode);
         core->cpsr = new_cpsr;
     }
 
