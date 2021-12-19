@@ -182,7 +182,6 @@ mem_prefetch_buffer_access(
         pbuffer->head = pbuffer->tail;
         pbuffer->size = 0;
     }
-
 }
 
 void
@@ -211,13 +210,20 @@ mem_prefetch_buffer_step(
 **
 ** T must be either uint32_t, uint16_t or uint8_t.
 */
-#define template_read(T, gba, addr)                                                         \
+#define template_read(T, gba, addr, align)                                                  \
     ({                                                                                      \
         T _ret = 0;                                                                         \
         switch ((addr) >> 24) {                                                             \
-            case BIOS_REGION:                                                               \
-                _ret = *(T *)((uint8_t *)((gba)->memory.bios) + ((addr) & BIOS_MASK));      \
+            case BIOS_REGION: {                                                             \
+                if ((gba)->core.pc <= BIOS_END) {                                           \
+                    uint32_t new_addr;                                                      \
+                                                                                            \
+                    new_addr = (addr) & ~0x3 & (BIOS_MASK);                                 \
+                    (gba)->memory.bus_bios = *(uint32_t *)((uint8_t *)((gba)->memory.bios) + new_addr); \
+                }                                                                           \
+                _ret = (gba)->memory.bus_bios >> (8 * (align));                             \
                 break;                                                                      \
+            };                                                                              \
             case EWRAM_REGION:                                                              \
                 _ret = *(T *)((uint8_t *)((gba)->memory.ewram) + ((addr) & EWRAM_MASK));    \
                 break;                                                                      \
@@ -369,7 +375,7 @@ mem_read8(
     enum access_type access_type
 ) {
     mem_access(gba, addr, sizeof(uint8_t), access_type);
-    return (template_read(uint8_t, gba, addr));
+    return (template_read(uint8_t, gba, addr, addr & 0x3));
 }
 
 /*
@@ -381,10 +387,13 @@ mem_read16(
     uint32_t addr,
     enum access_type access_type
 ) {
+    uint32_t align;
+
     addr &= ~(sizeof(uint16_t) - 1);
+    align = addr & 0x3;
 
     mem_access(gba, addr, sizeof(uint16_t), access_type);
-    return (template_read(uint16_t, gba, addr));
+    return (template_read(uint16_t, gba, addr, align));
 }
 
 /*
@@ -397,13 +406,20 @@ mem_read16_ror(
     uint32_t addr,
     enum access_type access_type
 ) {
+    uint32_t align;
     uint32_t rotate;
     uint32_t value;
 
+    //if (gba->core.pc > BIOS_END && addr <= BIOS_END) {
+    //    printf("INVALID READ16_ROR %08x ALIGN=%u\n", addr, addr & 0x3);
+    //}
+
     rotate = (addr % 2) << 3;
     addr &= ~(sizeof(uint16_t) - 1);
+    align = addr & 0x3;
 
-    value = mem_read16(gba, addr, access_type);
+    mem_access(gba, addr, sizeof(uint16_t), access_type);
+    value = template_read(uint16_t, gba, addr, align);
 
     /* Unaligned 16-bits loads are supposed to be unpredictable, but in practise the GBA rotates them */
     return (ror32(value, rotate));
@@ -421,7 +437,7 @@ mem_read32(
     addr &= ~(sizeof(uint32_t) - 1);
 
     mem_access(gba, addr, sizeof(uint32_t), access_type);
-    return (template_read(uint32_t, gba, addr));
+    return (template_read(uint32_t, gba, addr, 0));
 }
 
 /*
@@ -438,7 +454,10 @@ mem_read32_ror(
     uint32_t value;
 
     rotate = (addr % 4) << 3;
-    value = mem_read32(gba, addr, access_type);
+    addr &= ~(sizeof(uint32_t) - 1);
+
+    mem_access(gba, addr, sizeof(uint32_t), access_type);
+    value = template_read(uint32_t, gba, addr, 0);
     return (ror32(value, rotate));
 }
 
