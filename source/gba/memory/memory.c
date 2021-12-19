@@ -206,6 +206,66 @@ mem_prefetch_buffer_step(
 }
 
 /*
+** Determine the value returned by the BUS during an invalid memory access.
+**
+** Most of this is taken from GBATek, section "GBA Unpredictable Things".
+*/
+uint32_t
+mem_openbus_read(
+    struct gba const *gba,
+    uint32_t addr
+) {
+    uint32_t val;
+    uint32_t shift;
+
+    shift = addr & 0x3;
+    if (gba->core.cpsr.thumb) {
+        uint32_t pc;
+
+        pc = gba->core.pc;
+        switch (pc >> 24) {
+            case EWRAM_REGION:
+            case PALRAM_REGION:
+            case VRAM_REGION:
+            case CART_0_REGION_1 ... CART_2_REGION_2: {
+                val = gba->core.prefetch[1];
+                val |= (gba->core.prefetch[1]) << 16;
+                break;
+            };
+            case BIOS_REGION:
+            case OAM_REGION: {
+                if ((pc & 0x2) == 0) { // 4-byte aligned PC
+                    val = gba->core.prefetch[1];
+                    val |= (gba->core.prefetch[1]) << 16; // ???
+                } else {
+                    val = gba->core.prefetch[0];
+                    val |= (gba->core.prefetch[1]) << 16;
+                }
+                break;
+            };
+            case IWRAM_REGION: {
+                if ((pc & 0x2) == 0) { // 4-byte aligned PC
+                    val = gba->core.prefetch[1];
+                    val |= (gba->core.prefetch[0]) << 16;
+                } else {
+                    val = gba->core.prefetch[0];
+                    val |= (gba->core.prefetch[1]) << 16;
+                }
+                break;
+            };
+            default: {
+                panic(HS_MEMORY, "Reading the open bus from an impossible page: %u", pc >> 24);
+                break;
+            }
+        }
+    } else {
+        val = gba->core.prefetch[1];
+    }
+
+    return (val >> (8 * shift));
+}
+
+/*
 ** Read the data of type T located in memory at the given address.
 **
 ** T must be either uint32_t, uint16_t or uint8_t.
@@ -215,13 +275,18 @@ mem_prefetch_buffer_step(
         T _ret = 0;                                                                         \
         switch ((addr) >> 24) {                                                             \
             case BIOS_REGION: {                                                             \
-                if ((gba)->core.pc <= BIOS_END) {                                           \
-                    uint32_t new_addr;                                                      \
+                if ((addr) <= BIOS_END) {                                                   \
+                    if ((gba)->core.pc <= BIOS_END) {                                       \
+                        uint32_t new_addr;                                                  \
                                                                                             \
-                    new_addr = (addr) & ~0x3 & (BIOS_MASK);                                 \
-                    (gba)->memory.bus_bios = *(uint32_t *)((uint8_t *)((gba)->memory.bios) + new_addr); \
+                        new_addr = (addr) & ~0x3 & (BIOS_MASK);                             \
+                        (gba)->memory.bus_bios = *(uint32_t *)((uint8_t *)((gba)->memory.bios) + new_addr); \
+                    }                                                                       \
+                    _ret = (gba)->memory.bus_bios >> (8 * (align));                         \
+                } else {                                                                    \
+                    logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);               \
+                    _ret = mem_openbus_read((gba), (addr));                                 \
                 }                                                                           \
-                _ret = (gba)->memory.bus_bios >> (8 * (align));                             \
                 break;                                                                      \
             };                                                                              \
             case EWRAM_REGION:                                                              \
@@ -282,7 +347,7 @@ mem_prefetch_buffer_step(
                 break;                                                                      \
             default:                                                                        \
                 logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);                   \
-                _ret = 0;                                                                   \
+                _ret = mem_openbus_read((gba), (addr));                                     \
                 break;                                                                      \
         };                                                                                  \
         _ret;                                                                               \

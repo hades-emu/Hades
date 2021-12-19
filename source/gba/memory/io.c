@@ -258,7 +258,8 @@ mem_io_read8(
         /* System */
         case IO_REG_POSTFLG:                return (io->postflg);
     }
-    return (0);
+    logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);
+    return (mem_openbus_read(gba, addr));
 }
 
 /*
