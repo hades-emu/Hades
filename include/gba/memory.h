@@ -220,6 +220,9 @@ struct memory {
     // Prefetch
     struct prefetch_buffer pbuffer;
 
+    // Open Bus
+    uint32_t bus_bios;
+
     // Set when the cartridge memory bus is in used
     bool gamepak_bus_in_use;
 };
