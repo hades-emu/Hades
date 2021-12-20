@@ -46,6 +46,8 @@ struct psr {
     };
 } __packed;
 
+struct dma_channel;
+
 struct core {
     union {
         struct {
@@ -117,7 +119,7 @@ struct core {
 
     uint64_t cycles;                        // Amount of cycles spent by the CPU since initialization
 
-    bool processing_dma;                    // The core is waiting for a DMA to complete.
+    struct dma_channel *current_dma;        // The DMA the core is currently waiting for. Can be NULL.
 };
 
 /*

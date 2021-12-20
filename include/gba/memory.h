@@ -221,7 +221,7 @@ struct memory {
     struct prefetch_buffer pbuffer;
 
     // Open Bus
-    uint32_t bus_bios;
+    uint32_t bios_bus;
 
     // Set when the cartridge memory bus is in used
     bool gamepak_bus_in_use;
@@ -242,8 +242,8 @@ struct gba;
 struct dma_channel;
 
 /* gba/memory/dma.c */
-void mem_dma_load(struct dma_channel *channel, uint32_t channel_idx);
-void mem_schedule_dma_transfer(struct gba *gba, enum dma_timings timing);
+void mem_dma_load(struct dma_channel *channel);
+void mem_schedule_dma_transfers(struct gba *gba, enum dma_timings timing);
 bool mem_dma_is_fifo(struct gba const *gba, uint32_t dma_channel_idx, uint32_t fifo_idx);
 void mem_schedule_dma_fifo(struct gba *gba, uint32_t dma_channel_idx);
 void mem_schedule_dma_video(struct gba *gba);

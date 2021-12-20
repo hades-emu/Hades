@@ -136,7 +136,13 @@ core_idle_for(
 ) {
     gba->core.cycles += cycles;
 
-    if (gba->memory.pbuffer.enabled && !gba->memory.gamepak_bus_in_use) {
+    /*
+    ** Disable prefetchng during DMA.
+    **
+    ** According to Fleroviux (https://github.com/fleroviux/) this
+    ** leads to better accuracy but the reasons why aren't well known yet.
+    */
+    if (gba->memory.pbuffer.enabled && !gba->memory.gamepak_bus_in_use && !gba->core.current_dma) {
         mem_prefetch_buffer_step(gba, cycles);
     }
 

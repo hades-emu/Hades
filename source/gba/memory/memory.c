@@ -62,6 +62,7 @@ mem_reset(
     memset(&memory->pbuffer, 0, sizeof(memory->pbuffer));
     memset(&memory->flash, 0, sizeof(memory->flash));
     memory->gamepak_bus_in_use = false;
+    memory->bios_bus = 0;
     memory->eeprom.state = EEPROM_STATE_READY;
     memory->eeprom.transfer_address = 0;
     memory->eeprom.transfer_data = 0;
@@ -132,7 +133,7 @@ mem_access(
     }
 
     gba->memory.gamepak_bus_in_use = (page >= CART_REGION_START && page <= CART_REGION_END);
-    if (gba->memory.gamepak_bus_in_use && gba->memory.pbuffer.enabled) {
+    if (gba->memory.gamepak_bus_in_use && gba->memory.pbuffer.enabled && !gba->core.current_dma) {
         mem_prefetch_buffer_access(gba, addr, cycles);
     } else {
         core_idle_for(gba, cycles);
@@ -221,6 +222,12 @@ mem_openbus_read(
     logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);
 
     shift = addr & 0x3;
+
+    if (gba->core.current_dma) {
+        hs_assert(gba->core.current_dma);
+        return (gba->core.current_dma->bus >> (8 * shift));
+    }
+
     if (gba->core.cpsr.thumb) {
         uint32_t pc;
 
@@ -282,9 +289,9 @@ mem_openbus_read(
                         uint32_t new_addr;                                                  \
                                                                                             \
                         new_addr = (addr) & ~0x3 & (BIOS_MASK);                             \
-                        (gba)->memory.bus_bios = *(uint32_t *)((uint8_t *)((gba)->memory.bios) + new_addr); \
+                        (gba)->memory.bios_bus = *(uint32_t *)((uint8_t *)((gba)->memory.bios) + new_addr); \
                     }                                                                       \
-                    _ret = (gba)->memory.bus_bios >> (8 * (align));                         \
+                    _ret = (gba)->memory.bios_bus >> (8 * (align));                         \
                 } else {                                                                    \
                     _ret = mem_openbus_read((gba), (addr));                                 \
                 }                                                                           \
