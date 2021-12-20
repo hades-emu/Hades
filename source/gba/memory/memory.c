@@ -334,14 +334,10 @@ mem_openbus_read(
             case SRAM_REGION:                                                               \
                 _ret = _Generic(_ret,                                                       \
                     uint32_t: (                                                             \
-                        ((T)mem_backup_storage_read8((gba), (addr) + 0) <<  0) |            \
-                        ((T)mem_backup_storage_read8((gba), (addr) + 1) <<  8) |            \
-                        ((T)mem_backup_storage_read8((gba), (addr) + 2) << 16) |            \
-                        ((T)mem_backup_storage_read8((gba), (addr) + 3) << 24)              \
+                        ((T)mem_backup_storage_read8((gba), (addr)) * 0x01010101)           \
                     ),                                                                      \
                     uint16_t: (                                                             \
-                        ((T)mem_backup_storage_read8((gba), (addr) + 0) <<  0) |            \
-                        ((T)mem_backup_storage_read8((gba), (addr) + 1) <<  8)              \
+                        ((T)mem_backup_storage_read8((gba), (addr)) * 0x0101)               \
                     ),                                                                      \
                     default: mem_backup_storage_read8((gba), (addr))                        \
                 );                                                                          \
