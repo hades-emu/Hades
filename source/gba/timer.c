@@ -61,7 +61,7 @@ timer_overflow(
         apu_on_timer_overflow(gba, timer_idx);
     }
 
-    if (timer_idx < 3 && gba->io.timers[timer_idx + 1].control.count_up) {
+    if (timer_idx < 3 && gba->io.timers[timer_idx + 1].control.enable && gba->io.timers[timer_idx + 1].control.count_up) {
         uint32_t new;
 
         new = gba->io.timers[timer_idx + 1].counter.raw + 1;

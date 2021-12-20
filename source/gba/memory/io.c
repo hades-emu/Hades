@@ -30,6 +30,10 @@ io_init(
     io->timers[2].handler = INVALID_EVENT_HANDLE;
     io->timers[3].handler = INVALID_EVENT_HANDLE;
     io->soundbias.bias = 0x200;
+    io->dma[0].index = 0;
+    io->dma[1].index = 1;
+    io->dma[2].index = 2;
+    io->dma[3].index = 3;
 }
 
 /*
@@ -440,8 +444,8 @@ mem_io_write8(
         case IO_REG_DMA0CTL:                io->dma[0].control.bytes[0] = val & 0xE0; break;
         case IO_REG_DMA0CTL + 1: {
             io->dma[0].control.bytes[1] = val & 0xF7;
-            mem_dma_load(&io->dma[0], 0);
-            mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
+            mem_dma_load(&io->dma[0]);
+            mem_schedule_dma_transfers(gba, DMA_TIMING_NOW);
             break;
         };
 
@@ -459,8 +463,8 @@ mem_io_write8(
         case IO_REG_DMA1CTL:                io->dma[1].control.bytes[0] = val & 0xE0; break;
         case IO_REG_DMA1CTL + 1: {
             io->dma[1].control.bytes[1] = val & 0xF7;
-            mem_dma_load(&io->dma[1], 1);
-            mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
+            mem_dma_load(&io->dma[1]);
+            mem_schedule_dma_transfers(gba, DMA_TIMING_NOW);
             break;
         };
 
@@ -478,8 +482,8 @@ mem_io_write8(
         case IO_REG_DMA2CTL:                io->dma[2].control.bytes[0] = val & 0xE0; break;
         case IO_REG_DMA2CTL + 1: {
             io->dma[2].control.bytes[1] = val & 0xF7;
-            mem_dma_load(&io->dma[2], 2);
-            mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
+            mem_dma_load(&io->dma[2]);
+            mem_schedule_dma_transfers(gba, DMA_TIMING_NOW);
             break;
         };
 
@@ -497,8 +501,8 @@ mem_io_write8(
         case IO_REG_DMA3CTL:                io->dma[3].control.bytes[0] = val & 0xE0; break;
         case IO_REG_DMA3CTL + 1: {
             io->dma[3].control.bytes[1] = val;
-            mem_dma_load(&io->dma[3], 3);
-            mem_schedule_dma_transfer(gba, DMA_TIMING_NOW);
+            mem_dma_load(&io->dma[3]);
+            mem_schedule_dma_transfers(gba, DMA_TIMING_NOW);
             break;
         };
 

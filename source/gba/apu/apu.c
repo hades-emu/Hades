@@ -116,7 +116,7 @@ apu_on_timer_overflow(
 
     io = &gba->io;
 
-    if (!io->soundcnt_x.master_fifo_enable) {
+    if (!io->soundcnt_x.master_enable) {
         return;
     }
 

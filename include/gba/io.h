@@ -150,6 +150,8 @@ enum io_regs {
 ** A DMA channel and the content of the different IO registers associated with it.
 */
 struct dma_channel {
+    size_t index;
+
     union {
         uint32_t raw;
         uint8_t  bytes[4];
@@ -168,6 +170,11 @@ struct dma_channel {
     uint32_t internal_src;
     uint32_t internal_dst;
     uint32_t internal_count;
+
+    uint32_t bus;
+
+    bool is_fifo;
+    bool is_video;
 
     union {
         struct {
@@ -492,7 +499,7 @@ struct io {
         struct {
             uint16_t sound_on: 4;
             uint16_t : 3;
-            uint16_t master_fifo_enable: 1;
+            uint16_t master_enable: 1;
             uint16_t : 8;
         } __packed;
         uint16_t raw;

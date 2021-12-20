@@ -334,7 +334,7 @@ ppu_hdraw(
         if (io->dispstat.vblank_irq) {
             core_trigger_irq(gba, IRQ_VBLANK);
         }
-        mem_schedule_dma_transfer(gba, DMA_TIMING_VBLANK);
+        mem_schedule_dma_transfers(gba, DMA_TIMING_VBLANK);
         ppu_reload_affine_internal_registers(gba, 0);
         ppu_reload_affine_internal_registers(gba, 1);
     }
@@ -385,7 +385,7 @@ ppu_hblank(
     }
 
     if (io->vcount.raw < GBA_SCREEN_HEIGHT) {
-        mem_schedule_dma_transfer(gba, DMA_TIMING_HBLANK);
+        mem_schedule_dma_transfers(gba, DMA_TIMING_HBLANK);
     }
 
     if (io->vcount.raw >= 2 && io->vcount.raw < GBA_SCREEN_HEIGHT + 2) {
