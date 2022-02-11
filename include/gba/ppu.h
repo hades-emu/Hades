@@ -42,7 +42,7 @@ union color {
         uint16_t : 1;
     } __packed;
     uint16_t raw;
-};
+} __packed;
 
 static_assert(sizeof(union color) == sizeof(uint16_t));
 
@@ -51,7 +51,7 @@ struct rich_color {
     uint8_t idx: 6; // 0-3 for bgs, 4 for OAM, 5 for BD
     uint8_t visible: 1;
     uint8_t force_blend: 1; // Only useful for OAM
-};
+} __packed;
 
 struct scanline {
     struct rich_color top[GBA_SCREEN_WIDTH];
