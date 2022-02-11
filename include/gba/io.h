@@ -340,8 +340,8 @@ struct io {
     // REG_WINH
     union {
         struct {
-            uint16_t max: 8; // Exclusive
-            uint16_t min: 8; // Inclusive
+            uint8_t max; // Exclusive
+            uint8_t min; // Inclusive
         } __packed;
         uint16_t raw;
         uint8_t bytes[2];
@@ -350,8 +350,8 @@ struct io {
     // REG_WINY
     union {
         struct {
-            uint16_t max: 8; // Exclusive
-            uint16_t min: 8; // Inclusive
+            uint8_t max; // Exclusive
+            uint8_t min; // Inclusive
         } __packed;
         uint16_t raw;
         uint8_t bytes[2];
@@ -394,7 +394,7 @@ struct io {
                     uint16_t : 2;
                 } __packed;
                 uint8_t winout;
-            };
+            } __packed;
             union {
                 struct {
                     uint16_t winobj_bg: 4;
@@ -403,7 +403,7 @@ struct io {
                     uint16_t : 2;
                 } __packed;
                 uint8_t winobj;
-            };
+            } __packed;
         } __packed;
         uint16_t raw;
         uint8_t bytes[2];
