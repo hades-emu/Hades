@@ -362,19 +362,19 @@ struct io {
         struct {
             union {
                 struct {
-                    uint16_t win0_bg: 4;
-                    uint16_t win0_obj: 1;
-                    uint16_t win0_effects: 1;
-                    uint16_t : 2;
+                    uint8_t win0_bg: 4;
+                    uint8_t win0_obj: 1;
+                    uint8_t win0_effects: 1;
+                    uint8_t : 2;
                 } __packed;
                 uint8_t win0;
             } __packed;
             union {
                 struct {
-                    uint16_t win1_bg: 4;
-                    uint16_t win1_obj: 1;
-                    uint16_t win1_effects: 1;
-                    uint16_t : 2;
+                    uint8_t win1_bg: 4;
+                    uint8_t win1_obj: 1;
+                    uint8_t win1_effects: 1;
+                    uint8_t : 2;
                 } __packed;
                 uint8_t win1;
             } __packed;
@@ -388,19 +388,19 @@ struct io {
         struct {
             union {
                 struct {
-                    uint16_t winout_bg: 4;
-                    uint16_t winout_obj: 1;
-                    uint16_t winout_effects: 1;
-                    uint16_t : 2;
+                    uint8_t winout_bg: 4;
+                    uint8_t winout_obj: 1;
+                    uint8_t winout_effects: 1;
+                    uint8_t : 2;
                 } __packed;
                 uint8_t winout;
             } __packed;
             union {
                 struct {
-                    uint16_t winobj_bg: 4;
-                    uint16_t winobj_obj: 1;
-                    uint16_t winobj_effects: 1;
-                    uint16_t : 2;
+                    uint8_t winobj_bg: 4;
+                    uint8_t winobj_obj: 1;
+                    uint8_t winobj_effects: 1;
+                    uint8_t : 2;
                 } __packed;
                 uint8_t winobj;
             } __packed;
