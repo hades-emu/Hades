@@ -346,10 +346,10 @@ gui_game_handle_events(
         };
         case SDL_CONTROLLERBUTTONDOWN: {
             switch (event->cbutton.button) {
-                case SDL_CONTROLLER_BUTTON_B:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_A, true)); break;
-                case SDL_CONTROLLER_BUTTON_A:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_B, true)); break;
-                case SDL_CONTROLLER_BUTTON_Y:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_A, true)); break;
-                case SDL_CONTROLLER_BUTTON_X:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_B, true)); break;
+                case SDL_CONTROLLER_BUTTON_B:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_B, true)); break;
+                case SDL_CONTROLLER_BUTTON_A:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_A, true)); break;
+                case SDL_CONTROLLER_BUTTON_Y:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_B, true)); break;
+                case SDL_CONTROLLER_BUTTON_X:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_A, true)); break;
                 case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_LEFT, true)); break;
                 case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_RIGHT, true)); break;
                 case SDL_CONTROLLER_BUTTON_DPAD_UP:         gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_UP, true)); break;
@@ -363,10 +363,10 @@ gui_game_handle_events(
         };
         case SDL_CONTROLLERBUTTONUP: {
             switch (event->cbutton.button) {
-                case SDL_CONTROLLER_BUTTON_B:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_A, false)); break;
-                case SDL_CONTROLLER_BUTTON_A:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_B, false)); break;
-                case SDL_CONTROLLER_BUTTON_Y:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_A, false)); break;
-                case SDL_CONTROLLER_BUTTON_X:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_B, false)); break;
+                case SDL_CONTROLLER_BUTTON_B:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_B, false)); break;
+                case SDL_CONTROLLER_BUTTON_A:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_A, false)); break;
+                case SDL_CONTROLLER_BUTTON_Y:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_B, false)); break;
+                case SDL_CONTROLLER_BUTTON_X:               gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_A, false)); break;
                 case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_LEFT, false)); break;
                 case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_RIGHT, false)); break;
                 case SDL_CONTROLLER_BUTTON_DPAD_UP:         gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_UP, false)); break;
@@ -381,5 +381,26 @@ gui_game_handle_events(
             }
             break;
         };
+        case SDL_CONTROLLERAXISMOTION: {
+            bool state_a;
+            bool state_b;
+
+            state_a = (event->jaxis.value >= INT16_MAX / 2);  // At least 50% of the axis
+            state_b = (event->jaxis.value <= INT16_MIN / 2);
+            if (event->jaxis.axis == 0 && state_a != app->joystick_right) {
+                gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_RIGHT, state_a));
+                app->joystick_right = state_a;
+            } else if (event->jaxis.axis == 0 && state_b != app->joystick_left) {
+                gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_LEFT, state_b));
+                app->joystick_left = state_b;
+            } else if (event->jaxis.axis == 1 && state_a != app->joystick_down) {
+                gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_DOWN, state_a));
+                app->joystick_down = state_a;
+            } else if (event->jaxis.axis == 1 && state_b != app->joystick_up) {
+                gba_message_push(app->emulation.gba, NEW_MESSAGE_KEYINPUT(KEY_UP, state_b));
+                app->joystick_up = state_b;
+            }
+            break;
+        }
     }
 }

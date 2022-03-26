@@ -59,6 +59,10 @@ struct app {
     SDL_GameController *controller;
     SDL_JoystickID joystick_idx;
     bool controller_connected;
+    bool joystick_up;
+    bool joystick_down;
+    bool joystick_right;
+    bool joystick_left;
 
     /* Recently opened ROMs */
     char *recent_roms[5];
