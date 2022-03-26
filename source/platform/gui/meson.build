@@ -24,4 +24,5 @@ hades = executable(
     include_directories: [incdir, imgui_inc, frozen_inc, stb_inc],
     c_args: cflags,
     link_args: ldflags,
+    gui_app: true,
 )
