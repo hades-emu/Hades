@@ -65,3 +65,4 @@ Special thanks to some invaluable resources while writing Hades:
   - [GBA Cartridge Backup Storage](https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html) by Dillon Beliveau
   - [EEPROM Save Type](https://densinh.github.io/DenSinH/emulation/2021/02/01/gba-eeprom.html) by Dennis H
   - [The Blender model](https://www.blendswap.com/blend/27357) used in this README by Zap Productions
+  - [The Hades Icon](https://totushi.com/) by Totushi
