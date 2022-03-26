@@ -32,7 +32,7 @@ endif
 winrc = []
 
 if host_machine.system() == 'windows'
-    winrc += import('windows').compile_resources('resources/hades.rc' )
+    winrc += import('windows').compile_resources(meson.source_root() + '/resources/hades.rc' )
 endif
 
 cc = meson.get_compiler('c')
