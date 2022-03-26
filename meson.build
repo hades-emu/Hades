@@ -29,6 +29,12 @@ if get_option('static_executable')
     ldflags += ['-static']
 endif
 
+if host_machine.system() == 'windows'
+    winrc = import('windows').compile_resources('./resource/hades.rc' )
+else
+    winrc = []
+endif
+
 cc = meson.get_compiler('c')
 
 ###############################
