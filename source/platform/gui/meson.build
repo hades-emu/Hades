@@ -7,6 +7,12 @@
 ##
 ################################################################################
 
+misc_sources = []
+
+if host_machine.system() == 'windows'
+    misc_sources += import('windows').compile_resources( 'resources/hades.rc' )
+endif
+
 hades = executable(
     'hades',
     'game/game.c',
@@ -16,6 +22,7 @@ hades = executable(
     'error.c',
     'main.c',
     'menubar.c',
+    misc_sources,
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
     ],
