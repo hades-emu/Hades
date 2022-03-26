@@ -362,19 +362,19 @@ struct io {
         struct {
             union {
                 struct {
-                    uint16_t win0_bg: 4;
-                    uint16_t win0_obj: 1;
-                    uint16_t win0_effects: 1;
-                    uint16_t : 2;
+                    uint8_t win0_bg: 4;
+                    uint8_t win0_obj: 1;
+                    uint8_t win0_effects: 1;
+                    uint8_t : 2;
                 } __packed;
                 uint8_t win0;
             } __packed;
             union {
                 struct {
-                    uint16_t win1_bg: 4;
-                    uint16_t win1_obj: 1;
-                    uint16_t win1_effects: 1;
-                    uint16_t : 2;
+                    uint8_t win1_bg: 4;
+                    uint8_t win1_obj: 1;
+                    uint8_t win1_effects: 1;
+                    uint8_t : 2;
                 } __packed;
                 uint8_t win1;
             } __packed;
@@ -388,19 +388,19 @@ struct io {
         struct {
             union {
                 struct {
-                    uint16_t winout_bg: 4;
-                    uint16_t winout_obj: 1;
-                    uint16_t winout_effects: 1;
-                    uint16_t : 2;
+                    uint8_t winout_bg: 4;
+                    uint8_t winout_obj: 1;
+                    uint8_t winout_effects: 1;
+                    uint8_t : 2;
                 } __packed;
                 uint8_t winout;
             } __packed;
             union {
                 struct {
-                    uint16_t winobj_bg: 4;
-                    uint16_t winobj_obj: 1;
-                    uint16_t winobj_effects: 1;
-                    uint16_t : 2;
+                    uint8_t winobj_bg: 4;
+                    uint8_t winobj_obj: 1;
+                    uint8_t winobj_effects: 1;
+                    uint8_t : 2;
                 } __packed;
                 uint8_t winobj;
             } __packed;
@@ -443,7 +443,7 @@ struct io {
         struct {
             uint16_t top_coef: 5;
             uint16_t : 3;
-            uint16_t bot_coef: 6;
+            uint16_t bot_coef: 5;
             uint16_t : 3;
         } __packed;
         uint16_t raw;
@@ -657,6 +657,31 @@ struct io {
 
 static_assert(sizeof(((struct io *)NULL)->dispcnt) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->dispstat) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->bgcnt) == 4 * sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->winh) == 2 * sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->winv) == 2 * sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->winin.win0) == sizeof(uint8_t));
+static_assert(sizeof(((struct io *)NULL)->winin.win1) == sizeof(uint8_t));
+static_assert(sizeof(((struct io *)NULL)->winin) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->winout.winout) == sizeof(uint8_t));
+static_assert(sizeof(((struct io *)NULL)->winout.winobj) == sizeof(uint8_t));
+static_assert(sizeof(((struct io *)NULL)->winout) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->mosaic) == sizeof(uint32_t));
+static_assert(sizeof(((struct io *)NULL)->bldcnt) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->bldalpha) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->bldy) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->soundcnt_l) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->soundcnt_h) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->soundcnt_x) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->soundbias) == sizeof(uint32_t));
+static_assert(sizeof(((struct io *)NULL)->keycnt) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->keyinput) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->siocnt) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->int_enabled) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->int_flag) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->waitcnt) == sizeof(uint16_t));
+static_assert(sizeof(((struct timer *)NULL)->control) == sizeof(uint16_t));
+static_assert(sizeof(((struct dma_channel *)NULL)->control) == sizeof(uint16_t));
 
 struct gba;
 
