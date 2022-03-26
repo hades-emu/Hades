@@ -31,7 +31,7 @@ endif
 
 if host_machine.system() == 'windows'
     hades_name = 'Hades'
-    winrc += import('windows').compile_resources('./resource/hades.rc' )
+    winrc = import('windows').compile_resources('./resource/hades.rc' )
 else
     hades_name = 'hades'
     winrc = []
