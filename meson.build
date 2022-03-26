@@ -30,10 +30,8 @@ if get_option('static_executable')
 endif
 
 if host_machine.system() == 'windows'
-    hades_name = 'Hades'
     winrc = import('windows').compile_resources('./resource/hades.rc' )
 else
-    hades_name = 'hades'
     winrc = []
 endif
 
@@ -69,7 +67,7 @@ subdir('source/platform/gui')
 
 custom_target(
     'hades',
-    output : hades_name,
+    output : 'hades',
     input : hades,
     command : ['cp', '@INPUT@', '@PLAINNAME@'],
     install : true,

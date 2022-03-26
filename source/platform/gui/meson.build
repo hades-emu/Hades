@@ -7,8 +7,14 @@
 ##
 ################################################################################
 
+if host_machine.system() == 'windows'
+    hades_name = 'Hades'
+else
+    hades_name = 'hades'
+endif
+
 hades = executable(
-    'hades',
+    hades_name,
     'game/game.c',
     'game/render.c',
     'game/screenshot.c',
