@@ -125,7 +125,6 @@ ppu_merge_layer(
 
                 top_enabled = bitfield_get(io->bldcnt.raw, scanline->top_idx) || topc.force_blend;
                 if (top_enabled && bot_enabled && botc.visible) {
-                    //printf("BLEND_ALPHA\n");
                     scanline->result[x].red = min(31, ((uint32_t)topc.red * eva + (uint32_t)botc.red * evb) >> 4);
                     scanline->result[x].green = min(31, ((uint32_t)topc.green * eva + (uint32_t)botc.green * evb) >> 4);
                     scanline->result[x].blue = min(31, ((uint32_t)topc.blue * eva + (uint32_t)botc.blue * evb) >> 4);

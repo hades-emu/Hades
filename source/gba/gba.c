@@ -217,17 +217,6 @@ gba_run(
             sched_run_for(gba, CYCLES_PER_FRAME);
         }
 
-/*
-        printf(
-            "BLDCNT=%04x BLDALPHA=%04x BLDY=%04x WININ=%04x WINOUT=%04x\n",
-            gba->io.bldcnt.raw,
-            gba->io.bldalpha.raw,
-            gba->io.bldy.raw,
-            gba->io.winin.raw,
-            gba->io.winout.raw
-        );
-*/
-
         /* Limit FPS */
         if (gba->speed) {
             uint64_t now;
