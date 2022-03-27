@@ -36,6 +36,7 @@ enum message_type {
     MESSAGE_QUICKLOAD,
     MESSAGE_QUICKSAVE,
     MESSAGE_AUDIO_RESAMPLE_FREQ,
+    MESSAGE_COLOR_CORRECTION,
 };
 
 enum keyinput {
@@ -84,6 +85,11 @@ struct message_audio_freq {
     uint64_t refill_frequency;
 };
 
+struct message_color_correction {
+    struct message super;
+    bool color_correction;
+};
+
 struct message_queue {
     struct message *messages;
     size_t length;
@@ -105,11 +111,13 @@ struct gba {
     struct apu apu;
     struct scheduler scheduler;
 
-    struct game_entry *game_entry; // Entry in the game database, if it exists.
+    /* Entry in the game database, if it exists. */
+    struct game_entry *game_entry;
 
-    /*
-    ** The message queue used by the frontend to communicate with the emulator.
-    */
+    /* Stores if color correction is enabled. */
+    bool color_correction;
+
+    /* The message queue used by the frontend to communicate with the emulator. */
     struct message_queue message_queue;
 
     /* The emulator's screen as it is being rendered. */
@@ -225,6 +233,15 @@ struct gba {
             .type = MESSAGE_AUDIO_RESAMPLE_FREQ,        \
         },                                              \
         .refill_frequency = (_freq),                    \
+    }))
+
+# define NEW_MESSAGE_COLOR_CORRECTION(_color)                   \
+    ((struct message *)&((struct message_color_correction){     \
+        .super = (struct message){                              \
+            .size = sizeof(struct message_color_correction),    \
+            .type = MESSAGE_COLOR_CORRECTION,                   \
+        },                                                      \
+        .color_correction = (_color),                           \
     }))
 
 /* gba/gba.c */

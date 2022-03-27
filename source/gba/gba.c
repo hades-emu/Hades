@@ -202,7 +202,13 @@ gba_run(
                     gba->apu.resample_frequency = message_audio_freq->refill_frequency;
                     break;
                 };
+                case MESSAGE_COLOR_CORRECTION: {
+                    struct message_color_correction *message_color_correction;
 
+                    message_color_correction = (struct message_color_correction *)message;
+                    gba->color_correction = message_color_correction->color_correction;
+                    break;
+                }
             }
             mqueue->allocated_size -= message->size;
             --mqueue->length;

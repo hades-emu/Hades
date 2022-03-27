@@ -8,6 +8,7 @@
 \******************************************************************************/
 
 #include <string.h>
+#include <math.h>
 #include "gba/gba.h"
 #include "gba/ppu.h"
 
@@ -294,6 +295,43 @@ ppu_draw_scanline(
 }
 
 /*
+** Compose the content of the framebuffer based on the content of `scanline->result` and/or the backdrop color.
+** This algorithm applies a color correction.
+**
+** Reference:
+**   - https://near.sh/articles/video/color-emulation
+*/
+static
+void
+ppu_draw_scanline_color_correction(
+    struct gba *gba,
+    struct scanline const *scanline
+) {
+    uint32_t x;
+    uint32_t y;
+
+    y = gba->io.vcount.raw;
+    for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
+        struct rich_color c;
+        float r;
+        float g;
+        float b;
+
+        c = scanline->result[x];
+
+        r = c.red * c.red * c.red * c.red           / (31.0 * 31.0 * 31.0 * 31.0);  // <=> pow(c.red   / 31.0, lcd_gamma);
+        g = c.green * c.green * c.green * c.green   / (31.0 * 31.0 * 31.0 * 31.0);  // <=> pow(c.green / 31.0, lcd_gamma);
+        b = c.blue * c.blue * c.blue * c.blue       / (31.0 * 31.0 * 31.0 * 31.0);  // <=> pow(c.blue  / 31.0, lcd_gamma);
+
+        gba->framebuffer[GBA_SCREEN_WIDTH * y + x] = 0xFF000000
+            | (uint)(sqrt(            0.196 * g + 1.000 * r) * 213.0) << 0
+            | (uint)(sqrt(0.118 * b + 0.902 * g + 0.039 * r) * 240.0) << 8
+            | (uint)(sqrt(0.863 * b + 0.039 * g + 0.196 * r) * 232.0) << 16
+        ;
+    }
+}
+
+/*
 ** Called when the PPU enters HDraw, this function updates some IO registers
 ** to reflect the progress of the PPU and eventually triggers an IRQ.
 */
@@ -370,7 +408,12 @@ ppu_hblank(
             ppu_render_scanline(gba, &scanline);
         }
 
-        ppu_draw_scanline(gba, &scanline);
+        if (gba->color_correction) {
+            ppu_draw_scanline_color_correction(gba, &scanline);
+        } else {
+            ppu_draw_scanline(gba, &scanline);
+        }
+
         ppu_step_affine_internal_registers(gba);
     }
 
