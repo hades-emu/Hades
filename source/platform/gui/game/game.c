@@ -279,6 +279,13 @@ gui_game_set_audio_settings(
 }
 
 void
+gui_game_color_correction(
+    struct app *app
+) {
+    gba_message_push(app->emulation.gba, NEW_MESSAGE_COLOR_CORRECTION(app->emulation.color_correction));
+}
+
+void
 gui_game_handle_events(
     struct app *app,
     SDL_Event *event

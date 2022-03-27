@@ -444,6 +444,7 @@ main(
     memset(&app, 0, sizeof(app));
     app.emulation.enabled = false;
     app.emulation.speed = 1;
+    app.emulation.color_correction = true;
     app.emulation.gba = malloc(sizeof(*app.emulation.gba));
     hs_assert(app.emulation.gba);
     gba_init(app.emulation.gba);
@@ -454,6 +455,9 @@ main(
 
     /* Initialize the SDL, OpenGL and ImGUI */
     gui_init(&app);
+
+    /* Set the color correction */
+    gui_game_color_correction(&app);
 
     /* Start the logic thread */
     pthread_create(
