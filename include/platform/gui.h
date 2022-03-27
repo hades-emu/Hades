@@ -33,6 +33,8 @@ struct emulation {
     bool enabled;
     uint32_t speed;
     bool unbounded;
+
+    bool color_correction;
 };
 
 struct app {
@@ -81,6 +83,7 @@ void gui_game_run(struct app *app);
 void gui_game_quicksave(struct app *app);
 void gui_game_quickload(struct app *app);
 void gui_game_set_audio_settings(struct app *app, uint64_t resample_freq);
+void gui_game_color_correction(struct app *app);
 
 /* game/render.c */
 void gui_render_game_fullscreen(struct app *app);

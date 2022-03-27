@@ -78,7 +78,11 @@ gui_render_menubar(
         if (igBeginMenu("Emulation", true)) {
 
             /* Color Correction */
-            igMenuItemBool("Color correction", NULL, false, false);
+            if (igMenuItemBool("Color correction", NULL, app->emulation.color_correction, true)) {
+                app->emulation.color_correction ^= 1;
+                gui_game_color_correction(app);
+            }
+
             igSeparator();
 
             /* Save & backups */

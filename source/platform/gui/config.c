@@ -30,13 +30,15 @@ gui_load_config(
                 recent_roms_3: %Q,
                 recent_roms_4: %Q,
                 bios: %Q,
+                color_correction: %B,
             }),
             &app->recent_roms[0],
             &app->recent_roms[1],
             &app->recent_roms[2],
             &app->recent_roms[3],
             &app->recent_roms[4],
-            &app->emulation.bios_path
+            &app->emulation.bios_path,
+            &app->emulation.color_correction
         );
 
         free(data);
@@ -60,13 +62,15 @@ gui_save_config(
             recent_roms_3: %Q,
             recent_roms_4: %Q,
             bios: %Q,
+            color_correction: %B,
         }),
         app->recent_roms[0],
         app->recent_roms[1],
         app->recent_roms[2],
         app->recent_roms[3],
         app->recent_roms[4],
-        app->emulation.bios_path
+        app->emulation.bios_path,
+        app->emulation.color_correction
     );
 }
 

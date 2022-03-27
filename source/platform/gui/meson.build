@@ -25,6 +25,7 @@ hades = executable(
     winrc,  # Empty on non-windows system
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
+        cc.find_library('m', required: true, static: get_option('static_executable')),
     ],
     link_with: [libgba, imgui, libcommon, frozen],
     include_directories: [incdir, imgui_inc, frozen_inc, stb_inc],
