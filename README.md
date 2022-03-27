@@ -10,10 +10,14 @@
 ## Screenshots
 
 <p align="center">
-  <img src="https://i.imgur.com/1bN1Nh9.png">
-  <img src="https://i.imgur.com/pbdR5AN.png">
   <img src="https://i.imgur.com/29JPzmU.png">
+  <img src="https://i.imgur.com/kyEfEam.png">
   <img src="https://i.imgur.com/c84TjGW.png">
+</p>
+<p align="center">
+  <img src="https://i.imgur.com/WGCHWJv.png">
+  <img src="https://i.imgur.com/0LMmkRD.png">
+  <img src="https://i.imgur.com/pbdR5AN.png">
 </p>
 
 ## Features
