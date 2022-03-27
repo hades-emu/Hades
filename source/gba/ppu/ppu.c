@@ -324,9 +324,9 @@ ppu_draw_scanline_color_correction(
         b = c.blue * c.blue * c.blue * c.blue       / (31.0 * 31.0 * 31.0 * 31.0);  // <=> pow(c.blue  / 31.0, lcd_gamma);
 
         gba->framebuffer[GBA_SCREEN_WIDTH * y + x] = 0xFF000000
-            | (uint)(sqrt(            0.196 * g + 1.000 * r) * 213.0) << 0
-            | (uint)(sqrt(0.118 * b + 0.902 * g + 0.039 * r) * 240.0) << 8
-            | (uint)(sqrt(0.863 * b + 0.039 * g + 0.196 * r) * 232.0) << 16
+            | (uint32_t)(sqrt(            0.196 * g + 1.000 * r) * 213.0) << 0
+            | (uint32_t)(sqrt(0.118 * b + 0.902 * g + 0.039 * r) * 240.0) << 8
+            | (uint32_t)(sqrt(0.863 * b + 0.039 * g + 0.196 * r) * 232.0) << 16
         ;
     }
 }
