@@ -32,4 +32,5 @@ hades = executable(
     c_args: cflags,
     link_args: ldflags,
     gui_app: true,
+    install: true,
 )

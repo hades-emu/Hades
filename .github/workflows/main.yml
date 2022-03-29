@@ -45,9 +45,8 @@ jobs:
           brew install meson ninja sdl2 glew
       - name: Build Hades
         run: |
-          meson build --werror
-          cd build
-          ninja
+          meson --buildtype=release --prefix=/tmp/hades.app --bindir=Content/MacOS build --werror
+          ninja -C build install
       - name: Test Hades
         run: |
           cd build

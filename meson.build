@@ -29,10 +29,13 @@ if get_option('static_executable')
     ldflags += ['-static']
 endif
 
+winrc = []
 if host_machine.system() == 'windows'
-    winrc = import('windows').compile_resources('./resource/hades.rc' )
-else
-    winrc = []
+    winrc += import('windows').compile_resources('./resource/windows/hades.rc' )
+elif host_machine.system() == 'windows'
+    install_data('./resource/macos/Info.plist', install_dir: 'Contents')
+    install_data('./resource/macos/hades.icns', install_dir: 'Contents/Resources')
+    install_data('./resource/macos/run.sh',     install_dir: 'Contents/MacOS')
 endif
 
 cc = meson.get_compiler('c')
@@ -60,16 +63,3 @@ subdir('source/gba')
 ###############################
 
 subdir('source/platform/gui')
-
-########################
-## Hades Final Binary
-########################
-
-custom_target(
-    'hades',
-    output : 'hades',
-    input : hades,
-    command : ['cp', '@INPUT@', '@PLAINNAME@'],
-    install : true,
-    install_dir : 'subdir',
-)
