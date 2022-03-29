@@ -42,6 +42,7 @@ quicksave(
         || fwrite(&gba->memory.eeprom, sizeof(gba->memory.eeprom), 1, file) != 1
         || fwrite(&gba->io, sizeof(gba->io), 1, file) != 1
         || fwrite(&gba->ppu, sizeof(gba->ppu), 1, file) != 1
+        || fwrite(&gba->gpio, sizeof(gba->gpio), 1, file) != 1
         || fwrite(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
         goto err;
@@ -117,6 +118,7 @@ quickload(
         || fread(&gba->memory.eeprom, sizeof(gba->memory.eeprom), 1, file) != 1
         || fread(&gba->io, sizeof(gba->io), 1, file) != 1
         || fread(&gba->ppu, sizeof(gba->ppu), 1, file) != 1
+        || fread(&gba->gpio, sizeof(gba->gpio), 1, file) != 1
         || fread(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
         goto err;

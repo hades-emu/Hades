@@ -17,6 +17,7 @@
 # include "gba/io.h"
 # include "gba/apu.h"
 # include "gba/scheduler.h"
+# include "gba/gpio.h"
 
 enum gba_state {
     GBA_STATE_PAUSE = 0,
@@ -110,6 +111,7 @@ struct gba {
     struct ppu ppu;
     struct apu apu;
     struct scheduler scheduler;
+    struct gpio gpio;
 
     /* Entry in the game database, if it exists. */
     struct game_entry *game_entry;
