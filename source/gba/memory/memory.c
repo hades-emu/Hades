@@ -12,6 +12,7 @@
 #include "gba/gba.h"
 #include "gba/core.h"
 #include "gba/memory.h"
+#include "gba/gpio.h"
 
 /*
 ** Region        Bus   Read      Write     Cycles   Note
@@ -333,6 +334,8 @@ mem_openbus_read(
                     || (gba)->memory.backup_storage_type == BACKUP_EEPROM_64K)              \
                 ) {                                                                         \
                     _ret = mem_eeprom_read8(gba);                                           \
+                } else if ((addr) >= GPIO_REG_START && (addr) <= GPIO_REG_END) {            \
+                    _ret = gpio_read_u8((gba), (addr));                                     \
                 } else {                                                                    \
                     _ret = *(T *)((uint8_t *)((gba)->memory.rom) + ((addr) & CART_MASK));   \
                 }                                                                           \
@@ -406,6 +409,8 @@ mem_openbus_read(
                     || (gba)->memory.backup_storage_type == BACKUP_EEPROM_64K)                  \
                 ) {                                                                             \
                     mem_eeprom_write8((gba), (val) & 1);                                        \
+                } else if ((addr) >= GPIO_REG_START && (addr) <= GPIO_REG_END) {                \
+                    gpio_write_u8((gba), (addr), (val));                                        \
                 }                                                                               \
                                                                                                 \
                 /* Ignore writes attempts to the cartridge memory. */                           \

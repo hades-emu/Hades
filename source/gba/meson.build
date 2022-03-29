@@ -27,6 +27,8 @@ libgba = static_library(
     'core/thumb/sdt.c',
     'core/thumb/swi.c',
     'core/core.c',
+    'gpio/gpio.c',
+    'gpio/rtc.c',
     'memory/storage/eeprom.c',
     'memory/storage/flash.c',
     'memory/storage/storage.c',

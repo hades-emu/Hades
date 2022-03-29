@@ -46,6 +46,7 @@ gba_reset(
     ppu_init(gba);
     apu_init(gba);
     core_init(gba);
+    gpio_init(gba);
 }
 
 /*
