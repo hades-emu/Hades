@@ -29,7 +29,7 @@ imgui_dep = [
 
 if host_machine.system() == 'darwin'
     imgui_dep += [
-        dependency('appleframeworks', required: true, modules: 'OpenGL')
+        dependency('appleframeworks', required: true, modules: 'OpenGL'),
     ]
 else
     imgui_dep += [

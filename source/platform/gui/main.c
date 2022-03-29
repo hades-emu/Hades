@@ -9,6 +9,7 @@
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <GL/glew.h>
+
 #include <cimgui.h>
 #include <cimgui_impl.h>
 
@@ -227,7 +228,6 @@ gui_init(
 ) {
     SDL_AudioSpec want;
     SDL_AudioSpec have;
-    float dpi_factor;
     ImFontConfig *cfg;
     char const* glsl_version;
 
@@ -280,13 +280,20 @@ gui_init(
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     /* High resolution */
-    SDL_GetDisplayDPI(0, NULL, &app->dpi, NULL);
+    SDL_GetDisplayDPI(0, &app->dpi, NULL, NULL);
+
+#if __APPLE__
+    app->gui_scale = 1;
+#else
+    float dpi_factor;
+
     dpi_factor = app->dpi / 96.f;
     if (dpi_factor >= (int)dpi_factor + 0.5f) {
         app->gui_scale = (int)dpi_factor + 1;
     } else {
         app->gui_scale = (int)dpi_factor ? (int)dpi_factor : 1;
     }
+#endif
 
     /* Create the window */
     app->window = SDL_CreateWindow(
@@ -295,7 +302,7 @@ gui_init(
         SDL_WINDOWPOS_CENTERED,
         GBA_SCREEN_WIDTH * 3 * app->gui_scale,
         (GBA_SCREEN_HEIGHT * 3 + 19.f) * app->gui_scale ,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_RENDERER_PRESENTVSYNC
+        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_RENDERER_PRESENTVSYNC
     );
 
     if (!app->window) {
