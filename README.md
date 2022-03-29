@@ -28,6 +28,7 @@ Currently, Hades features:
   - High accuracy
   - Color correction
   - Game controller support
+  - Real Time Clock (RTC) support
 
 It is the third 🥉 software emulator to pass the AGS Aging Cartridge used to test Game Boy Advance systems.
 
