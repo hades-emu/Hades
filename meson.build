@@ -32,7 +32,7 @@ endif
 winrc = []
 if host_machine.system() == 'windows'
     winrc += import('windows').compile_resources('./resource/windows/hades.rc' )
-elif host_machine.system() == 'windows'
+elif host_machine.system() == 'darwin'
     install_data('./resource/macos/Info.plist', install_dir: 'Contents')
     install_data('./resource/macos/hades.icns', install_dir: 'Contents/Resources')
     install_data('./resource/macos/run.sh',     install_dir: 'Contents/MacOS')
@@ -73,6 +73,4 @@ custom_target(
     output : 'hades',
     input : hades,
     command : ['ln', '-s', '@INPUT@', '@PLAINNAME@'],
-    install : true,
-    install_dir : 'subdir',
 )
