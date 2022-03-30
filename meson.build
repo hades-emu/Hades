@@ -73,4 +73,5 @@ custom_target(
     output : 'hades',
     input : hades,
     command : ['ln', '-s', '@INPUT@', '@PLAINNAME@'],
+    install : true,
 )
