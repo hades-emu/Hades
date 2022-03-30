@@ -70,8 +70,9 @@ subdir('source/platform/gui')
 
 custom_target(
     'hades',
-    output : 'hades',
-    input : hades,
-    command : ['ln', '-s', '@INPUT@', '@PLAINNAME@'],
-    install : true,
+    output: 'hades',
+    input: hades,
+    command: ['ln', '-s', '@INPUT@', '@PLAINNAME@'],
+    install: true,
+    install_dir:'.',
 )
