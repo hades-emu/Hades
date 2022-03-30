@@ -63,3 +63,16 @@ subdir('source/gba')
 ###############################
 
 subdir('source/platform/gui')
+
+########################
+## Hades Final Binary
+########################
+
+custom_target(
+    'hades',
+    output : 'hades',
+    input : hades,
+    command : ['ln', '-s', '@INPUT@', '@PLAINNAME@'],
+    install : true,
+    install_dir : 'subdir',
+)
