@@ -54,7 +54,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: hades-macos
-          path: /tmp/haddes.app
+          path: /tmp/hades.app
           if-no-files-found: error
 
   linux:
