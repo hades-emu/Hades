@@ -24,13 +24,12 @@ jobs:
           ninja
       - name: Test Hades
         run: |
-          cd build
-          ./source/platform/gui/hades --help
+          ./build/Hades.exe --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: hades-win64
-          path: build/source/platform/gui/Hades.exe
+          path: build/Hades.exe
           if-no-files-found: error
 
   mac-os:
@@ -54,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: hades-macos
-          path: /tmp/build/hades.app
+          path: /tmp/build
           if-no-files-found: error
 
   linux:
@@ -75,11 +74,10 @@ jobs:
           ninja
       - name: Test Hades
         run: |
-          cd build
-          ./source/platform/gui/hades --help
+          ./build/hades --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: hades-linux
-          path: build/source/platform/gui/hades
+          path: build/hades
           if-no-files-found: error
