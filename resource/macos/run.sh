@@ -2,4 +2,4 @@
 
 cd "${0%/*}"
 
-./hades $@
+exec ./hades $@

@@ -46,12 +46,16 @@ jobs:
         run: |
           meson --buildtype=release --prefix=/tmp/build/hades.app --bindir=Contents/MacOS build --werror
           ninja -C build install
+          
+          chmod +x /tmp/build/hades.app/Contents/MacOS/hades /tmp/build/hades.app/Contents/MacOS/run.sh
+
+          otool -L /tmp/build/hades.app/Contents/MacOS/hades
 
           cp /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib /tmp/build/hades.app/Contents/MacOS/
           install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2-2.0.0.dylib /tmp/build/hades.app/Contents/MacOS/hades
 
           cp /usr/local/opt/glew/lib/libGLEW.2.2.dylib /tmp/build/hades.app/Contents/MacOS/
-          install_name_tool -change /usr/local/opt/sdl2/lib/libGLEW.2.2.dylib @executable_path/libGLEW.2.2.dylib /tmp/build/hades.app/Contents/MacOS/hades
+          install_name_tool -change /usr/local/opt/glew/lib/libGLEW.2.2.dylib @executable_path/libGLEW.2.2.dylib /tmp/build/hades.app/Contents/MacOS/hades
       - name: Test Hades
         run: |
           /tmp/build/hades.app/Contents/MacOS/hades --help
