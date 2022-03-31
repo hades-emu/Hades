@@ -48,7 +48,7 @@ jobs:
           ninja -C build install
       - name: Test Hades
         run: |
-          /tmp/build/hades.app/Content/MacOS/hades --help
+          /tmp/build/hades.app/Contents/MacOS/hades --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
