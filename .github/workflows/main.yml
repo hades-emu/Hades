@@ -45,16 +45,16 @@ jobs:
           brew install meson ninja sdl2 glew
       - name: Build Hades
         run: |
-          meson --buildtype=release --prefix=/tmp/hades.app --bindir=Content/MacOS build --werror
+          meson --buildtype=release --prefix=/tmp/build/hades.app --bindir=Contents/MacOS build --werror
           ninja -C build install
       - name: Test Hades
         run: |
-          /tmp/hades.app/Content/MacOS/hades --help
+          /tmp/build/hades.app/Content/MacOS/hades --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: hades-macos
-          path: /tmp/hades.app
+          path: /tmp/build/hades.app
           if-no-files-found: error
 
   linux:
