@@ -70,6 +70,8 @@ cd build
 ninja
 ```
 
+The binary is located in `build/source/platform/gui/`.
+
 ## Thanks
 
 Special thanks to some invaluable resources while writing Hades:

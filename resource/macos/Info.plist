@@ -7,9 +7,9 @@
     <key>CFBundleExecutable</key>
     <string>run.sh</string>
     <key>CFBundleIdentifier</key>
-    <string>The Hades Authors</string>
+    <string>com.hades-gba.www</string>
     <key>CFBundleName</key>
-    <string>Hades</string>
+    <string>hades</string>
     <key>CFBundleIconFile</key>
     <string>hades.icns</string>
     <key>CFBundleShortVersionString</key>
