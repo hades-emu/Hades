@@ -59,14 +59,15 @@ jobs:
       - name: Test Hades
         run: |
           /tmp/build/hades.app/Contents/MacOS/hades --help
-      - name: Compress Hades
+      - name: Pack Hades
         run: |
-          zip hades.zip /tmp/build/hades.app -r
+          cd /tmp/build
+          tar cvf hades.tar hades.app
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: hades-macos
-          path: hades.zip
+          path: /tmp/build/hades.tar
           if-no-files-found: error
 
   linux:
