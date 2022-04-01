@@ -85,5 +85,6 @@ Special thanks to some invaluable resources while writing Hades:
   - [Tonc](https://www.coranac.com/tonc/text/toc.htm) by Cearn
   - [GBA Cartridge Backup Storage](https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html) by Dillon Beliveau
   - [EEPROM Save Type](https://densinh.github.io/DenSinH/emulation/2021/02/01/gba-eeprom.html) by Dennis H
-  - [Higan](https://near.sh/articles/video/color-emulation) for they color correction algorithm (by Talarubi and Near)
+  - [Explaining GBA Real-Time Clock (RTC)](https://beanmachine.alt.icu/post/rtc/) by Zayd
+  - [Higan](https://near.sh/articles/video/color-emulation) for their color correction algorithm (by Talarubi and Near)
   - [The Hades Icon](https://totushi.com/) by Totushi
