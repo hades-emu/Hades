@@ -41,7 +41,7 @@ jobs:
           submodules: 'recursive'
       - name: Install Dependencies
         run: |
-          brew install meson ninja sdl2 glew
+          brew install meson ninja sdl2 glew create-dmg
       - name: Build Hades
         run: |
           rm -rf /tmp/build/
@@ -64,21 +64,25 @@ jobs:
           /tmp/build/Hades.app/Contents/MacOS/hades --help
       - name: Pack Hades
         run: |
-          mkdir /tmp/dmg
-          hdiutil create -fs HFSX -layout SPUD -size 10m "Hades.dmg" -srcfolder /tmp/dmg/ -format UDRW -volname Hades
-          rm -rf /tmp/dmg
+          rm -rf Hades.dmg
           
-          mkdir /tmp/mnt
-          hdiutil attach "Hades.dmg" -noautoopen -quiet -mountpoint "/tmp/mnt"
-          ditto -rsrc /tmp/build/Hades.app /tmp/mnt/Hades.app
-          hdiutil detach "`hdiutil info | grep "/tmp/mnt" | grep "Apple_HFS" | awk '{print $1}'`" -force
-          hdiutil convert "Hades.dmg" -format UDZO -imagekey zlib-level=9 -o /tmp/build/Hades.dmg
-          rm -rf /tmp/mnt
+          create-dmg \
+              --volname "Hades Installer" \
+              --volicon ./resource/macos/hades.icns \
+              --window-pos 200 120 \
+              --window-size 800 400 \
+              --icon-size 100 \
+              --icon "Hades.app" 200 190 \
+              --hide-extension Hades.app \
+              --app-drop-link 600 185 \
+              Hades-Installer.dmg \
+              /tmp/build/
+
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: hades-macos
-          path: /tmp/build/Hades.dmg
+          path: Hades-Installer.dmg
           if-no-files-found: error
 
   linux:
