@@ -44,30 +44,42 @@ jobs:
           brew install meson ninja sdl2 glew
       - name: Build Hades
         run: |
-          meson --buildtype=release --prefix=/tmp/build/hades.app --bindir=Contents/MacOS build --werror
+          rm -rf /tmp/build/
+          mkdir -p /tmp/build/Hades.app
+
+          meson --buildtype=release --prefix=/tmp/build/Hades.app --bindir=Contents/MacOS build --werror
           ninja -C build install
           
-          chmod +x /tmp/build/hades.app/Contents/MacOS/hades /tmp/build/hades.app/Contents/MacOS/run.sh
+          chmod +x /tmp/build/Hades.app/Contents/MacOS/hades /tmp/build/Hades.app/Contents/MacOS/run.sh
 
-          otool -L /tmp/build/hades.app/Contents/MacOS/hades
+          otool -L /tmp/build/Hades.app/Contents/MacOS/hades
 
-          cp /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib /tmp/build/hades.app/Contents/MacOS/
-          install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2-2.0.0.dylib /tmp/build/hades.app/Contents/MacOS/hades
+          cp /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib /tmp/build/Hades.app/Contents/MacOS/
+          install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2-2.0.0.dylib /tmp/build/Hades.app/Contents/MacOS/hades
 
-          cp /usr/local/opt/glew/lib/libGLEW.2.2.dylib /tmp/build/hades.app/Contents/MacOS/
-          install_name_tool -change /usr/local/opt/glew/lib/libGLEW.2.2.dylib @executable_path/libGLEW.2.2.dylib /tmp/build/hades.app/Contents/MacOS/hades
+          cp /usr/local/opt/glew/lib/libGLEW.2.2.dylib /tmp/build/Hades.app/Contents/MacOS/
+          install_name_tool -change /usr/local/opt/glew/lib/libGLEW.2.2.dylib @executable_path/libGLEW.2.2.dylib /tmp/build/Hades.app/Contents/MacOS/hades
       - name: Test Hades
         run: |
-          /tmp/build/hades.app/Contents/MacOS/hades --help
+          /tmp/build/Hades.app/Contents/MacOS/hades --help
       - name: Pack Hades
         run: |
-          cd /tmp/build
-          tar cvf hades.tar hades.app
+          mkdir /tmp/dmg
+          hdiutil create -fs HFSX -layout SPUD -size 10m "Hades.dmg" -srcfolder /tmp/dmg/ -format UDRW -volname Hades
+          bzip2 "Hades.dmg"
+          rm -rf /tmp/dmg
+          
+          mkdir /tmp/mnt
+          hdiutil attach "Hades.dmg" -noautoopen -quiet -mountpoint "/tmp/mnt"
+          ditto -rsrc /tmp/build/Hades.app /tmp/mnt/Hades.app
+          hdiutil detach "`hdiutil info | grep "/tmp/mnt" | grep "Apple_HFS" | awk '{print $$1}'`" -force
+          hdiutil convert "Hades.dmg" -format UDZO -imagekey zlib-level=9 -o /tmp/build/Hades.dmg
+          rm -rf /tmp/mnt
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: hades-macos
-          path: /tmp/build/hades.tar
+          path: /tmp/build/Hades.dmg
           if-no-files-found: error
 
   linux:
