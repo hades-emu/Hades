@@ -66,13 +66,12 @@ jobs:
         run: |
           mkdir /tmp/dmg
           hdiutil create -fs HFSX -layout SPUD -size 10m "Hades.dmg" -srcfolder /tmp/dmg/ -format UDRW -volname Hades
-          bzip2 "Hades.dmg"
           rm -rf /tmp/dmg
           
           mkdir /tmp/mnt
           hdiutil attach "Hades.dmg" -noautoopen -quiet -mountpoint "/tmp/mnt"
           ditto -rsrc /tmp/build/Hades.app /tmp/mnt/Hades.app
-          hdiutil detach "`hdiutil info | grep "/tmp/mnt" | grep "Apple_HFS" | awk '{print $$1}'`" -force
+          hdiutil detach "`hdiutil info | grep "/tmp/mnt" | grep "Apple_HFS" | awk '{print $1}'`" -force
           hdiutil convert "Hades.dmg" -format UDZO -imagekey zlib-level=9 -o /tmp/build/Hades.dmg
           rm -rf /tmp/mnt
       - name: Collect Artifacts
