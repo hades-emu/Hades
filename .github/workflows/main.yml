@@ -70,7 +70,7 @@ jobs:
           
           create-dmg \
               --volname "Hades Installer" \
-              --volicon hades.icns \
+              --volicon ./resource/macos/hades.icns \
               --window-pos 200 120 \
               --window-size 600 400 \
               --icon-size 100 \
