@@ -71,12 +71,13 @@ jobs:
           create-dmg \
               --volname "Hades Installer" \
               --volicon ./resource/macos/hades.icns \
+              --background ./resource/macos/background.png \
               --window-pos 200 120 \
               --window-size 600 350 \
               --icon-size 100 \
-              --icon "Hades.app" 150 150 \
+              --icon Hades.app 150 250 \
               --hide-extension Hades.app \
-              --app-drop-link 450 150 \
+              --app-drop-link 450 250 \
               Hades-Installer.dmg \
               /tmp/build/
 
