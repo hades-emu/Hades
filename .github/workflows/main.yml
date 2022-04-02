@@ -75,9 +75,9 @@ jobs:
               --window-pos 200 120 \
               --window-size 600 350 \
               --icon-size 100 \
-              --icon Hades.app 150 250 \
+              --icon Hades.app 150 200 \
               --hide-extension Hades.app \
-              --app-drop-link 450 250 \
+              --app-drop-link 450 200 \
               Hades-Installer.dmg \
               /tmp/build/
 
