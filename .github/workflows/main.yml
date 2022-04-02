@@ -66,15 +66,17 @@ jobs:
         run: |
           rm -rf Hades.dmg
           
+          pwd
+          
           create-dmg \
               --volname "Hades Installer" \
-              --volicon ./resource/macos/hades.icns \
+              --volicon hades.icns \
               --window-pos 200 120 \
               --window-size 600 400 \
               --icon-size 100 \
-              --icon "Hades.app" 200 190 \
+              --icon "Hades.app" 150 190 \
               --hide-extension Hades.app \
-              --app-drop-link 400 185 \
+              --app-drop-link 450 185 \
               Hades-Installer.dmg \
               /tmp/build/
 
