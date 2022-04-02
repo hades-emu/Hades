@@ -72,11 +72,11 @@ jobs:
               --volname "Hades Installer" \
               --volicon ./resource/macos/hades.icns \
               --window-pos 200 120 \
-              --window-size 600 400 \
+              --window-size 600 350 \
               --icon-size 100 \
-              --icon "Hades.app" 150 190 \
+              --icon "Hades.app" 150 105 \
               --hide-extension Hades.app \
-              --app-drop-link 450 185 \
+              --app-drop-link 450 100 \
               Hades-Installer.dmg \
               /tmp/build/
 
