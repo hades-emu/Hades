@@ -302,7 +302,7 @@ gui_init(
         SDL_WINDOWPOS_CENTERED,
         GBA_SCREEN_WIDTH * 3 * app->gui_scale,
         (GBA_SCREEN_HEIGHT * 3 + 19.f) * app->gui_scale ,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_RENDERER_PRESENTVSYNC
+        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
 
     if (!app->window) {
@@ -312,9 +312,10 @@ gui_init(
 
     /* Create the OpenGL context */
     app->gl_context = SDL_GL_CreateContext(app->window);
+    SDL_GL_MakeCurrent(app->window, app->gl_context);
 
     /* Enable VSync */
-    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetSwapInterval(app->vsync);
 
     /* Initialize OpenGL */
     if (glewInit()) {
