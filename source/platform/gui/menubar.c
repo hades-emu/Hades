@@ -83,6 +83,12 @@ gui_render_menubar(
                 gui_game_color_correction(app);
             }
 
+            /* VSync */
+            if (igMenuItemBool("Enable VSync", NULL, app->vsync, true)) {
+                app->vsync ^= 1;
+                SDL_GL_SetSwapInterval(app->vsync);
+            }
+
             igSeparator();
 
             /* Save & backups */

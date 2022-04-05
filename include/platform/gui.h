@@ -53,6 +53,9 @@ struct app {
     uint32_t menubar_height;
     float menubar_fps_width;
 
+    /* Graphical Options */
+    bool vsync;
+
     /* High resolution */
     float dpi;
     uint32_t gui_scale;
