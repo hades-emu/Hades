@@ -298,6 +298,7 @@ ppu_draw_scanline(
 ** Compose the content of the framebuffer based on the content of `scanline->result` and/or the backdrop color.
 ** This algorithm applies a color correction.
 **
+** NOTE: lcd_gamma is 4.0, out_gamma is 2.0.
 ** Reference:
 **   - https://near.sh/articles/video/color-emulation
 */
@@ -324,9 +325,9 @@ ppu_draw_scanline_color_correction(
         b = c.blue * c.blue * c.blue * c.blue       / (31.0 * 31.0 * 31.0 * 31.0);  // <=> pow(c.blue  / 31.0, lcd_gamma);
 
         gba->framebuffer[GBA_SCREEN_WIDTH * y + x] = 0xFF000000
-            | (uint32_t)(sqrt(            0.196 * g + 1.000 * r) * 213.0) << 0
-            | (uint32_t)(sqrt(0.118 * b + 0.902 * g + 0.039 * r) * 240.0) << 8
-            | (uint32_t)(sqrt(0.863 * b + 0.039 * g + 0.196 * r) * 232.0) << 16
+            | (uint32_t)(sqrt(            0.196 * g + 1.000 * r) * 213.0) << 0      // <=> pow(r, 1.0 / out_gamma);
+            | (uint32_t)(sqrt(0.118 * b + 0.902 * g + 0.039 * r) * 240.0) << 8      // <=> pow(g, 1.0 / out_gamma);
+            | (uint32_t)(sqrt(0.863 * b + 0.039 * g + 0.196 * r) * 232.0) << 16     // <=> pow(b, 1.0 / out_gamma);
         ;
     }
 }
@@ -370,7 +371,7 @@ ppu_hdraw(
     /* Trigger the VBLANK IRQ & DMA transfer */
     if (io->vcount.raw == GBA_SCREEN_HEIGHT) {
         if (io->dispstat.vblank_irq) {
-            core_trigger_irq(gba, IRQ_VBLANK);
+            gba->io.int_flag.vblank = true;
         }
         mem_schedule_dma_transfers(gba, DMA_TIMING_VBLANK);
         ppu_reload_affine_internal_registers(gba, 0);
@@ -379,7 +380,7 @@ ppu_hdraw(
 
     /* Trigger the VCOUNT IRQ */
     if (io->dispstat.vcount_eq && io->dispstat.vcount_irq) {
-        core_trigger_irq(gba, IRQ_VCOUNTER);
+        gba->io.int_flag.vcounter = true;
     }
 }
 
@@ -403,11 +404,11 @@ ppu_hblank(
         ppu_initialize_scanline(gba, &scanline);
         ppu_window_build_masks(gba, &scanline, io->vcount.raw);
         ppu_prerender_oam(gba, &scanline, io->vcount.raw);
-
+        
         if (!gba->io.dispcnt.blank) {
             ppu_render_scanline(gba, &scanline);
         }
-
+        
         if (gba->color_correction) {
             ppu_draw_scanline_color_correction(gba, &scanline);
         } else {
@@ -424,7 +425,7 @@ ppu_hblank(
     */
 
     if (io->dispstat.hblank_irq) {
-        core_trigger_irq(gba, IRQ_HBLANK);
+        gba->io.int_flag.hblank = true;
     }
 
     if (io->vcount.raw < GBA_SCREEN_HEIGHT) {

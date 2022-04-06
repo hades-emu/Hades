@@ -54,7 +54,7 @@ timer_overflow(
     timer->counter.raw = timer->reload.raw;
 
     if (timer->control.irq) {
-        core_trigger_irq(gba, IRQ_TIMER0 + timer_idx);
+        gba->io.int_flag.raw |= 1 << (IRQ_TIMER0 + timer_idx);
     }
 
     if (timer_idx == 0 || timer_idx == 1) {

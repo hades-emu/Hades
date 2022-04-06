@@ -54,14 +54,14 @@ dma_run_channel(
 
     // The first DMA take at least two internal cycles
     // (Supposedly to transition from CPU to DMA)
-    if (first) {
+    if (likely(first)) {
         core_idle_for(gba, 2);
     }
 
     bool src_in_gamepak = ((channel->internal_src >> 24) >= CART_REGION_START && (channel->internal_src) <= CART_REGION_END);
     bool dst_in_gamepak = ((channel->internal_dst >> 24) >= CART_REGION_START && (channel->internal_dst) <= CART_REGION_END);
 
-    if ((src_in_gamepak || dst_in_gamepak)) {
+    if (src_in_gamepak || dst_in_gamepak) {
         core_idle_for(gba, 2);
     }
 
@@ -70,7 +70,6 @@ dma_run_channel(
     if (channel->is_fifo) {
         dst_step = 0;
     } else {
-
         switch (channel->control.dst_ctl) {
             case 0b00:      dst_step = unit_size; break;
             case 0b01:      dst_step = -unit_size; break;
@@ -104,16 +103,22 @@ dma_run_channel(
     );
 
     access = NON_SEQUENTIAL;
-    while (channel->internal_count > 0) {
-        if (unit_size == 4) {
-            if (channel->internal_src >= EWRAM_START) {
+    if (unit_size == 4) {
+        while (channel->internal_count > 0) {
+            if (likely(channel->internal_src >= EWRAM_START)) {
                 channel->bus = mem_read32(gba, channel->internal_src, access);
             } else {
                 core_idle(gba);
             }
             mem_write32(gba, channel->internal_dst, channel->bus, access);
-        } else { // unit_size == 2
-            if (channel->internal_src >= EWRAM_START) {
+            channel->internal_src += src_step;
+            channel->internal_dst += dst_step;
+            channel->internal_count -= 1;
+            access = SEQUENTIAL;
+        }
+    } else { // unit_size == 2
+        while (channel->internal_count > 0) {
+            if (likely(channel->internal_src >= EWRAM_START)) {
 
                 /*
                 ** Not sure what's the expected behaviour, this is more
@@ -125,16 +130,14 @@ dma_run_channel(
                 core_idle(gba);
             }
             mem_write16(gba, channel->internal_dst, channel->bus, access);
+            channel->internal_src += src_step;
+            channel->internal_dst += dst_step;
+            channel->internal_count -= 1;
+            access = SEQUENTIAL;
         }
-        channel->internal_src += src_step;
-        channel->internal_dst += dst_step;
-        channel->internal_count -= 1;
-        access = SEQUENTIAL;
     }
 
-    if (channel->control.irq_end) {
-        core_trigger_irq(gba, IRQ_DMA0 + channel->index);
-    }
+    gba->io.int_flag.raw |= (channel->control.irq_end << (IRQ_DMA0 + channel->index));
 
     if (channel->control.repeat) {
         if (channel->is_fifo) {
