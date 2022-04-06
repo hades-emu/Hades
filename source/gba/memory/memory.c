@@ -329,12 +329,13 @@ mem_openbus_read(
                 _ret = *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK));        \
                 break;                                                                      \
             case CART_REGION_START ... CART_REGION_END: {                                   \
-                if (   ((addr) & (gba)->memory.eeprom.mask) == (gba)->memory.eeprom.range   \
+                if (unlikely(                                                               \
+                       ((addr) & (gba)->memory.eeprom.mask) == (gba)->memory.eeprom.range   \
                     && ((gba)->memory.backup_storage_type == BACKUP_EEPROM_4K               \
                     || (gba)->memory.backup_storage_type == BACKUP_EEPROM_64K)              \
-                ) {                                                                         \
+                )) {                                                                        \
                     _ret = mem_eeprom_read8(gba);                                           \
-                } else if ((addr) >= GPIO_REG_START && (addr) <= GPIO_REG_END) {            \
+                } else if (unlikely((addr) >= GPIO_REG_START && (addr) <= GPIO_REG_END && (gba)->gpio.readable)) { \
                     _ret = gpio_read_u8((gba), (addr));                                     \
                 } else {                                                                    \
                     _ret = *(T *)((uint8_t *)((gba)->memory.rom) + ((addr) & CART_MASK));   \
@@ -412,7 +413,6 @@ mem_openbus_read(
                 } else if ((addr) >= GPIO_REG_START && (addr) <= GPIO_REG_END) {                \
                     gpio_write_u8((gba), (addr), (val));                                        \
                 }                                                                               \
-                                                                                                \
                 /* Ignore writes attempts to the cartridge memory. */                           \
                 break;                                                                          \
             };                                                                                  \

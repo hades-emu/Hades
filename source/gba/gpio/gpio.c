@@ -27,13 +27,9 @@ gpio_read_u8(
     struct gba *gba,
     uint32_t addr
 ) {
-    if (!gba->gpio.read_write) {
-        return (0);
-    }
-
     switch (addr) {
         case GPIO_REG_CTRL: {
-            return (gba->gpio.read_write);
+            return (gba->gpio.readable);
         };
         case GPIO_REG_DATA: {
             uint8_t val;
@@ -60,7 +56,7 @@ gpio_write_u8(
 ) {
     switch (addr) {
         case GPIO_REG_CTRL: {
-            gba->gpio.read_write = val & 0b1;
+            gba->gpio.readable = val & 0b1;
             break;
         };
         case GPIO_REG_DATA: {
