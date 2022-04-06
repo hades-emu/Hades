@@ -598,7 +598,7 @@ mem_io_write8(
 
             /* Stub */
             if (io->siocnt.start && io->siocnt.irq) {
-                core_trigger_irq(gba, IRQ_SERIAL);
+                gba->io.int_flag.serial = true;
             }
             io->siocnt.start = false;
             break;
@@ -670,6 +670,6 @@ io_scan_keypad_irq(
     struct gba *gba
 ) {
     if (gba->io.keycnt.irq_enable && io_evaluate_keypad_cond(gba)) {
-        core_trigger_irq(gba, IRQ_KEYPAD);
+        gba->io.int_flag.keypad = true;
     }
 }

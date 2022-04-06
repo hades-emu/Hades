@@ -67,58 +67,81 @@ core_next(
 
     core = &gba->core;
 
-    // Scan for any pending interrupt
-    core_scan_irq(gba);
-
-    switch (core->state) {
-        case CORE_RUN:
-            if (core->cpsr.thumb) {
-                uint16_t op;
-
-                op = core->prefetch[0];
-                core->prefetch[0] = core->prefetch[1];
-                core->prefetch[1] = mem_read16(gba, core->pc, core->prefetch_access_type);
-
-                if (unlikely(thumb_lut[op >> 8] == NULL)) {
-                    panic(HS_CORE, "Unknown Thumb op-code 0x%04x (pc=0x%08x).", op, core->pc);
+    /*
+    ** Ensure all the conditions to trigger any IRQ are met, and if they are, fire that interrupt.
+    **
+    ** To trigger any interrupt, we need:
+    **   * The CPSR.I flag set to 0
+    **   * The bit 0 of the IME IO register set to 1
+    **   * That interrupt enabled in both REG_IE and REG_IF
+    */
+    if (gba->io.int_enabled.raw & gba->io.int_flag.raw) {
+        switch (gba->core.state) {
+            case CORE_RUN: {
+                if (
+                       !gba->core.cpsr.irq_disable
+                    && (gba->io.ime.raw & 0b1)
+                ) {
+                    core_interrupt(gba, VEC_IRQ, MODE_IRQ);
                 }
-
-                thumb_lut[op >> 8](gba, op);
-            } else {
-                size_t idx;
-                uint32_t op;
-
-                op = core->prefetch[0];
-                core->prefetch[0] = core->prefetch[1];
-                core->prefetch[1] = mem_read32(gba, core->pc, core->prefetch_access_type);
-
-                /*
-                ** Test if the conditions required to execute the instruction are met
-                ** Ignore instructions where the conditions aren't met.
-                */
-
-                idx = (bitfield_get_range(core->cpsr.raw, 28, 32) << 4) | (bitfield_get_range(op, 28, 32));
-                if (!cond_lut[idx]) {
-                    core->pc += 4;
-                    core->prefetch_access_type = SEQUENTIAL;
-                    return ;
+                break;
+            };
+            case CORE_HALT: {
+                gba->core.state = CORE_RUN;
+                break;
+            };
+            case CORE_STOP: {
+                if (gba->io.int_flag.keypad) {
+                    gba->core.state = CORE_RUN;
                 }
+                break;
+            };
+        }
+    }
+    
+    if (likely(core->state == CORE_RUN)) {
+        if (core->cpsr.thumb) {
+            uint16_t op;
 
-                idx = ((op >> 16) & 0xFF0) | ((op >> 4) & 0x00F);
+            op = core->prefetch[0];
+            core->prefetch[0] = core->prefetch[1];
+            core->prefetch[1] = mem_read16(gba, core->pc, core->prefetch_access_type);
 
-                if (unlikely(arm_lut[idx] == NULL)) {
-                    panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
-                }
-
-                arm_lut[idx](gba, op);
+            if (unlikely(thumb_lut[op >> 8] == NULL)) {
+                panic(HS_CORE, "Unknown Thumb op-code 0x%04x (pc=0x%08x).", op, core->pc);
             }
-            break;
-        case CORE_HALT: {
-            core_idle(gba);
-            break;
-        };
-        case CORE_STOP:
-            break;
+
+            thumb_lut[op >> 8](gba, op);
+        } else {
+            size_t idx;
+            uint32_t op;
+
+            op = core->prefetch[0];
+            core->prefetch[0] = core->prefetch[1];
+            core->prefetch[1] = mem_read32(gba, core->pc, core->prefetch_access_type);
+
+            /*
+            ** Test if the conditions required to execute the instruction are met
+            ** Ignore instructions where the conditions aren't met.
+            */
+
+            idx = (bitfield_get_range(core->cpsr.raw, 28, 32) << 4) | (bitfield_get_range(op, 28, 32));
+            if (unlikely(!cond_lut[idx])) {
+                core->pc += 4;
+                core->prefetch_access_type = SEQUENTIAL;
+                return ;
+            }
+
+            idx = ((op >> 16) & 0xFF0) | ((op >> 4) & 0x00F);
+
+            if (unlikely(arm_lut[idx] == NULL)) {
+                panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
+            }
+
+            arm_lut[idx](gba, op);
+        }
+    } else if (core->state == CORE_HALT) {
+        core_idle(gba);
     }
 }
 
@@ -146,7 +169,7 @@ core_idle_for(
         mem_prefetch_buffer_step(gba, cycles);
     }
 
-    if (gba->core.cycles >= gba->scheduler.next_event) {
+    if (unlikely(gba->core.cycles >= gba->scheduler.next_event)) {
         sched_process_events(gba);
     }
 }
@@ -425,65 +448,6 @@ core_interrupt(
     core->cpsr.thumb = false;
 
     core_reload_pipeline(gba);
-}
-
-/*
-** Mark the given IRQ as enabled.
-**
-** It will be fired at the beginning of the next instruction if the different
-** condition flags are enabled.
-*/
-void
-core_trigger_irq(
-    struct gba *gba,
-    enum arm_irq irq
-) {
-    gba->io.int_flag.raw |= (1 << irq);
-}
-
-/*
-** Ensure all the conditions to trigger any IRQ are met, and if they are, fire that interrupt.
-**
-** To trigger any interrupt, we need:
-**   * The CPSR.I flag set to 0
-**   * The bit 0 of the IME IO register set to 1
-**   * That interrupt enabled in both REG_IE and REG_IF
-*/
-void
-core_scan_irq(
-    struct gba *gba
-) {
-    if (gba->io.int_enabled.raw & gba->io.int_flag.raw) {
-        switch (gba->core.state) {
-            case CORE_RUN: {
-                if (
-                       !gba->core.cpsr.irq_disable
-                    && (gba->io.ime.raw & 0b1)
-                ) {
-                    logln(
-                        HS_IRQ,
-                        "IRQ signal sent (0x%04x)",
-                        gba->io.int_flag.raw
-                    );
-
-                    if (gba->core.state == CORE_RUN) {
-                        core_interrupt(gba, VEC_IRQ, MODE_IRQ);
-                    }
-                }
-                break;
-            };
-            case CORE_HALT: {
-                gba->core.state = CORE_RUN;
-                break;
-            };
-            case CORE_STOP: {
-                if (gba->io.int_flag.keypad) {
-                    gba->core.state = CORE_RUN;
-                }
-                break;
-            };
-        }
-    }
 }
 
 /*

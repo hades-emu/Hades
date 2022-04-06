@@ -123,7 +123,7 @@ mem_access(
 
     page = (addr >> 24) & 0xF;
 
-    if (page >= CART_REGION_START && page <= CART_REGION_END && !(addr & 0x1FFFF)) {
+    if (unlikely(page >= CART_REGION_START && page <= CART_REGION_END && !(addr & 0x1FFFF))) {
         access_type = NON_SEQUENTIAL;
     }
 
@@ -152,7 +152,7 @@ mem_prefetch_buffer_access(
     pbuffer = &gba->memory.pbuffer;
 
     if (pbuffer->tail == addr) {
-        if (pbuffer->size == 0) { // Finish to fetch if it isnt' done yet
+        if (pbuffer->size == 0) { // Finish to fetch if it isn't done yet
             gba->memory.gamepak_bus_in_use = false;
             core_idle_for(gba, pbuffer->countdown);
 
