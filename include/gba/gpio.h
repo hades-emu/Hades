@@ -63,7 +63,7 @@ struct rtc {
 
 struct gpio {
     uint8_t data;
-    bool read_write;
+    bool readable;
 
     struct rtc rtc;
 };
