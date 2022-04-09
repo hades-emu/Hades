@@ -103,6 +103,7 @@ nfde_dep = []
 if host_machine.system() == 'windows'
     nfde_src += ['nfde/src/nfd_win.cpp']
 elif host_machine.system() == 'darwin'
+    add_languages('objc')
     nfde_src += ['nfde/src/nfd_cocoa.m']
     nfde_dep += [
         dependency('appleframeworks', required: true, modules: 'AppKit'),
