@@ -8,6 +8,3 @@
 [submodule "external/stb"]
 	path = external/stb
 	url = https://github.com/nothings/stb.git
-[submodule "external/nfd"]
-	path = external/nfd
-	url = https://github.com/mlabbe/nativefiledialog.git
