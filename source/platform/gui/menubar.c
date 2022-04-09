@@ -26,7 +26,6 @@ gui_render_menubar(
     ImVec2 menubar_size;
 
     if (igBeginMainMenuBar()) {
-
         /* File */
         if (igBeginMenu("File", true)) {
             if (igMenuItemBool("Open", NULL, false, true)) {

@@ -24,8 +24,7 @@ jobs:
           ninja
       - name: Test Hades
         run: |
-          cd build
-          ./hades --help
+          ./build/Hades.exe --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
@@ -42,21 +41,51 @@ jobs:
           submodules: 'recursive'
       - name: Install Dependencies
         run: |
-          brew install meson ninja sdl2 glew
+          brew install meson ninja sdl2 glew create-dmg
       - name: Build Hades
         run: |
-          meson build --werror
-          cd build
-          ninja
+          rm -rf /tmp/build/
+          mkdir -p /tmp/build/Hades.app
+
+          meson --buildtype=release --prefix=/tmp/build/Hades.app --bindir=Contents/MacOS build --werror
+          ninja -C build install
+
+          chmod +x /tmp/build/Hades.app/Contents/MacOS/hades /tmp/build/Hades.app/Contents/MacOS/run.sh
+
+          otool -L /tmp/build/Hades.app/Contents/MacOS/hades
+
+          cp /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib /tmp/build/Hades.app/Contents/MacOS/
+          install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2-2.0.0.dylib /tmp/build/Hades.app/Contents/MacOS/hades
+
+          cp /usr/local/opt/glew/lib/libGLEW.2.2.dylib /tmp/build/Hades.app/Contents/MacOS/
+          install_name_tool -change /usr/local/opt/glew/lib/libGLEW.2.2.dylib @executable_path/libGLEW.2.2.dylib /tmp/build/Hades.app/Contents/MacOS/hades
       - name: Test Hades
         run: |
-          cd build
-          ./hades --help
+          /tmp/build/Hades.app/Contents/MacOS/hades --help
+      - name: Pack Hades
+        run: |
+          rm -rf Hades.dmg
+
+          pwd
+
+          create-dmg \
+              --volname "Hades Installer" \
+              --volicon ./resource/macos/hades.icns \
+              --background ./resource/macos/background.png \
+              --window-pos 200 120 \
+              --window-size 600 350 \
+              --icon-size 100 \
+              --icon Hades.app 150 225 \
+              --hide-extension Hades.app \
+              --app-drop-link 425 225 \
+              Hades-Installer.dmg \
+              /tmp/build/
+
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: hades-macos
-          path: build/hades
+          path: Hades-Installer.dmg
           if-no-files-found: error
 
   linux:
@@ -77,8 +106,7 @@ jobs:
           ninja
       - name: Test Hades
         run: |
-          cd build
-          ./hades --help
+          ./build/hades --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
         with:

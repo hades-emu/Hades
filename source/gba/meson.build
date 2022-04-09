@@ -47,6 +47,9 @@ libgba = static_library(
     'scheduler.c',
     'timer.c',
     include_directories: incdir,
+    dependencies: [
+        cc.find_library('m', required: true, static: get_option('static_executable')),
+    ],
     link_with: libcommon,
     c_args: cflags,
     link_args: ldflags,
