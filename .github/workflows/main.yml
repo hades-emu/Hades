@@ -49,7 +49,7 @@ jobs:
 
           meson --buildtype=release --prefix=/tmp/build/Hades.app --bindir=Contents/MacOS build --werror
           ninja -C build install
-          
+
           chmod +x /tmp/build/Hades.app/Contents/MacOS/hades /tmp/build/Hades.app/Contents/MacOS/run.sh
 
           otool -L /tmp/build/Hades.app/Contents/MacOS/hades
@@ -65,9 +65,9 @@ jobs:
       - name: Pack Hades
         run: |
           rm -rf Hades.dmg
-          
+
           pwd
-          
+
           create-dmg \
               --volname "Hades Installer" \
               --volicon ./resource/macos/hades.icns \
