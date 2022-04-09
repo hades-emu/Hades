@@ -34,6 +34,14 @@ enum blend_mode {
     BLEND_DARK,
 };
 
+enum windows {
+    WIN0 = 0,
+    WIN1 = 1,
+    WINOBJ = 2,
+    
+    WIN_MAX,
+};
+
 union color {
     struct {
         uint16_t red: 5;
@@ -54,11 +62,11 @@ struct rich_color {
 } __packed;
 
 struct scanline {
-    struct rich_color top[GBA_SCREEN_WIDTH];
     struct rich_color bot[GBA_SCREEN_WIDTH];
+    struct rich_color bg[GBA_SCREEN_WIDTH];
     struct rich_color oam[4][GBA_SCREEN_WIDTH];
-    bool win[3][GBA_SCREEN_WIDTH];
     struct rich_color result[GBA_SCREEN_WIDTH];
+    bool win_obj_mask[GBA_SCREEN_WIDTH];
     uint32_t top_idx;
 };
 
@@ -110,20 +118,13 @@ union oam_entry {
 
 static_assert(sizeof(union oam_entry) == 3 * sizeof(uint16_t));
 
-union affine_float {
-    struct {
-        uint8_t fraction;
-        int8_t integer;
-    } __packed;
-    int16_t raw;
-};
-
-static_assert(sizeof(union affine_float) == sizeof(uint16_t));
-
 struct ppu {
     // Internal registers used for affine backgrounds
     int32_t internal_px[2];
     int32_t internal_py[2];
+    
+    bool win_masks[2][GBA_SCREEN_WIDTH];
+    uint32_t win_masks_hash[2];                /* The min/max for that windows. Kept to avoid rebuilding the mask across scanlines. */ 
 };
 
 /* gba/ppu/background/bitmap.c */
@@ -139,15 +140,14 @@ void ppu_reload_affine_internal_registers(struct gba *gba, uint32_t idx);
 void ppu_step_affine_internal_registers(struct gba *gba);
 
 /* gba/ppu/oam.c */
-void ppu_prerender_oam(struct gba const *gba, struct scanline *scanline, int32_t line);
-void ppu_render_oam(struct gba const *gba, struct scanline *scanline, int32_t line, uint32_t prio);
+void ppu_prerender_oam(struct gba *gba, struct scanline *scanline, int32_t line);
 
 /* gba/ppu/ppu.c */
 void ppu_init(struct gba *);
 void ppu_render_black_screen(struct gba *gba);
 
 /* gba/ppu/window.c */
-void ppu_window_build_masks(struct gba const *gba, struct scanline *scanline, uint32_t y);
-uint8_t ppu_find_top_window(struct gba const *gba, struct scanline *scanline, uint32_t x);
+void ppu_window_build_masks(struct gba *gba, uint32_t y);
+uint8_t ppu_find_top_window(struct gba const *gba, struct scanline const *, uint32_t x);
 
 #endif /* !GBA_PPU_H */

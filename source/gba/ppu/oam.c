@@ -29,14 +29,16 @@ int32_t sprite_size_y[16] = { 8, 16, 32, 64, 8, 8, 16, 32, 16, 32, 32, 64, 0, 0,
 */
 void
 ppu_prerender_oam(
-    struct gba const *gba,
+    struct gba *gba,
     struct scanline *scanline,
     int32_t line
 ) {
+    uint32_t bg_mode;
     struct io const *io;
     int32_t oam_idx;
 
     io = &gba->io;
+    bg_mode = io->dispcnt.bg_mode;
 
     if (!io->dispcnt.obj) {
         return ;
@@ -63,7 +65,7 @@ ppu_prerender_oam(
         }
 
         // Skip OAM entries of index < 512 for BG mode 3-5
-        if (io->dispcnt.bg_mode >= 3 && io->dispcnt.bg_mode <= 5 && oam.tile_idx < 512) {
+        if (bg_mode >= 3 && bg_mode <= 5 && oam.tile_idx < 512) {
             continue;
         }
 
@@ -86,39 +88,39 @@ ppu_prerender_oam(
         if (line >= win_oy && line < win_oy + win_sy) {
             int32_t px;
             int32_t py;
-            union affine_float pa;
-            union affine_float pb;
-            union affine_float pc;
-            union affine_float pd;
+            int16_t pa;
+            int16_t pb;
+            int16_t pc;
+            int16_t pd;
 
             if (oam.affine) {
-                pa.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x6);
-                pb.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0xe);
-                pc.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x16);
-                pd.raw = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x1e);
+                pa = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x6);
+                pb = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0xe);
+                pc = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x16);
+                pd = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x1e);
             } else { // Identity matrix
-                pa = (union affine_float){ .integer = 1 }; // 1.0
-                pb.raw = 0;
-                pc.raw = 0;
-                pd = (union affine_float){ .integer = 1 }; // 1.0
+                pa = 0x100;
+                pb = 0;
+                pc = 0;
+                pd = 0x100;
             }
 
             /*
             ** We pre-compute PX and PY for x=0 and simply add the difference when X is increased.
             */
-            px = pa.raw * -(win_sx / 2) + pb.raw * ((line - win_oy) - (win_sy / 2)) + ((sprite_sx / 2) << 8);
-            py = pc.raw * -(win_sx / 2) + pd.raw * ((line - win_oy) - (win_sy / 2)) + ((sprite_sy / 2) << 8);
+            px = pa * -(win_sx / 2) + pb * ((line - win_oy) - (win_sy / 2)) + ((sprite_sx / 2) << 8);
+            py = pc * -(win_sx / 2) + pd * ((line - win_oy) - (win_sy / 2)) + ((sprite_sy / 2) << 8);
 
-            for (x = 0; x < win_sx; ++x, px += pa.raw, py += pc.raw) {
+            for (x = 0; x < win_sx; ++x, px += pa, py += pc) {
                 uint32_t palette_idx;
-                int32_t rel_x;   // X coordinate of the pixel within the sprite
-                int32_t rel_y;   // Y coordinate of the pixel within the sprite
-                uint32_t chr_x;  // X coordinate of the pixel within the tile (0-7)
-                uint32_t chr_y;  // Y coordinate of the pixel within the tile (0-7)
-                uint32_t tile_x; // X coordinate of the tile within the sprite
-                uint32_t tile_y; // Y coordinate of the tile within the sprite
-                uint32_t tile_offset;
-                uint32_t tile_size; // In bytes
+                int32_t rel_x;          // X coordinate of the pixel within the sprite
+                int32_t rel_y;          // Y coordinate of the pixel within the sprite
+                uint32_t chr_x;         // X coordinate of the pixel within the tile (0-7)
+                uint32_t chr_y;         // Y coordinate of the pixel within the tile (0-7)
+                uint32_t tile_x;        // X coordinate of the tile within the sprite
+                uint32_t tile_y;        // Y coordinate of the tile within the sprite
+                uint32_t tile_offset;   // Within VRAM
+                uint32_t tile_size;     // In bytes
 
                 // Filter-out pixels that are outside of the screen
                 if (win_ox + x < 0 || win_ox + x >= GBA_SCREEN_WIDTH) {
@@ -184,7 +186,7 @@ ppu_prerender_oam(
 
                 if (palette_idx) {
                     if (oam.mode == OAM_MODE_WINDOW) {
-                        scanline->win[2][win_ox + x] = true;
+                        scanline->win_obj_mask[win_ox + x] = true;
                     } else {
                         struct rich_color c;
 
@@ -203,18 +205,4 @@ ppu_prerender_oam(
             }
         }
     }
-}
-
-/*
-** Fill the content of the top layer with the sprites of the given priority.
-*/
-void
-ppu_render_oam(
-    struct gba const *gba,
-    struct scanline *scanline,
-    int32_t line,
-    uint32_t prio
-) {
-    memcpy(scanline->top, scanline->oam[prio], sizeof(scanline->top));
-    scanline->top_idx = 4;
 }

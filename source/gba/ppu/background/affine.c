@@ -103,7 +103,7 @@ ppu_render_background_affine(
             c.visible = true;
             c.idx = bg_idx;
             c.force_blend = false;
-            scanline->top[x] = c;
+            scanline->bg[x] = c;
         }
     }
 }

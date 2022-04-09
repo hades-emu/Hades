@@ -7,13 +7,13 @@
 **
 \******************************************************************************/
 
+#include <string.h>
 #include "gba/gba.h"
 #include "gba/ppu.h"
 
 void
 ppu_window_build_masks(
-    struct gba const *gba,
-    struct scanline *scanline,
+    struct gba *gba,
     uint32_t y
 ) {
     uint32_t idx;
@@ -24,27 +24,35 @@ ppu_window_build_masks(
         uint32_t maxx;
         uint32_t miny;
         uint32_t maxy;
+        uint32_t hash;
+        bool enabled;
+        bool within_y;
 
-        minx = gba->io.winh[idx].min;
-        maxx = gba->io.winh[idx].max;
         miny = gba->io.winv[idx].min;
         maxy = gba->io.winv[idx].max;
-
-        if (
-               (miny <= maxy && (y < miny || y >= maxy))
-            || (miny > maxy  && (y >= miny || y < maxy))
-        ) {
+        enabled = bitfield_get(gba->io.dispcnt.raw, 13 + idx);
+        minx = gba->io.winh[idx].min;
+        maxx = gba->io.winh[idx].max;
+        within_y = !((miny <= maxy && (y < miny || y >= maxy)) || (miny > maxy  && (y >= miny || y < maxy)));
+        
+        /* Avoid rebuilding the masks if the parameters are the same. */
+        hash = minx | (maxx << 8) | (enabled << 16) | (within_y << 17);
+        if (hash == gba->ppu.win_masks_hash[idx]) {
             continue;
         }
 
-        if (bitfield_get(gba->io.dispcnt.raw, 13 + idx)) {
+        gba->ppu.win_masks_hash[idx] = hash;
+
+        if (!enabled || !within_y) {
+            memset(gba->ppu.win_masks[idx], 0, sizeof(gba->ppu.win_masks[WIN0]));
+        } else {
             if (minx <= maxx) {
                 for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
-                    scanline->win[idx][x] = (x >= minx && x < maxx);
+                    gba->ppu.win_masks[idx][x] = (x >= minx && x < maxx);
                 }
             } else {
                 for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
-                    scanline->win[idx][x] = (x >= minx || x < maxx);
+                    gba->ppu.win_masks[idx][x] = (x >= minx || x < maxx);
                 }
             }
         }
@@ -54,14 +62,14 @@ ppu_window_build_masks(
 uint8_t
 ppu_find_top_window(
     struct gba const *gba,
-    struct scanline *scanline,
+    struct scanline const *scanline,
     uint32_t x
 ) {
-    if (scanline->win[0][x]) {
+    if (gba->ppu.win_masks[WIN0][x]) {
         return (gba->io.winin.win0);
-    } else if (scanline->win[1][x]) {
+    } else if (gba->ppu.win_masks[WIN1][x]) {
         return (gba->io.winin.win1);
-    } else if (scanline->win[2][x]) {
+    } else if (scanline->win_obj_mask[x]) {
         return (gba->io.winout.winobj);
     } else {
         return (gba->io.winout.winout);
