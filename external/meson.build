@@ -111,7 +111,7 @@ elif host_machine.system() == 'darwin'
 else
     nfde_src += ['nfde/src/nfd_gtk.cpp']
     nfde_dep += [
-        dependency('gtk', version: '>=3', required: true, static: get_option('static_executable')),
+        dependency('gtk3+-3.0', required: true, static: get_option('static_executable')),
     ]
 endif
 
