@@ -58,14 +58,14 @@ ppu_render_background_bitmap(
                 c.visible = true;
                 c.idx = 2;
                 c.force_blend = false;
-                scanline->top[x] = c;
+                scanline->bg[x] = c;
             }
         } else {
             c.raw = mem_vram_read16(gba, (GBA_SCREEN_WIDTH * rel_y + rel_x) * sizeof(union color));
             c.visible = true;
             c.idx = 2;
             c.force_blend = false;
-            scanline->top[x] = c;
+            scanline->bg[x] = c;
         }
     }
 }
@@ -111,6 +111,6 @@ ppu_render_background_bitmap_small(
         c.visible = true;
         c.idx = 2;
         c.force_blend = false;
-        scanline->top[x] = c;
+        scanline->bg[x] = c;
     }
 }

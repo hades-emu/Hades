@@ -12,7 +12,7 @@
 #include "gba/gba.h"
 #include "gba/ppu.h"
 
-static void ppu_merge_layer(struct gba const *gba, struct scanline *scanline);
+static void ppu_merge_layer(struct gba const *gba, struct scanline *scanline, struct rich_color *layer);
 
 /*
 ** Initialize the content of the given `scanline` to a default, sane and working value.
@@ -43,9 +43,9 @@ ppu_initialize_scanline(
 
     if (gba->io.bldcnt.mode == BLEND_LIGHT || gba->io.bldcnt.mode == BLEND_DARK) {
         scanline->top_idx = 5;
-        memcpy(scanline->top, scanline->result, sizeof(scanline->top));
-        memcpy(scanline->bot, scanline->result, sizeof(scanline->top));
-        ppu_merge_layer(gba, scanline);
+        memcpy(scanline->bg, scanline->result, sizeof(scanline->bg));
+        memcpy(scanline->bot, scanline->result, sizeof(scanline->bot));
+        ppu_merge_layer(gba, scanline, scanline->bg);
         scanline->top_idx = 0;
     }
 }
@@ -57,7 +57,8 @@ static
 void
 ppu_merge_layer(
     struct gba const *gba,
-    struct scanline *scanline
+    struct scanline *scanline,
+    struct rich_color *layer
 ) {
     uint32_t eva;
     uint32_t evb;
@@ -76,7 +77,7 @@ ppu_merge_layer(
         struct rich_color botc;
         uint32_t mode;
 
-        topc = scanline->top[x];
+        topc = layer[x];
         botc = scanline->bot[x];
 
         /* Skip transparent pixels */
@@ -109,7 +110,7 @@ ppu_merge_layer(
             mode = BLEND_ALPHA;
         }
 
-        scanline->bot[x] = scanline->top[x];
+        scanline->bot[x] = layer[x];
 
         switch (mode) {
             case BLEND_OFF: {
@@ -162,9 +163,6 @@ ppu_merge_layer(
             };
         }
     }
-
-    /* Reset the top layer to full transparency */
-    memset(scanline->top, 0x00, sizeof(scanline->top));
 }
 
 /*
@@ -182,20 +180,20 @@ ppu_render_scanline(
 
     io = &gba->io;
     y = gba->io.vcount.raw;
-
+    
     switch (io->dispcnt.bg_mode) {
         case 0: {
             for (prio = 3; prio >= 0; --prio) {
                 int32_t bg_idx;
-
+ 
                 for (bg_idx = 3; bg_idx >= 0; --bg_idx) {
                     if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio) {
                         ppu_render_background_text(gba, scanline, y, bg_idx);
-                        ppu_merge_layer(gba, scanline);
+                        ppu_merge_layer(gba, scanline, scanline->bg);
                     }
                 }
-                ppu_render_oam(gba, scanline, y, prio);
-                ppu_merge_layer(gba, scanline);
+                scanline->top_idx = 4;
+                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
             }
             break;
         };
@@ -206,15 +204,16 @@ ppu_render_scanline(
                 for (bg_idx = 2; bg_idx >= 0; --bg_idx) {
                     if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio) {
                         if (bg_idx == 2) {
+                            memset(scanline->bg, 0x00, sizeof(scanline->bg));
                             ppu_render_background_affine(gba, scanline, y, bg_idx);
                         } else {
                             ppu_render_background_text(gba, scanline, y, bg_idx);
                         }
-                        ppu_merge_layer(gba, scanline);
+                        ppu_merge_layer(gba, scanline, scanline->bg);
                     }
                 }
-                ppu_render_oam(gba, scanline, y, prio);
-                ppu_merge_layer(gba, scanline);
+                scanline->top_idx = 4;
+                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
             }
             break;
         };
@@ -224,45 +223,49 @@ ppu_render_scanline(
 
                 for (bg_idx = 3; bg_idx >= 2; --bg_idx) {
                     if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio) {
+                        memset(scanline->bg, 0x00, sizeof(scanline->bg));
                         ppu_render_background_affine(gba, scanline, y, bg_idx);
-                        ppu_merge_layer(gba, scanline);
+                        ppu_merge_layer(gba, scanline, scanline->bg);
                     }
                 }
-                ppu_render_oam(gba, scanline, y, prio);
-                ppu_merge_layer(gba, scanline);
+                scanline->top_idx = 4;
+                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
             }
             break;
         };
         case 3: {
             for (prio = 3; prio >= 0; --prio) {
                 if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio) {
+                    memset(scanline->bg, 0x00, sizeof(scanline->bg));
                     ppu_render_background_bitmap(gba, scanline, false);
-                    ppu_merge_layer(gba, scanline);
+                    ppu_merge_layer(gba, scanline, scanline->bg);
                 }
-                ppu_render_oam(gba, scanline, y, prio);
-                ppu_merge_layer(gba, scanline);
+                scanline->top_idx = 4;
+                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
             }
             break;
         };
         case 4: {
             for (prio = 3; prio >= 0; --prio) {
                 if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio) {
+                    memset(scanline->bg, 0x00, sizeof(scanline->bg));
                     ppu_render_background_bitmap(gba, scanline, true);
-                    ppu_merge_layer(gba, scanline);
+                    ppu_merge_layer(gba, scanline, scanline->bg);
                 }
-                ppu_render_oam(gba, scanline, y, prio);
-                ppu_merge_layer(gba, scanline);
+                scanline->top_idx = 4;
+                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
             }
             break;
         };
         case 5: {
             for (prio = 3; prio >= 0; --prio) {
                 if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio && y < 128) {
+                    memset(scanline->bg, 0x00, sizeof(scanline->bg));
                     ppu_render_background_bitmap_small(gba, scanline);
-                    ppu_merge_layer(gba, scanline);
+                    ppu_merge_layer(gba, scanline, scanline->bg);
                 }
-                ppu_render_oam(gba, scanline, y, prio);
-                ppu_merge_layer(gba, scanline);
+                scanline->top_idx = 4;
+                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
             }
             break;
         };
@@ -402,10 +405,10 @@ ppu_hblank(
         struct scanline scanline;
 
         ppu_initialize_scanline(gba, &scanline);
-        ppu_window_build_masks(gba, &scanline, io->vcount.raw);
-        ppu_prerender_oam(gba, &scanline, io->vcount.raw);
         
         if (!gba->io.dispcnt.blank) {
+            ppu_window_build_masks(gba, io->vcount.raw);
+            ppu_prerender_oam(gba, &scanline, io->vcount.raw);
             ppu_render_scanline(gba, &scanline);
         }
         
