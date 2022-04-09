@@ -8,7 +8,7 @@
 ################################################################################
 
 ###############################
-##       Cimgui + IGFD       ##
+##          Cimgui           ##
 ###############################
 
 cflags += [
@@ -19,7 +19,6 @@ imgui_inc = include_directories(
     'cimgui/',
     'cimgui/imgui/',
     'cimgui/generator/output/',
-    'imgui_file_dialog/',
 )
 
 imgui_dep = [
@@ -59,7 +58,6 @@ imgui = static_library(
     'cimgui/imgui/imgui_widgets.cpp',
     'cimgui/imgui/backends/imgui_impl_opengl3.cpp',
     'cimgui/imgui/backends/imgui_impl_sdl.cpp',
-    'imgui_file_dialog/ImGuiFileDialog.cpp',
     include_directories: imgui_inc,
     dependencies: imgui_dep,
     c_args: cflags,
@@ -89,4 +87,39 @@ frozen = static_library(
 
 stb_inc = include_directories(
     'stb/'
+)
+
+###############################
+##            NFDe           ##
+###############################
+
+nfde_inc = include_directories(
+    'nfde/src/include/'
+)
+
+nfde_src = []
+nfde_dep = []
+
+if host_machine.system() == 'windows'
+    nfde_src += ['nfde/src/nfd_win.cpp']
+elif host_machine.system() == 'darwin'
+    nfde_src += ['nfde/src/nfd_cocoa.m']
+    nfde_dep += [
+        dependency('appleframeworks', required: true, modules: 'AppKit'),
+    ]
+else
+    nfde_src += ['nfde/src/nfd_gtk.cpp']
+    nfde_dep += [
+        dependency('gtk3', required: true, static: get_option('static_executable')),
+    ]
+endif
+
+nfde = static_library(
+    'nfde',
+    nfde_src,
+    include_directories: nfde_inc,
+    dependencies: nfde_dep,
+    c_args: cflags,
+    cpp_args: cflags,
+    link_args: ldflags,
 )

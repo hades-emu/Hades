@@ -12,6 +12,7 @@
 
 #include <cimgui.h>
 #include <cimgui_impl.h>
+#include <nfd.h>
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -349,9 +350,8 @@ gui_init(
     app->joystick_idx = -1;
     app->controller_connected = false;
 
-    /* Setup the ImGui File Dialog extension */
-    app->fs_dialog = IGFD_Create();
-    hs_assert(app->fs_dialog);
+    /* Setup the Native File Dialog extension */
+    NFD_Init();
 }
 
 /*
@@ -365,8 +365,8 @@ gui_cleanup(
     if (app->emulation.backup_file) {
         fclose(app->emulation.backup_file);
     }
-    /* Cleanup the ImGui File Dialog extension */
-    IGFD_Destroy(app->fs_dialog);
+    /* Cleanup the Native File Dialog extension */
+    NFD_Quit();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
