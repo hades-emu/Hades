@@ -11,8 +11,8 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <string.h>
 #include <cimgui.h>
+#include <nfd.h>
 #include <stdio.h>
-#include <ImGuiFileDialog.h>
 #include <float.h>
 #include "hades.h"
 #include "gba/gba.h"
@@ -29,16 +29,22 @@ gui_render_menubar(
         /* File */
         if (igBeginMenu("File", true)) {
             if (igMenuItemBool("Open", NULL, false, true)) {
-                IGFD_OpenModal2(
-                    app->fs_dialog,
-                    "open_rom",
-                    "Choose a ROM file",
-                    ".gba",
-                    "",
+                nfdresult_t result;
+                nfdchar_t *path;
+
+                result = NFD_OpenDialog(
+                    &path,
+                    (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Rom", .spec = "gba"}},
                     1,
-                    NULL,
-                    ImGuiFileDialogFlags_Default | ImGuiFileDialogFlags_DisableCreateDirectoryButton
+                    NULL
                 );
+
+                if (result == NFD_OKAY) {
+                    free(app->emulation.game_path);
+                    app->emulation.game_path = strdup(path);
+                    gui_game_reload(app);
+                    NFD_FreePath(path);
+                }
             }
 
             if (igBeginMenu("Open Recent", app->recent_roms[0] != NULL)) {
@@ -55,16 +61,21 @@ gui_render_menubar(
             }
 
             if (igMenuItemBool("Open BIOS", NULL, false, true)) {
-                IGFD_OpenModal2(
-                    app->fs_dialog,
-                    "open_bios",
-                    "Choose a BIOS file",
-                    ".bin",
-                    "",
+                nfdresult_t result;
+                nfdchar_t *path;
+
+                result = NFD_OpenDialog(
+                    &path,
+                    (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "BIOS file", .spec = "bin,bios,raw"}},
                     1,
-                    NULL,
-                    ImGuiFileDialogFlags_Default | ImGuiFileDialogFlags_DisableCreateDirectoryButton
+                    NULL
                 );
+
+                if (result == NFD_OKAY) {
+                    free(app->emulation.bios_path);
+                    app->emulation.bios_path = strdup(path);
+                    NFD_FreePath(path);
+                }
             }
 
             igSeparator();
@@ -237,45 +248,6 @@ gui_render_menubar(
                 igCloseCurrentPopup();
             }
             igEndPopup();
-        }
-
-        if (IGFD_DisplayDialog(
-            app->fs_dialog,
-            "open_rom",
-            ImGuiWindowFlags_NoCollapse,
-            (ImVec2){.x = igGetFontSize() * 34.f, .y = igGetFontSize() * 18.f},
-            (ImVec2){.x = FLT_MAX, .y = FLT_MAX}
-        )) {
-            if (IGFD_IsOk(app->fs_dialog)) {
-                free(app->emulation.game_path);
-                hs_assert(-1 != asprintf(
-                    &app->emulation.game_path,
-                    "%s/%s",
-                    IGFD_GetCurrentPath(app->fs_dialog),
-                    IGFD_GetCurrentFileName(app->fs_dialog)
-                ));
-                gui_game_reload(app);
-            }
-            IGFD_CloseDialog(app->fs_dialog);
-        }
-
-        if (IGFD_DisplayDialog(
-            app->fs_dialog,
-            "open_bios",
-            ImGuiWindowFlags_NoCollapse,
-            (ImVec2){.x = igGetFontSize() * 34.f, .y = igGetFontSize() * 18.f},
-            (ImVec2){.x = FLT_MAX, .y = FLT_MAX}
-        )) {
-            if (IGFD_IsOk(app->fs_dialog)) {
-                free(app->emulation.bios_path);
-                hs_assert(-1 != asprintf(
-                    &app->emulation.bios_path,
-                    "%s/%s",
-                    IGFD_GetCurrentPath(app->fs_dialog),
-                    IGFD_GetCurrentFileName(app->fs_dialog)
-                ));
-            }
-            IGFD_CloseDialog(app->fs_dialog);
         }
 
         igEndMainMenuBar();
