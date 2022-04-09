@@ -63,12 +63,16 @@ if host_machine.system() == 'windows'
         winrc,
         gui_app: true,
         link_with: [libgba, imgui, libcommon, frozen, libgui],
+        c_args: cflags,
+        link_args: ldflags,
         install: true,
     )
 else
     hades = executable(
         'hades',
         link_with: [libgba, imgui, libcommon, frozen, libgui],
+        c_args: cflags,
+        link_args: ldflags,
         install: true,
     )
 endif
