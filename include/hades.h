@@ -123,23 +123,6 @@ static char const * const modules_str[] = {
 /* Return the value of the bits from `start` (inclusive) to `end` (exclusive) of `val`. */
 # define bitfield_get_range(val, start, end)    ((typeof(val))(((typeof(val))((val) << (sizeof(val) * 8 - (end)))) >> (sizeof(val) * 8 - (end) + (start))))
 
-/* Set the `nth` bit of `val`. */
-# define bitfield_set(val, nth)                 ((val) |= (1 << (nth)))
-
-/*
-** Set the `nth` bit of `*val` to `b`.
-*/
-static inline
-void
-bitfield_update(
-    uint32_t *val,
-    uint32_t nth,
-    bool b
-) {
-    *val &= ~(1 << nth);     // Clear the bit
-    *val |= (b << nth);      // Set the bit
-}
-
 /*
 ** Sign-extend a 8-bits value to a signed 32-bit value.
 */

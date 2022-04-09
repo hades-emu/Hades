@@ -19,8 +19,8 @@ libgui = static_library(
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
     ],
-    link_with: [libgba, imgui, libcommon, frozen],
-    include_directories: [incdir, imgui_inc, frozen_inc, stb_inc],
+    link_with: [libgba, imgui, libcommon, frozen, nfde],
+    include_directories: [incdir, imgui_inc, frozen_inc, stb_inc, nfde_inc],
     c_args: cflags,
     link_args: ldflags,
 )
