@@ -17,6 +17,7 @@ gpio_init(
     struct gba *gba
 ) {
     memset(&gba->gpio, 0, sizeof(gba->gpio));
+    gba->gpio.rtc.enabled = true;
     if (gba->game_entry && gba->game_entry->flags & FLAGS_RTC) {
         gpio_rtc_init(gba);
     }
@@ -34,7 +35,7 @@ gpio_read_u8(
         case GPIO_REG_DATA: {
             uint8_t val;
 
-            if (gba->game_entry->flags & FLAGS_RTC) {
+            if (gba->gpio.rtc.enabled) {
                 val = gpio_rtc_read(gba);
             } else {
                 val = 0;
@@ -60,7 +61,7 @@ gpio_write_u8(
             break;
         };
         case GPIO_REG_DATA: {
-            if (gba->game_entry->flags & FLAGS_RTC) {
+            if (gba->gpio.rtc.enabled) {
                 gpio_rtc_write(gba, val);//gba->gpio.data);
             }
             break;
