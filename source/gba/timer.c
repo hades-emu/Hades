@@ -35,6 +35,8 @@ timer_start(
                 (union event_data){.u32 = timer_idx}
             )
         );
+    } else {
+        timer->handler = INVALID_EVENT_HANDLE;
     }
 }
 
@@ -103,6 +105,8 @@ timer_stop(
     timer->control.enable = false;
     timer->counter.raw = timer_update_counter(gba, timer_idx);
 
-    sched_cancel_event(gba, timer->handler);
-    timer->handler = INVALID_EVENT_HANDLE;
+    if (timer->handler != INVALID_EVENT_HANDLE) {
+        sched_cancel_event(gba, timer->handler);
+        timer->handler = INVALID_EVENT_HANDLE;
+    }
 }
