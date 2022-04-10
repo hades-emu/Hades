@@ -26,6 +26,7 @@ gpio_rtc_init(
     rtc->sio = 0;
     rtc->cs = 0;
     rtc->control.raw = 0x0;
+    rtc->enabled = true;
 }
 
 static inline
@@ -67,35 +68,40 @@ uint8_t
 gpio_rtc_to_bcd(
     uint8_t val
 ) {
-    return ((val / 10) << 4 | (val % 10));
+    return ((val / 10 % 10) << 4 | (val % 10));
 }
 
 static inline
 uint64_t
-gpio_rtc_get_date_time(void)
-{
+gpio_rtc_get_date_time(
+    struct gba const *gba
+) {
     time_t t;
     struct tm *tm;
     uint64_t res;
+    bool use_24h;
 
-    res = 0;
     t = time(NULL);
     tm = localtime(&t);
-    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_sec);         // Seconds
-    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_min);         // Minute
-    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_hour);        // Hour
-    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_wday);        // Day of week
-    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_mday);        // Day of the month
-    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_mon + 1);     // Month
-    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_year % 100);  // Year
+    use_24h = gba->gpio.rtc.control.mode_24h;
+
+    res = 0;
+    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_sec);                             // Seconds
+    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_min);                             // Minute
+    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_hour % (use_24h ? 24 : 12));      // Hour
+    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_wday);                            // Day of week
+    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_mday);                            // Day of the month
+    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_mon + 1);                         // Month
+    res = (res << 8) | gpio_rtc_to_bcd(tm->tm_year % 100);                      // Year
     return (res);
 }
 
 static inline
 uint64_t
-gpio_rtc_get_time(void)
-{
-    return ((gpio_rtc_get_date_time() >> 32) & 0xFFFFFF);
+gpio_rtc_get_time(
+    struct gba const *gba
+) {
+    return ((gpio_rtc_get_date_time(gba) >> 32) & 0xFFFFFF);
 }
 
 static inline
@@ -192,7 +198,7 @@ gpio_rtc_write(
                     };
                     case ((RTC_REG_DATE_TIME << 1) | 1): {  // Read to Date/Time
                         gpio_rtc_prepare_transfer(rtc, RTC_REG_SEND, RTC_REG_DATE_TIME);
-                        rtc->data = gpio_rtc_get_date_time();
+                        rtc->data = gpio_rtc_get_date_time(gba);
                         break;
                     };
                     case ((RTC_REG_TIME << 1) | 0): {  // Write to Time
@@ -201,7 +207,7 @@ gpio_rtc_write(
                     };
                     case ((RTC_REG_TIME << 1) | 1): {  // Read to Time
                         gpio_rtc_prepare_transfer(rtc, RTC_REG_SEND, RTC_REG_TIME);
-                        rtc->data = gpio_rtc_get_time();
+                        rtc->data = gpio_rtc_get_time(gba);
                         break;
                     };
                 }
