@@ -477,10 +477,10 @@ main(
 
     logln(HS_GLOBAL, "Welcome to Hades v" HADES_VERSION);
     logln(HS_GLOBAL, "=========================");
-    logln(HS_GLOBAL, "Opengl version: %s%s%s", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
+    logln(HS_GLOBAL, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
     logln(
         HS_GLOBAL,
-        "Dpi: %s%f%s, Dpi factor: %s%u%s",
+        "Dpi: %s%.1f%s, Scale factor: %s%u%s.",
         g_light_magenta,
         app.dpi,
         g_reset,
