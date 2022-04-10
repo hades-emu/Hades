@@ -92,6 +92,7 @@ static struct game_entry game_database[] = {
     (struct game_entry){.code = "ADE", .storage = BACKUP_SRAM,      .flags = FLAGS_NONE, .title = "Adventure of Tokyo Disney Sea"},
     (struct game_entry){.code = "AAO", .storage = BACKUP_EEPROM_4K, .flags = FLAGS_NONE, .title = "Aero the Acro-Bat - Rascal Rival Revenge"},
     (struct game_entry){.code = "ACE", .storage = BACKUP_NONE,      .flags = FLAGS_NONE, .title = "Agassi Tennis Generation"},
+    (struct game_entry){.code = "TCH", .storage = BACKUP_EEPROM_64K,.flags = FLAGS_NONE, .title = "AGB Aging Cartridge"},
     (struct game_entry){.code = "BHQ", .storage = BACKUP_NONE,      .flags = FLAGS_NONE, .title = "Agent Hugo - Roborumble"},
     (struct game_entry){.code = "AIL", .storage = BACKUP_NONE,      .flags = FLAGS_NONE, .title = "Aggressive Inline"},
     (struct game_entry){.code = "AAK", .storage = BACKUP_EEPROM_4K, .flags = FLAGS_NONE, .title = "Air Force Delta Storm"},
@@ -1763,7 +1764,7 @@ db_lookup_game(
 
     logln(
         HS_WARNING,
-        "No game with the code \"%s%.4s%s\" could be found in Hades game database.",
+        "No game with the code \"%s%.3s%s\" could be found in Hades game database.",
         g_light_magenta,
         (char *)gba->memory.rom + 0xAC,
         g_reset
