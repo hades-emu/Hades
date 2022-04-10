@@ -1738,13 +1738,21 @@ db_lookup_game(
 ) {
     size_t i;
 
+    logln(
+        HS_GLOBAL,
+        "Game code is %s%.3s%s.",
+        g_light_magenta,
+        (char *)gba->memory.rom + 0xAC,
+        g_reset
+    );
+
     gba->game_entry = NULL;
     for (i = 0; i < ARRAY_LEN(game_database); ++i) {
         if (!strncmp((char *)gba->memory.rom + 0xAC, game_database[i].code, 3)) {
             gba->game_entry = game_database + i;
             logln(
                 HS_GLOBAL,
-                "Game identified as %s\"%s\"%s.",
+                "Game identified as %s%s%s.",
                 g_light_magenta,
                 gba->game_entry->title,
                 g_reset
