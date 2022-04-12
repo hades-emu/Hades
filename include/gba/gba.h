@@ -24,6 +24,12 @@ enum gba_state {
     GBA_STATE_RUN,
 };
 
+enum device_state {
+    DEVICE_AUTO_DETECT = 0,
+    DEVICE_ENABLED,
+    DEVICE_DISABLED,
+};
+
 enum message_type {
     MESSAGE_EXIT,
     MESSAGE_LOAD_BIOS,
@@ -38,6 +44,7 @@ enum message_type {
     MESSAGE_QUICKSAVE,
     MESSAGE_AUDIO_RESAMPLE_FREQ,
     MESSAGE_COLOR_CORRECTION,
+    MESSAGE_RTC,
 };
 
 enum keyinput {
@@ -91,6 +98,11 @@ struct message_color_correction {
     bool color_correction;
 };
 
+struct message_device_state {
+    struct message super;
+    enum device_state state;
+};
+
 struct message_queue {
     struct message *messages;
     size_t length;
@@ -116,8 +128,15 @@ struct gba {
     /* Entry in the game database, if it exists. */
     struct game_entry *game_entry;
 
+    /* Set to true when the emulation is started. Used to lock some options like backup type. */
+    bool started;
+
     /* Stores if color correction is enabled. */
     bool color_correction;
+
+    /* Stores the RTC-related settimgs */
+    bool rtc_auto_detect;
+    bool rtc_enabled;
 
     /* The message queue used by the frontend to communicate with the emulator. */
     struct message_queue message_queue;
@@ -244,6 +263,15 @@ struct gba {
             .type = MESSAGE_COLOR_CORRECTION,                   \
         },                                                      \
         .color_correction = (_color),                           \
+    }))
+
+# define NEW_MESSAGE_RTC(_state)                                \
+    ((struct message *)&((struct message_device_state){         \
+        .super = (struct message){                              \
+            .size = sizeof(struct message_device_state),        \
+            .type = MESSAGE_RTC,                                \
+        },                                                      \
+        .state = (_state),                                      \
     }))
 
 /* gba/gba.c */

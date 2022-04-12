@@ -42,7 +42,7 @@ gui_render_menubar(
                 if (result == NFD_OKAY) {
                     free(app->emulation.game_path);
                     app->emulation.game_path = strdup(path);
-                    gui_game_reload(app);
+                    gui_game_reset(app);
                     NFD_FreePath(path);
                 }
             }
@@ -54,7 +54,7 @@ gui_render_menubar(
                     if (igMenuItemBool(hs_basename(app->recent_roms[x]), NULL, false, true)) {
                         free(app->emulation.game_path);
                         app->emulation.game_path = strdup(app->recent_roms[x]);
-                        gui_game_reload(app);
+                        gui_game_reset(app);
                     }
                 }
                 igEndMenu();
@@ -90,7 +90,7 @@ gui_render_menubar(
             /* Color Correction */
             if (igMenuItemBool("Color correction", NULL, app->emulation.color_correction, true)) {
                 app->emulation.color_correction ^= 1;
-                gui_game_color_correction(app);
+                gui_game_set_color_correction(app);
             }
 
             /* VSync */
@@ -110,7 +110,50 @@ gui_render_menubar(
                 gui_game_quickload(app);
             }
 
-            igMenuItemBool("Backup type", NULL, false, false);
+            igSeparator();
+
+            /* Backup Type */
+            if (igBeginMenu("Backup type", app->emulation.pause && !app->emulation.enabled)) {
+                uint32_t x;
+                char const *backup_types[] = {
+                    "Auto-detect",
+                    "None",
+                    "EEPROM 4k",
+                    "EEPROM 64k",
+                    "SRAM",
+                    "Flash 64k",
+                    "Flash 128k"
+                };
+
+                for (x = 0; x < ARRAY_LEN(backup_types); ++x) {
+                    if (!x) {
+                        if (igMenuItemBool(backup_types[x], NULL, app->emulation.backup_type == BACKUP_AUTO_DETECT, true)) {
+                            app->emulation.backup_type = BACKUP_AUTO_DETECT;
+                            gui_game_set_backup_type(app);
+                        }
+                        igSeparator();
+                    } else {
+                        if (igMenuItemBool(backup_types[x], NULL, app->emulation.backup_type == x, true)) {
+                            app->emulation.backup_type = x - 1;
+                            gui_game_set_backup_type(app);
+                        }
+                    }
+                }
+
+                igEndMenu();
+            }
+
+            /* GPIO */
+            if (igBeginMenu("Devices", app->emulation.pause && !app->emulation.enabled)) {
+                if (igMenuItemBool("Auto-detect RTC", NULL, app->emulation.rtc_autodetect, true)) {
+                    app->emulation.rtc_autodetect ^= 1;
+                }
+                if (igMenuItemBool("Enable RTC", NULL, app->emulation.rtc_enabled, !app->emulation.rtc_autodetect)) {
+                    app->emulation.rtc_enabled ^= 1;
+                }
+                igEndMenu();
+            }
+
             igSeparator();
 
             /* Pause */
@@ -165,7 +208,7 @@ gui_render_menubar(
                 int width;
                 int height;
 
-                char const *speed[] = {
+                char const *display_sizes[] = {
                     "x1",
                     "x2",
                     "x3",
@@ -178,7 +221,7 @@ gui_render_menubar(
 
                 for (x = 1; x <= 5; ++x) {
                     if (igMenuItemBool(
-                        speed[x - 1],
+                        display_sizes[x - 1],
                         NULL,
                         width == GBA_SCREEN_WIDTH * x * app->gui_scale && height == GBA_SCREEN_HEIGHT * x * app->gui_scale,
                         true
@@ -196,10 +239,16 @@ gui_render_menubar(
 
             igSeparator();
 
+            /* Stop */
+            if (igMenuItemBool("Stop", NULL, false, app->emulation.enabled)) {
+                gui_game_stop(app);
+            }
+
             /* Reset */
             if (igMenuItemBool("Reset", NULL, false, app->emulation.enabled)) {
-                gui_game_reload(app);
+                gui_game_reset(app);
             }
+
             igEndMenu();
         }
 

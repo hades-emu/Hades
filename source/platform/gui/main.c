@@ -453,6 +453,9 @@ main(
     app.emulation.enabled = false;
     app.emulation.speed = 1;
     app.emulation.color_correction = true;
+    app.emulation.backup_type = BACKUP_AUTO_DETECT;
+    app.emulation.rtc_autodetect = true;
+    app.emulation.rtc_enabled = true;
     app.emulation.gba = malloc(sizeof(*app.emulation.gba));
     hs_assert(app.emulation.gba);
     gba_init(app.emulation.gba);
@@ -465,7 +468,7 @@ main(
     gui_init(&app);
 
     /* Set the color correction */
-    gui_game_color_correction(&app);
+    gui_game_set_color_correction(&app);
 
     /* Start the logic thread */
     pthread_create(
@@ -491,7 +494,7 @@ main(
 
     /* If a game was supplied in the CLI argument, launch it now */
     if (app.emulation.game_path) {
-        gui_game_reload(&app);
+        gui_game_reset(&app);
     }
 
     app.run = true;

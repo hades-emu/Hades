@@ -37,7 +37,6 @@ char const *backup_storage_names[] = {
     [BACKUP_FLASH128] = "FLASH 128K",
 };
 
-
 /*
 ** Detect the kind of storage the loaded ROM uses, and open/setup the save file.
 **
@@ -50,15 +49,16 @@ void
 mem_backup_storage_detect(
     struct gba *gba
 ) {
+    /* Prioritize the game database. */
     if (gba->game_entry) {
         gba->memory.backup_storage_type = gba->game_entry->storage;
-        goto setup_storage;
+        gba->memory.backup_storage_source = BACKUP_SOURCE_DATABASE;
+        return ;
     }
 
-    /*
-    ** Auto-detection algorithm are very simple: they look for a bunch of strings in the game's ROM.
-    */
+    gba->memory.backup_storage_source = BACKUP_SOURCE_AUTO_DETECT;
 
+    /* Auto-detection algorithm are very simple: they look for a bunch of strings in the game's ROM. */
     if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "EEPROM_V", 7)) {
         logln(HS_GLOBAL, "Detected EEPROM 64K memory.");
         logln(HS_WARNING, "If you are having issues with corrupted saves, try EEPROM 8K instead.");
@@ -81,20 +81,25 @@ mem_backup_storage_detect(
     } else {
         gba->memory.backup_storage_type = BACKUP_NONE;
     }
+}
 
-setup_storage:
+void
+mem_backup_storage_init(
+    struct gba *gba
+) {
+    free(gba->memory.backup_storage_data);
 
     if (gba->memory.backup_storage_type > BACKUP_NONE) {
         logln(
             HS_GLOBAL,
-            "Backup memory is %s%s%s%s.",
+            "Backup memory is %s%s%s (%s).",
             g_light_magenta,
             backup_storage_names[gba->memory.backup_storage_type],
             g_reset,
-            gba->game_entry ? "" : " (auto detected)"
+            backup_storage_sources_str[gba->memory.backup_storage_source]
         );
     } else {
-        logln(HS_GLOBAL, "No backup storage%s.", gba->game_entry ? "" : " (auto detected)");
+        logln(HS_GLOBAL, "No backup storage (%s).", backup_storage_sources_str[gba->memory.backup_storage_source]);
     }
 
     if (   gba->memory.backup_storage_type == BACKUP_EEPROM_4K
@@ -125,13 +130,6 @@ setup_storage:
             gba->memory.eeprom.address_len = EEPROM_64K_ADDR_LEN;
         }
     }
-}
-
-void
-mem_backup_storage_init(
-    struct gba *gba
-) {
-    free(gba->memory.backup_storage_data);
 
     if (gba->memory.backup_storage_type > BACKUP_NONE) {
         gba->memory.backup_storage_data = calloc(1, backup_storage_sizes[gba->memory.backup_storage_type]);

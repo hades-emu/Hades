@@ -47,6 +47,7 @@ gba_reset(
     apu_init(gba);
     core_init(gba);
     gpio_init(gba);
+    gba->started = false;
 }
 
 /*
@@ -127,9 +128,17 @@ gba_run(
                 case MESSAGE_BACKUP_TYPE: {
                     struct message_backup_type *message_backup_type;
 
+                    /* Ignore if emulation is already started. */
+                    if (gba->started) {
+                        break;
+                    }
+
                     message_backup_type = (struct message_backup_type *)message;
                     if (message_backup_type->type == BACKUP_AUTO_DETECT) {
                         mem_backup_storage_detect(gba);
+                    } else {
+                        gba->memory.backup_storage_type = message_backup_type->type;
+                        gba->memory.backup_storage_source = BACKUP_SOURCE_MANUAL;
                     }
                     mem_backup_storage_init(gba);
                     break;
@@ -142,6 +151,7 @@ gba_run(
                     struct message_run *message_run;
 
                     message_run = (struct message_run *)message;
+                    gba->started = true;
                     gba->state = GBA_STATE_RUN;
                     gba->speed = message_run->speed;
                     if (message_run->speed) {
@@ -209,7 +219,35 @@ gba_run(
                     message_color_correction = (struct message_color_correction *)message;
                     gba->color_correction = message_color_correction->color_correction;
                     break;
-                }
+                };
+                case MESSAGE_RTC: {
+                    struct message_device_state *message_device_state;
+
+                    /* Ignore if emulation is already started. */
+                    if (gba->started) {
+                        break;
+                    }
+
+                    message_device_state = (struct message_device_state *)message;
+                    switch (message_device_state->state) {
+                        case DEVICE_AUTO_DETECT: {
+                            gba->rtc_auto_detect = true;
+                            gba->rtc_enabled = false;
+                            break;
+                        };
+                        case DEVICE_ENABLED: {
+                            gba->rtc_auto_detect = false;
+                            gba->rtc_enabled = true;
+                            break;
+                        };
+                        case DEVICE_DISABLED: {
+                            gba->rtc_auto_detect = false;
+                            gba->rtc_enabled = false;
+                            break;
+                        };
+                    }
+                    break;
+                };
             }
             mqueue->allocated_size -= message->size;
             --mqueue->length;
