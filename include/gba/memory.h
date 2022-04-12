@@ -129,11 +129,6 @@ enum backup_storage_source {
     BACKUP_SOURCE_DATABASE,
 };
 
-static char *backup_storage_sources_str[] = {
-    [BACKUP_SOURCE_AUTO_DETECT] = "auto-detect",
-    [BACKUP_SOURCE_MANUAL]      = "manual",
-    [BACKUP_SOURCE_DATABASE]    = "database",
-};
 enum flash_state {
     FLASH_STATE_READY,
     FLASH_STATE_CMD_1,
