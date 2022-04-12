@@ -37,6 +37,13 @@ char const *backup_storage_names[] = {
     [BACKUP_FLASH128] = "FLASH 128K",
 };
 
+static
+char *backup_storage_sources_str[] = {
+    [BACKUP_SOURCE_AUTO_DETECT] = "auto-detect",
+    [BACKUP_SOURCE_MANUAL]      = "manual",
+    [BACKUP_SOURCE_DATABASE]    = "database",
+};
+
 /*
 ** Detect the kind of storage the loaded ROM uses, and open/setup the save file.
 **
