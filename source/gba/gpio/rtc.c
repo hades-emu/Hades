@@ -26,7 +26,6 @@ gpio_rtc_init(
     rtc->sio = 0;
     rtc->cs = 0;
     rtc->control.raw = 0x0;
-    rtc->enabled = true;
 }
 
 static inline

@@ -486,10 +486,6 @@ mem_read16_ror(
     uint32_t rotate;
     uint32_t value;
 
-    //if (gba->core.pc > BIOS_END && addr <= BIOS_END) {
-    //    printf("INVALID READ16_ROR %08x ALIGN=%u\n", addr, addr & 0x3);
-    //}
-
     rotate = (addr % 2) << 3;
     addr &= ~(sizeof(uint16_t) - 1);
     align = addr & 0x3;

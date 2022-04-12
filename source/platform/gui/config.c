@@ -32,6 +32,9 @@ gui_load_config(
                 bios: %Q,
                 color_correction: %B,
                 vsync: %B,
+                backup_type: %d,
+                rtc_autodetect: %B,
+                rtc_enabled: %B,
             }),
             &app->recent_roms[0],
             &app->recent_roms[1],
@@ -40,7 +43,10 @@ gui_load_config(
             &app->recent_roms[4],
             &app->emulation.bios_path,
             &app->emulation.color_correction,
-            &app->vsync
+            &app->vsync,
+            &app->emulation.backup_type,
+            &app->emulation.rtc_autodetect,
+            &app->emulation.rtc_enabled
         );
 
         free(data);
@@ -66,6 +72,9 @@ gui_save_config(
             bios: %Q,
             color_correction: %B,
             vsync: %B,
+            backup_type: %d,
+            rtc_autodetect: %B,
+            rtc_enabled: %B,
         }),
         app->recent_roms[0],
         app->recent_roms[1],
@@ -74,7 +83,10 @@ gui_save_config(
         app->recent_roms[4],
         app->emulation.bios_path,
         app->emulation.color_correction,
-        app->vsync
+        app->vsync,
+        app->emulation.backup_type,
+        app->emulation.rtc_autodetect,
+        app->emulation.rtc_enabled
     );
 }
 

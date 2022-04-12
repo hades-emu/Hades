@@ -37,7 +37,6 @@ enum rtc_registers {
 };
 
 struct rtc {
-    bool enabled;
     enum rtc_states state;
 
     uint64_t data;
@@ -63,7 +62,6 @@ struct rtc {
 };
 
 struct gpio {
-    uint8_t data;
     bool readable;
 
     struct rtc rtc;

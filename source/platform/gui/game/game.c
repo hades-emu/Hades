@@ -74,6 +74,7 @@ load_rom(
     size_t file_len;
     void *data;
     char *error_msg;
+    enum device_state rtc_state;
 
     file = fopen(app->emulation.game_path, "rb");
     if (!file) {
@@ -112,8 +113,15 @@ load_rom(
         return (true);
     }
 
+    if (app->emulation.rtc_autodetect) {
+        rtc_state = DEVICE_AUTO_DETECT;
+    } else {
+        rtc_state = app->emulation.rtc_enabled ? DEVICE_ENABLED : DEVICE_DISABLED;
+    }
+
     gba_message_push(app->emulation.gba, NEW_MESSAGE_LOAD_ROM(data, file_len, free));
-    gba_message_push(app->emulation.gba, NEW_MESSAGE_BACKUP_TYPE(BACKUP_AUTO_DETECT));
+    gba_message_push(app->emulation.gba, NEW_MESSAGE_BACKUP_TYPE(app->emulation.backup_type));
+    gba_message_push(app->emulation.gba, NEW_MESSAGE_RTC(rtc_state));
 
     return (false);
 }
@@ -169,13 +177,27 @@ load_save(
 }
 
 /*
+** Stop the emulation and return to a neutral state.
+*/
+void
+gui_game_stop(
+    struct app *app
+) {
+    app->emulation.enabled = false;
+    app->emulation.pause = true;
+    gba_message_push(app->emulation.gba, NEW_MESSAGE_PAUSE());
+    gba_message_push(app->emulation.gba, NEW_MESSAGE_RESET());
+}
+
+
+/*
 ** Load the BIOS/ROM into the emulator's memory and reset it.
 **
 ** This function also sets the `qsave_path` and `backup_path` variables of `app.emulation`
 ** depending on the content of `app.emulation.game_path`.
 */
 void
-gui_game_reload(
+gui_game_reset(
     struct app *app
 ) {
     char *extension;
@@ -279,10 +301,17 @@ gui_game_set_audio_settings(
 }
 
 void
-gui_game_color_correction(
+gui_game_set_color_correction(
     struct app *app
 ) {
     gba_message_push(app->emulation.gba, NEW_MESSAGE_COLOR_CORRECTION(app->emulation.color_correction));
+}
+
+void
+gui_game_set_backup_type(
+    struct app *app
+) {
+    gba_message_push(app->emulation.gba, NEW_MESSAGE_BACKUP_TYPE(app->emulation.backup_type));
 }
 
 void
