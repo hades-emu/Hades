@@ -113,7 +113,7 @@ gui_render_menubar(
             igSeparator();
 
             /* Backup Type */
-            if (igBeginMenu("Backup type", app->emulation.pause && !app->emulation.enabled)) {
+            if (igBeginMenu("Backup type", !app->emulation.enabled)) {
                 uint32_t x;
                 char const *backup_types[] = {
                     "Auto-detect",
@@ -144,7 +144,7 @@ gui_render_menubar(
             }
 
             /* GPIO */
-            if (igBeginMenu("Devices", app->emulation.pause && !app->emulation.enabled)) {
+            if (igBeginMenu("Devices", !app->emulation.enabled)) {
                 if (igMenuItemBool("Auto-detect RTC", NULL, app->emulation.rtc_autodetect, true)) {
                     app->emulation.rtc_autodetect ^= 1;
                 }
