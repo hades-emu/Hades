@@ -98,7 +98,7 @@ core_next(
             };
         }
     }
-    
+
     if (likely(core->state == CORE_RUN)) {
         if (core->cpsr.thumb) {
             uint16_t op;
