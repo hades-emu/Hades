@@ -62,7 +62,7 @@ gui_sdl_video_init(
 #else
     float dpi_factor;
 
-    dpi_factor = app->dpi / 96.f;
+    dpi_factor = app->ui.dpi / 96.f;
     if (dpi_factor >= (int)dpi_factor + 0.5f) {
         app->ui.scale = (int)dpi_factor + 1;
     } else {
