@@ -21,11 +21,8 @@ cflags = [
     '-fms-extensions',
     '-Wno-microsoft-anon-tag',
     '-DHADES_VERSION="@0@"'.format(meson.project_version()),
-    '-fsanitize=undefined',
 ]
-ldflags = [
-    '-fsanitize=undefined',
-]
+ldflags = []
 
 if get_option('static_executable')
     cflags += ['-static']
