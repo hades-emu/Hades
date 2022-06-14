@@ -180,12 +180,12 @@ ppu_render_scanline(
 
     io = &gba->io;
     y = gba->io.vcount.raw;
-    
+
     switch (io->dispcnt.bg_mode) {
         case 0: {
             for (prio = 3; prio >= 0; --prio) {
                 int32_t bg_idx;
- 
+
                 for (bg_idx = 3; bg_idx >= 0; --bg_idx) {
                     if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio) {
                         ppu_render_background_text(gba, scanline, y, bg_idx);
@@ -355,7 +355,7 @@ ppu_hdraw(
     if (io->vcount.raw >= GBA_SCREEN_REAL_HEIGHT) {
         io->vcount.raw = 0;
         ++gba->framecounter;
-
+    } else if (io->vcount.raw == GBA_SCREEN_HEIGHT) {
         /*
         ** Now that the frame is finished, we can copy the current framebuffer to
         ** the one the frontend uses.
@@ -405,13 +405,13 @@ ppu_hblank(
         struct scanline scanline;
 
         ppu_initialize_scanline(gba, &scanline);
-        
+
         if (!gba->io.dispcnt.blank) {
             ppu_window_build_masks(gba, io->vcount.raw);
             ppu_prerender_oam(gba, &scanline, io->vcount.raw);
             ppu_render_scanline(gba, &scanline);
         }
-        
+
         if (gba->color_correction) {
             ppu_draw_scanline_color_correction(gba, &scanline);
         } else {

@@ -7,22 +7,16 @@
 **
 \******************************************************************************/
 
-#ifndef GBA_DB_H
-# define GBA_DB_H
+#ifndef PLATFORM_GUI_COMMON_H
+# define PLATFORM_GUI_COMMON_H
 
-# include "gba/memory.h"
+struct app;
 
-# define FLAGS_NONE 0x0
-# define FLAGS_RTC  0x1
+/* platform/gui/common/game.c */
+void gui_game_reset(struct app *app);
+void gui_game_stop(struct app *app);
+void gui_game_run(struct app *app);
+void gui_game_pause(struct app *app);
+void gui_game_write_backup(struct app *app);
 
-struct game_entry {
-    char *code;
-    enum backup_storage_types storage;
-    uint64_t flags;
-    char *title;
-};
-
-/* gba/db.c */
-void db_lookup_game(struct gba *gba);
-
-#endif /* !GBA_DB_H */
+#endif /* !PLATFORM_GUI_COMMON_H */

@@ -23,14 +23,16 @@ apu_init(
     memset(&gba->apu.channel_right, 0, sizeof(gba->apu.channel_right));
     pthread_mutex_init(&gba->apu.frontend_channels_mutex, NULL);
 
-    sched_add_event(
-        gba,
-        NEW_REPEAT_EVENT(
-            0,
-            gba->apu.resample_frequency,
-            apu_resample
-        )
-    );
+    if (gba->apu.resample_frequency) {
+        sched_add_event(
+            gba,
+            NEW_REPEAT_EVENT(
+                0,
+                gba->apu.resample_frequency,
+                apu_resample
+            )
+        );
+    }
 }
 
 void

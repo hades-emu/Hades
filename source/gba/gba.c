@@ -34,6 +34,7 @@ gba_init(
 /*
 ** Reset the GBA system to its initial state.
 */
+static
 void
 gba_reset(
     struct gba *gba
@@ -62,7 +63,7 @@ gba_reset(
 **   - The emulator must pause, reset, etc.
 */
 void
-gba_run(
+gba_main_loop(
     struct gba *gba
 ) {
     uint64_t last_measured_time;
@@ -86,7 +87,7 @@ gba_run(
                     pthread_mutex_unlock(&gba->message_queue.lock);
                     return ;
                 };
-                case MESSAGE_LOAD_BIOS: {
+                case MESSAGE_BIOS: {
                     struct message_data *message_data;
 
                     message_data = (struct message_data *)message;
@@ -97,7 +98,7 @@ gba_run(
                     }
                     break;
                 };
-                case MESSAGE_LOAD_ROM: {
+                case MESSAGE_ROM: {
                     struct message_data *message_data;
 
                     message_data = (struct message_data *)message;
@@ -110,7 +111,7 @@ gba_run(
                     db_lookup_game(gba);
                     break;
                 };
-                case MESSAGE_LOAD_BACKUP: {
+                case MESSAGE_BACKUP: {
                     struct message_data *message_data;
 
                     message_data = (struct message_data *)message;
@@ -147,19 +148,22 @@ gba_run(
                     gba_reset(gba);
                     break;
                 };
-                case MESSAGE_RUN: {
-                    struct message_run *message_run;
+                case MESSAGE_SPEED: {
+                    struct message_speed *message_run;
 
-                    message_run = (struct message_run *)message;
-                    gba->started = true;
-                    gba->state = GBA_STATE_RUN;
+                    message_run = (struct message_speed *)message;
                     gba->speed = message_run->speed;
                     if (message_run->speed) {
-                        time_per_frame = 1.f/59.737f * 1000.f * 1000.f / (float)gba->speed;
+                        time_per_frame = 1.f / 59.737f * 1000.f * 1000.f / (float)gba->speed;
                         accumulated_time = 0;
                     } else {
                         time_per_frame = 0.f;
                     }
+                    break;
+                };
+                case MESSAGE_RUN: {
+                    gba->started = true;
+                    gba->state = GBA_STATE_RUN;
                     break;
                 };
                 case MESSAGE_PAUSE: {
@@ -210,7 +214,7 @@ gba_run(
                     struct message_audio_freq *message_audio_freq;
 
                     message_audio_freq = (struct message_audio_freq *)message;
-                    gba->apu.resample_frequency = message_audio_freq->refill_frequency;
+                    gba->apu.resample_frequency = message_audio_freq->resample_frequency;
                     break;
                 };
                 case MESSAGE_COLOR_CORRECTION: {
@@ -287,6 +291,7 @@ gba_run(
 /*
 ** Put the given message in the message queue.
 */
+static
 void
 gba_message_push(
     struct gba *gba,
@@ -308,4 +313,260 @@ gba_message_push(
     mqueue->allocated_size = new_size;
 
     pthread_mutex_unlock(&gba->message_queue.lock);
+}
+
+void
+gba_send_exit(
+    struct gba *gba
+) {
+    gba_message_push(
+        gba,
+        &((struct message) {
+            .type = MESSAGE_EXIT,
+            .size = sizeof(struct message),
+        })
+    );
+}
+
+void
+gba_send_bios(
+    struct gba *gba,
+    uint8_t *data,
+    void (*cleanup)(void *)
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_data) {
+            .super = (struct message){
+                .size = sizeof(struct message_data),
+                .type = MESSAGE_BIOS,
+            },
+            .data = data,
+            .size = BIOS_SIZE,
+            .cleanup = cleanup,
+        })
+    );
+}
+
+void
+gba_send_rom(
+    struct gba *gba,
+    uint8_t *data,
+    size_t size,
+    void (*cleanup)(void *)
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_data) {
+            .super = (struct message){
+                .type = MESSAGE_ROM,
+                .size = sizeof(struct message_data),
+            },
+            .data = data,
+            .size = size,
+            .cleanup = cleanup,
+        })
+    );
+}
+
+void
+gba_send_backup(
+    struct gba *gba,
+    uint8_t *data,
+    size_t size,
+    void (*cleanup)(void *)
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_data) {
+            .super = (struct message){
+                .type = MESSAGE_BACKUP,
+                .size = sizeof(struct message_data),
+            },
+            .data = data,
+            .size = size,
+            .cleanup = cleanup,
+        })
+    );
+}
+
+void
+gba_send_backup_type(
+    struct gba *gba,
+    enum backup_storage_types backup_type
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_backup_type) {
+            .super = (struct message){
+                .type = MESSAGE_BACKUP_TYPE,
+                .size = sizeof(struct message_backup_type),
+            },
+            .type = backup_type,
+        })
+    );
+}
+
+void
+gba_send_speed(
+    struct gba *gba,
+    uint32_t speed
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_speed) {
+            .super = (struct message){
+                .type = MESSAGE_SPEED,
+                .size = sizeof(struct message_speed),
+            },
+            .speed = speed,
+        })
+    );
+}
+
+void
+gba_send_reset(
+    struct gba *gba
+) {
+    gba_message_push(
+        gba,
+        &((struct message) {
+            .type = MESSAGE_RESET,
+            .size = sizeof(struct message),
+        })
+    );
+}
+
+void
+gba_send_run(
+    struct gba *gba
+) {
+    gba_message_push(
+        gba,
+        &((struct message) {
+            .type = MESSAGE_RUN,
+            .size = sizeof(struct message),
+        })
+    );
+}
+
+void
+gba_send_pause(
+    struct gba *gba
+) {
+    gba_message_push(
+        gba,
+        &((struct message) {
+            .type = MESSAGE_PAUSE,
+            .size = sizeof(struct message),
+        })
+    );
+}
+
+void
+gba_send_keyinput(
+    struct gba *gba,
+    enum keyinput key,
+    bool pressed
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_keyinput) {
+            .super = (struct message){
+                .type = MESSAGE_KEYINPUT,
+                .size = sizeof(struct message_keyinput),
+            },
+            .key = key,
+            .pressed = pressed,
+        })
+    );
+}
+
+void
+gba_send_quickload(
+    struct gba *gba,
+    char const *path
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_data) {
+            .super = (struct message){
+                .type = MESSAGE_QUICKLOAD,
+                .size = sizeof(struct message_data),
+            },
+            .data = (unsigned char *)strdup(path),
+            .size = strlen(path),
+            .cleanup = free,
+        })
+    );
+}
+
+void
+gba_send_quicksave(
+    struct gba *gba,
+    char const *path
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_data) {
+            .super = (struct message){
+                .type = MESSAGE_QUICKSAVE,
+                .size = sizeof(struct message_data),
+            },
+            .data = (unsigned char *)strdup(path),
+            .size = strlen(path),
+            .cleanup = free,
+        })
+    );
+}
+
+void
+gba_send_audio_resample_freq(
+    struct gba *gba,
+    uint64_t resample_freq
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_audio_freq) {
+            .super = (struct message){
+                .type = MESSAGE_AUDIO_RESAMPLE_FREQ,
+                .size = sizeof(struct message_audio_freq),
+            },
+            .resample_frequency = resample_freq,
+        })
+    );
+}
+
+void
+gba_send_color_correction(
+    struct gba *gba,
+    bool color_correction
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_color_correction) {
+            .super = (struct message){
+                .type = MESSAGE_COLOR_CORRECTION,
+                .size = sizeof(struct message_color_correction),
+            },
+            .color_correction = color_correction,
+        })
+    );
+}
+
+void
+gba_send_rtc(
+    struct gba *gba,
+    enum device_states state
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_device_state) {
+            .super = (struct message){
+                .type = MESSAGE_RTC,
+                .size = sizeof(struct message_device_state),
+            },
+            .state = state,
+        })
+    );
 }

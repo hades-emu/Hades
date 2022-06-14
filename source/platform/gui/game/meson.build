@@ -7,20 +7,23 @@
 ##
 ################################################################################
 
-libgui = static_library(
-    'gui',
-    'game/game.c',
-    'game/render.c',
-    'game/screenshot.c',
-    'config.c',
-    'error.c',
+libguigame = static_library(
+    'gui-game',
+    'features/config.c',
+    'features/screenshot.c',
+    'sdl/audio.c',
+    'sdl/init.c',
+    'sdl/input.c',
+    'sdl/video.c',
+    'windows/error.c',
+    'windows/menubar.c',
+    'windows/game.c',
     'main.c',
-    'menubar.c',
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
     ],
-    link_with: [libgba, imgui, libcommon, frozen, nfde],
-    include_directories: [incdir, imgui_inc, frozen_inc, stb_inc, nfde_inc],
+    link_with: [libgba, libcommon, libguicommon, imgui, nfde, frozen],
+    include_directories: [incdir, imgui_inc, nfde_inc, frozen_inc, stb_inc],
     c_args: cflags,
     link_args: ldflags,
 )

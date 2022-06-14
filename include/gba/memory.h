@@ -17,7 +17,7 @@
 ** Access to the memory bus can either be sequential (the requested address follows the previous one)
 ** or non-sequential (the requested address is unrelated to the previous one)
 */
-enum access_type {
+enum access_types {
     NON_SEQUENTIAL,
     SEQUENTIAL,
 };
@@ -112,7 +112,7 @@ enum access_type {
 /*
 ** The different types of backup storage a game can use.
 */
-enum backup_storage {
+enum backup_storage_types {
     BACKUP_AUTO_DETECT = -1,
 
     BACKUP_NONE = 0,
@@ -123,13 +123,13 @@ enum backup_storage {
     BACKUP_FLASH128 = 5,
 };
 
-enum backup_storage_source {
+enum backup_storage_sources {
     BACKUP_SOURCE_AUTO_DETECT,
     BACKUP_SOURCE_MANUAL,
     BACKUP_SOURCE_DATABASE,
 };
 
-enum flash_state {
+enum flash_states {
     FLASH_STATE_READY,
     FLASH_STATE_CMD_1,
     FLASH_STATE_CMD_2,
@@ -149,12 +149,12 @@ enum flash_cmds {
 };
 
 struct flash {
-    enum flash_state state;
+    enum flash_states state;
     bool identity_mode;
     bool bank;
 };
 
-enum eeprom_state {
+enum eeprom_states {
     EEPROM_STATE_READY,
     EEPROM_STATE_CMD,
     EEPROM_STATE_TRANSFER_ADDR,
@@ -163,7 +163,7 @@ enum eeprom_state {
     EEPROM_STATE_END,
 };
 
-enum eeprom_cmd {
+enum eeprom_cmds {
     EEPROM_CMD_READ,
     EEPROM_CMD_WRITE,
 };
@@ -172,8 +172,8 @@ struct eeprom {
     uint32_t mask;
     uint32_t range;
 
-    enum eeprom_state state;
-    enum eeprom_cmd cmd;
+    enum eeprom_states state;
+    enum eeprom_cmds cmd;
 
     uint32_t address_mask;
     uint32_t address_len;
@@ -214,8 +214,8 @@ struct memory {
 
     // Backup Storage
     uint8_t *backup_storage_data;
-    enum backup_storage backup_storage_type;
-    enum backup_storage_source backup_storage_source;
+    enum backup_storage_types backup_storage_type;
+    enum backup_storage_sources backup_storage_source;
     atomic_bool backup_storage_dirty;
 
     // Flash memory
@@ -261,19 +261,19 @@ void mem_io_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /* gba/memory/memory.c */
 void mem_reset(struct memory *memory);
-void mem_access(struct gba *gba, uint32_t addr, uint32_t size, enum access_type access_type);
+void mem_access(struct gba *gba, uint32_t addr, uint32_t size, enum access_types access_type);
 void mem_update_waitstates(struct gba const *gba);
 void mem_prefetch_buffer_access(struct gba *gba, uint32_t addr, uint32_t intended_cycles);
 void mem_prefetch_buffer_step(struct gba *gba, uint32_t cycles);
 uint32_t mem_openbus_read(struct gba const *gba, uint32_t addr);
-uint8_t mem_read8(struct gba *gba, uint32_t addr, enum access_type access_type);
-uint16_t mem_read16(struct gba *gba, uint32_t addr, enum access_type access_type);
-uint32_t mem_read16_ror(struct gba *gba, uint32_t addr, enum access_type access_type);
-uint32_t mem_read32(struct gba *gba, uint32_t addr, enum access_type access_type);
-uint32_t mem_read32_ror(struct gba *gba, uint32_t addr, enum access_type access_type);
-void mem_write8(struct gba *gba, uint32_t addr, uint8_t val, enum access_type access_type);
-void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_type access_type);
-void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_type access_type);
+uint8_t mem_read8(struct gba *gba, uint32_t addr, enum access_types access_type);
+uint16_t mem_read16(struct gba *gba, uint32_t addr, enum access_types access_type);
+uint32_t mem_read16_ror(struct gba *gba, uint32_t addr, enum access_types access_type);
+uint32_t mem_read32(struct gba *gba, uint32_t addr, enum access_types access_type);
+uint32_t mem_read32_ror(struct gba *gba, uint32_t addr, enum access_types access_type);
+void mem_write8(struct gba *gba, uint32_t addr, uint8_t val, enum access_types access_type);
+void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_types access_type);
+void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_types access_type);
 
 /* gba/memory/storage/eeprom.c */
 uint8_t mem_eeprom_read8(struct gba *gba);

@@ -104,6 +104,8 @@ sched_add_event(
 
     scheduler = &gba->scheduler;
 
+    hs_assert(!event.repeat || event.period);
+
     // Try and reuse an inactive event
     for (i = 0; i < scheduler->events_size; ++i) {
         if (!scheduler->events[i].active) {
