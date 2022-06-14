@@ -24,30 +24,29 @@ gui_config_load(
             data,
             strlen(data),
             STRINGIFY({
-                file: {
-                    bios: %Q,
-                    recent_roms_0: %Q,
-                    recent_roms_1: %Q,
-                    recent_roms_2: %Q,
-                    recent_roms_3: %Q,
-                    recent_roms_4: %Q,
-                },
-                emulation: {
-                    unbounded: %B,
-                    speed: %d,
-                    backup_type: %d,
-                    rtc_autodetect: %B,
-                    rtc_force_enabled: %B,
-                },
-                video: {
-                    display_size: %d,
-                    vsync: %B,
-                    color_correction: %B,
-                },
-                audio: {
-                    mute: %B,
-                    sound_level: %f,
-                },
+                // File
+                bios: %Q,
+                recent_roms_0: %Q,
+                recent_roms_1: %Q,
+                recent_roms_2: %Q,
+                recent_roms_3: %Q,
+                recent_roms_4: %Q,
+
+                // Emulation
+                unbounded: %B,
+                speed: %d,
+                backup_type: %d,
+                rtc_autodetect: %B,
+                rtc_force_enabled: %B,
+
+                // Video
+                display_size: %d,
+                vsync: %B,
+                color_correction: %B,
+
+                // Audio
+                mute: %B,
+                sound_level: %f,
             }),
             &app->file.bios_path,
             &app->file.recent_roms[0],
@@ -85,30 +84,29 @@ gui_config_save(
     json_fprintf(
         app->file.config_path,
         STRINGIFY({
-            file: {
-                bios: %Q,
-                recent_roms_0: %Q,
-                recent_roms_1: %Q,
-                recent_roms_2: %Q,
-                recent_roms_3: %Q,
-                recent_roms_4: %Q,
-            },
-            emulation: {
-                unbounded: %B,
-                speed: %d,
-                backup_type: %d,
-                rtc_autodetect: %B,
-                rtc_force_enabled: %B,
-            },
-            video: {
-                display_size: %d,
-                vsync: %B,
-                color_correction: %B,
-            },
-            audio: {
-                mute: %B,
-                sound_level: %.2f,
-            },
+            // File
+            bios: %Q,
+            recent_roms_0: %Q,
+            recent_roms_1: %Q,
+            recent_roms_2: %Q,
+            recent_roms_3: %Q,
+            recent_roms_4: %Q,
+
+            // Emulation
+            unbounded: %B,
+            speed: %d,
+            backup_type: %d,
+            rtc_autodetect: %B,
+            rtc_force_enabled: %B,
+
+            // Video
+            display_size: %d,
+            vsync: %B,
+            color_correction: %B,
+
+            // Audio
+            mute: %B,
+            sound_level: %f,
         }),
         app->file.bios_path,
         app->file.recent_roms[0],
