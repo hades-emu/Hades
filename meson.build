@@ -21,8 +21,11 @@ cflags = [
     '-fms-extensions',
     '-Wno-microsoft-anon-tag',
     '-DHADES_VERSION="@0@"'.format(meson.project_version()),
+    '-fsanitize=undefined',
 ]
-ldflags = []
+ldflags = [
+    '-fsanitize=undefined',
+]
 
 if get_option('static_executable')
     cflags += ['-static']
@@ -62,7 +65,7 @@ if host_machine.system() == 'windows'
     hades = executable(
         'Hades',
         winrc,
-        gui_app: true,
+        # gui_app: true,
         link_with: [libguigame],
         c_args: cflags,
         link_args: ldflags,
