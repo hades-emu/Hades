@@ -257,9 +257,9 @@ gui_win_menubar_audio(
 
         igSetNextItemWidth(100.f * app->ui.scale);
 
-        percent = app->audio.sound_level * 100.f;
+        percent = app->audio.level * 100.f;
         igSliderFloat("", &percent, 0.0f, 100.0f, "%.0f%%", ImGuiSliderFlags_None);
-        app->audio.sound_level = max(0.0f, min(percent / 100.f, 1.f));
+        app->audio.level = max(0.0f, min(percent / 100.f, 1.f));
 
         igSpacing();
 

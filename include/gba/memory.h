@@ -113,6 +113,8 @@ enum access_types {
 ** The different types of backup storage a game can use.
 */
 enum backup_storage_types {
+    BACKUP_MIN = -1,
+
     BACKUP_AUTO_DETECT = -1,
 
     BACKUP_NONE = 0,
@@ -121,6 +123,8 @@ enum backup_storage_types {
     BACKUP_SRAM = 3,
     BACKUP_FLASH64 = 4,
     BACKUP_FLASH128 = 5,
+
+    BACKUP_MAX = 5,
 };
 
 enum backup_storage_sources {

@@ -88,7 +88,7 @@ struct app {
 
     struct {
         bool mute;
-        float sound_level;
+        float level;
     } audio;
 
     struct {

@@ -126,7 +126,8 @@ args_parse(
                         printf("Hades v" HADES_VERSION "\n");
                         exit(EXIT_SUCCESS);
                         break;
-                    case CLI_BIOS:
+                    case CLI_BIOS: // --bios
+                        free(app->file.bios_path);
                         app->file.bios_path = strdup(optarg);
                         break;
                     case CLI_COLOR: // --color
@@ -155,6 +156,7 @@ args_parse(
                 }
                 break;
             case 'b':
+                free(app->file.bios_path);
                 app->file.bios_path = strdup(optarg);
                 break;
             case 'h':
@@ -209,6 +211,7 @@ main(
     gba_init(app.emulation.gba);
 
     /* Default value for all options, before config and argument parsing. */
+    app.file.bios_path = strdup("./bios.bin");
     app.file.config_path = strdup("./config.json");
     app.emulation.running = false;
     app.emulation.started = false;
@@ -221,7 +224,7 @@ main(
     app.video.vsync = false;
     app.video.display_size = 3;
     app.audio.mute = false;
-    app.audio.sound_level = 1.0f;
+    app.audio.level = 1.0f;
     app.ui.refresh_windows_size = true;
 
     gui_config_load(&app);

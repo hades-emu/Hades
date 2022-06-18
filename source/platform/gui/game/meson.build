@@ -22,8 +22,8 @@ libguigame = static_library(
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
     ],
-    link_with: [libgba, libcommon, libguicommon, imgui, nfde, frozen],
-    include_directories: [incdir, imgui_inc, nfde_inc, frozen_inc, stb_inc],
+    link_with: [libgba, libcommon, libguicommon, imgui, nfde, mjson],
+    include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],
     c_args: cflags,
     link_args: ldflags,
 )

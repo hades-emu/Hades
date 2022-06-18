@@ -31,8 +31,8 @@ gui_sdl_audio_callback(
 
     pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
     for (i = 0; i < len; ++i) {
-        stream[0] = (int16_t)((apu_rbuffer_pop(&gba->apu.channel_left) * !app->audio.mute) * app->audio.sound_level);
-        stream[1] = (int16_t)((apu_rbuffer_pop(&gba->apu.channel_right) * !app->audio.mute) * app->audio.sound_level);
+        stream[0] = (int16_t)((apu_rbuffer_pop(&gba->apu.channel_left) * !app->audio.mute) * app->audio.level);
+        stream[1] = (int16_t)((apu_rbuffer_pop(&gba->apu.channel_right) * !app->audio.mute) * app->audio.level);
         stream += 2;
     }
     pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
