@@ -29,7 +29,7 @@ core_arm_bdt(
     bool pre;
     bool s;
     bool wb;
-    enum access_type access_type;
+    enum access_types access_type;
 
     core = &gba->core;
     rn = bitfield_get_range(op, 16, 20);

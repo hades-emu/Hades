@@ -19,23 +19,24 @@
 # include "gba/scheduler.h"
 # include "gba/gpio.h"
 
-enum gba_state {
+enum gba_states {
     GBA_STATE_PAUSE = 0,
     GBA_STATE_RUN,
 };
 
-enum device_state {
+enum device_states {
     DEVICE_AUTO_DETECT = 0,
     DEVICE_ENABLED,
     DEVICE_DISABLED,
 };
 
-enum message_type {
+enum message_types {
     MESSAGE_EXIT,
-    MESSAGE_LOAD_BIOS,
-    MESSAGE_LOAD_ROM,
-    MESSAGE_LOAD_BACKUP,
+    MESSAGE_BIOS,
+    MESSAGE_ROM,
+    MESSAGE_BACKUP,
     MESSAGE_BACKUP_TYPE,
+    MESSAGE_SPEED,
     MESSAGE_RESET,
     MESSAGE_RUN,
     MESSAGE_PAUSE,
@@ -61,13 +62,8 @@ enum keyinput {
 };
 
 struct message {
-    enum message_type type;
+    enum message_types type;
     size_t size;
-};
-
-struct message_run {
-    struct message super;
-    uint32_t speed; // 0 means unbounded (no fps cap).
 };
 
 struct message_keyinput {
@@ -78,7 +74,12 @@ struct message_keyinput {
 
 struct message_backup_type {
     struct message super;
-    enum backup_storage type;
+    enum backup_storage_types type;
+};
+
+struct message_speed {
+    struct message super;
+    uint32_t speed; // 0 means unbounded (no fps cap).
 };
 
 struct message_data {
@@ -90,7 +91,7 @@ struct message_data {
 
 struct message_audio_freq {
     struct message super;
-    uint64_t refill_frequency;
+    uint64_t resample_frequency;
 };
 
 struct message_color_correction {
@@ -100,7 +101,7 @@ struct message_color_correction {
 
 struct message_device_state {
     struct message super;
-    enum device_state state;
+    enum device_states state;
 };
 
 struct message_queue {
@@ -114,7 +115,7 @@ struct message_queue {
 struct game_entry;
 
 struct gba {
-    enum gba_state state;
+    enum gba_states state;
     uint32_t speed;
 
     struct core core;
@@ -152,131 +153,23 @@ struct gba {
     atomic_uint framecounter;
 };
 
-# define NEW_MESSAGE_KEYINPUT(_key, _pressed)           \
-    ((struct message *)&((struct message_keyinput){     \
-        .super = (struct message){                      \
-            .size = sizeof(struct message_keyinput),    \
-            .type = MESSAGE_KEYINPUT,                   \
-        },                                              \
-        .key = (_key),                                  \
-        .pressed = (_pressed)                           \
-    }))
-
-# define NEW_MESSAGE_QUICKSAVE(_path)                   \
-    ((struct message *)&((struct message_data){         \
-        .super = (struct message){                      \
-            .size = sizeof(struct message_data),        \
-            .type = MESSAGE_QUICKSAVE,                  \
-        },                                              \
-        .data = (uint8_t *)strdup(_path),               \
-        .size = strlen(_path),                          \
-        .cleanup = free,                                \
-    }))
-
-# define NEW_MESSAGE_QUICKLOAD(_path)                   \
-    ((struct message *)&((struct message_data){         \
-        .super = (struct message){                      \
-            .size = sizeof(struct message_data),        \
-            .type = MESSAGE_QUICKLOAD,                  \
-        },                                              \
-        .data = (uint8_t *)strdup(_path),               \
-        .size = strlen(_path),                          \
-        .cleanup = free,                                \
-    }))
-
-# define NEW_MESSAGE_RUN(_speed)                        \
-    ((struct message *)&((struct message_run){          \
-        .super = (struct message){                      \
-            .size = sizeof(struct message_run),         \
-            .type = MESSAGE_RUN,                        \
-        },                                              \
-        .speed = (_speed),                              \
-    }))
-
-# define NEW_MESSAGE_PAUSE()                            \
-    (&((struct message){                                \
-        .type = MESSAGE_PAUSE,                          \
-        .size = sizeof(struct message),                 \
-    }))
-
-# define NEW_MESSAGE_RESET()                            \
-    (&((struct message){                                \
-        .type = MESSAGE_RESET,                          \
-        .size = sizeof(struct message),                 \
-    }))
-
-# define NEW_MESSAGE_LOAD_BIOS(_data, _cleanup)         \
-    ((struct message *)&((struct message_data){         \
-        .super = (struct message){                      \
-            .size = sizeof(struct message_data),        \
-            .type = MESSAGE_LOAD_BIOS,                  \
-        },                                              \
-        .data = (_data),                                \
-        .size = (BIOS_SIZE),                            \
-        .cleanup = (_cleanup),                          \
-    }))
-
-# define NEW_MESSAGE_LOAD_ROM(_data, _size, _cleanup)   \
-    ((struct message *)&((struct message_data){         \
-        .super = (struct message){                      \
-            .size = sizeof(struct message_data),        \
-            .type = MESSAGE_LOAD_ROM,                   \
-        },                                              \
-        .data = (_data),                                \
-        .size = (_size),                                \
-        .cleanup = (_cleanup),                          \
-    }))
-
-# define NEW_MESSAGE_BACKUP_TYPE(_type)                 \
-    ((struct message *)&((struct message_backup_type){  \
-        .super = (struct message){                      \
-            .size = sizeof(struct message_backup_type), \
-            .type = MESSAGE_BACKUP_TYPE,                \
-        },                                              \
-        .type = (_type),                                \
-    }))
-
-# define NEW_MESSAGE_LOAD_BACKUP(_data, _size, _cleanup)\
-    ((struct message *)&((struct message_data){         \
-        .super = (struct message){                      \
-            .size = sizeof(struct message_data),        \
-            .type = MESSAGE_LOAD_BACKUP,                \
-        },                                              \
-        .data = (_data),                                \
-        .size = (_size),                                \
-        .cleanup = (_cleanup),                          \
-    }))
-
-# define NEW_MESSAGE_AUDIO_RESAMPLE_FREQ(_freq)         \
-    ((struct message *)&((struct message_audio_freq){   \
-        .super = (struct message){                      \
-            .size = sizeof(struct message_audio_freq),  \
-            .type = MESSAGE_AUDIO_RESAMPLE_FREQ,        \
-        },                                              \
-        .refill_frequency = (_freq),                    \
-    }))
-
-# define NEW_MESSAGE_COLOR_CORRECTION(_color)                   \
-    ((struct message *)&((struct message_color_correction){     \
-        .super = (struct message){                              \
-            .size = sizeof(struct message_color_correction),    \
-            .type = MESSAGE_COLOR_CORRECTION,                   \
-        },                                                      \
-        .color_correction = (_color),                           \
-    }))
-
-# define NEW_MESSAGE_RTC(_state)                                \
-    ((struct message *)&((struct message_device_state){         \
-        .super = (struct message){                              \
-            .size = sizeof(struct message_device_state),        \
-            .type = MESSAGE_RTC,                                \
-        },                                                      \
-        .state = (_state),                                      \
-    }))
-
 /* gba/gba.c */
 void gba_init(struct gba *gba);
-void gba_run(struct gba *gba);
-void gba_message_push(struct gba *gba, struct message *message);
+void gba_main_loop(struct gba *gba);
+void gba_send_exit(struct gba *gba);
+void gba_send_bios(struct gba *gba, uint8_t *data, void (*cleanup)(void *));
+void gba_send_rom(struct gba *gba, uint8_t *data, size_t size, void (*cleanup)(void *));
+void gba_send_backup(struct gba *gba, uint8_t *data, size_t size, void (*cleanup)(void *));
+void gba_send_backup_type(struct gba *gba, enum backup_storage_types backup_type);
+void gba_send_reset(struct gba *gba);
+void gba_send_speed(struct gba *gba, uint32_t speed);
+void gba_send_run(struct gba *gba);
+void gba_send_pause(struct gba *gba);
+void gba_send_keyinput(struct gba *gba, enum keyinput key, bool pressed);
+void gba_send_quickload(struct gba *gba, char const *path);
+void gba_send_quicksave(struct gba *gba, char const *path);
+void gba_send_audio_resample_freq(struct gba *gba, uint64_t resample_freq);
+void gba_send_color_correction(struct gba *gba, bool color_correction);
+void gba_send_rtc(struct gba *gba, enum device_states state);
 
 #endif /* GBA_GBA_H */

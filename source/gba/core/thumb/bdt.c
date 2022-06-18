@@ -55,7 +55,7 @@ core_thumb_pop(
     uint16_t op
 ) {
     struct core *core;
-    enum access_type access_type;
+    enum access_types access_type;
     ssize_t i;
 
     core = &gba->core;
@@ -100,7 +100,7 @@ core_thumb_stmia(
 ) {
     bool first;
     struct core *core;
-    enum access_type access_type;
+    enum access_types access_type;
     uint32_t count;
     uint32_t addr;
     uint32_t rb;
@@ -161,7 +161,7 @@ core_thumb_ldmia(
     uint16_t op
 ) {
     struct core *core;
-    enum access_type access_type;
+    enum access_types access_type;
     uint32_t count;
     uint32_t addr;
     uint32_t rb;

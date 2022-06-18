@@ -80,9 +80,21 @@ logln(
 
     if (module == HS_GLOBAL || (g_verbose_global && g_verbose[module])) {
         va_start(va, fmt);
+
         printf("[%s] ", modules_str[module]);
+
+        if (module == HS_ERROR) {
+            printf("%s", g_light_red);
+        }
+
         vprintf(fmt, va);
+
+        if (module == HS_ERROR) {
+            printf("%s", g_reset);
+        }
+
         printf("\n");
+
         va_end(va);
     }
 }

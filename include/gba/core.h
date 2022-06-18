@@ -111,7 +111,7 @@ struct core {
     };
 
     uint32_t prefetch[2];                   // The next instruction to be executed
-    enum access_type prefetch_access_type;
+    enum access_types prefetch_access_type;
 
     struct psr cpsr;
 

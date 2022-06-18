@@ -44,7 +44,7 @@ dma_run_channel(
     bool first
 ) {
     struct dma_channel *prev_dma;
-    enum access_type access;
+    enum access_types access;
     int32_t src_step;
     int32_t dst_step;
     int32_t unit_size;

@@ -116,7 +116,7 @@ mem_access(
     struct gba *gba,
     uint32_t addr,
     uint32_t size,  // In bytes
-    enum access_type access_type
+    enum access_types access_type
 ) {
     uint32_t cycles;
     uint32_t page;
@@ -448,7 +448,7 @@ uint8_t
 mem_read8(
     struct gba *gba,
     uint32_t addr,
-    enum access_type access_type
+    enum access_types access_type
 ) {
     mem_access(gba, addr, sizeof(uint8_t), access_type);
     return (template_read(uint8_t, gba, addr, addr & 0x3));
@@ -461,7 +461,7 @@ uint16_t
 mem_read16(
     struct gba *gba,
     uint32_t addr,
-    enum access_type access_type
+    enum access_types access_type
 ) {
     uint32_t align;
 
@@ -480,7 +480,7 @@ uint32_t
 mem_read16_ror(
     struct gba *gba,
     uint32_t addr,
-    enum access_type access_type
+    enum access_types access_type
 ) {
     uint32_t align;
     uint32_t rotate;
@@ -504,7 +504,7 @@ uint32_t
 mem_read32(
     struct gba *gba,
     uint32_t addr,
-    enum access_type access_type
+    enum access_types access_type
 ) {
     addr &= ~(sizeof(uint32_t) - 1);
 
@@ -520,7 +520,7 @@ uint32_t
 mem_read32_ror(
     struct gba *gba,
     uint32_t addr,
-    enum access_type access_type
+    enum access_types access_type
 ) {
     uint32_t rotate;
     uint32_t value;
@@ -541,7 +541,7 @@ mem_write8(
     struct gba *gba,
     uint32_t addr,
     uint8_t val,
-    enum access_type access_type
+    enum access_types access_type
 ) {
     mem_access(gba, addr, sizeof(uint8_t), access_type);
     template_write(uint8_t, gba, addr, val);
@@ -555,7 +555,7 @@ mem_write16(
     struct gba *gba,
     uint32_t addr,
     uint16_t val,
-    enum access_type access_type
+    enum access_types access_type
 ) {
     addr &= ~(sizeof(uint16_t) - 1);
 
@@ -571,7 +571,7 @@ mem_write32(
     struct gba *gba,
     uint32_t addr,
     uint32_t val,
-    enum access_type access_type
+    enum access_types access_type
 ) {
     addr &= ~(sizeof(uint32_t) - 1);
 
