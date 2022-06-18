@@ -8,14 +8,15 @@
 \******************************************************************************/
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include <stb_image_write.h>
 #include "hades.h"
-#include "platform/gui.h"
 #include "gba/gba.h"
+#include "platform/gui/game.h"
 #include "utils/fs.h"
 
 void
-gui_game_screenshot(
+gui_screenshot(
     struct app *app
 ) {
     time_t now;
@@ -43,7 +44,7 @@ gui_game_screenshot(
     if (out) {
         logln(
             HS_GLOBAL,
-            "Screenshot saved in %s%s%s...",
+            "Screenshot saved in %s%s%s.",
             g_light_green,
             filename,
             g_reset
@@ -51,8 +52,7 @@ gui_game_screenshot(
     } else {
         logln(
             HS_ERROR,
-            "%sError: failed to save screenshot in %s%s%s.%s",
-            g_light_red,
+            "Failed to save screenshot in %s%s%s.%s",
             g_light_green,
             filename,
             g_light_red,

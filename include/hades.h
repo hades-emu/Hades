@@ -102,16 +102,16 @@ static char const * const modules_str[] = {
     }                                                       \
     while (0)
 
-# define STRINGIFY(...)   (#__VA_ARGS__)
+# define STRINGIFY(...)                         (#__VA_ARGS__)
 
 /* Return the minimum between `a` and `b`. */
 # ifndef min
-#  define min(a, b)                              ((a) > (b) ? (b) : (a))
+#  define min(a, b)                             ((a) > (b) ? (b) : (a))
 # endif /* !min */
 
 /* Return the maximun between `a` and `b`. */
 # ifndef max
-#  define max(a, b)                              ((a) > (b) ? (a) : (b))
+#  define max(a, b)                             ((a) > (b) ? (a) : (b))
 # endif /* !max */
 
 /* Return the size of static array */

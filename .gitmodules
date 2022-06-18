@@ -2,12 +2,12 @@
 	path = external/cimgui
 	url = https://github.com/cimgui/cimgui.git
 	branch = Lib_Only
-[submodule "external/frozen"]
-	path = external/frozen
-	url = https://github.com/cesanta/frozen.git
 [submodule "external/stb"]
 	path = external/stb
 	url = https://github.com/nothings/stb.git
 [submodule "external/nfde"]
 	path = external/nfde
 	url = https://github.com/btzy/nativefiledialog-extended.git
+[submodule "external/mjson"]
+	path = external/mjson
+	url = https://github.com/cesanta/mjson.git

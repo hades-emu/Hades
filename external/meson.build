@@ -66,17 +66,17 @@ imgui = static_library(
 )
 
 ###############################
-##          Frozen           ##
+##           mjson           ##
 ###############################
 
-frozen_inc = include_directories(
-    'frozen/'
+mjson_inc = include_directories(
+    'mjson/src/'
 )
 
-frozen = static_library(
-    'frozen',
-    'frozen/frozen.c',
-    include_directories: frozen_inc,
+mjson = static_library(
+    'mjson',
+    'mjson/src/mjson.c',
+    include_directories: mjson_inc,
     c_args: cflags,
     link_args: ldflags,
 )

@@ -53,7 +53,8 @@ subdir('source/gba')
 ## Graphical User Interface  ##
 ###############################
 
-subdir('source/platform/gui')
+subdir('source/platform/gui/common')
+subdir('source/platform/gui/game')
 
 if host_machine.system() == 'windows'
     winrc = import('windows').compile_resources('./resource/windows/hades.rc')
@@ -62,23 +63,29 @@ if host_machine.system() == 'windows'
         'Hades',
         winrc,
         gui_app: true,
-        link_with: [libgba, imgui, libcommon, frozen, libgui],
+        link_with: [libguigame],
         c_args: cflags,
         link_args: ldflags,
         install: true,
     )
-else
+elif host_machine.system() == 'darwin'
     hades = executable(
         'hades',
-        link_with: [libgba, imgui, libcommon, frozen, libgui],
+        link_with: [libguigame],
         c_args: cflags,
         link_args: ldflags,
         install: true,
     )
-endif
 
-if host_machine.system() == 'darwin'
     install_data('./resource/macos/Info.plist', install_dir: 'Contents')
     install_data('./resource/macos/hades.icns', install_dir: 'Contents/Resources')
     install_data('./resource/macos/run.sh',     install_dir: 'Contents/MacOS')
+else  # Linux and all others (eventually)
+    hades = executable(
+        'hades',
+        link_with: [libguigame],
+        c_args: cflags,
+        link_args: ldflags,
+        install: true,
+    )
 endif
