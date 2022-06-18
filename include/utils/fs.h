@@ -18,8 +18,9 @@
 #  include <fileapi.h>
 #  include <stdio.h>
 
-#  define hs_isatty(x)           false
-#  define hs_mkdir(path)         CreateDirectoryA((path), NULL)
+#  define hs_isatty(x)          false
+#  define hs_mkdir(path)        CreateDirectoryA((path), NULL)
+#  define hs_fopen(path, mode)   _wfopen((wchar_t const *)(path), (mode))
 
 static inline
 char const *
@@ -38,6 +39,7 @@ hs_basename(
 
 #  define hs_isatty(x)           isatty(x)
 #  define hs_mkdir(path)         mkdir((path), 0755);
+#  define hs_fopen(path, mode)   fopen((char const *)(path), (mode))
 
 static inline
 char const *

@@ -11,6 +11,7 @@
 #include <mjson.h>
 #include "hades.h"
 #include "platform/gui/game.h"
+#include "utils/fs.h"
 
 void
 gui_config_load(
@@ -20,7 +21,7 @@ gui_config_load(
     FILE *config_file;
     size_t data_len;
 
-    config_file = fopen(app->file.config_path, "r");
+    config_file = hs_fopen(app->file.config_path, "r");
     if (!config_file) {
         logln(HS_ERROR, "Failed to open \"%s\": %s", app->file.config_path, strerror(errno));
         return ;
@@ -136,7 +137,7 @@ gui_config_save(
     data = NULL;
     pretty_data = NULL;
 
-    config_file = fopen(app->file.config_path, "w");
+    config_file = hs_fopen(app->file.config_path, "w");
     if (!config_file) {
         logln(HS_ERROR, "Failed to open \"%s\": %s", app->file.config_path, strerror(errno));
         return ;

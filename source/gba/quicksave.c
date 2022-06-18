@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include "gba/gba.h"
 #include "gba/scheduler.h"
+#include "utils/fs.h"
 
 /*
 ** Save the current state of the emulator in the file pointed by `path`.
@@ -25,7 +26,7 @@ quicksave(
     FILE *file;
     size_t i;
 
-    file = fopen(path, "wb");
+    file = hs_fopen(path, "wb");
     if (!file) {
         goto err;
     }
@@ -101,7 +102,7 @@ quickload(
     FILE *file;
     size_t i;
 
-    file = fopen(path, "rb");
+    file = hs_fopen(path, "rb");
     if (!file) {
         goto err;
     }
