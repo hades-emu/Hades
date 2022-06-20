@@ -20,7 +20,41 @@
 
 #  define hs_isatty(x)          false
 #  define hs_mkdir(path)        CreateDirectoryA((path), NULL)
-#  define hs_fopen(path, mode)   _wfopen((wchar_t const *)(path), (mode))
+
+static inline
+FILE *
+hs_fopen(
+    char const *path,
+    char const *mode
+) {
+    FILE *file;
+    errno_t err;
+    size_t len;
+    size_t new_len;
+    wchar_t *wpath;
+
+    len = strlen(path);
+    wpath = malloc(path, sizeof(wchar_t) * len);
+    hs_assert(wpath);
+
+    err = mbstowcs_s(
+        &new_len,
+        wpath,
+        len,
+        path,
+        _TRUNCATE
+    );
+
+    if (err || len != new_len) {
+        file = NULL;
+        goto end;
+    }
+
+    file = _wfopen(wpath, mode);
+end:
+    free(wpath);
+    return (file);
+}
 
 static inline
 char const *
