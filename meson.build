@@ -62,7 +62,7 @@ if host_machine.system() == 'windows'
     hades = executable(
         'Hades',
         winrc,
-        gui_app: true,
+        # gui_app: true,
         link_with: [libguigame],
         c_args: cflags,
         link_args: ldflags,

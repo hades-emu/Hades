@@ -63,6 +63,8 @@ hs_fopen(
     wpath = hs_convert_to_wchar(path);
     wmode = hs_convert_to_wchar(mode);
 
+    logln(HS_GLOBAL, "PATH=%ls, MODE=%ls\n", wpath, wmode);
+
     if (!wpath || !wmode) {
         file = NULL;
         goto end;
