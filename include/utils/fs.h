@@ -38,7 +38,7 @@ hs_convert_to_wchar(
     err = mbstowcs_s(
         &new_len,
         wstr,
-        len,
+        len + 1,
         str,
         _TRUNCATE
     );
