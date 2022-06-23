@@ -32,7 +32,7 @@ hs_convert_to_wchar(
     errno_t err;
 
     len = strlen(str);
-    wstr = malloc(sizeof(wchar_t) * len);
+    wstr = malloc(sizeof(wchar_t) * (len + 1));
     hs_assert(wstr);
 
     err = mbstowcs_s(
