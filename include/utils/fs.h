@@ -17,6 +17,7 @@
 #  include <io.h>
 #  include <fileapi.h>
 #  include <stdio.h>
+#  include <stringapiset.h>
 
 #  define hs_isatty(x)          false
 #  define hs_mkdir(path)        CreateDirectoryA((path), NULL)
