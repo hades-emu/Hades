@@ -40,7 +40,7 @@ hs_convert_to_wchar(
     hs_assert(wstr);
 
     MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
-    wstr[wlen] = 0;
+    wstr[wlen] = '\0';
 
     return (wstr);
 }
@@ -55,14 +55,14 @@ hs_convert_from_wchar(
     int len;
     errno_t err;
 
-    wlen = wcslen(str);
+    wlen = wcslen(wstr);
     len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, 0, 0, NULL, NULL);
 
     str = malloc(sizeof(char) * (len + 1));
     hs_assert(str);
 
     WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, str, len, NULL, NULL);
-    str[len] = 0;
+    str[len] = '\0';
 
     return (str);
 }
