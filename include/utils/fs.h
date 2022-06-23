@@ -43,6 +43,8 @@ hs_convert_to_wchar(
         _TRUNCATE
     );
 
+    logln(HS_GLOBAL, "ERR=%i, LEN=%zu, NEWLEN=%zu\n", err, len, new_len);
+
     if (err || len != new_len) {
         free(wstr);
         return (NULL);
