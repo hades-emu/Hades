@@ -31,22 +31,21 @@ hs_convert_to_wchar(
     size_t new_len;
     errno_t err;
 
-    len = strlen(str);
-    wstr = malloc(sizeof(wchar_t) * (len + 1));
+    len = strlen(str) + 1;
+    wstr = malloc(sizeof(wchar_t) * len);
     hs_assert(wstr);
 
     err = mbstowcs_s(
         &new_len,
         wstr,
-        len + 1,
+        len,
         str,
         _TRUNCATE
     );
 
     logln(HS_GLOBAL, "ERR=%i, LEN=%zu, NEWLEN=%zu\n", err, len, new_len);
 
-    if (err || len != new_len) {
-        perror("test");
+    if (err) {
         free(wstr);
         return (NULL);
     }
