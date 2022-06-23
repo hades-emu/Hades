@@ -44,7 +44,7 @@ hs_convert_to_wchar(
     );
 
     if (err || len != new_len) {
-        free(wstr)l
+        free(wstr);
         return (NULL);
     }
     return (wstr);
