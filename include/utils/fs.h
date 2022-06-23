@@ -22,35 +22,54 @@
 #  define hs_mkdir(path)        CreateDirectoryA((path), NULL)
 
 static inline
+wchar_t *
+hs_convert_to_wchar(
+    char const *str
+) {
+    wchar_t *wstr;
+    size_t len;
+    size_t new_len;
+    errno_t err;
+
+    len = strlen(str);
+    wstr = malloc(sizeof(wchar_t) * len);
+    hs_assert(wstr);
+
+    err = mbstowcs_s(
+        &new_len,
+        wstr,
+        len,
+        str,
+        _TRUNCATE
+    );
+
+    if (err || len != new_len) {
+        free(wstr)l
+        return (NULL);
+    }
+    return (wstr);
+}
+
+static inline
 FILE *
 hs_fopen(
     char const *path,
     char const *mode
 ) {
     FILE *file;
-    errno_t err;
-    size_t len;
-    size_t new_len;
     wchar_t *wpath;
+    wchar_t *wmode;
 
-    len = strlen(path);
-    wpath = malloc(path, sizeof(wchar_t) * len);
-    hs_assert(wpath);
+    wpath = hs_convert_to_wchar(path);
+    wmode = hs_convert_to_wchar(mode);
 
-    err = mbstowcs_s(
-        &new_len,
-        wpath,
-        len,
-        path,
-        _TRUNCATE
-    );
-
-    if (err || len != new_len) {
-        file = NULL;
-        goto end;
+    if (!wpath || !wmode) {
+        free(wpath);
+        free(wmode);
+        return (NULL);
     }
 
-    file = _wfopen(wpath, mode);
+    file = _wfopen(wpath, wmode);
 end:
     free(wpath);
     return (file);
