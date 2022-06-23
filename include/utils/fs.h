@@ -64,14 +64,15 @@ hs_fopen(
     wmode = hs_convert_to_wchar(mode);
 
     if (!wpath || !wmode) {
-        free(wpath);
-        free(wmode);
+        file = NULL;
+        goto end;
         return (NULL);
     }
 
     file = _wfopen(wpath, wmode);
 end:
     free(wpath);
+    free(wmode);
     return (file);
 }
 
