@@ -27,28 +27,19 @@ hs_convert_to_wchar(
     char const *str
 ) {
     wchar_t *wstr;
-    size_t len;
-    size_t new_len;
+    int len;
+    int wlen;
     errno_t err;
 
-    len = strlen(str) + 1;
-    wstr = malloc(sizeof(wchar_t) * len);
+    len = strlen(str);
+    wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, 0, 0);
+
+    wstr = malloc(sizeof(wchar_t) * (wlen + 1));
     hs_assert(wstr);
 
-    err = mbstowcs_s(
-        &new_len,
-        wstr,
-        len,
-        str,
-        _TRUNCATE
-    );
+    MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
+    wstr[wlen] = 0;
 
-    logln(HS_GLOBAL, "ERR=%i, LEN=%zu, NEWLEN=%zu\n", err, len, new_len);
-
-    if (err) {
-        free(wstr);
-        return (NULL);
-    }
     return (wstr);
 }
 
