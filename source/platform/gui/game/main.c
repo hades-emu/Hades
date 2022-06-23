@@ -128,7 +128,7 @@ args_parse(
                         break;
                     case CLI_BIOS: // --bios
                         free(app->file.bios_path);
-                        app->file.bios_path = strdup(optarg);
+                        app->file.bios_path = hs_convert_path(optarg);
                         break;
                     case CLI_COLOR: // --color
                         if (optarg) {
@@ -157,7 +157,7 @@ args_parse(
                 break;
             case 'b':
                 free(app->file.bios_path);
-                app->file.bios_path = strdup(optarg);
+                app->file.bios_path = hs_convert_path(optarg);
                 break;
             case 'h':
                 print_usage(stdout, name);
@@ -178,7 +178,7 @@ args_parse(
         case 0:
             break;
         case 1:
-            app->file.game_path = strdup(argv[optind]);
+            app->file.game_path = hs_convert_path(argv[optind]);
             break;
         default:
             print_usage(stderr, name);
