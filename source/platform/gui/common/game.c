@@ -16,6 +16,7 @@
 #include "gba/gba.h"
 #include "platform/gui/game.h"
 #include "platform/gui/common.h"
+#include "utils/fs.h"
 
 static
 bool
@@ -35,7 +36,7 @@ gui_game_load_bios(
         return (true);
     }
 
-    file = fopen(app->file.bios_path, "rb");
+    file = hs_fopen(app->file.bios_path, "rb");
     if (!file) {
         hs_assert(-1 != asprintf(
             &error_msg,
@@ -95,7 +96,7 @@ gui_game_load_rom(
         return (true);
     }
 
-    file = fopen(app->file.game_path, "rb");
+    file = hs_fopen(app->file.game_path, "rb");
     if (!file) {
         hs_assert(-1 != asprintf(
             &error_msg,
@@ -165,7 +166,7 @@ gui_game_load_save(
         fclose(app->file.backup_file);
     }
 
-    app->file.backup_file = fopen(app->file.backup_path, "rb+");
+    app->file.backup_file = hs_fopen(app->file.backup_path, "rb+");
 
     if (app->file.backup_file) {
         void *data;
@@ -188,7 +189,7 @@ gui_game_load_save(
     } else {
         logln(HS_WARNING, "Failed to open the save file. A new one is created instead.");
 
-        app->file.backup_file = fopen(app->file.backup_path, "wb+");
+        app->file.backup_file = hs_fopen(app->file.backup_path, "wb+");
 
         if (!app->file.backup_file) {
             hs_assert(-1 != asprintf(
