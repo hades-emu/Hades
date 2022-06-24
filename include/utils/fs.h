@@ -21,7 +21,6 @@
 
 #  define hs_isatty(x)          false
 #  define hs_mkdir(path)        CreateDirectoryA((path), NULL)
-#  define hs_convert_path(path) hs_convert_from_wchar(path)
 
 static inline
 wchar_t *
@@ -43,28 +42,6 @@ hs_convert_to_wchar(
     wstr[wlen] = '\0';
 
     return (wstr);
-}
-
-static inline
-char *
-hs_convert_from_wchar(
-    wchar_t const *wstr
-) {
-    char *str;
-    int wlen;
-    int len;
-    errno_t err;
-
-    wlen = wcslen(wstr);
-    len = WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, 0, 0, NULL, NULL);
-
-    str = malloc(sizeof(char) * (len + 1));
-    hs_assert(str);
-
-    WideCharToMultiByte(CP_UTF8, 0, wstr, wlen, str, len, NULL, NULL);
-    str[len] = '\0';
-
-    return (str);
 }
 
 static inline
@@ -114,7 +91,6 @@ hs_basename(
 #  define hs_isatty(x)          isatty(x)
 #  define hs_mkdir(path)        mkdir((path), 0755);
 #  define hs_fopen(path, mode)  fopen((char const *)(path), (mode))
-#  define hs_convert_path(path) strdup(path)
 
 static inline
 char const *
