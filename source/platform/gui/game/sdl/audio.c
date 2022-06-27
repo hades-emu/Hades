@@ -55,7 +55,7 @@ gui_sdl_audio_init(
     app->sdl.audio_device = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
 
     if (!app->sdl.audio_device) {
-        fprintf(stderr, "Failed to initialize the audio device: %s\n", SDL_GetError());
+        logln(HS_ERROR, "Failed to initialize the audio device: %s", SDL_GetError());
         exit(EXIT_FAILURE);
     }
 

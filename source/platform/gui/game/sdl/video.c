@@ -87,7 +87,7 @@ gui_sdl_video_init(
     );
 
     if (!app->sdl.window) {
-        fprintf(stderr, "Failed to create the window: %s\n", SDL_GetError());
+        logln(HS_ERROR, "Failed to create the window: %s", SDL_GetError());
         exit(EXIT_FAILURE);
     }
 
@@ -100,7 +100,7 @@ gui_sdl_video_init(
 
     /* Initialize OpenGL */
     if (glewInit()) {
-        fprintf(stderr, "Failed to initialize OpenGL.\n");
+        logln(HS_ERROR, "Failed to initialize OpenGL.");
         exit(EXIT_FAILURE);
     }
 
