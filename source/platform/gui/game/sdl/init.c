@@ -20,7 +20,7 @@ gui_sdl_init(
 
     /* Initialize the SDL */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) < 0) {
-        fprintf(stderr, "Failed to init the SDL: %s\n", SDL_GetError());
+        logln(HS_ERROR, "Failed to init the SDL: %s", SDL_GetError());
         exit(EXIT_FAILURE);
     }
 
