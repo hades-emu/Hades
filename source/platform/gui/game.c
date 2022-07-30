@@ -14,8 +14,7 @@
 #include <stdio.h>
 #include "hades.h"
 #include "gba/gba.h"
-#include "platform/gui/game.h"
-#include "platform/gui/common.h"
+#include "platform/gui.h"
 #include "utils/fs.h"
 
 static

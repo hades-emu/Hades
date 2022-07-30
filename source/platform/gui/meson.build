@@ -7,8 +7,8 @@
 ##
 ################################################################################
 
-libguigame = static_library(
-    'gui-game',
+libgui = static_library(
+    'gui',
     'features/config.c',
     'features/screenshot.c',
     'sdl/audio.c',
@@ -18,11 +18,12 @@ libguigame = static_library(
     'windows/error.c',
     'windows/menubar.c',
     'windows/game.c',
+    'game.c',
     'main.c',
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
     ],
-    link_with: [libgba, libcommon, libguicommon, imgui, nfde, mjson],
+    link_with: [libgba, libcommon, imgui, nfde, mjson],
     include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],
     c_args: cflags,
     link_args: ldflags,

@@ -13,7 +13,7 @@
 #include <SDL2/SDL.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
-#include "platform/gui/game.h"
+#include "platform/gui.h"
 #include "hades.h"
 
 void

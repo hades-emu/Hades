@@ -41,8 +41,7 @@
 #include "hades.h"
 #include "gba/gba.h"
 #include "gba/db.h"
-#include "platform/gui/game.h"
-#include "platform/gui/common.h"
+#include "platform/gui.h"
 #include "utils/fs.h"
 
 /*

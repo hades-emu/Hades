@@ -1,1 +1,2 @@
 option('static_executable', type: 'boolean', value: false, description: 'Build hades as a static executable.')
+option('dbg', type: 'boolean', value: false, description: 'Build hades with its builtin debugger.')

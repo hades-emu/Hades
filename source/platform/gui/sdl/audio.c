@@ -7,7 +7,7 @@
 **
 \******************************************************************************/
 
-#include "platform/gui/game.h"
+#include "platform/gui.h"
 #include "gba/gba.h"
 #include "hades.h"
 

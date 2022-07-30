@@ -7,8 +7,8 @@
 **
 \******************************************************************************/
 
-#ifndef PLATFORM_GUI_GAME_H
-# define PLATFORM_GUI_GAME_H
+#ifndef PLATFORM_GUI_H
+# define PLATFORM_GUI_H
 
 # define SDL_MAIN_HANDLED
 # define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
@@ -119,38 +119,45 @@ struct app {
     } ui;
 };
 
-/* platform/gui/game/features/config.c */
+/* platform/gui/features/config.c */
 void gui_config_load(struct app *app);
 void gui_config_save(struct app *app);
 void gui_config_push_recent_rom(struct app *app);
 
-/* platform/gui/game/features/screenshot.c */
+/* platform/gui/features/screenshot.c */
 void gui_screenshot(struct app *app);
 
-/* platform/gui/game/sdl/audio.c */
+/* platform/gui/sdl/audio.c */
 void gui_sdl_audio_init(struct app *app);
 void gui_sdl_audio_cleanup(struct app *app);
 
-/* platform/gui/game/sdl/init.c */
+/* platform/gui/sdl/init.c */
 void gui_sdl_init(struct app *app);
 void gui_sdl_cleanup(struct app *app);
 
-/* platform/gui/game/sdl/input.c */
+/* platform/gui/sdl/input.c */
 void gui_sdl_handle_inputs(struct app *app);
 
-/* platform/gui/game/sdl/video.c */
+/* platform/gui/sdl/video.c */
 void gui_sdl_video_init(struct app *app);
 void gui_sdl_video_cleanup(struct app *app);
 void gui_sdl_video_render_frame(struct app *app);
 
-/* platform/gui/game/windows/error.c */
+/* platform/gui/windows/error.c */
 void gui_new_error(struct app *app, char *msg);
 void gui_win_error(struct app *app);
 
-/* platform/gui/game/windows/game.c */
+/* platform/gui/windows.c */
 void gui_win_game(struct app *app);
 
-/* platform/gui/game/windows/menubar.c */
+/* platform/gui/windows/menubar.c */
 void gui_win_menubar(struct app *app);
 
-#endif /* !PLATFORM_GUI_GAME_H */
+/* platform/gui/game.c */
+void gui_game_reset(struct app *app);
+void gui_game_stop(struct app *app);
+void gui_game_run(struct app *app);
+void gui_game_pause(struct app *app);
+void gui_game_write_backup(struct app *app);
+
+#endif /* !PLATFORM_GUI_H */
