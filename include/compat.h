@@ -7,8 +7,8 @@
 **
 \******************************************************************************/
 
-#ifndef UTILS_FS_H
-# define UTILS_FS_H
+#ifndef UTILS_COMMON_H
+# define UTILS_COMMON_H
 
 # include <string.h>
 # include "hades.h"
@@ -18,6 +18,9 @@
 #  include <fileapi.h>
 #  include <stdio.h>
 #  include <stringapiset.h>
+#  include <windows.h>
+#  include <sysinfoapi.h>
+#  include <synchapi.h>
 
 #  define hs_isatty(x)          false
 #  define hs_mkdir(path)        CreateDirectoryA((path), NULL)
@@ -81,13 +84,46 @@ hs_basename(
     return (base ? base + 1 : path);
 }
 
+static
+inline
+void
+hs_usleep(
+    uint64_t x
+) {
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * x);
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+}
+
+static
+inline
+uint64_t
+hs_tick_count(void)
+{
+    FILETIME ts;
+    uint64_t time;
+
+    GetSystemTimeAsFileTime(&ts);
+    time = (uint64_t)ts.dwHighDateTime << 32u | ts.dwLowDateTime;
+    time /= 10;
+    return (time);
+}
+
 # else
 #  include <sys/stat.h>
 #  include <unistd.h>
+#  include <time.h>
 
 #  define hs_isatty(x)          isatty(x)
 #  define hs_mkdir(path)        mkdir((path), 0755);
 #  define hs_fopen(path, mode)  fopen((char const *)(path), (mode))
+#  define hs_usleep(x)           usleep(x)
 
 static inline
 char const *
@@ -100,6 +136,17 @@ hs_basename(
     return (base ? base + 1 : path);
 }
 
+static
+inline
+uint64_t
+hs_tick_count(void)
+{
+    struct timespec ts;
+
+    hs_assert(clock_gettime(CLOCK_MONOTONIC, &ts) == 0);
+    return (ts.tv_sec * 1000000 + ts.tv_nsec / 1000);
+}
+
 # endif
 
-#endif /* UTILS_FS_H */
+#endif /* !UTILS_COMMON_H */

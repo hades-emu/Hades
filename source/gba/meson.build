@@ -7,7 +7,8 @@
 ##
 ################################################################################
 
-gba_sources = [
+libgba = static_library(
+    'gba',
     'apu/apu.c',
     'core/arm/alu.c',
     'core/arm/bdt.c',
@@ -41,21 +42,11 @@ gba_sources = [
     'ppu/ppu.c',
     'ppu/window.c',
     'db.c',
+    'debugger.c',
     'gba.c',
     'quicksave.c',
     'scheduler.c',
     'timer.c',
-]
-
-if get_option('with_debugger')
-    gba_sources += [
-        'debugger.c',
-    ]
-endif
-
-libgba = static_library(
-    'gba',
-    gba_sources,
     include_directories: incdir,
     dependencies: [
         cc.find_library('m', required: true, static: get_option('static_executable')),

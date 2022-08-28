@@ -9,7 +9,7 @@
 
 #include <string.h>
 #include "hades.h"
-#include "gui/lang.h"
+#include "dbg/lang.h"
 
 static struct node *debugger_lang_parse_expr(struct ast *ast);
 

@@ -10,8 +10,9 @@
 #include <errno.h>
 #include <mjson.h>
 #include "hades.h"
-#include "gui/app.h"
-#include "utils/fs.h"
+#include "app.h"
+#include "gui/gui.h"
+#include "compat.h"
 
 void
 gui_config_load(

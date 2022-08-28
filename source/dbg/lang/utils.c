@@ -9,7 +9,7 @@
 
 #include <stdio.h>
 #include "hades.h"
-#include "gui/lang.h"
+#include "dbg/lang.h"
 
 void
 debugger_lang_dump_lexer(

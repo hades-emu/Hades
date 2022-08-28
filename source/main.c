@@ -12,7 +12,6 @@
 
 #include <cimgui.h>
 #include <cimgui_impl.h>
-#include <nfd.h>
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -40,13 +39,14 @@
 #include <getopt.h>
 #include <string.h>
 #include "hades.h"
+#include "app.h"
+#include "compat.h"
 #include "gba/gba.h"
 #include "gba/db.h"
-#include "gui/app.h"
-#include "utils/fs.h"
+#include "gui/gui.h"
 
 #ifdef WITH_DEBUGGER
-# include "gui/debugger.h"
+# include "dbg/dbg.h"
 
 static atomic_bool g_force_interrupt = false;
 
@@ -283,8 +283,8 @@ main(
     signal(SIGINT, &sighandler);
 
     if (app.file.game_path) {
-        gui_game_reset(&app);
-        gui_game_pause(&app);
+        app_game_reset(&app);
+        app_game_pause(&app);
     }
 
     /* Start the debugger thread */
@@ -296,8 +296,8 @@ main(
     );
 #else
     if (app.file.game_path) {
-        gui_game_reset(&app);
-        gui_game_run(&app);
+        app_game_reset(&app);
+        app_game_run(&app);
     }
 #endif
 
@@ -308,7 +308,7 @@ main(
 #if WITH_DEBUGGER
         if (g_force_interrupt) {
             g_force_interrupt = false;
-            gui_game_pause(&app);
+            app_game_pause(&app);
         }
 #endif
 
@@ -324,7 +324,7 @@ main(
                 ** We also want to store the content of the backup storage
                 ** on the disk every second (if it is dirty).
                 */
-                gui_game_write_backup(&app);
+                app_game_write_backup(&app);
 
                 /*
                 ** We also update the Window's name with the game title

@@ -16,8 +16,9 @@
 #include <stdio.h>
 #include <float.h>
 #include "hades.h"
-#include "gui/app.h"
-#include "utils/fs.h"
+#include "app.h"
+#include "gui/gui.h"
+#include "compat.h"
 
 static
 void
@@ -40,8 +41,8 @@ gui_win_menubar_file(
                 free(app->file.game_path);
                 app->file.game_path = strdup(path);
                 NFD_FreePath(path);
-                gui_game_reset(app);
-                gui_game_run(app);
+                app_game_reset(app);
+                app_game_run(app);
             }
         }
 
@@ -52,8 +53,8 @@ gui_win_menubar_file(
                 if (igMenuItemBool(hs_basename(app->file.recent_roms[x]), NULL, false, true)) {
                     free(app->file.game_path);
                     app->file.game_path = strdup(app->file.recent_roms[x]);
-                    gui_game_reset(app);
-                    gui_game_run(app);
+                    app_game_reset(app);
+                    app_game_run(app);
                 }
             }
             igEndMenu();
@@ -162,19 +163,19 @@ gui_win_menubar_emulation(
 
         if (igMenuItemBool("Pause", NULL, !app->emulation.running, app->emulation.started)) {
             if (app->emulation.running) {
-                gui_game_pause(app);
+                app_game_pause(app);
             } else {
-                gui_game_run(app);
+                app_game_run(app);
             }
         }
 
         if (igMenuItemBool("Stop", NULL, false, app->emulation.started)) {
-            gui_game_stop(app);
+            app_game_stop(app);
         }
 
         if (igMenuItemBool("Reset", NULL, false, app->emulation.started)) {
-            gui_game_reset(app);
-            gui_game_run(app);
+            app_game_reset(app);
+            app_game_run(app);
         }
 
         igEndMenu();

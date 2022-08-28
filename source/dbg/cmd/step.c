@@ -8,9 +8,8 @@
 \******************************************************************************/
 
 #include "hades.h"
-#include "gui/app.h"
-#include "gui/debugger.h"
-#include "utils/time.h"
+#include "app.h"
+#include "dbg/dbg.h"
 
 void
 debugger_cmd_step_in(
@@ -20,7 +19,7 @@ debugger_cmd_step_in(
 ) {
     if (argc == 0) {
         app->emulation.gba->debugger.interrupt.flag = false;
-        gui_game_step(app, false, 1);
+        app_game_step(app, false, 1);
         debugger_wait_for_emulator(app, true);
     } else if (argc == 1) {
 
@@ -29,7 +28,7 @@ debugger_cmd_step_in(
         }
 
         app->emulation.gba->debugger.interrupt.flag = false;
-        gui_game_step(app, false, argv[0].value.i64);
+        app_game_step(app, false, argv[0].value.i64);
         debugger_wait_for_emulator(app, true);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP_IN].usage);
@@ -45,7 +44,7 @@ debugger_cmd_step_over(
 ) {
     if (argc == 0) {
         app->emulation.gba->debugger.interrupt.flag = false;
-        gui_game_step(app, true, 1);
+        app_game_step(app, true, 1);
         debugger_wait_for_emulator(app, true);
     } else if (argc == 1) {
 
@@ -54,7 +53,7 @@ debugger_cmd_step_over(
         }
 
         app->emulation.gba->debugger.interrupt.flag = false;
-        gui_game_step(app, true, argv[0].value.i64);
+        app_game_step(app, true, argv[0].value.i64);
         debugger_wait_for_emulator(app, true);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP_OVER].usage);

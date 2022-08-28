@@ -7,9 +7,9 @@
 **
 \******************************************************************************/
 
-#include "gui/app.h"
-#include "gui/lang.h"
-#include "gui/debugger.h"
+#include "app.h"
+#include "dbg/lang.h"
+#include "dbg/dbg.h"
 
 void
 debugger_lang_mut_variables_push(

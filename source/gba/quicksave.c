@@ -13,7 +13,7 @@
 #include <fcntl.h>
 #include "gba/gba.h"
 #include "gba/scheduler.h"
-#include "utils/fs.h"
+#include "compat.h"
 
 /*
 ** Save the current state of the emulator in the file pointed by `path`.

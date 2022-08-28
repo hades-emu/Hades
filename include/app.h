@@ -26,7 +26,6 @@
 
 # define MAX_RECENT_ROMS            5
 
-struct gba;
 struct ImGuiIO;
 
 struct app {
@@ -140,47 +139,13 @@ struct app {
 #endif
 };
 
-/* platform/gui/features/config.c */
-void gui_config_load(struct app *app);
-void gui_config_save(struct app *app);
-void gui_config_push_recent_rom(struct app *app);
-
-/* platform/gui/features/screenshot.c */
-void gui_screenshot(struct app *app);
-
-/* platform/gui/sdl/audio.c */
-void gui_sdl_audio_init(struct app *app);
-void gui_sdl_audio_cleanup(struct app *app);
-
-/* platform/gui/sdl/init.c */
-void gui_sdl_init(struct app *app);
-void gui_sdl_cleanup(struct app *app);
-
-/* platform/gui/sdl/input.c */
-void gui_sdl_handle_inputs(struct app *app);
-
-/* platform/gui/sdl/video.c */
-void gui_sdl_video_init(struct app *app);
-void gui_sdl_video_cleanup(struct app *app);
-void gui_sdl_video_render_frame(struct app *app);
-
-/* platform/gui/windows/error.c */
-void gui_new_error(struct app *app, char *msg);
-void gui_win_error(struct app *app);
-
-/* platform/gui/windows.c */
-void gui_win_game(struct app *app);
-
-/* platform/gui/windows/menubar.c */
-void gui_win_menubar(struct app *app);
-
-/* platform/gui/game.c */
-void gui_game_reset(struct app *app);
-void gui_game_stop(struct app *app);
-void gui_game_run(struct app *app);
-void gui_game_pause(struct app *app);
-void gui_game_trace(struct app *app, size_t, void (*)(struct app *));
-void gui_game_step(struct app *app, bool over, size_t cnt);
-void gui_game_write_backup(struct app *app);
+/* common/game.c */
+void app_game_reset(struct app *app);
+void app_game_stop(struct app *app);
+void app_game_run(struct app *app);
+void app_game_pause(struct app *app);
+void app_game_trace(struct app *app, size_t, void (*)(struct app *));
+void app_game_step(struct app *app, bool over, size_t cnt);
+void app_game_write_backup(struct app *app);
 
 #endif /* !GUI_APP_H */

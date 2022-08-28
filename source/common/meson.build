@@ -9,8 +9,10 @@
 
 libcommon = static_library(
     'common',
+    'game.c',
+    'log.c',
     'utils.c',
-    include_directories: incdir,
+    include_directories: [incdir, imgui_inc],
     c_args: cflags,
     link_args: ldflags,
 )

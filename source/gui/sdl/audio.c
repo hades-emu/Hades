@@ -8,7 +8,8 @@
 \******************************************************************************/
 
 #include "hades.h"
-#include "gui/app.h"
+#include "app.h"
+#include "gui/gui.h"
 #include "gba/gba.h"
 
 static

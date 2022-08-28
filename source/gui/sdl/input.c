@@ -14,7 +14,8 @@
 #include <cimgui.h>
 #include <cimgui_impl.h>
 #include "hades.h"
-#include "gui/app.h"
+#include "app.h"
+#include "gui/gui.h"
 
 void
 gui_sdl_handle_inputs(
