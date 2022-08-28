@@ -1571,6 +1571,7 @@ static struct game_entry game_database[] = {
     (struct game_entry){.code = "BL8", .storage = BACKUP_EEPROM_4K, .flags = FLAGS_NONE, .title = "Tomb Raider - Legend"},
     (struct game_entry){.code = "AL9", .storage = BACKUP_NONE,      .flags = FLAGS_NONE, .title = "Tomb Raider - The Prophecy"},
     (struct game_entry){.code = "AUT", .storage = BACKUP_NONE,      .flags = FLAGS_NONE, .title = "Tomb Raider - The Prophecy"},
+    (struct game_entry){.code = "OPL", .storage = BACKUP_NONE,      .flags = FLAGS_NONE, .title = "Tomb Raider (OpenLara)"},
     (struct game_entry){.code = "BT7", .storage = BACKUP_NONE,      .flags = FLAGS_NONE, .title = "Tonka - On the Job"},
     (struct game_entry){.code = "BH9", .storage = BACKUP_EEPROM_64K,.flags = FLAGS_NONE, .title = "Tony Hawk's American Sk8land"},
     (struct game_entry){.code = "BXS", .storage = BACKUP_EEPROM_4K, .flags = FLAGS_NONE, .title = "Tony Hawk's Downhill Jam"},
