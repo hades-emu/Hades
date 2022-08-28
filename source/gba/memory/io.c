@@ -626,10 +626,10 @@ mem_io_write8(
         };
 
         /* Interrupt */
-        case IO_REG_IE:
-        case IO_REG_IE + 1:                 io->int_enabled.bytes[addr - IO_REG_IE] = val; break;
-        case IO_REG_IF:                     io->int_flag.bytes[0] &= ~val; break;
-        case IO_REG_IF + 1:                 io->int_flag.bytes[1] &= ~val; break;
+        case IO_REG_IE:                     io->int_enabled.bytes[addr - IO_REG_IE] = val; break;
+        case IO_REG_IE + 1:                 io->int_enabled.bytes[addr - IO_REG_IE] = (val & 0x3F); break;
+        case IO_REG_IF:
+        case IO_REG_IF + 1:                 io->int_flag.bytes[addr - IO_REG_IF] &= ~val; break;
         case IO_REG_WAITCNT:
         case IO_REG_WAITCNT + 1: {
             io->waitcnt.bytes[addr - IO_REG_WAITCNT] = val;
@@ -669,7 +669,7 @@ void
 io_scan_keypad_irq(
     struct gba *gba
 ) {
-    if (gba->io.keycnt.irq_enable && io_evaluate_keypad_cond(gba)) {
+    if (io_evaluate_keypad_cond(gba)) {
         gba->io.int_flag.keypad = true;
     }
 }
