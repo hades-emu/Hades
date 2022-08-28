@@ -235,6 +235,13 @@ gui_win_menubar_video(
             SDL_GL_SetSwapInterval(app->video.vsync);
         }
 
+        igSeparator();
+
+        /* Take a screenshot */
+        if (igMenuItemBool("Screenshot", "F2", false, app->emulation.started)) {
+            app_game_screenshot(app);
+        }
+
         igEndMenu();
     }
 }

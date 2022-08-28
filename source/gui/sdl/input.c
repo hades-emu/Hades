@@ -126,7 +126,7 @@ gui_sdl_handle_inputs(
                         gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
                         break;
                     };
-                    case SDLK_F2:               gui_screenshot(app); break;
+                    case SDLK_F2:               app_game_screenshot(app); break;
                     case SDLK_F5:               gba_send_quicksave(app->emulation.gba, app->file.qsave_path); break;
                     case SDLK_F8:               gba_send_quickload(app->emulation.gba, app->file.qsave_path); break;
                     default:
@@ -166,7 +166,7 @@ gui_sdl_handle_inputs(
                     case SDL_CONTROLLER_BUTTON_START:           gba_send_keyinput(app->emulation.gba, KEY_START, false); break;
                     case SDL_CONTROLLER_BUTTON_BACK:            gba_send_keyinput(app->emulation.gba, KEY_SELECT, false); break;
 #if SDL_VERSION_ATLEAST(2, 0, 14)
-                    case SDL_CONTROLLER_BUTTON_MISC1:           gui_screenshot(app); break;
+                    case SDL_CONTROLLER_BUTTON_MISC1:           app_game_screenshot(app); break;
 #endif
                 }
                 break;

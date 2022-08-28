@@ -9,8 +9,7 @@
 
 libgui = static_library(
     'gui',
-    'features/config.c',
-    'features/screenshot.c',
+    'config.c',
     'sdl/audio.c',
     'sdl/init.c',
     'sdl/input.c',
@@ -22,7 +21,7 @@ libgui = static_library(
         dependency('threads', required: true, static: get_option('static_executable')),
     ],
     link_with: [libgba, libcommon, imgui, nfde, mjson],
-    include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],
+    include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc],
     c_args: cflags,
     link_args: ldflags,
 )
