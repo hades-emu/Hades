@@ -127,7 +127,7 @@ void
 debugger_cmd_context_compact(
     struct app *app,
     size_t argc __unused,
-    struct arg *argv __unused
+    struct arg const *argv __unused
 ) {
     debugger_dump_context_compact(app);
     debugger_dump_context_compact_header();
