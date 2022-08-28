@@ -147,5 +147,6 @@ void app_game_pause(struct app *app);
 void app_game_trace(struct app *app, size_t, void (*)(struct app *));
 void app_game_step(struct app *app, bool over, size_t cnt);
 void app_game_write_backup(struct app *app);
+void app_game_screenshot(struct app *app);
 
 #endif /* !GUI_APP_H */

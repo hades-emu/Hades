@@ -14,14 +14,6 @@
 
 struct app;
 
-/* gui/features/config.c */
-void gui_config_load(struct app *app);
-void gui_config_save(struct app *app);
-void gui_config_push_recent_rom(struct app *app);
-
-/* gui/features/screenshot.c */
-void gui_screenshot(struct app *app);
-
 /* gui/sdl/audio.c */
 void gui_sdl_audio_init(struct app *app);
 void gui_sdl_audio_cleanup(struct app *app);
@@ -47,5 +39,10 @@ void gui_win_game(struct app *app);
 
 /* gui/windows/menubar.c */
 void gui_win_menubar(struct app *app);
+
+/* config.c */
+void gui_config_load(struct app *app);
+void gui_config_save(struct app *app);
+void gui_config_push_recent_rom(struct app *app);
 
 #endif /* !GUI_GUI_H */
