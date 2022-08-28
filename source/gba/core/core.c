@@ -82,6 +82,7 @@ core_next(
                        !gba->core.cpsr.irq_disable
                     && (gba->io.ime.raw & 0b1)
                 ) {
+                    logln(HS_IRQ, "Received new IRQ: 0x%04x.", gba->io.int_enabled.raw & gba->io.int_flag.raw);
                     core_interrupt(gba, VEC_IRQ, MODE_IRQ);
                 }
                 break;
