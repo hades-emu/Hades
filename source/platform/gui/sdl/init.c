@@ -10,7 +10,7 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <stdio.h>
-#include "platform/gui.h"
+#include "platform/gui/app.h"
 
 void
 gui_sdl_init(

@@ -12,7 +12,7 @@
 #include <stb_image_write.h>
 #include "hades.h"
 #include "gba/gba.h"
-#include "platform/gui.h"
+#include "platform/gui/app.h"
 #include "utils/fs.h"
 
 void

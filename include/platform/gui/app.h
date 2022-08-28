@@ -7,12 +7,17 @@
 **
 \******************************************************************************/
 
-#ifndef PLATFORM_GUI_H
-# define PLATFORM_GUI_H
+#ifndef PLATFORM_GUI_APP_H
+# define PLATFORM_GUI_APP_H
 
 # define SDL_MAIN_HANDLED
 # define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 
+# if WITH_DEBUGGER
+#  include <capstone/capstone.h>
+# endif
+
+# include <stdatomic.h>
 # include <GL/glew.h>
 # include <SDL2/SDL.h>
 # include <cimgui.h>
@@ -25,7 +30,7 @@ struct gba;
 struct ImGuiIO;
 
 struct app {
-    bool run;
+    atomic_bool run;
 
     struct {
         struct gba *gba;
@@ -117,6 +122,22 @@ struct app {
         /* Indicates if the user wants to resize the windows to `video->display_size`. */
         bool refresh_windows_size;
     } ui;
+
+#if WITH_DEBUGGER
+    struct {
+        csh handle_arm;             // Capstone handle for ARM mode
+        csh handle_thumb;           // Capstone handle for Thumb mode
+
+        struct variable *variables;
+        size_t variables_len;
+
+        struct breakpoint *breakpoints;
+        size_t breakpoints_len;
+
+        struct watchpoint *watchpoints;
+        size_t watchpoints_len;
+    } debugger;
+#endif
 };
 
 /* platform/gui/features/config.c */
@@ -158,6 +179,8 @@ void gui_game_reset(struct app *app);
 void gui_game_stop(struct app *app);
 void gui_game_run(struct app *app);
 void gui_game_pause(struct app *app);
+void gui_game_trace(struct app *app, size_t, void (*)(struct app *));
+void gui_game_step(struct app *app, bool over, size_t cnt);
 void gui_game_write_backup(struct app *app);
 
-#endif /* !PLATFORM_GUI_H */
+#endif /* !PLATFORM_GUI_APP_H */

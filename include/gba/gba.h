@@ -19,9 +19,18 @@
 # include "gba/scheduler.h"
 # include "gba/gpio.h"
 
+# ifdef WITH_DEBUGGER
+#  include "gba/debugger.h"
+# endif
+
 enum gba_states {
-    GBA_STATE_PAUSE = 0,
-    GBA_STATE_RUN,
+    GBA_STATE_RUN = 0,
+    GBA_STATE_PAUSE,
+#ifdef WITH_DEBUGGER
+    GBA_STATE_TRACE,
+    GBA_STATE_STEP_IN,
+    GBA_STATE_STEP_OVER,
+#endif
 };
 
 enum device_states {
@@ -44,8 +53,14 @@ enum message_types {
     MESSAGE_QUICKLOAD,
     MESSAGE_QUICKSAVE,
     MESSAGE_AUDIO_RESAMPLE_FREQ,
-    MESSAGE_COLOR_CORRECTION,
-    MESSAGE_RTC,
+    MESSAGE_SETTINGS_COLOR_CORRECTION,
+    MESSAGE_SETTINGS_RTC,
+#ifdef WITH_DEBUGGER
+    MESSAGE_DBG_STEP,
+    MESSAGE_DBG_TRACE,
+    MESSAGE_DBG_BREAKPOINTS,
+    MESSAGE_DBG_WATCHPOINTS,
+#endif
 };
 
 enum keyinput {
@@ -104,6 +119,37 @@ struct message_device_state {
     enum device_states state;
 };
 
+#ifdef WITH_DEBUGGER
+
+struct message_dbg_trace {
+    struct message super;
+    size_t count;
+    void *data;
+    void (*tracer)(void *);
+};
+
+struct message_dbg_step {
+    struct message super;
+    bool over;
+    size_t count;
+};
+
+struct message_dbg_breakpoints {
+    struct message super;
+    struct breakpoint *breakpoints;
+    size_t len;
+    void (*cleanup)(void *);
+};
+
+struct message_dbg_watchpoints {
+    struct message super;
+    struct watchpoint *watchpoints;
+    size_t len;
+    void (*cleanup)(void *);
+};
+
+#endif
+
 struct message_queue {
     struct message *messages;
     size_t length;
@@ -125,6 +171,10 @@ struct gba {
     struct apu apu;
     struct scheduler scheduler;
     struct gpio gpio;
+
+#ifdef WITH_DEBUGGER
+    struct debugger debugger;
+#endif
 
     /* Entry in the game database, if it exists. */
     struct game_entry *game_entry;
@@ -169,7 +219,16 @@ void gba_send_keyinput(struct gba *gba, enum keyinput key, bool pressed);
 void gba_send_quickload(struct gba *gba, char const *path);
 void gba_send_quicksave(struct gba *gba, char const *path);
 void gba_send_audio_resample_freq(struct gba *gba, uint64_t resample_freq);
-void gba_send_color_correction(struct gba *gba, bool color_correction);
-void gba_send_rtc(struct gba *gba, enum device_states state);
+void gba_send_settings_color_correction(struct gba *gba, bool color_correction);
+void gba_send_settings_rtc(struct gba *gba, enum device_states state);
+
+#ifdef WITH_DEBUGGER
+
+void gba_send_dbg_trace(struct gba *gba, size_t count, void *data, void (*tracer)(void *data));
+void gba_send_dbg_step(struct gba *gba, bool over, size_t count);
+void gba_send_dbg_breakpoints(struct gba *gba, struct breakpoint *breakpoints, size_t len, void (*cleanup)(void *));
+void gba_send_dbg_watchpoints(struct gba *gba, struct watchpoint *watchpoints, size_t len, void (*cleanup)(void *));
+
+#endif
 
 #endif /* GBA_GBA_H */

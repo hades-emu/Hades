@@ -129,7 +129,7 @@ core_next(
             if (unlikely(!cond_lut[idx])) {
                 core->pc += 4;
                 core->prefetch_access_type = SEQUENTIAL;
-                return ;
+                goto end;
             }
 
             idx = ((op >> 16) & 0xFF0) | ((op >> 4) & 0x00F);
@@ -143,6 +143,13 @@ core_next(
     } else if (core->state == CORE_HALT) {
         core_idle(gba);
     }
+
+end:
+#ifdef WITH_DEBUGGER
+    debugger_eval_breakpoints(gba);
+#else
+    (void)0;
+#endif
 }
 
 void

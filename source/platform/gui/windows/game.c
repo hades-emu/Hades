@@ -13,7 +13,7 @@
 #include <cimgui.h>
 #include "hades.h"
 #include "gba/gba.h"
-#include "platform/gui.h"
+#include "platform/gui/app.h"
 
 void
 gui_win_game(

@@ -7,9 +7,9 @@
 **
 \******************************************************************************/
 
-#include "platform/gui.h"
-#include "gba/gba.h"
 #include "hades.h"
+#include "platform/gui/app.h"
+#include "gba/gba.h"
 
 static
 void

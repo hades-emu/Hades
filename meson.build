@@ -22,14 +22,15 @@ cflags = [
     '-Wno-microsoft-anon-tag',
     '-DHADES_VERSION="@0@"'.format(meson.project_version()),
 ]
-ldflags = []
+ldflags = [
+]
 
 if get_option('static_executable')
     cflags += ['-static']
     ldflags += ['-static']
 endif
 
-if get_option('dbg')
+if get_option('with_debugger')
     cflags += ['-DWITH_DEBUGGER']
     ldflags += ['-DWITH_DEBUGGER']
 endif
