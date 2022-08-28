@@ -25,6 +25,7 @@
 # include "gba/gba.h"
 
 # define MAX_RECENT_ROMS            5
+# define MAX_QUICKSAVES             5
 
 struct ImGuiIO;
 
@@ -81,7 +82,14 @@ struct app {
 
         char *backup_path;
         FILE *backup_file;
-        char *qsave_path;
+
+        struct {
+            char *path;
+            char *mtime;
+            bool exist;
+        } qsaves[MAX_QUICKSAVES];
+
+        bool flush_qsaves_cache;
     } file;
 
     struct {
@@ -148,5 +156,7 @@ void app_game_trace(struct app *app, size_t, void (*)(struct app *));
 void app_game_step(struct app *app, bool over, size_t cnt);
 void app_game_write_backup(struct app *app);
 void app_game_screenshot(struct app *app);
+void app_game_quicksave(struct app *, size_t);
+void app_game_quickload(struct app *, size_t);
 
 #endif /* !GUI_APP_H */
