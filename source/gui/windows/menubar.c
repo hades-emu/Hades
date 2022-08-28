@@ -118,6 +118,76 @@ gui_win_menubar_emulation(
 
         igSeparator();
 
+        if (igBeginMenu("Quick Save", app->emulation.started)) {
+            size_t i;
+
+            for (i = 0; i < MAX_QUICKSAVES; ++i) {
+                char *text;
+
+                if (app->file.flush_qsaves_cache) {
+                    free(app->file.qsaves[i].mtime);
+                    app->file.qsaves[i].exist = hs_fexists(app->file.qsaves[i].path);
+                    app->file.qsaves[i].mtime = hs_fmtime(app->file.qsaves[i].path);
+                }
+
+                if (app->file.qsaves[i].exist && app->file.qsaves[i].mtime) {
+                    hs_assert(asprintf(&text, "%zu: %s", i + 1, app->file.qsaves[i].mtime) != -1);
+                } else {
+                    hs_assert(asprintf(&text, "%zu: <empty>", i + 1) != -1);
+                }
+
+                hs_assert(text);
+
+                if (igMenuItemBool(text, NULL, false, true)) {
+                    app_game_quicksave(app, i);
+                }
+
+                free(text);
+            }
+
+            app->file.flush_qsaves_cache = false;
+
+            igEndMenu();
+        } else {
+            app->file.flush_qsaves_cache = true;
+        }
+
+        if (igBeginMenu("Quick Load", app->emulation.started)) {
+            size_t i;
+
+            for (i = 0; i < MAX_QUICKSAVES; ++i) {
+                char *text;
+
+                if (app->file.flush_qsaves_cache) {
+                    free(app->file.qsaves[i].mtime);
+                    app->file.qsaves[i].exist = hs_fexists(app->file.qsaves[i].path);
+                    app->file.qsaves[i].mtime = hs_fmtime(app->file.qsaves[i].path);
+                }
+
+                if (app->file.qsaves[i].exist && app->file.qsaves[i].mtime) {
+                    hs_assert(asprintf(&text, "%zu: %s", i + 1, app->file.qsaves[i].mtime) != -1);
+                } else {
+                    hs_assert(asprintf(&text, "%zu: <empty>", i + 1) != -1);
+                }
+
+                hs_assert(text);
+
+                if (igMenuItemBool(text, NULL, false, app->file.qsaves[i].exist && app->file.qsaves[i].mtime)) {
+                    app_game_quickload(app, i);
+                }
+
+                free(text);
+            }
+
+            app->file.flush_qsaves_cache = false;
+
+            igEndMenu();
+        } else {
+            app->file.flush_qsaves_cache = true;
+        }
+
+        igSeparator();
+
         if (igBeginMenu("Backup type", !app->emulation.started)) {
             uint32_t x;
             char const *backup_types[] = {
