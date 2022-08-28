@@ -59,7 +59,7 @@ subdir('source/gba')
 ## Graphical User Interface  ##
 ###############################
 
-subdir('source/platform/gui')
+subdir('source/gui')
 
 if host_machine.system() == 'windows'
     winrc = import('windows').compile_resources('./resource/windows/hades.rc')
