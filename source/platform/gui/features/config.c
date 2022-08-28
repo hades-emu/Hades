@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <mjson.h>
 #include "hades.h"
-#include "platform/gui/game.h"
+#include "platform/gui/app.h"
 #include "utils/fs.h"
 
 void

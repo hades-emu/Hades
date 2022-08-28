@@ -14,8 +14,7 @@
 #include <stdio.h>
 #include "hades.h"
 #include "gba/gba.h"
-#include "platform/gui/game.h"
-#include "platform/gui/common.h"
+#include "platform/gui/app.h"
 #include "utils/fs.h"
 
 static
@@ -146,9 +145,9 @@ gui_game_load_devices(
     gba_send_backup_type(app->emulation.gba, app->emulation.backup_type);
 
     if (app->emulation.rtc_autodetect) {
-        gba_send_rtc(app->emulation.gba, DEVICE_AUTO_DETECT);
+        gba_send_settings_rtc(app->emulation.gba, DEVICE_AUTO_DETECT);
     } else {
-        gba_send_rtc(app->emulation.gba, app->emulation.rtc_force_enabled ? DEVICE_ENABLED : DEVICE_DISABLED);
+        gba_send_settings_rtc(app->emulation.gba, app->emulation.rtc_force_enabled ? DEVICE_ENABLED : DEVICE_DISABLED);
     }
 
     return (false);
@@ -246,7 +245,7 @@ gui_game_reset(
 
     /* Misc. */
     gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
-    gba_send_color_correction(app->emulation.gba, app->video.color_correction);
+    gba_send_settings_color_correction(app->emulation.gba, app->video.color_correction);
 
     if (
            !gui_game_load_bios(app)
@@ -255,7 +254,6 @@ gui_game_reset(
         && !gui_game_load_save(app)
     ) {
         gba_send_reset(app->emulation.gba);
-        gui_game_run(app);
     } else {
         gui_game_stop(app);
     }
@@ -270,7 +268,6 @@ gui_game_stop(
 ) {
     app->emulation.started = false;
     app->emulation.running = false;
-    gba_send_pause(app->emulation.gba);
     gba_send_reset(app->emulation.gba);
 }
 
@@ -293,9 +290,42 @@ void
 gui_game_pause(
     struct app *app
 ) {
+    app->emulation.started = true;
     app->emulation.running = false;
     gba_send_pause(app->emulation.gba);
 }
+
+#ifdef WITH_DEBUGGER
+
+/*
+** Trace the emulation.
+*/
+void
+gui_game_trace(
+    struct app *app,
+    size_t count,
+    void (*tracer)(struct app *app)
+) {
+    app->emulation.started = true;
+    app->emulation.running = true;
+    gba_send_dbg_trace(app->emulation.gba, count, app, (void (*)(void *))tracer);
+}
+
+/*
+** Step over/in X instructions.
+*/
+void
+gui_game_step(
+    struct app *app,
+    bool over,
+    size_t count
+) {
+    app->emulation.started = true;
+    app->emulation.running = true;
+    gba_send_dbg_step(app->emulation.gba, over, count);
+}
+
+#endif
 
 /*
 ** Write the content of the backup storage on the disk.

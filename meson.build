@@ -22,11 +22,17 @@ cflags = [
     '-Wno-microsoft-anon-tag',
     '-DHADES_VERSION="@0@"'.format(meson.project_version()),
 ]
-ldflags = []
+ldflags = [
+]
 
 if get_option('static_executable')
     cflags += ['-static']
     ldflags += ['-static']
+endif
+
+if get_option('with_debugger')
+    cflags += ['-DWITH_DEBUGGER']
+    ldflags += ['-DWITH_DEBUGGER']
 endif
 
 cc = meson.get_compiler('c')
@@ -53,8 +59,7 @@ subdir('source/gba')
 ## Graphical User Interface  ##
 ###############################
 
-subdir('source/platform/gui/common')
-subdir('source/platform/gui/game')
+subdir('source/platform/gui')
 
 if host_machine.system() == 'windows'
     winrc = import('windows').compile_resources('./resource/windows/hades.rc')
@@ -63,7 +68,7 @@ if host_machine.system() == 'windows'
         'Hades',
         winrc,
         gui_app: true,
-        link_with: [libguigame],
+        link_with: [libgui],
         c_args: cflags,
         link_args: ldflags,
         install: true,
@@ -71,7 +76,7 @@ if host_machine.system() == 'windows'
 elif host_machine.system() == 'darwin'
     hades = executable(
         'hades',
-        link_with: [libguigame],
+        link_with: [libgui],
         c_args: cflags,
         link_args: ldflags,
         install: true,
@@ -83,7 +88,7 @@ elif host_machine.system() == 'darwin'
 else  # Linux and all others (eventually)
     hades = executable(
         'hades',
-        link_with: [libguigame],
+        link_with: [libgui],
         c_args: cflags,
         link_args: ldflags,
         install: true,

@@ -689,6 +689,7 @@ struct gba;
 void io_init(struct io *io);
 bool io_evaluate_keypad_cond(struct gba *gba);
 void io_scan_keypad_irq(struct gba *gba);
+char const *mem_io_reg_name(uint32_t addr);
 
 /* gba/timer.c */
 void timer_start(struct gba *gba, uint32_t timer_idx);

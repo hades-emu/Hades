@@ -39,6 +39,9 @@ void
 gba_reset(
     struct gba *gba
 ) {
+    gba->started = false;
+    gba->state = GBA_STATE_RUN;
+
     sched_cleanup(gba);
 
     sched_init(gba);
@@ -48,7 +51,11 @@ gba_reset(
     apu_init(gba);
     core_init(gba);
     gpio_init(gba);
-    gba->started = false;
+
+#ifdef WITH_DEBUGGER
+    debugger_init(&gba->debugger);
+#endif
+
 }
 
 /*
@@ -168,6 +175,10 @@ gba_main_loop(
                 };
                 case MESSAGE_PAUSE: {
                     gba->state = GBA_STATE_PAUSE;
+#ifdef WITH_DEBUGGER
+                    gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_PAUSE;
+                    gba->debugger.interrupt.flag = true;
+#endif
                     break;
                 };
                 case MESSAGE_KEYINPUT: {
@@ -217,14 +228,14 @@ gba_main_loop(
                     gba->apu.resample_frequency = message_audio_freq->resample_frequency;
                     break;
                 };
-                case MESSAGE_COLOR_CORRECTION: {
+                case MESSAGE_SETTINGS_COLOR_CORRECTION: {
                     struct message_color_correction *message_color_correction;
 
                     message_color_correction = (struct message_color_correction *)message;
                     gba->color_correction = message_color_correction->color_correction;
                     break;
                 };
-                case MESSAGE_RTC: {
+                case MESSAGE_SETTINGS_RTC: {
                     struct message_device_state *message_device_state;
 
                     /* Ignore if emulation is already started. */
@@ -252,6 +263,56 @@ gba_main_loop(
                     }
                     break;
                 };
+#ifdef WITH_DEBUGGER
+                case MESSAGE_DBG_TRACE: {
+                    struct message_dbg_trace *message_dbg_trace;
+
+                    message_dbg_trace = (struct message_dbg_trace *)message;
+                    gba->debugger.trace.count = message_dbg_trace->count;
+                    gba->debugger.trace.data = message_dbg_trace->data;
+                    gba->debugger.trace.tracer = message_dbg_trace->tracer;
+
+                    gba->started = true;
+                    gba->state = GBA_STATE_TRACE;
+                    break;
+                };
+                case MESSAGE_DBG_STEP: {
+                    struct message_dbg_step *message_dbg_step;
+
+                    message_dbg_step = (struct message_dbg_step *)message;
+
+                    gba->started = true;
+                    gba->state = message_dbg_step->over ? GBA_STATE_STEP_OVER : GBA_STATE_STEP_IN;
+                    gba->debugger.step.count = message_dbg_step->count;
+                    gba->debugger.step.next_pc = gba->core.pc + (gba->core.cpsr.thumb ? 2 : 4);
+                    break;
+                };
+                case MESSAGE_DBG_BREAKPOINTS: {
+                    struct message_dbg_breakpoints *message_dbg_breakpoints;
+
+                    message_dbg_breakpoints = (struct message_dbg_breakpoints *)message;
+                    if (gba->debugger.breakpoints.cleanup) {
+                        gba->debugger.breakpoints.cleanup(gba->debugger.breakpoints.list);
+                    }
+                    gba->debugger.breakpoints.list = message_dbg_breakpoints->breakpoints;
+                    gba->debugger.breakpoints.len = message_dbg_breakpoints->len;
+                    gba->debugger.breakpoints.cleanup = message_dbg_breakpoints->cleanup;
+                    break;
+                };
+                case MESSAGE_DBG_WATCHPOINTS: {
+                    struct message_dbg_watchpoints *message_dbg_watchpoints;
+
+                    message_dbg_watchpoints = (struct message_dbg_watchpoints *)message;
+                    if (gba->debugger.watchpoints.cleanup) {
+                        gba->debugger.watchpoints.cleanup(gba->debugger.watchpoints.list);
+                    }
+                    gba->debugger.watchpoints.list = message_dbg_watchpoints->watchpoints;
+                    gba->debugger.watchpoints.len = message_dbg_watchpoints->len;
+                    gba->debugger.watchpoints.cleanup = message_dbg_watchpoints->cleanup;
+                    break;
+                };
+#endif
+                default: unimplemented(HS_CORE, "GBA message type with ID %i unimplemented.", message->type);
             }
             mqueue->allocated_size -= message->size;
             --mqueue->length;
@@ -262,8 +323,77 @@ gba_main_loop(
 
         pthread_mutex_unlock(&gba->message_queue.lock);
 
-        if (gba->state == GBA_STATE_RUN) {
-            sched_run_for(gba, CYCLES_PER_FRAME);
+        switch (gba->state) {
+            case GBA_STATE_PAUSE: break;
+            case GBA_STATE_RUN: {
+                sched_run_for(gba, CYCLES_PER_FRAME);
+                break;
+            };
+#ifdef WITH_DEBUGGER
+            case GBA_STATE_TRACE: {
+                size_t cnt;
+
+                cnt = 1000; // Split the process in chunks of 1000 insns.
+
+                while (cnt && gba->debugger.trace.count) {
+                    sched_run_for(gba, 1);
+                    gba->debugger.trace.tracer(gba->debugger.trace.data);
+
+                    --gba->debugger.trace.count;
+                    --cnt;
+                }
+
+                if (!gba->debugger.trace.count) {
+                    gba->state = GBA_STATE_PAUSE;
+                    gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_TRACE_FINISHED;
+                    gba->debugger.interrupt.flag = true;
+                }
+                break;
+            };
+            case GBA_STATE_STEP_IN: {
+                size_t cnt;
+
+                cnt = 1000; // Split the process in chunks of 1000 insns.
+
+                while (cnt && gba->debugger.step.count) {
+                    sched_run_for(gba, 1);
+                    --gba->debugger.step.count;
+                    --cnt;
+                }
+
+                if (!gba->debugger.step.count) {
+                    gba->state = GBA_STATE_PAUSE;
+                    gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_STEP_FINISHED;
+                    gba->debugger.interrupt.flag = true;
+                }
+                break;
+            };
+            case GBA_STATE_STEP_OVER: {
+                size_t cnt;
+
+                cnt = 1000; // Split the process in chunks of 1000 insns.
+
+                while (cnt && gba->debugger.step.count) {
+                    while (cnt && gba->core.pc != gba->debugger.step.next_pc) {
+                        sched_run_for(gba, 1);
+                        --cnt;
+                    }
+
+                    if (gba->core.pc == gba->debugger.step.next_pc) {
+                        --gba->debugger.step.count;
+                        gba->debugger.step.next_pc += (gba->core.cpsr.thumb ? 2 : 4);
+                    }
+                }
+
+                if (!gba->debugger.step.count) {
+                    gba->state = GBA_STATE_PAUSE;
+                    gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_STEP_FINISHED;
+                    gba->debugger.interrupt.flag = true;
+                }
+                break;
+            };
+#endif
+            default: unimplemented(HS_DEBUG, "Unimplemented GBA run operation %i.", gba->state);
         }
 
         /* Limit FPS */
@@ -538,7 +668,7 @@ gba_send_audio_resample_freq(
 }
 
 void
-gba_send_color_correction(
+gba_send_settings_color_correction(
     struct gba *gba,
     bool color_correction
 ) {
@@ -546,7 +676,7 @@ gba_send_color_correction(
         gba,
         (struct message *)&((struct message_color_correction) {
             .super = (struct message){
-                .type = MESSAGE_COLOR_CORRECTION,
+                .type = MESSAGE_SETTINGS_COLOR_CORRECTION,
                 .size = sizeof(struct message_color_correction),
             },
             .color_correction = color_correction,
@@ -555,7 +685,7 @@ gba_send_color_correction(
 }
 
 void
-gba_send_rtc(
+gba_send_settings_rtc(
     struct gba *gba,
     enum device_states state
 ) {
@@ -563,10 +693,96 @@ gba_send_rtc(
         gba,
         (struct message *)&((struct message_device_state) {
             .super = (struct message){
-                .type = MESSAGE_RTC,
+                .type = MESSAGE_SETTINGS_RTC,
                 .size = sizeof(struct message_device_state),
             },
             .state = state,
         })
     );
 }
+
+#ifdef WITH_DEBUGGER
+
+void
+gba_send_dbg_trace(
+    struct gba *gba,
+    size_t count,
+    void *data,
+    void (*tracer)(void *gba)
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_dbg_trace) {
+            .super = (struct message){
+                .type = MESSAGE_DBG_TRACE,
+                .size = sizeof(struct message_dbg_trace),
+            },
+            .count = count,
+            .data = data,
+            .tracer = tracer,
+        })
+    );
+}
+
+void
+gba_send_dbg_step(
+    struct gba *gba,
+    bool over,
+    size_t count
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_dbg_step) {
+            .super = (struct message){
+                .type = MESSAGE_DBG_STEP,
+                .size = sizeof(struct message_dbg_step),
+            },
+            .over = over,
+            .count = count,
+        })
+    );
+}
+
+void
+gba_send_dbg_breakpoints(
+    struct gba *gba,
+    struct breakpoint *breakpoints,
+    size_t len,
+    void (*cleanup)(void *)
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_dbg_breakpoints) {
+            .super = (struct message){
+                .type = MESSAGE_DBG_BREAKPOINTS,
+                .size = sizeof(struct message_dbg_breakpoints),
+            },
+            .breakpoints = breakpoints,
+            .len = len,
+            .cleanup = cleanup,
+        })
+    );
+}
+
+void
+gba_send_dbg_watchpoints(
+    struct gba *gba,
+    struct watchpoint *watchpoints,
+    size_t len,
+    void (*cleanup)(void *)
+) {
+    gba_message_push(
+        gba,
+        (struct message *)&((struct message_dbg_watchpoints) {
+            .super = (struct message){
+                .type = MESSAGE_DBG_WATCHPOINTS,
+                .size = sizeof(struct message_dbg_watchpoints),
+            },
+            .watchpoints = watchpoints,
+            .len = len,
+            .cleanup = cleanup,
+        })
+    );
+}
+
+#endif

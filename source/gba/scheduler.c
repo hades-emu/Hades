@@ -157,7 +157,12 @@ sched_run_for(
 
     core = &gba->core;
     target = core->cycles + cycles;
+
+#ifdef WITH_DEBUGGER
+    while (core->cycles < target && !gba->debugger.interrupt.flag) {
+#else
     while (core->cycles < target) {
+#endif
         uint64_t elapsed;
         uint64_t old_cycles;
 

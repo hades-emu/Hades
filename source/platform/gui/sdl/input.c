@@ -13,8 +13,8 @@
 #include <SDL2/SDL.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
-#include "platform/gui/game.h"
 #include "hades.h"
+#include "platform/gui/app.h"
 
 void
 gui_sdl_handle_inputs(

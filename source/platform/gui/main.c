@@ -22,6 +22,7 @@
 #endif
 
 #include <pthread.h>
+#include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -41,9 +42,28 @@
 #include "hades.h"
 #include "gba/gba.h"
 #include "gba/db.h"
-#include "platform/gui/game.h"
-#include "platform/gui/common.h"
+#include "platform/gui/app.h"
 #include "utils/fs.h"
+
+#ifdef WITH_DEBUGGER
+# include "platform/gui/debugger.h"
+
+static atomic_bool g_force_interrupt = false;
+
+/*
+** The signal handler, used to set `g_force_interrupt` to true and go back to
+** the debugger.
+*/
+static
+void
+sighandler(
+    int signal
+) {
+    g_force_interrupt = true;
+}
+
+#endif
+
 
 /*
 ** Print the program's usage.
@@ -204,6 +224,9 @@ main(
 ) {
     struct app app;
     pthread_t gba_thread;
+#ifdef WITH_DEBUGGER
+    pthread_t dbg_thread;
+#endif
 
     memset(&app, 0, sizeof(app));
     app.emulation.gba = calloc(1, sizeof(*app.emulation.gba));
@@ -211,10 +234,11 @@ main(
     gba_init(app.emulation.gba);
 
     /* Default value for all options, before config and argument parsing. */
+    app.run = true;
     app.file.bios_path = strdup("./bios.bin");
     app.file.config_path = strdup("./config.json");
-    app.emulation.running = false;
     app.emulation.started = false;
+    app.emulation.running = false;
     app.emulation.speed = 1;
     app.emulation.unbounded = false;
     app.emulation.backup_type = BACKUP_AUTO_DETECT;
@@ -255,15 +279,38 @@ main(
         app.emulation.gba
     );
 
-    /* If a game was supplied in the arguments, launch it now */
+#ifdef WITH_DEBUGGER
+    signal(SIGINT, &sighandler);
+
     if (app.file.game_path) {
         gui_game_reset(&app);
+        gui_game_pause(&app);
     }
 
-    app.run = true;
+    /* Start the debugger thread */
+    pthread_create(
+        &dbg_thread,
+        NULL,
+        (void *(*)(void *))debugger_run,
+        &app
+    );
+#else
+    if (app.file.game_path) {
+        gui_game_reset(&app);
+        gui_game_run(&app);
+    }
+#endif
+
     while (app.run) {
         gui_sdl_handle_inputs(&app);
         gui_sdl_video_render_frame(&app);
+
+#if WITH_DEBUGGER
+        if (g_force_interrupt) {
+            g_force_interrupt = false;
+            gui_game_pause(&app);
+        }
+#endif
 
         if (app.emulation.started && app.emulation.running) {
             uint32_t now;
