@@ -391,7 +391,7 @@ cleanup:
 bool
 debugger_check_arg_type(
     enum commands_list command,
-    struct arg *arg,
+    struct arg const *arg,
     enum args_type expected
 ) {
     if (arg->type != expected) {
