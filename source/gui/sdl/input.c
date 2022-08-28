@@ -127,8 +127,8 @@ gui_sdl_handle_inputs(
                         break;
                     };
                     case SDLK_F2:               app_game_screenshot(app); break;
-                    case SDLK_F5:               gba_send_quicksave(app->emulation.gba, app->file.qsave_path); break;
-                    case SDLK_F8:               gba_send_quickload(app->emulation.gba, app->file.qsave_path); break;
+                    case SDLK_F5:               app_game_quicksave(app, 0); break;
+                    case SDLK_F8:               app_game_quickload(app, 0); break;
                     default:
                         break;
                 }

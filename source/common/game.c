@@ -216,10 +216,10 @@ app_game_reset(
 ) {
     char *extension;
     size_t base_len;
+    size_t i;
 
     gui_config_push_recent_rom(app);
 
-    free(app->file.qsave_path);
     free(app->file.backup_path);
 
     extension = strrchr(app->file.game_path, '.');
@@ -230,12 +230,22 @@ app_game_reset(
         base_len = strlen(app->file.game_path);
     }
 
-    hs_assert(-1 != asprintf(
-        &app->file.qsave_path,
-        "%.*s.hds",
-        (int)base_len,
-        app->file.game_path
-    ));
+    for (i = 0; i < MAX_QUICKSAVES; ++i) {
+        free(app->file.qsaves[i].path);
+        free(app->file.qsaves[i].mtime);
+
+        app->file.qsaves[i].mtime = NULL;
+
+        hs_assert(-1 != asprintf(
+            &app->file.qsaves[i].path,
+            "%.*s.%zu.hds",
+            (int)base_len,
+            app->file.game_path,
+            i + 1
+        ));
+    }
+
+    app->file.flush_qsaves_cache = true;
 
     hs_assert(-1 != asprintf(
         &app->file.backup_path,
@@ -350,6 +360,27 @@ app_game_write_backup(
         );
     }
     app->emulation.gba->memory.backup_storage_dirty = false;
+}
+
+void
+app_game_quicksave(
+    struct app *app,
+    size_t idx
+) {
+    if (idx < MAX_QUICKSAVES) {
+        gba_send_quicksave(app->emulation.gba, app->file.qsaves[idx].path);
+        app->file.flush_qsaves_cache = true;
+    }
+}
+
+void
+app_game_quickload(
+    struct app *app,
+    size_t idx
+) {
+    if (idx < MAX_QUICKSAVES) {
+        gba_send_quickload(app->emulation.gba, app->file.qsaves[idx].path);
+    }
 }
 
 void
