@@ -65,8 +65,11 @@ debugger_cmd_verbose(
                     *verbosities[i].flag ? "true" : "false",
                     g_reset
                 );
+                return;
             }
         }
+
+        printf("Unknown verbosity \"%s\".\n", verbosities[i].name);
     } else {
         printf("Usage: %s\n", g_commands[CMD_VERBOSE].usage);
     }
