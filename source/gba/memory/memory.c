@@ -440,6 +440,13 @@ mem_openbus_read(
         };                                                                                      \
     })
 
+uint8_t
+mem_read8_raw(
+    struct gba *gba,
+    uint32_t addr
+) {
+    return (template_read(uint8_t, gba, addr, addr & 0x3));
+}
 
 /*
 ** Read the byte at the given address.
@@ -450,6 +457,10 @@ mem_read8(
     uint32_t addr,
     enum access_types access_type
 ) {
+#ifdef WITH_DEBUGGER
+    debugger_eval_read_watchpoints(gba, addr, sizeof(uint8_t));
+#endif
+
     mem_access(gba, addr, sizeof(uint8_t), access_type);
     return (template_read(uint8_t, gba, addr, addr & 0x3));
 }
@@ -468,7 +479,24 @@ mem_read16(
     addr &= ~(sizeof(uint16_t) - 1);
     align = addr & 0x3;
 
+#ifdef WITH_DEBUGGER
+    debugger_eval_read_watchpoints(gba, addr, sizeof(uint16_t));
+#endif
+
     mem_access(gba, addr, sizeof(uint16_t), access_type);
+    return (template_read(uint16_t, gba, addr, align));
+}
+
+uint16_t
+mem_read16_raw(
+    struct gba *gba,
+    uint32_t addr
+) {
+    uint32_t align;
+
+    addr &= ~(sizeof(uint16_t) - 1);
+    align = addr & 0x3;
+
     return (template_read(uint16_t, gba, addr, align));
 }
 
@@ -490,6 +518,10 @@ mem_read16_ror(
     addr &= ~(sizeof(uint16_t) - 1);
     align = addr & 0x3;
 
+#ifdef WITH_DEBUGGER
+    debugger_eval_read_watchpoints(gba, addr, sizeof(uint16_t));
+#endif
+
     mem_access(gba, addr, sizeof(uint16_t), access_type);
     value = template_read(uint16_t, gba, addr, align);
 
@@ -508,7 +540,21 @@ mem_read32(
 ) {
     addr &= ~(sizeof(uint32_t) - 1);
 
+#ifdef WITH_DEBUGGER
+    debugger_eval_read_watchpoints(gba, addr, sizeof(uint32_t));
+#endif
+
     mem_access(gba, addr, sizeof(uint32_t), access_type);
+    return (template_read(uint32_t, gba, addr, 0));
+}
+
+uint32_t
+mem_read32_raw(
+    struct gba *gba,
+    uint32_t addr
+) {
+    addr &= ~(sizeof(uint32_t) - 1);
+
     return (template_read(uint32_t, gba, addr, 0));
 }
 
@@ -528,6 +574,10 @@ mem_read32_ror(
     rotate = (addr % 4) << 3;
     addr &= ~(sizeof(uint32_t) - 1);
 
+#ifdef WITH_DEBUGGER
+    debugger_eval_read_watchpoints(gba, addr, sizeof(uint32_t));
+#endif
+
     mem_access(gba, addr, sizeof(uint32_t), access_type);
     value = template_read(uint32_t, gba, addr, 0);
     return (ror32(value, rotate));
@@ -543,6 +593,10 @@ mem_write8(
     uint8_t val,
     enum access_types access_type
 ) {
+#ifdef WITH_DEBUGGER
+    debugger_eval_write_watchpoints(gba, addr, sizeof(uint8_t), val);
+#endif
+
     mem_access(gba, addr, sizeof(uint8_t), access_type);
     template_write(uint8_t, gba, addr, val);
 }
@@ -559,6 +613,10 @@ mem_write16(
 ) {
     addr &= ~(sizeof(uint16_t) - 1);
 
+#ifdef WITH_DEBUGGER
+    debugger_eval_write_watchpoints(gba, addr, sizeof(uint16_t), val);
+#endif
+
     mem_access(gba, addr, sizeof(uint16_t), access_type);
     template_write(uint16_t, gba, addr, val);
 }
@@ -574,6 +632,10 @@ mem_write32(
     enum access_types access_type
 ) {
     addr &= ~(sizeof(uint32_t) - 1);
+
+#ifdef WITH_DEBUGGER
+    debugger_eval_write_watchpoints(gba, addr, sizeof(uint32_t), val);
+#endif
 
     mem_access(gba, addr, sizeof(uint32_t), access_type);
     template_write(uint32_t, gba, addr, val);

@@ -7,16 +7,17 @@
 **
 \******************************************************************************/
 
-#ifndef PLATFORM_GUI_COMMON_H
-# define PLATFORM_GUI_COMMON_H
+#include "hades.h"
+#include "platform/gui/app.h"
+#include "platform/gui/debugger.h"
 
-struct app;
-
-/* platform/gui/common/game.c */
-void gui_game_reset(struct app *app);
-void gui_game_stop(struct app *app);
-void gui_game_run(struct app *app);
-void gui_game_pause(struct app *app);
-void gui_game_write_backup(struct app *app);
-
-#endif /* !PLATFORM_GUI_COMMON_H */
+void
+debugger_cmd_continue(
+    struct app *app,
+    size_t argc __unused,
+    struct arg const *argv __unused
+) {
+    app->emulation.gba->debugger.interrupt.flag = false;
+    gui_game_run(app);
+    debugger_wait_for_emulator(app, true);
+}

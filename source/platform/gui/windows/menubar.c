@@ -16,8 +16,7 @@
 #include <stdio.h>
 #include <float.h>
 #include "hades.h"
-#include "platform/gui/game.h"
-#include "platform/gui/common.h"
+#include "platform/gui/app.h"
 #include "utils/fs.h"
 
 static
@@ -42,6 +41,7 @@ gui_win_menubar_file(
                 app->file.game_path = strdup(path);
                 NFD_FreePath(path);
                 gui_game_reset(app);
+                gui_game_run(app);
             }
         }
 
@@ -53,6 +53,7 @@ gui_win_menubar_file(
                     free(app->file.game_path);
                     app->file.game_path = strdup(app->file.recent_roms[x]);
                     gui_game_reset(app);
+                    gui_game_run(app);
                 }
             }
             igEndMenu();
@@ -173,6 +174,7 @@ gui_win_menubar_emulation(
 
         if (igMenuItemBool("Reset", NULL, false, app->emulation.started)) {
             gui_game_reset(app);
+            gui_game_run(app);
         }
 
         igEndMenu();
@@ -223,7 +225,7 @@ gui_win_menubar_video(
         /* Color Correction */
         if (igMenuItemBool("Color correction", NULL, app->video.color_correction, true)) {
             app->video.color_correction ^= 1;
-            gba_send_color_correction(app->emulation.gba, app->video.color_correction);
+            gba_send_settings_color_correction(app->emulation.gba, app->video.color_correction);
         }
 
         /* VSync */

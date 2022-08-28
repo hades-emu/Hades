@@ -10,7 +10,7 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <cimgui.h>
 #include "hades.h"
-#include "platform/gui/game.h"
+#include "platform/gui/app.h"
 
 void
 gui_new_error(
