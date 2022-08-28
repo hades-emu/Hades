@@ -9,8 +9,8 @@
 
 #include <string.h>
 #include "hades.h"
-#include "gui/app.h"
-#include "gui/debugger.h"
+#include "app.h"
+#include "dbg/dbg.h"
 
 void
 debugger_cmd_help(

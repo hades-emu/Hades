@@ -9,8 +9,8 @@
 
 #include <inttypes.h>
 #include "hades.h"
-#include "gui/app.h"
-#include "gui/debugger.h"
+#include "app.h"
+#include "dbg/dbg.h"
 
 /*
 ** Print the general purpose registers and the CPSR.

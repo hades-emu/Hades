@@ -327,17 +327,6 @@ memset32(
     }
 }
 
-/* utils.c */
-char **strsplit(char *str, size_t *size);
-void logln(enum modules module, char const *fmt, ...);
-void panic(enum modules module, char const *fmt, ...) __attribute__((noreturn));
-void unimplemented(enum modules module, char const *fmt, ...) __attribute__((noreturn));
-void disable_colors(void);
-void const *array_search(uint8_t const *haystack, size_t haystack_len, char const *needle, size_t needle_len);
-
-extern bool g_verbose[HS_END];
-extern bool g_verbose_global;
-
 /*
 ** A set of global strings pointing to ANSI control sequences to format the terminal.
 ** They can also be set to the empty string if coloration is disabled.
@@ -360,5 +349,19 @@ extern char const *g_light_blue;
 extern char const *g_light_magenta;
 extern char const *g_light_cyan;
 extern char const *g_white;
+
+extern bool g_verbose[HS_END];
+extern bool g_verbose_global;
+
+/* common/log.c */
+void logln(enum modules module, char const *fmt, ...);
+void panic(enum modules module, char const *fmt, ...) __attribute__((noreturn));
+void unimplemented(enum modules module, char const *fmt, ...) __attribute__((noreturn));
+void disable_colors(void);
+
+/* common/utils.c */
+char **strsplit(char *str, size_t *size);
+void const *array_search(uint8_t const *haystack, size_t haystack_len, char const *needle, size_t needle_len);
+
 
 #endif /* !HADES_H */

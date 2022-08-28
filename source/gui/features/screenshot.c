@@ -12,8 +12,9 @@
 #include <stb_image_write.h>
 #include "hades.h"
 #include "gba/gba.h"
-#include "gui/app.h"
-#include "utils/fs.h"
+#include "app.h"
+#include "gui/gui.h"
+#include "compat.h"
 
 void
 gui_screenshot(

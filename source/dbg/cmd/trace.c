@@ -8,9 +8,8 @@
 \******************************************************************************/
 
 #include "hades.h"
-#include "gui/app.h"
-#include "gui/debugger.h"
-#include "utils/time.h"
+#include "app.h"
+#include "dbg/dbg.h"
 
 void
 debugger_cmd_trace(
@@ -21,7 +20,7 @@ debugger_cmd_trace(
     if (argc == 0) {
         debugger_dump_context_compact_header();
         app->emulation.gba->debugger.interrupt.flag = false;
-        gui_game_trace(app, 1, debugger_dump_context_compact);
+        app_game_trace(app, 1, debugger_dump_context_compact);
         debugger_wait_for_emulator(app, false);
         debugger_dump_context_compact_header();
     } else if (argc == 1) {
@@ -32,7 +31,7 @@ debugger_cmd_trace(
 
         debugger_dump_context_compact_header();
         app->emulation.gba->debugger.interrupt.flag = false;
-        gui_game_trace(app, argv[0].value.i64, debugger_dump_context_compact);
+        app_game_trace(app, argv[0].value.i64, debugger_dump_context_compact);
         debugger_wait_for_emulator(app, false);
         debugger_dump_context_compact_header();
     } else {

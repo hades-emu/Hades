@@ -13,13 +13,14 @@
 #include <string.h>
 #include <stdio.h>
 #include "hades.h"
+#include "app.h"
+#include "compat.h"
 #include "gba/gba.h"
-#include "gui/app.h"
-#include "utils/fs.h"
+#include "gui/gui.h"
 
 static
 bool
-gui_game_load_bios(
+app_game_load_bios(
     struct app *app
 ) {
     FILE *file;
@@ -78,7 +79,7 @@ gui_game_load_bios(
 
 static
 bool
-gui_game_load_rom(
+app_game_load_rom(
     struct app *app
 ) {
     FILE *file;
@@ -139,7 +140,7 @@ gui_game_load_rom(
 
 static
 bool
-gui_game_load_devices(
+app_game_load_devices(
     struct app *app
 ) {
     gba_send_backup_type(app->emulation.gba, app->emulation.backup_type);
@@ -155,7 +156,7 @@ gui_game_load_devices(
 
 static
 bool
-gui_game_load_save(
+app_game_load_save(
     struct app *app
 ) {
     size_t file_len;
@@ -208,7 +209,7 @@ gui_game_load_save(
 ** Load the BIOS/ROM into the emulator's memory and reset it.
 */
 void
-gui_game_reset(
+app_game_reset(
     struct app *app
 ) {
     char *extension;
@@ -241,21 +242,21 @@ gui_game_reset(
         app->file.game_path
     ));
 
-    gui_game_stop(app);
+    app_game_stop(app);
 
     /* Misc. */
     gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
     gba_send_settings_color_correction(app->emulation.gba, app->video.color_correction);
 
     if (
-           !gui_game_load_bios(app)
-        && !gui_game_load_rom(app)
-        && !gui_game_load_devices(app)
-        && !gui_game_load_save(app)
+           !app_game_load_bios(app)
+        && !app_game_load_rom(app)
+        && !app_game_load_devices(app)
+        && !app_game_load_save(app)
     ) {
         gba_send_reset(app->emulation.gba);
     } else {
-        gui_game_stop(app);
+        app_game_stop(app);
     }
 }
 
@@ -263,7 +264,7 @@ gui_game_reset(
 ** Stop the emulation and return to a neutral state.
 */
 void
-gui_game_stop(
+app_game_stop(
     struct app *app
 ) {
     app->emulation.started = false;
@@ -275,7 +276,7 @@ gui_game_stop(
 ** Continue the emulation.
 */
 void
-gui_game_run(
+app_game_run(
     struct app *app
 ) {
     app->emulation.started = true;
@@ -287,7 +288,7 @@ gui_game_run(
 ** Pause the emulation.
 */
 void
-gui_game_pause(
+app_game_pause(
     struct app *app
 ) {
     app->emulation.started = true;
@@ -301,7 +302,7 @@ gui_game_pause(
 ** Trace the emulation.
 */
 void
-gui_game_trace(
+app_game_trace(
     struct app *app,
     size_t count,
     void (*tracer)(struct app *app)
@@ -315,7 +316,7 @@ gui_game_trace(
 ** Step over/in X instructions.
 */
 void
-gui_game_step(
+app_game_step(
     struct app *app,
     bool over,
     size_t count
@@ -331,7 +332,7 @@ gui_game_step(
 ** Write the content of the backup storage on the disk.
 */
 void
-gui_game_write_backup(
+app_game_write_backup(
     struct app *app
 ) {
     if (   app->file.backup_file

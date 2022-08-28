@@ -12,8 +12,8 @@
 
 #include <cimgui.h>
 #include "hades.h"
-#include "gba/gba.h"
-#include "gui/app.h"
+#include "app.h"
+#include "gui/gui.h"
 
 void
 gui_win_game(

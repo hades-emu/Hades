@@ -10,7 +10,7 @@
 #include <ctype.h>
 #include <string.h>
 #include "hades.h"
-#include "gui/lang.h"
+#include "dbg/lang.h"
 
 static
 struct token *

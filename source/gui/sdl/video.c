@@ -14,9 +14,10 @@
 #include <cimgui.h>
 #include <cimgui_impl.h>
 #include <nfd.h>
-#include "gui/app.h"
-#include "gba/gba.h"
 #include "hades.h"
+#include "app.h"
+#include "gui/gui.h"
+#include "gba/gba.h"
 
 void
 gui_sdl_video_init(

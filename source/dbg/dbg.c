@@ -11,12 +11,12 @@
 #include <string.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-#include "gui/app.h"
-#include "gui/lang.h"
-#include "gui/debugger.h"
-#include "utils/time.h"
-#include "gba/gba.h"
 #include "hades.h"
+#include "app.h"
+#include "compat.h"
+#include "dbg/lang.h"
+#include "dbg/dbg.h"
+#include "gba/gba.h"
 
 struct command g_commands[] = {
     [CMD_HELP] = {
@@ -191,7 +191,7 @@ debugger_wait_for_emulator(
         default: break;
     }
 
-    gui_game_pause(app);
+    app_game_pause(app);
 }
 
 static

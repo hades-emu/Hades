@@ -7,6 +7,8 @@
 **
 \******************************************************************************/
 
+#ifdef WITH_DEBUGGER
+
 #include <string.h>
 #include "hades.h"
 #include "gba/gba.h"
@@ -89,3 +91,5 @@ debugger_eval_read_watchpoints(
         }
     }
 }
+
+#endif

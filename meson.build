@@ -50,6 +50,14 @@ subdir('external')
 subdir('source/common')
 
 ###############################
+##         Debugger          ##
+###############################
+
+if get_option('with_debugger')
+    subdir('source/dbg')
+endif
+
+###############################
 ## GBA Emulator Core Library ##
 ###############################
 
@@ -61,14 +69,22 @@ subdir('source/gba')
 
 subdir('source/gui')
 
+hades_extra_deps = []
+
+if get_option('with_debugger')
+    hades_extra_deps += [libdbg]
+endif
+
 if host_machine.system() == 'windows'
     winrc = import('windows').compile_resources('./resource/windows/hades.rc')
 
     hades = executable(
         'Hades',
+        'source/main.c',
         winrc,
         gui_app: true,
-        link_with: [libgui],
+        link_with: [libgui] + hades_extra_deps,
+        include_directories: [incdir, imgui_inc],
         c_args: cflags,
         link_args: ldflags,
         install: true,
@@ -76,7 +92,9 @@ if host_machine.system() == 'windows'
 elif host_machine.system() == 'darwin'
     hades = executable(
         'hades',
-        link_with: [libgui],
+        'source/main.c',
+        link_with: [libgui] + hades_extra_deps,
+        include_directories: [incdir, imgui_inc],
         c_args: cflags,
         link_args: ldflags,
         install: true,
@@ -88,7 +106,9 @@ elif host_machine.system() == 'darwin'
 else  # Linux and all others (eventually)
     hades = executable(
         'hades',
-        link_with: [libgui],
+        'source/main.c',
+        link_with: [libgui] + hades_extra_deps,
+        include_directories: [incdir, imgui_inc],
         c_args: cflags,
         link_args: ldflags,
         install: true,

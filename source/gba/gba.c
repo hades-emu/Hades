@@ -9,11 +9,11 @@
 
 #include <string.h>
 #include "hades.h"
+#include "compat.h"
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
 #include "gba/gba.h"
 #include "gba/db.h"
-#include "utils/time.h"
 
 /*
 ** Initialize the `gba` structure with sane, default values.

@@ -9,9 +9,9 @@
 
 #include <string.h>
 #include "hades.h"
-#include "gui/app.h"
-#include "gui/debugger.h"
-#include "gui/lang.h"
+#include "app.h"
+#include "dbg/dbg.h"
+#include "dbg/lang.h"
 
 int64_t
 debugger_lang_eval_node(

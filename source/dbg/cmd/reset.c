@@ -8,16 +8,17 @@
 \******************************************************************************/
 
 #include "hades.h"
-#include "gui/app.h"
-#include "gui/debugger.h"
+#include "app.h"
+#include "dbg/dbg.h"
 
 void
-debugger_cmd_continue(
+debugger_cmd_reset(
     struct app *app,
     size_t argc __unused,
     struct arg const *argv __unused
 ) {
     app->emulation.gba->debugger.interrupt.flag = false;
-    gui_game_run(app);
+    app_game_reset(app);
+    app_game_run(app);
     debugger_wait_for_emulator(app, true);
 }
