@@ -14,6 +14,8 @@
 # include "hades.h"
 
 # if defined (_WIN32) && !defined (__CYGWIN__)
+#  include <sys/types.h>
+#  include <sys/stat.h>
 #  include <io.h>
 #  include <fileapi.h>
 #  include <stdio.h>
@@ -33,7 +35,6 @@ hs_convert_to_wchar(
     wchar_t *wstr;
     int len;
     int wlen;
-    errno_t err;
 
     len = strlen(str);
     wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, 0, 0);
