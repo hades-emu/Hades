@@ -27,6 +27,7 @@ enum gba_states {
     GBA_STATE_RUN = 0,
     GBA_STATE_PAUSE,
 #ifdef WITH_DEBUGGER
+    GBA_STATE_FRAME,
     GBA_STATE_TRACE,
     GBA_STATE_STEP_IN,
     GBA_STATE_STEP_OVER,
@@ -56,8 +57,9 @@ enum message_types {
     MESSAGE_SETTINGS_COLOR_CORRECTION,
     MESSAGE_SETTINGS_RTC,
 #ifdef WITH_DEBUGGER
-    MESSAGE_DBG_STEP,
+    MESSAGE_DBG_FRAME,
     MESSAGE_DBG_TRACE,
+    MESSAGE_DBG_STEP,
     MESSAGE_DBG_BREAKPOINTS,
     MESSAGE_DBG_WATCHPOINTS,
 #endif
@@ -224,6 +226,7 @@ void gba_send_settings_rtc(struct gba *gba, enum device_states state);
 
 #ifdef WITH_DEBUGGER
 
+void gba_send_dbg_frame(struct gba *gba);
 void gba_send_dbg_trace(struct gba *gba, size_t count, void *data, void (*tracer)(void *data));
 void gba_send_dbg_step(struct gba *gba, bool over, size_t count);
 void gba_send_dbg_breakpoints(struct gba *gba, struct breakpoint *breakpoints, size_t len, void (*cleanup)(void *));

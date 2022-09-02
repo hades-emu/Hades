@@ -152,11 +152,15 @@ void app_game_reset(struct app *app);
 void app_game_stop(struct app *app);
 void app_game_run(struct app *app);
 void app_game_pause(struct app *app);
-void app_game_trace(struct app *app, size_t, void (*)(struct app *));
-void app_game_step(struct app *app, bool over, size_t cnt);
 void app_game_write_backup(struct app *app);
 void app_game_screenshot(struct app *app);
 void app_game_quicksave(struct app *, size_t);
 void app_game_quickload(struct app *, size_t);
+
+#ifdef WITH_DEBUGGER
+void app_game_frame(struct app *app);
+void app_game_trace(struct app *app, size_t, void (*)(struct app *));
+void app_game_step(struct app *app, bool over, size_t cnt);
+#endif
 
 #endif /* !GUI_APP_H */
