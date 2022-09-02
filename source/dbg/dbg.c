@@ -123,6 +123,13 @@ struct command g_commands[] = {
         .description = "Reset the emulation",
         .func = debugger_cmd_reset,
     },
+    [CMD_FRAME] = {
+        .name = "frame",
+        .alias = "f",
+        .usage = "frame",
+        .description = "Run until the end of the current frame.",
+        .func = debugger_cmd_frame,
+    },
     {
         .name = NULL,
     }

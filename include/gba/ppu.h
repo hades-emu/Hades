@@ -38,7 +38,7 @@ enum windows {
     WIN0 = 0,
     WIN1 = 1,
     WINOBJ = 2,
-    
+
     WIN_MAX,
 };
 
@@ -122,9 +122,9 @@ struct ppu {
     // Internal registers used for affine backgrounds
     int32_t internal_px[2];
     int32_t internal_py[2];
-    
+
     bool win_masks[2][GBA_SCREEN_WIDTH];
-    uint32_t win_masks_hash[2];                /* The min/max for that windows. Kept to avoid rebuilding the mask across scanlines. */ 
+    uint32_t win_masks_hash[2];                /* The min/max for that windows. Kept to avoid rebuilding the mask across scanlines. */
 };
 
 /* gba/ppu/background/bitmap.c */

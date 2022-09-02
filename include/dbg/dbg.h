@@ -130,6 +130,7 @@ enum commands_list {
     CMD_TRACE,
     CMD_VERBOSE,
     CMD_RESET,
+    CMD_FRAME,
 };
 
 /*

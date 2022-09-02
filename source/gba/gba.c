@@ -264,6 +264,11 @@ gba_main_loop(
                     break;
                 };
 #ifdef WITH_DEBUGGER
+                case MESSAGE_DBG_FRAME: {
+                    gba->started = true;
+                    gba->state = GBA_STATE_FRAME;
+                    break;
+                };
                 case MESSAGE_DBG_TRACE: {
                     struct message_dbg_trace *message_dbg_trace;
 
@@ -330,6 +335,13 @@ gba_main_loop(
                 break;
             };
 #ifdef WITH_DEBUGGER
+            case GBA_STATE_FRAME: {
+                sched_run_for(gba, CYCLES_PER_FRAME - (gba->core.cycles % CYCLES_PER_FRAME));
+                gba->state = GBA_STATE_PAUSE;
+                gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_FRAME_FINISHED;
+                gba->debugger.interrupt.flag = true;
+                break;
+            };
             case GBA_STATE_TRACE: {
                 size_t cnt;
 
@@ -702,6 +714,19 @@ gba_send_settings_rtc(
 }
 
 #ifdef WITH_DEBUGGER
+
+void
+gba_send_dbg_frame(
+    struct gba *gba
+) {
+    gba_message_push(
+        gba,
+        &((struct message) {
+            .type = MESSAGE_DBG_FRAME,
+            .size = sizeof(struct message),
+        })
+    );
+}
 
 void
 gba_send_dbg_trace(

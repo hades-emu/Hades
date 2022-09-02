@@ -311,6 +311,18 @@ app_game_pause(
 #ifdef WITH_DEBUGGER
 
 /*
+** Run until the end of the current frame.
+*/
+void
+app_game_frame(
+    struct app *app
+) {
+    app->emulation.started = true;
+    app->emulation.running = true;
+    gba_send_dbg_frame(app->emulation.gba);
+}
+
+/*
 ** Trace the emulation.
 */
 void

@@ -14,6 +14,7 @@ libdbg = static_library(
     'cmd/continue.c',
     'cmd/disas.c',
     'cmd/exit.c',
+    'cmd/frame.c',
     'cmd/help.c',
     'cmd/print.c',
     'cmd/registers.c',
