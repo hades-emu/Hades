@@ -82,10 +82,24 @@ mem_io_reg_name(
         case IO_REG_BLDCNT:         return ("bldcnt");
         case IO_REG_BLDALPHA:       return ("bldalpha");
         case IO_REG_BLDY:           return ("bldy");
+        case IO_REG_SOUND1CNT_L:    return ("sound1cnt_l");
+        case IO_REG_SOUND1CNT_H:    return ("sound1cnt_h");
+        case IO_REG_SOUND1CNT_X:    return ("sound1cnt_x");
+        case IO_REG_SOUND2CNT_L:    return ("sound2cnt_l");
+        case IO_REG_SOUND2CNT_H:    return ("sound2cnt_h");
+        case IO_REG_SOUND3CNT_L:    return ("sound3cnt_l");
+        case IO_REG_SOUND3CNT_H:    return ("sound3cnt_h");
+        case IO_REG_SOUND3CNT_X:    return ("sound3cnt_x");
+        case IO_REG_SOUND4CNT_L:    return ("sound4cnt_l");
+        case IO_REG_SOUND4CNT_H:    return ("sound4cnt_h");
         case IO_REG_SOUNDCNT_L:     return ("soundcnt_l");
         case IO_REG_SOUNDCNT_H:     return ("soundcnt_h");
         case IO_REG_SOUNDCNT_X:     return ("soundcnt_x");
         case IO_REG_SOUNDBIAS:      return ("soundbias");
+        case IO_REG_WAVE_RAM0:      return ("wave_ram0");
+        case IO_REG_WAVE_RAM1:      return ("wave_ram1");
+        case IO_REG_WAVE_RAM2:      return ("wave_ram2");
+        case IO_REG_WAVE_RAM3:      return ("wave_ram3");
         case IO_REG_FIFO_A:         return ("fifo_a");
         case IO_REG_FIFO_B:         return ("fifo_b");
         case IO_REG_DMA0SAD_LO:     return ("dma0sad_lo");
@@ -176,6 +190,14 @@ mem_io_read8(
         case IO_REG_BLDALPHA + 1:           return (io->bldalpha.bytes[1]);
 
         /* Sound */
+        case IO_REG_SOUND3CNT_L:            return (io->sound3cnt_l.bytes[0]);
+        case IO_REG_SOUND3CNT_L + 1:        return (io->sound3cnt_l.bytes[1]);
+        case IO_REG_SOUND3CNT_H:            return (io->sound3cnt_h.bytes[0]);
+        case IO_REG_SOUND3CNT_H + 1:        return (io->sound3cnt_h.bytes[1]);
+        case IO_REG_SOUND3CNT_X:            return (io->sound3cnt_x.bytes[0]);
+        case IO_REG_SOUND3CNT_X + 1:        return (io->sound3cnt_x.bytes[1]);
+        case IO_REG_SOUND3CNT_X + 2:
+        case IO_REG_SOUND3CNT_X + 3:        return (0);
         case IO_REG_SOUNDCNT_L:             return (io->soundcnt_l.bytes[0]);
         case IO_REG_SOUNDCNT_L + 1:         return (io->soundcnt_l.bytes[1]);
         case IO_REG_SOUNDCNT_H:             return (io->soundcnt_h.bytes[0]);
@@ -188,6 +210,22 @@ mem_io_read8(
         case IO_REG_SOUNDBIAS + 1:          return (io->soundbias.bytes[1]);
         case IO_REG_SOUNDBIAS + 2:
         case IO_REG_SOUNDBIAS + 3:          return (0);
+        case IO_REG_WAVE_RAM0 + 0:
+        case IO_REG_WAVE_RAM0 + 1:
+        case IO_REG_WAVE_RAM0 + 2:
+        case IO_REG_WAVE_RAM0 + 3:
+        case IO_REG_WAVE_RAM1 + 0:
+        case IO_REG_WAVE_RAM1 + 1:
+        case IO_REG_WAVE_RAM1 + 2:
+        case IO_REG_WAVE_RAM1 + 3:
+        case IO_REG_WAVE_RAM2 + 0:
+        case IO_REG_WAVE_RAM2 + 1:
+        case IO_REG_WAVE_RAM2 + 2:
+        case IO_REG_WAVE_RAM2 + 3:
+        case IO_REG_WAVE_RAM3 + 0:
+        case IO_REG_WAVE_RAM3 + 1:
+        case IO_REG_WAVE_RAM3 + 2:
+        case IO_REG_WAVE_RAM3 + 3:          return (io->waveram[!io->sound3cnt_l.bank_select][addr - IO_REG_WAVE_RAM0]);
 
         /* DMA */
         case IO_REG_DMA0CNT:
@@ -392,6 +430,24 @@ mem_io_write8(
         case IO_REG_BLDY + 1:               io->bldy.bytes[1] = val; break;
 
         /* Sound */
+        case IO_REG_SOUND3CNT_L: {
+            io->sound3cnt_l.bytes[0] = val;
+            if (!io->sound3cnt_l.enable) {
+                apu_wave_stop(gba);
+            }
+        };
+        case IO_REG_SOUND3CNT_L + 1:        io->sound3cnt_l.bytes[1] = val; break;
+        case IO_REG_SOUND3CNT_H:            io->sound3cnt_h.bytes[0] = val; break;
+        case IO_REG_SOUND3CNT_H + 1:        io->sound3cnt_h.bytes[1] = val; break;
+        case IO_REG_SOUND3CNT_X:            io->sound3cnt_x.bytes[0] = val; break;
+        case IO_REG_SOUND3CNT_X + 1: {
+            io->sound3cnt_x.bytes[1] = val;
+            if (io->sound3cnt_l.enable && io->sound3cnt_x.reset) {
+                apu_wave_reset(gba);
+            }
+            io->sound3cnt_x.reset = false;
+            break;
+        };
         case IO_REG_SOUNDCNT_L:             io->soundcnt_l.bytes[0] = val; break;
         case IO_REG_SOUNDCNT_L + 1:         io->soundcnt_l.bytes[1] = val; break;
         case IO_REG_SOUNDCNT_H:             io->soundcnt_h.bytes[0] = val & 0x0F; break;
@@ -410,11 +466,50 @@ mem_io_write8(
 
             break;
         };
-        case IO_REG_SOUNDCNT_X:             io->soundcnt_x.bytes[0] = val & 0x80; break;
+        case IO_REG_SOUNDCNT_X: {
+            uint16_t old_master;
+
+            old_master = io->soundcnt_x.bytes[0] & 0x80;
+            io->soundcnt_x.bytes[0] = val & 0x80;
+
+            if (old_master && !io->soundcnt_x.master_enable) {
+                apu_reset_fifo(gba, 0);
+                apu_reset_fifo(gba, 1);
+                apu_wave_stop(gba);
+
+                /*
+                ** Registers 0x4000060 to 0x4000081 are reset.
+                */
+
+                io->sound3cnt_l.raw = 0;
+                io->sound3cnt_h.raw = 0;
+                io->sound3cnt_x.raw = 0;
+            }
+            break;
+        };
         case IO_REG_SOUNDBIAS:              io->soundbias.bytes[0] = val; break;
         case IO_REG_SOUNDBIAS + 1:          io->soundbias.bytes[1] = val; break;
         case IO_REG_SOUNDBIAS + 2:          io->soundbias.bytes[2] = val; break;
         case IO_REG_SOUNDBIAS + 3:          io->soundbias.bytes[3] = val; break;
+        case IO_REG_WAVE_RAM0 + 0:
+        case IO_REG_WAVE_RAM0 + 1:
+        case IO_REG_WAVE_RAM0 + 2:
+        case IO_REG_WAVE_RAM0 + 3:
+        case IO_REG_WAVE_RAM1 + 0:
+        case IO_REG_WAVE_RAM1 + 1:
+        case IO_REG_WAVE_RAM1 + 2:
+        case IO_REG_WAVE_RAM1 + 3:
+        case IO_REG_WAVE_RAM2 + 0:
+        case IO_REG_WAVE_RAM2 + 1:
+        case IO_REG_WAVE_RAM2 + 2:
+        case IO_REG_WAVE_RAM2 + 3:
+        case IO_REG_WAVE_RAM3 + 0:
+        case IO_REG_WAVE_RAM3 + 1:
+        case IO_REG_WAVE_RAM3 + 2:
+        case IO_REG_WAVE_RAM3 + 3: {
+            io->waveram[!io->sound3cnt_l.bank_select][addr - IO_REG_WAVE_RAM0] = val;
+            break;
+        };
         case IO_REG_FIFO_A + 0:
         case IO_REG_FIFO_A + 1:
         case IO_REG_FIFO_A + 2:
