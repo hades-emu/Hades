@@ -12,6 +12,11 @@
 #include "gui/gui.h"
 #include "gba/gba.h"
 
+/*
+** Should be called roughly 23/24 times per second (48000 / 2048, see the the values in `gui_sdl_audio_init()`).
+**
+** We transfer the data contained in the apu_rbuffer to the SDL.
+*/
 static
 void
 gui_sdl_audio_callback(
@@ -32,8 +37,16 @@ gui_sdl_audio_callback(
 
     pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
     for (i = 0; i < len; ++i) {
-        stream[0] = (int16_t)((apu_rbuffer_pop(&gba->apu.channel_left) * !app->audio.mute) * app->audio.level);
-        stream[1] = (int16_t)((apu_rbuffer_pop(&gba->apu.channel_right) * !app->audio.mute) * app->audio.level);
+        uint32_t val;
+        int16_t left;
+        int16_t right;
+
+        val = apu_rbuffer_pop(&gba->apu.frontend_channels);
+        left = (int16_t)((val >> 16) & 0xFFFF);
+        right = (int16_t)(val & 0xFFFF);
+
+        stream[0] = (int16_t)(left * !app->audio.mute * app->audio.level);
+        stream[1] = (int16_t)(right * !app->audio.mute * app->audio.level);
         stream += 2;
     }
     pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);

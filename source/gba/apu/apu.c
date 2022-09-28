@@ -12,6 +12,7 @@
 #include "gba/apu.h"
 #include "gba/scheduler.h"
 
+static void apu_sequencer(struct gba *gba, union event_data data);
 static void apu_resample(struct gba *gba, union event_data data);
 
 void
@@ -19,9 +20,19 @@ apu_init(
     struct gba *gba
 ) {
     memset(gba->apu.fifos, 0, sizeof(gba->apu.fifos));
-    memset(&gba->apu.channel_left, 0, sizeof(gba->apu.channel_left));
-    memset(&gba->apu.channel_right, 0, sizeof(gba->apu.channel_right));
+    memset(&gba->apu.frontend_channels, 0, sizeof(gba->apu.frontend_channels));
+
     pthread_mutex_init(&gba->apu.frontend_channels_mutex, NULL);
+    apu_wave_init(gba);
+
+    sched_add_event(
+        gba,
+        NEW_REPEAT_EVENT(
+            0,
+            CYCLES_PER_SECOND / 256,
+            apu_sequencer
+        )
+    );
 
     if (gba->apu.resample_frequency) {
         sched_add_event(
@@ -84,20 +95,24 @@ static
 void
 apu_rbuffer_push(
     struct apu_rbuffer *rbuffer,
-    int16_t val
+    int16_t val_l,
+    int16_t val_r
 ) {
     if (rbuffer->size < APU_RBUFFER_CAPACITY) {
-        rbuffer->data[rbuffer->write_idx] = val;
+        uint32_t data;
+
+        data = ((uint16_t)val_l << 16) | (uint16_t)val_r;
+        rbuffer->data[rbuffer->write_idx] = data;
         rbuffer->write_idx = (rbuffer->write_idx + 1) % APU_RBUFFER_CAPACITY;
         ++rbuffer->size;
     }
 }
 
-int16_t
+uint32_t
 apu_rbuffer_pop(
     struct apu_rbuffer *rbuffer
 ) {
-    int16_t val;
+    uint32_t val;
 
     val = rbuffer->data[rbuffer->read_idx];
     if (rbuffer->size > 0) {
@@ -129,7 +144,7 @@ apu_on_timer_overflow(
             continue;
         }
 
-        gba->apu.latch[fifo_idx] = apu_fifo_read8(gba, fifo_idx);
+        gba->apu.latch.fifo[fifo_idx] = apu_fifo_read8(gba, fifo_idx);
 
         if (gba->apu.fifos[fifo_idx].size <= 16) {
             size_t dma_idx;
@@ -143,24 +158,57 @@ apu_on_timer_overflow(
     }
 }
 
+/*
+** Called at a rate of 256Hz to handle the different modulation units (length, envelope and sweep)
+*/
+static
+void
+apu_sequencer(
+    struct gba *gba,
+    union event_data data
+) {
+    /* Wave - Length */
+    if (gba->io.sound3cnt_l.enable && gba->io.sound3cnt_x.use_length && gba->apu.wave.length) {
+        --gba->apu.wave.length;
+        if (!gba->apu.wave.length) {
+            apu_wave_stop(gba);
+        }
+    }
+}
+
+/*
+** This function is called at the same frequency than the real hardware the emulator is running on (probably 48000Hz).
+**
+** The goal here is to feed `apu_rbuffer` with whatever sound the GBA would be playing at this time, which is contained in `gba->apu.latch`.
+*/
 static
 void
 apu_resample(
     struct gba *gba,
     union event_data data
 ) {
-    static int32_t fifo_volume[2] = {2, 1};
+    static int32_t fifo_volume[2] = {2, 4};
+    static int32_t sound_volume[4] = {1, 2, 4, 0};
     int32_t sample_l;
     int32_t sample_r;
 
-    sample_l = gba->io.soundbias.bias;
-    sample_r = gba->io.soundbias.bias;
+    sample_l = 0;
+    sample_r = 0;
 
-    sample_l += (gba->apu.latch[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_left) / fifo_volume[gba->io.soundcnt_h.volume_fifo_a];
-    sample_r += (gba->apu.latch[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_right) / fifo_volume[gba->io.soundcnt_h.volume_fifo_a];
+    sample_l += (gba->apu.latch.wave * (bool)gba->io.soundcnt_l.enable_sound_3_left);
+    sample_r += (gba->apu.latch.wave * (bool)gba->io.soundcnt_l.enable_sound_3_right);
 
-    sample_l += (gba->apu.latch[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_left) / fifo_volume[gba->io.soundcnt_h.volume_fifo_b];
-    sample_r += (gba->apu.latch[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_right) / fifo_volume[gba->io.soundcnt_h.volume_fifo_b];
+    sample_l = sample_l * sound_volume[gba->io.soundcnt_h.volume_sounds];
+    sample_r = sample_r * sound_volume[gba->io.soundcnt_h.volume_sounds];
+
+    sample_l += (gba->apu.latch.fifo[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_left) * fifo_volume[gba->io.soundcnt_h.volume_fifo_a];
+    sample_r += (gba->apu.latch.fifo[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_right)  * fifo_volume[gba->io.soundcnt_h.volume_fifo_a];
+
+    sample_l += (gba->apu.latch.fifo[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_left) * fifo_volume[gba->io.soundcnt_h.volume_fifo_b];
+    sample_r += (gba->apu.latch.fifo[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_right) * fifo_volume[gba->io.soundcnt_h.volume_fifo_b];
+
+    sample_l += gba->io.soundbias.bias;
+    sample_r += gba->io.soundbias.bias;
 
     sample_l = max(min(sample_l, 0x3FF), 0) - 0x200;
     sample_r = max(min(sample_r, 0x3FF), 0) - 0x200;
@@ -169,7 +217,6 @@ apu_resample(
     sample_r *= 32;
 
     pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
-    apu_rbuffer_push(&gba->apu.channel_left, (int16_t)sample_l);
-    apu_rbuffer_push(&gba->apu.channel_right, (int16_t)sample_r);
+    apu_rbuffer_push(&gba->apu.frontend_channels, (int16_t)sample_l, (int16_t)sample_r);
     pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
 }

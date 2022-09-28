@@ -64,10 +64,24 @@ enum io_regs {
 
     /* Sound */
 
+    IO_REG_SOUND1CNT_L  = 0x04000060,
+    IO_REG_SOUND1CNT_H  = 0x04000062,
+    IO_REG_SOUND1CNT_X  = 0x04000064,
+    IO_REG_SOUND2CNT_L  = 0x04000068,
+    IO_REG_SOUND2CNT_H  = 0x0400006C,
+    IO_REG_SOUND3CNT_L  = 0x04000070,
+    IO_REG_SOUND3CNT_H  = 0x04000072,
+    IO_REG_SOUND3CNT_X  = 0x04000074,
+    IO_REG_SOUND4CNT_L  = 0x04000078,
+    IO_REG_SOUND4CNT_H  = 0x0400007C,
     IO_REG_SOUNDCNT_L   = 0x04000080,
     IO_REG_SOUNDCNT_H   = 0x04000082,
     IO_REG_SOUNDCNT_X   = 0x04000084,
     IO_REG_SOUNDBIAS    = 0x04000088,
+    IO_REG_WAVE_RAM0    = 0x04000090,
+    IO_REG_WAVE_RAM1    = 0x04000094,
+    IO_REG_WAVE_RAM2    = 0x04000098,
+    IO_REG_WAVE_RAM3    = 0x0400009C,
     IO_REG_FIFO_A       = 0x040000A0,
     IO_REG_FIFO_B       = 0x040000A4,
 
@@ -460,15 +474,58 @@ struct io {
         uint8_t bytes[2];
     } bldy;
 
+    // REG_SOUND3CNT_L
+    union {
+        struct {
+            uint16_t : 5;
+            uint16_t bank_mode: 1;
+            uint16_t bank_select: 1;
+            uint16_t enable: 1;
+            uint16_t : 8;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound3cnt_l;
+
+    // REG_SOUND3CNT_H
+    union {
+        struct {
+            uint16_t length: 8;
+            uint16_t : 5;
+            uint16_t volume: 2;
+            uint16_t force_volume: 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound3cnt_h;
+
+    // REG_SOUND3CNT_X
+    union {
+        struct {
+            uint16_t sample_rate: 11;
+            uint16_t : 3;
+            uint16_t use_length: 1;
+            uint16_t reset: 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound3cnt_x;
+
     // REG_SOUNDCNT_L
     union {
         struct {
-            uint16_t master_sound_right: 3;
+            uint16_t sound_right_volume: 3;
             uint16_t : 1;
-            uint16_t master_sound_left: 3;
+            uint16_t sound_left_volume: 3;
             uint16_t : 1;
-            uint16_t enable_sound_right: 4;
-            uint16_t enable_sound_left: 4;
+            uint16_t enable_sound_1_right: 1;
+            uint16_t enable_sound_2_right: 1;
+            uint16_t enable_sound_3_right: 1;
+            uint16_t enable_sound_4_right: 1;
+            uint16_t enable_sound_1_left: 1;
+            uint16_t enable_sound_2_left: 1;
+            uint16_t enable_sound_3_left: 1;
+            uint16_t enable_sound_4_left: 1;
         } __packed;
         uint16_t raw;
         uint8_t bytes[2];
@@ -497,7 +554,10 @@ struct io {
     // REG_SOUNDCNT_X
     union {
         struct {
-            uint16_t sound_on: 4;
+            uint16_t sound_1_status: 1;
+            uint16_t sound_2_status: 1;
+            uint16_t sound_3_status: 1;
+            uint16_t sound_4_status: 1;
             uint16_t : 3;
             uint16_t master_enable: 1;
             uint16_t : 8;
@@ -517,6 +577,8 @@ struct io {
         uint32_t raw;
         uint8_t bytes[4];
     } soundbias;
+
+    uint8_t waveram[2][16];
 
     // DMA Channels
     struct dma_channel dma[4];
@@ -670,10 +732,14 @@ static_assert(sizeof(((struct io *)NULL)->mosaic) == sizeof(uint32_t));
 static_assert(sizeof(((struct io *)NULL)->bldcnt) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->bldalpha) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->bldy) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->sound3cnt_l) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->sound3cnt_h) == sizeof(uint16_t));
+static_assert(sizeof(((struct io *)NULL)->sound3cnt_x) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->soundcnt_l) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->soundcnt_h) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->soundcnt_x) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->soundbias) == sizeof(uint32_t));
+static_assert(sizeof(((struct io *)NULL)->waveram) == 2 * (16 * sizeof(uint8_t)));
 static_assert(sizeof(((struct io *)NULL)->keycnt) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->keyinput) == sizeof(uint16_t));
 static_assert(sizeof(((struct io *)NULL)->siocnt) == sizeof(uint16_t));
