@@ -282,6 +282,7 @@ main(
 #ifdef WITH_DEBUGGER
     signal(SIGINT, &sighandler);
 
+    app_game_stop(&app);
     if (app.file.game_path) {
         app_game_reset(&app);
         app_game_pause(&app);
@@ -295,6 +296,7 @@ main(
         &app
     );
 #else
+    app_game_stop(&app);
     if (app.file.game_path) {
         app_game_reset(&app);
         app_game_run(&app);
