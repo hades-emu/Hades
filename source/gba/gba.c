@@ -55,7 +55,25 @@ gba_reset(
 #ifdef WITH_DEBUGGER
     debugger_init(&gba->debugger);
 #endif
+}
 
+/*
+** Skip the BIOS, setting all the registers to their final state.
+**
+** This is meant to be called right after `gba_reset()`.
+*/
+static
+void
+gba_skip_bios(
+    struct gba *gba
+) {
+    core_switch_mode(&gba->core, MODE_SYS);
+    gba->core.cpsr.raw &= 0x1F;
+    gba->core.r13_svc = 0x03007FE0;
+    gba->core.r13_irq = 0x03007FA0;
+    gba->core.sp = 0X03007F00;
+    gba->core.pc = 0x08000000;
+    core_reload_pipeline(gba);
 }
 
 /*
@@ -152,9 +170,17 @@ gba_main_loop(
                     break;
                 };
                 case MESSAGE_RESET: {
+                    struct message_reset *message_reset;
+
+                    message_reset = (struct message_reset *)message;
+
                     gba_reset(gba);
                     last_measured_time = hs_tick_count();
                     accumulated_time = 0;
+
+                    if (message_reset->skip_bios) {
+                        gba_skip_bios(gba);
+                    }
                     break;
                 };
                 case MESSAGE_SPEED: {
@@ -570,13 +596,17 @@ gba_send_speed(
 
 void
 gba_send_reset(
-    struct gba *gba
+    struct gba *gba,
+    bool skip_bios
 ) {
     gba_message_push(
         gba,
-        &((struct message) {
-            .type = MESSAGE_RESET,
-            .size = sizeof(struct message),
+        (struct message *)&((struct message_reset) {
+            .super = (struct message){
+                .type = MESSAGE_RESET,
+                .size = sizeof(struct message_reset),
+            },
+            .skip_bios = skip_bios,
         })
     );
 }

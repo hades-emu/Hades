@@ -99,6 +99,11 @@ struct message_speed {
     uint32_t speed; // 0 means unbounded (no fps cap).
 };
 
+struct message_reset {
+    struct message super;
+    bool skip_bios;
+};
+
 struct message_data {
     struct message super;
     uint8_t *data;
@@ -213,7 +218,7 @@ void gba_send_bios(struct gba *gba, uint8_t *data, void (*cleanup)(void *));
 void gba_send_rom(struct gba *gba, uint8_t *data, size_t size, void (*cleanup)(void *));
 void gba_send_backup(struct gba *gba, uint8_t *data, size_t size, void (*cleanup)(void *));
 void gba_send_backup_type(struct gba *gba, enum backup_storage_types backup_type);
-void gba_send_reset(struct gba *gba);
+void gba_send_reset(struct gba *gba, bool skip_bios);
 void gba_send_speed(struct gba *gba, uint32_t speed);
 void gba_send_run(struct gba *gba);
 void gba_send_pause(struct gba *gba);

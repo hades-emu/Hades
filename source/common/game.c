@@ -266,7 +266,7 @@ app_game_reset(
         && !app_game_load_devices(app)
         && !app_game_load_save(app)
     ) {
-        gba_send_reset(app->emulation.gba);
+        gba_send_reset(app->emulation.gba, app->emulation.skip_bios);
     } else {
         app_game_stop(app);
     }
@@ -281,7 +281,7 @@ app_game_stop(
 ) {
     app->emulation.started = false;
     app->emulation.running = false;
-    gba_send_reset(app->emulation.gba);
+    gba_send_reset(app->emulation.gba, app->emulation.skip_bios);
 }
 
 /*

@@ -45,6 +45,9 @@ struct app {
         uint32_t speed;
         bool unbounded;
 
+        // Skip BIOS
+        bool skip_bios;
+
         // Backup storage
         enum backup_storage_types backup_type;
 
