@@ -68,9 +68,11 @@ debugger_cmd_break(
 
         if (debugger_check_arg_type(CMD_BREAK, &argv[0], ARGS_STRING)
             || debugger_check_arg_type(CMD_BREAK, &argv[1], ARGS_INTEGER)
-            || strcmp(argv[0].value.s, "delete")
-            || strcmp(argv[0].value.s, "d")
         ) {
+            return ;
+        }
+
+        if (strcmp(argv[0].value.s, "delete") && strcmp(argv[0].value.s, "d")) {
             printf("Usage: %s\n", g_commands[CMD_BREAK].usage);
             return ;
         }
