@@ -40,7 +40,7 @@ gba_reset(
     struct gba *gba
 ) {
     gba->started = false;
-    gba->state = GBA_STATE_RUN;
+    gba->state = GBA_STATE_PAUSE;
 
     sched_cleanup(gba);
 
@@ -153,6 +153,8 @@ gba_main_loop(
                 };
                 case MESSAGE_RESET: {
                     gba_reset(gba);
+                    last_measured_time = hs_tick_count();
+                    accumulated_time = 0;
                     break;
                 };
                 case MESSAGE_SPEED: {
