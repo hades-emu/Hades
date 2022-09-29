@@ -73,6 +73,7 @@ gba_skip_bios(
     gba->core.r13_irq = 0x03007FA0;
     gba->core.sp = 0X03007F00;
     gba->core.pc = 0x08000000;
+    gba->io.postflg = 1;
     core_reload_pipeline(gba);
 }
 
