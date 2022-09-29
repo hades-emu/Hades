@@ -123,6 +123,9 @@ struct ppu {
     int32_t internal_px[2];
     int32_t internal_py[2];
 
+    // Set when the registers above must be reloaded at the next H-Draw.
+    bool reload_internal_affine_regs;
+
     bool win_masks[2][GBA_SCREEN_WIDTH];
     uint32_t win_masks_hash[2];                /* The min/max for that windows. Kept to avoid rebuilding the mask across scanlines. */
 };

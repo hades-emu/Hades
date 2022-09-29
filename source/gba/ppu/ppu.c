@@ -371,14 +371,20 @@ ppu_hdraw(
     io->dispstat.vblank = (io->vcount.raw >= GBA_SCREEN_HEIGHT && io->vcount.raw < GBA_SCREEN_REAL_HEIGHT - 1);
     io->dispstat.hblank = false;
 
-    /* Trigger the VBLANK IRQ & DMA transfer */
+    /* Trigger the VBlank IRQ & DMA transfer */
     if (io->vcount.raw == GBA_SCREEN_HEIGHT) {
         if (io->dispstat.vblank_irq) {
             gba->io.int_flag.vblank = true;
         }
         mem_schedule_dma_transfers(gba, DMA_TIMING_VBLANK);
+        gba->ppu.reload_internal_affine_regs = true;
+    }
+
+    // This is set either on VBlank (see above) or when the affine registers are written to.
+    if (gba->ppu.reload_internal_affine_regs) {
         ppu_reload_affine_internal_registers(gba, 0);
         ppu_reload_affine_internal_registers(gba, 1);
+        gba->ppu.reload_internal_affine_regs = false;
     }
 
     /* Trigger the VCOUNT IRQ */
