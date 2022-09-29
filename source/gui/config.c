@@ -86,6 +86,10 @@ gui_config_load(
         if (mjson_get_bool(data, data_len, "$.emulation.rtc_force_enabled", &b)) {
             app->emulation.rtc_force_enabled = b;
         }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.skip_bios", &b)) {
+            app->emulation.skip_bios = b;
+        }
     }
 
     // Video
@@ -154,8 +158,9 @@ gui_config_save(
 
             // Emulation
             "emulation": {
-                "unbounded": %B,
+                "skip_bios": %B,
                 "speed": %d,
+                "unbounded": %B,
                 "backup_type": %d,
                 "rtc_autodetect": %B,
                 "rtc_force_enabled": %B
@@ -180,8 +185,9 @@ gui_config_save(
         app->file.recent_roms[2],
         app->file.recent_roms[3],
         app->file.recent_roms[4],
-        (int)app->emulation.unbounded,
+        (int)app->emulation.skip_bios,
         (int)app->emulation.speed,
+        (int)app->emulation.unbounded,
         (int)app->emulation.backup_type,
         (int)app->emulation.rtc_autodetect,
         (int)app->emulation.rtc_force_enabled,

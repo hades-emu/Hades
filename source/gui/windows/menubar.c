@@ -87,6 +87,10 @@ gui_win_menubar_emulation(
     struct app *app
 ) {
     if (igBeginMenu("Emulation", true)) {
+        if (igMenuItemBool("Skip BIOS", NULL, app->emulation.skip_bios, true)) {
+            app->emulation.skip_bios ^= 1;
+        }
+
         if (igBeginMenu("Speed", app->emulation.started)) {
             uint32_t x;
             char const *speed[] = {
