@@ -304,6 +304,10 @@ main(
 #endif
 
     while (app.run) {
+        uint64_t sdl_counters[2];
+
+        sdl_counters[0] = SDL_GetPerformanceCounter();
+
         gui_sdl_handle_inputs(&app);
         gui_sdl_video_render_frame(&app);
 
@@ -346,6 +350,16 @@ main(
                 app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.video.display_size * app.ui.scale
             );
             app.ui.refresh_windows_size = false;
+        }
+
+        sdl_counters[1] = SDL_GetPerformanceCounter();
+
+        // Cap the frontend to 60 fps if vsync isn't enabled
+        if (!app.video.vsync) {
+            float elapsed_ms;
+
+            elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
+            SDL_Delay(max(0.f, floor((1000.f / 60.f) - elapsed_ms)));
         }
     }
 

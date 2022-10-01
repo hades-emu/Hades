@@ -24,8 +24,8 @@
 # endif
 
 enum gba_states {
-    GBA_STATE_RUN = 0,
-    GBA_STATE_PAUSE,
+    GBA_STATE_PAUSE = 0,
+    GBA_STATE_RUN,
 #ifdef WITH_DEBUGGER
     GBA_STATE_FRAME,
     GBA_STATE_TRACE,
@@ -163,6 +163,7 @@ struct message_queue {
     size_t allocated_size;
 
     pthread_mutex_t lock;
+    pthread_cond_t ready;
 };
 
 struct game_entry;
