@@ -101,7 +101,7 @@ apu_rbuffer_push(
     if (rbuffer->size < APU_RBUFFER_CAPACITY) {
         uint32_t data;
 
-        data = ((uint16_t)val_l << 16) | (uint16_t)val_r;
+        data = (((uint32_t)(uint16_t)val_l) << 16) | ((uint32_t)(uint16_t)val_r);
         rbuffer->data[rbuffer->write_idx] = data;
         rbuffer->write_idx = (rbuffer->write_idx + 1) % APU_RBUFFER_CAPACITY;
         ++rbuffer->size;
