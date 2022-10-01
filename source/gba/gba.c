@@ -29,6 +29,7 @@ gba_init(
     core_thumb_decode_insns();
 
     pthread_mutex_init(&gba->message_queue.lock, NULL);
+    pthread_cond_init(&gba->message_queue.ready, NULL);
 }
 
 /*
@@ -358,7 +359,12 @@ gba_main_loop(
         pthread_mutex_unlock(&gba->message_queue.lock);
 
         switch (gba->state) {
-            case GBA_STATE_PAUSE: break;
+            case GBA_STATE_PAUSE: {
+                // Wait until there's new messages in the message queue.
+                pthread_mutex_lock(&gba->message_queue.lock);
+                pthread_cond_wait(&gba->message_queue.ready, &gba->message_queue.lock);
+                pthread_mutex_unlock(&gba->message_queue.lock);
+            };
             case GBA_STATE_RUN: {
                 sched_run_for(gba, CYCLES_PER_FRAME);
                 break;
@@ -483,6 +489,7 @@ gba_message_push(
     mqueue->length += 1;
     mqueue->allocated_size = new_size;
 
+    pthread_cond_broadcast(&gba->message_queue.ready);
     pthread_mutex_unlock(&gba->message_queue.lock);
 }
 
