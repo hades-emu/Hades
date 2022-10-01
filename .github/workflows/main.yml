@@ -73,7 +73,7 @@ jobs:
               --volicon ./resource/macos/hades.icns \
               --background ./resource/macos/background.png \
               --window-pos 200 120 \
-              --window-size 600 350 \
+              --window-size 575 350 \
               --icon-size 100 \
               --icon Hades.app 150 225 \
               --hide-extension Hades.app \
