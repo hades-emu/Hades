@@ -23,6 +23,7 @@
 #  include <windows.h>
 #  include <sysinfoapi.h>
 #  include <synchapi.h>
+#  include <shellapi.h>
 
 #  define hs_isatty(x)          false
 #  define hs_mkdir(path)        CreateDirectoryA((path), NULL)
@@ -134,8 +135,7 @@ end:
     return (out);
 }
 
-static
-inline
+static inline
 void
 hs_usleep(
     uint64_t x
@@ -151,8 +151,7 @@ hs_usleep(
     CloseHandle(timer);
 }
 
-static
-inline
+static inline
 uint64_t
 hs_tick_count(void)
 {
@@ -163,6 +162,14 @@ hs_tick_count(void)
     time = (uint64_t)ts.dwHighDateTime << 32u | ts.dwLowDateTime;
     time /= 10;
     return (time);
+}
+
+static inline
+void
+hs_open_url(
+    char const *url
+) {
+    ShellExecuteA(NULL, "open", url, NULL, NULL, SW_SHOWDEFAULT);
 }
 
 # else
@@ -187,8 +194,7 @@ hs_basename(
     return (base ? base + 1 : path);
 }
 
-static
-inline
+static inline
 uint64_t
 hs_tick_count(void)
 {
@@ -217,6 +223,27 @@ hs_fmtime(
     tm = localtime(&stbuf.st_mtime);
     strftime(out, 128, "%c", tm);
     return (out);
+}
+
+static inline
+void
+hs_open_url(
+    char const *url
+) {
+    char *command;
+
+    hs_assert(-1 != asprintf(
+        &command,
+        "%s \"%s\"",
+#if __APPLE__
+        "open",
+#else
+        "xdg-open",
+#endif
+        url
+    ));
+    system(command);
+    free(command);
 }
 
 # endif
