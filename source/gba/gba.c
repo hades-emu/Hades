@@ -364,6 +364,7 @@ gba_main_loop(
                 pthread_mutex_lock(&gba->message_queue.lock);
                 pthread_cond_wait(&gba->message_queue.ready, &gba->message_queue.lock);
                 pthread_mutex_unlock(&gba->message_queue.lock);
+                break;
             };
             case GBA_STATE_RUN: {
                 sched_run_for(gba, CYCLES_PER_FRAME);
@@ -403,12 +404,15 @@ gba_main_loop(
                 cnt = 1000; // Split the process in chunks of 1000 insns.
 
                 while (cnt && gba->debugger.step.count) {
+                    printf("POP1 %zu %llu\n", gba->debugger.step.count, gba->core.cycles);
                     sched_run_for(gba, 1);
+                    printf("OUT %llu\n", gba->core.cycles);
                     --gba->debugger.step.count;
                     --cnt;
                 }
 
                 if (!gba->debugger.step.count) {
+                    printf("POP2 %zu\n", gba->debugger.step.count);
                     gba->state = GBA_STATE_PAUSE;
                     gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_STEP_FINISHED;
                     gba->debugger.interrupt.flag = true;
