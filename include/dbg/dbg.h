@@ -191,6 +191,7 @@ void debugger_cmd_watch(struct app *, size_t, struct arg const *);
 
 /* platform/gui/debugger/debugger.c */
 void debugger_run(struct app *app);
+void debugger_reset_terminal(void);
 bool debugger_check_arg_type(enum commands_list command, struct arg const *arg, enum args_type expected);
 void debugger_wait_for_emulator(struct app *, bool);
 

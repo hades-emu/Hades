@@ -363,6 +363,13 @@ main(
         }
     }
 
+    gba_send_exit(app.emulation.gba);
+    pthread_join(gba_thread, NULL);
+
+#ifdef WITH_DEBUGGER
+    debugger_reset_terminal();
+#endif
+
     gui_sdl_cleanup(&app);
 
     gui_config_save(&app);
