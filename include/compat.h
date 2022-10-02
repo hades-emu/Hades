@@ -244,7 +244,7 @@ hs_open_url(
 #endif
         url
     );
-    system(command);
+    (void)system(command);
 }
 
 # endif
