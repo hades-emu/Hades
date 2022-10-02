@@ -403,6 +403,12 @@ cleanup:
     cs_close(&app->debugger.handle_thumb);
 }
 
+void
+debugger_reset_terminal(void)
+{
+    rl_reset_terminal(NULL);
+}
+
 bool
 debugger_check_arg_type(
     enum commands_list command,
