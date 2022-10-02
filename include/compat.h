@@ -10,6 +10,8 @@
 #ifndef UTILS_COMMON_H
 # define UTILS_COMMON_H
 
+# define _GNU_SOURCE
+# include <stdio.h>
 # include <string.h>
 # include "hades.h"
 
