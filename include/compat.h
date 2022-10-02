@@ -231,6 +231,7 @@ void
 hs_open_url(
     char const *url
 ) {
+    int _out __unused;
     char command[256];
 
     snprintf(
@@ -244,7 +245,7 @@ hs_open_url(
 #endif
         url
     );
-    (void)system(command);
+    _out = system(command);
 }
 
 # endif
