@@ -344,11 +344,19 @@ debugger_run(
                 goto cleanup;
             }
 
+            if (!lexer.tokens) {
+                goto cleanup;
+            }
+
             // debugger_lang_dump_lexer(&lexer);
 
             debugger_lang_parse(&ast, lexer.tokens);
             if (ast.error) {
                 printf("Error: %s.\n", ast.error);
+                goto cleanup;
+            }
+
+            if (!ast.root) {
                 goto cleanup;
             }
 
