@@ -353,11 +353,30 @@ gui_win_menubar_audio(
 
 static
 void
-gui_win_menubar_about(
+gui_win_menubar_help(
     struct app *app
 ) {
-    /* About */
-    if (igMenuItemBool("About", NULL, true, true)) {
+    bool open_about;
+
+    open_about = false;
+
+    if (igBeginMenu("Help", true)) {
+
+        /* Report Issue */
+        if (igMenuItemBool("Report Issue", NULL, false, true)) {
+            hs_open_url("https://github.com/Arignir/Hades/issues/new");
+        }
+
+        igSeparator();
+
+        /* About */
+        if (igMenuItemBool("About", NULL, false, true)) {
+            open_about = true;
+        }
+        igEndMenu();
+    }
+
+    if (open_about) {
         igOpenPopup("About", ImGuiPopupFlags_None);
     }
 
@@ -418,8 +437,8 @@ gui_win_menubar(
         /* Audio */
         gui_win_menubar_audio(app);
 
-        /* About */
-        gui_win_menubar_about(app);
+        /* Help */
+        gui_win_menubar_help(app);
 
         /* FPS */
         gui_win_menubar_fps_counter(app);
