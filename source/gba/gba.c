@@ -410,7 +410,6 @@ gba_main_loop(
                 }
 
                 if (!gba->debugger.step.count) {
-                    printf("POP2 %zu\n", gba->debugger.step.count);
                     gba->state = GBA_STATE_PAUSE;
                     gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_STEP_FINISHED;
                     gba->debugger.interrupt.flag = true;
