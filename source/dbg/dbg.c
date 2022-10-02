@@ -41,7 +41,7 @@ struct command g_commands[] = {
     },
     [CMD_STEP_IN] = {
         .name = "stepin",
-        .alias = "si",
+        .alias = "s",
         .usage = "stepin [N=1]",
         .description = "Execute the next N instructions, following branching instructions.",
         .func = debugger_cmd_step_in,
