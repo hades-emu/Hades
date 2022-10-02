@@ -404,9 +404,7 @@ gba_main_loop(
                 cnt = 1000; // Split the process in chunks of 1000 insns.
 
                 while (cnt && gba->debugger.step.count) {
-                    printf("POP1 %zu %llu\n", gba->debugger.step.count, gba->core.cycles);
                     sched_run_for(gba, 1);
-                    printf("OUT %llu\n", gba->core.cycles);
                     --gba->debugger.step.count;
                     --cnt;
                 }
