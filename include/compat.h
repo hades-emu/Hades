@@ -10,7 +10,6 @@
 #ifndef UTILS_COMMON_H
 # define UTILS_COMMON_H
 
-# define _GNU_SOURCE
 # include <stdio.h>
 # include <string.h>
 # include "hades.h"
@@ -232,10 +231,11 @@ void
 hs_open_url(
     char const *url
 ) {
-    char *command;
+    char command[256];
 
-    hs_assert(-1 != asprintf(
-        &command,
+    snprintf(
+        command,
+        sizeof(command),
         "%s \"%s\"",
 #if __APPLE__
         "open",
@@ -243,9 +243,8 @@ hs_open_url(
         "xdg-open",
 #endif
         url
-    ));
+    );
     system(command);
-    free(command);
 }
 
 # endif
