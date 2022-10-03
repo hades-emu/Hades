@@ -177,14 +177,14 @@ static
 void
 mem_dma_do_all_transfers(
     struct gba *gba,
-    union event_data data
+    struct event_args args
 ) {
     enum dma_timings timing;
     bool first;
     size_t i;
 
     first = !gba->core.current_dma;
-    timing = data.u32;
+    timing = args.a1.u32;
 
     for (i = 0; i < 4; ++i) {
         struct dma_channel *channel;
@@ -205,11 +205,11 @@ static
 void
 mem_dma_run_fifo(
     struct gba *gba,
-    union event_data data
+    struct event_args args
 ) {
     struct dma_channel *channel;
 
-    channel = &gba->io.dma[data.u32];
+    channel = &gba->io.dma[args.a1.u32];
     if (channel->control.enable && channel->control.timing == DMA_TIMING_SPECIAL) {
         dma_run_channel(gba, channel, !(gba->core.current_dma));
     }
@@ -219,7 +219,7 @@ static
 void
 mem_dma_run_video(
     struct gba *gba,
-    union event_data data __unused
+    struct event_args args __unused
 ) {
     struct dma_channel *channel;
 
@@ -236,10 +236,10 @@ mem_schedule_dma_transfers(
 ) {
     sched_add_event(
         gba,
-        NEW_FIX_EVENT_DATA(
+        NEW_FIX_EVENT_ARGS(
             gba->core.cycles + 2,
             mem_dma_do_all_transfers,
-            (union event_data){ .u32 = timing }
+            EVENT_ARG(u32, timing)
         )
     );
 }
@@ -251,10 +251,10 @@ mem_schedule_dma_fifo(
 ) {
     sched_add_event(
         gba,
-        NEW_FIX_EVENT_DATA(
+        NEW_FIX_EVENT_ARGS(
             gba->core.cycles + 2,
             mem_dma_run_fifo,
-            (union event_data){ .u32 = dma_channel_idx }
+            EVENT_ARG(u32, dma_channel_idx)
         )
     );
 }

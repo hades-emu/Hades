@@ -548,8 +548,8 @@ core_thumb_alu(
             if (op2 == 0) {
                 carry_out = core->cpsr.carry;
             } else {
-              carry_out = (op1 >> (op2 - 1)) & 0b1;    // Save the carry
-              op1 = ror32(op1, op2);
+                carry_out = (op1 >> (op2 - 1)) & 0b1;    // Save the carry
+                op1 = ror32(op1, op2);
             }
 
             core->cpsr.carry = carry_out;

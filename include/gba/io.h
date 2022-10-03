@@ -761,5 +761,6 @@ char const *mem_io_reg_name(uint32_t addr);
 void timer_start(struct gba *gba, uint32_t timer_idx);
 void timer_stop(struct gba *gba, uint32_t timer_idx);
 uint16_t timer_update_counter(struct gba const *gba, uint32_t timer_idx);
+uint16_t timer_read_value(struct gba const *gba, uint32_t timer_idx);
 
 #endif /* GBA_IO_H */

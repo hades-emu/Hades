@@ -11,7 +11,7 @@
 
 static uint64_t scalers[4] = { 0, 6, 8, 10 };
 
-void timer_overflow(struct gba *gba, union event_data data);
+void timer_overflow(struct gba *gba, struct event_args args);
 
 void
 timer_start(
@@ -28,11 +28,11 @@ timer_start(
     if (!timer->control.count_up) {
         timer->handler = sched_add_event(
             gba,
-            NEW_REPEAT_EVENT_DATA(
+            NEW_REPEAT_EVENT_ARGS(
                 gba->core.cycles + ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]) + 2,
                 ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]),
                 timer_overflow,
-                (union event_data){.u32 = timer_idx}
+                EVENT_ARG(u32, timer_idx)
             )
         );
     } else {
@@ -43,12 +43,12 @@ timer_start(
 void
 timer_overflow(
     struct gba *gba,
-    union event_data data
+    struct event_args args
 ) {
     uint32_t timer_idx;
     struct timer *timer;
 
-    timer_idx = data.u32;
+    timer_idx = args.a1.u32;
     timer = &gba->io.timers[timer_idx];
 
     logln(HS_TIMER, "Timer %u overflowed.");
@@ -69,7 +69,12 @@ timer_overflow(
         new = gba->io.timers[timer_idx + 1].counter.raw + 1;
 
         if (new == 0x10000) {
-            timer_overflow(gba, (union event_data){.u32 = timer_idx + 1});
+            timer_overflow(
+                gba,
+                EVENT_ARGS(
+                    EVENT_ARG(u32, timer_idx + 1)
+                )
+            );
         } else {
             gba->io.timers[timer_idx + 1].counter.raw = new;
         }
@@ -85,13 +90,22 @@ timer_update_counter(
     uint64_t elapsed;
 
     timer = &gba->io.timers[timer_idx];
-
-    if (!timer->control.enable || timer->control.count_up) {
-        return (timer->counter.raw);
-    }
-
     elapsed = gba->core.cycles - gba->scheduler.events[timer->handler].at;
     return (elapsed >> scalers[timer->control.prescaler]);
+}
+
+uint16_t
+timer_read_value(
+    struct gba const *gba,
+    uint32_t timer_idx
+) {
+    struct timer const *timer;
+
+    timer = &gba->io.timers[timer_idx];
+    if (timer->control.enable) {
+        return (timer_update_counter(gba, timer_idx));
+    }
+    return (timer->counter.raw);
 }
 
 void

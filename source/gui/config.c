@@ -149,7 +149,7 @@ gui_config_save(
     }
 
     data = mjson_aprintf(
-        STRINGIFY({
+        STR({
             // File
             "file": {
                 "bios": %Q,

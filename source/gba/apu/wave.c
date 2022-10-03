@@ -12,7 +12,7 @@
 #include "gba/apu.h"
 #include "gba/scheduler.h"
 
-static void apu_wave_step(struct gba *, union event_data data);
+static void apu_wave_step(struct gba *, struct event_args args);
 
 static int16_t volume_lut[4] = { 0, 4, 2, 1};
 
@@ -79,7 +79,7 @@ static
 void
 apu_wave_step(
     struct gba *gba,
-    union event_data data __unused
+    struct event_args args __unused
 ) {
     uint8_t byte;
     int16_t sample;
