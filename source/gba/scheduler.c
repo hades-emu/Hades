@@ -90,7 +90,7 @@ sched_process_events(
             event->active = false;
         }
 
-        event->callback(gba, event->data);
+        event->callback(gba, event->args);
     }
 }
 

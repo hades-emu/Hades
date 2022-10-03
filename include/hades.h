@@ -102,7 +102,13 @@ static char const * const modules_str[] = {
     }                                                       \
     while (0)
 
-# define STRINGIFY(...)                         (#__VA_ARGS__)
+/* ✨ Variadic macro magic ✨ */
+#define XSTR(...)                #__VA_ARGS__
+#define STR(...)               XSTR(__VA_ARGS__)
+#define XCONCAT(a, b)           a ## b
+#define CONCAT(a, b)            XCONCAT(a, b)
+#define NTH(_0, _1, _2, _3, _4, _5, N, ...) N
+#define NARG(...)               NTH(, ##__VA_ARGS__, 5, 4, 3, 2, 1, 0)
 
 /* Return the minimum between `a` and `b`. */
 # ifndef min

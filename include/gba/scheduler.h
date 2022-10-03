@@ -25,12 +25,18 @@ enum sched_event_type {
     SCHED_EVENT_REPEAT,
 };
 
-union event_data {
+union event_arg {
     uint8_t u8;
     uint16_t u16;
     uint32_t u32;
     uint64_t u64;
     void *ptr;
+};
+
+// The "argument" given to the event callback.
+struct event_args {
+    union event_arg a1;
+    union event_arg a2;
 };
 
 struct scheduler_event {
@@ -39,9 +45,11 @@ struct scheduler_event {
 
     uint64_t at;
     uint64_t period; // When the event is fired and repeat is true, `at` is reloaded to ̛`at+count` and the event stays active.
-    union event_data data; // The "argument" given to the event callback.
 
-    void (*callback)(struct gba *gba, union event_data data);
+    // The "argument" given to the event callback.
+    struct event_args args;
+
+    void (*callback)(struct gba *gba, struct event_args args);
 };
 
 struct scheduler {
@@ -59,24 +67,24 @@ void sched_cancel_event(struct gba *gba, event_handler_t handler);
 void sched_process_events(struct gba *gba);
 void sched_run_for(struct gba *gba, uint64_t cycles);
 
-# define NEW_FIX_EVENT(_at, _callback)  \
-    (struct scheduler_event){           \
-        .active = true,                 \
-        .repeat = false,                \
-        .at = (_at),                    \
-        .period = 0,                    \
-        .data = (union event_data){ 0 },\
-        .callback = (_callback),        \
+# define NEW_FIX_EVENT(_at, _callback)      \
+    (struct scheduler_event){               \
+        .active = true,                     \
+        .repeat = false,                    \
+        .at = (_at),                        \
+        .period = 0,                        \
+        .args = (struct event_args){ 0 },   \
+        .callback = (_callback),            \
     }
 
-# define NEW_FIX_EVENT_DATA(_at, _callback, _data)  \
-    (struct scheduler_event){           \
-        .active = true,                 \
-        .repeat = false,                \
-        .at = (_at),                    \
-        .period = 0,                    \
-        .data = (_data),                \
-        .callback = (_callback),        \
+# define NEW_FIX_EVENT_ARGS(_at, _callback, ...)    \
+    (struct scheduler_event){                       \
+        .active = true,                             \
+        .repeat = false,                            \
+        .at = (_at),                                \
+        .period = 0,                                \
+        .args = EVENT_ARGS(__VA_ARGS__),            \
+        .callback = (_callback),                    \
     }
 
 # define NEW_REPEAT_EVENT(_at, _period, _callback)  \
@@ -85,18 +93,24 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
         .repeat = true,                             \
         .at = (_at),                                \
         .period = (_period),                        \
-        .data = (union event_data){ 0 },            \
+        .args = (struct event_args){ 0 },           \
         .callback = (_callback),                    \
     }
 
-# define NEW_REPEAT_EVENT_DATA(_at, _period, _callback, _data)  \
+# define NEW_REPEAT_EVENT_ARGS(_at, _period, _callback, ...)    \
     (struct scheduler_event){                                   \
         .active = true,                                         \
         .repeat = true,                                         \
         .at = (_at),                                            \
         .period = (_period),                                    \
-        .data = (_data),                                        \
+        .args = EVENT_ARGS(__VA_ARGS__),                        \
         .callback = (_callback),                                \
     }
+
+# define EVENT_ARGS_1(_args1)           ((struct event_args) { .a1 = (_args1), .a2 = EVENT_ARG_EMPTY })
+# define EVENT_ARGS_2(_args1, _args2)   ((struct event_args) { .a1 = (_args1), .a2 = (_args2) })
+# define EVENT_ARGS(...)                CONCAT(EVENT_ARGS_, NARG(__VA_ARGS__))(__VA_ARGS__)
+# define EVENT_ARG(kind, _value)        ((union event_arg) { .kind = (_value) })
+# define EVENT_ARG_EMPTY                ((union event_arg) { 0 })
 
 #endif /* !GBA_SCHEDULER_H */

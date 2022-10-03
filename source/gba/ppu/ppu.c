@@ -343,7 +343,7 @@ static
 void
 ppu_hdraw(
     struct gba *gba,
-    union event_data data __unused
+    struct event_args args __unused
 ) {
     struct io *io;
 
@@ -401,7 +401,7 @@ static
 void
 ppu_hblank(
     struct gba *gba,
-    union event_data data __unused
+    struct event_args args __unused
 ) {
     struct io *io;
 

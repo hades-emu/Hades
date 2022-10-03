@@ -250,7 +250,7 @@ mem_io_read8(
         case IO_REG_TM0CNT_LO + 1: {
             uint16_t val;
 
-            val = timer_update_counter(gba, 0);
+            val = timer_read_value(gba, 0);
             return (val >> (8 * (addr - IO_REG_TM0CNT_LO)));
         };
         case IO_REG_TM0CNT_HI:              return (io->timers[0].control.bytes[0]);
@@ -261,7 +261,7 @@ mem_io_read8(
         case IO_REG_TM1CNT_LO + 1: {
             uint16_t val;
 
-            val = timer_update_counter(gba, 1);
+            val = timer_read_value(gba, 1);
             return (val >> (8 * (addr - IO_REG_TM1CNT_LO)));
         };
         case IO_REG_TM1CNT_HI:              return (io->timers[1].control.bytes[0]);
@@ -272,7 +272,7 @@ mem_io_read8(
         case IO_REG_TM2CNT_LO + 1: {
             uint16_t val;
 
-            val = timer_update_counter(gba, 2);
+            val = timer_read_value(gba, 2);
             return (val >> (8 * (addr - IO_REG_TM2CNT_LO)));
         };
         case IO_REG_TM2CNT_HI:              return (io->timers[2].control.bytes[0]);
@@ -283,7 +283,7 @@ mem_io_read8(
         case IO_REG_TM3CNT_LO + 1: {
             uint16_t val;
 
-            val = timer_update_counter(gba, 3);
+            val = timer_read_value(gba, 3);
             return (val >> (8 * (addr - IO_REG_TM3CNT_LO)));
         };
         case IO_REG_TM3CNT_HI:              return (io->timers[3].control.bytes[0]);

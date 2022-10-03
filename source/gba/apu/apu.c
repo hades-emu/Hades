@@ -12,8 +12,8 @@
 #include "gba/apu.h"
 #include "gba/scheduler.h"
 
-static void apu_sequencer(struct gba *gba, union event_data data);
-static void apu_resample(struct gba *gba, union event_data data);
+static void apu_sequencer(struct gba *gba, struct event_args args);
+static void apu_resample(struct gba *gba, struct event_args args);
 
 void
 apu_init(
@@ -165,7 +165,7 @@ static
 void
 apu_sequencer(
     struct gba *gba,
-    union event_data data
+    struct event_args args __unused
 ) {
     /* Wave - Length */
     if (gba->io.sound3cnt_l.enable && gba->io.sound3cnt_x.use_length && gba->apu.wave.length) {
@@ -185,7 +185,7 @@ static
 void
 apu_resample(
     struct gba *gba,
-    union event_data data
+    struct event_args args __unused
 ) {
     static int32_t fifo_volume[2] = {2, 4};
     static int32_t sound_volume[4] = {1, 2, 4, 0};
