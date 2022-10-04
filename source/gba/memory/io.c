@@ -609,16 +609,14 @@ mem_io_write8(
             bool new_enable;
 
             old_enable = io->timers[0].control.enable;
-            new_enable = bitfield_get(val, 7);
-
             io->timers[0].control.bytes[0] = val;
             io->timers[0].control.count_up = false;  // Timer 0 cannot use the count_up bit.
+            new_enable = io->timers[0].control.enable;
 
-            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
-            if (!old_enable && new_enable) {
-                timer_start(gba, 0);
-            } else if (old_enable && !new_enable) {
-                timer_stop(gba, 0);
+            if (old_enable && !new_enable) {
+                timer_schedule_stop(gba, 0);
+            } else if (!old_enable && new_enable) {
+                timer_schedule_start(gba, 0);
             }
             break;
         };
@@ -631,15 +629,13 @@ mem_io_write8(
             bool new_enable;
 
             old_enable = io->timers[1].control.enable;
-            new_enable = bitfield_get(val, 7);
-
             io->timers[1].control.bytes[0] = val;
+            new_enable = io->timers[1].control.enable;
 
-            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
-            if (!old_enable && new_enable) {
-                timer_start(gba, 1);
-            } else if (old_enable && !new_enable) {
-                timer_stop(gba, 1);
+            if (old_enable && !new_enable) {
+                timer_schedule_stop(gba, 1);
+            } else if (!old_enable && new_enable) {
+                timer_schedule_start(gba, 1);
             }
             break;
         };
@@ -652,15 +648,13 @@ mem_io_write8(
             bool new_enable;
 
             old_enable = io->timers[2].control.enable;
-            new_enable = bitfield_get(val, 7);
-
             io->timers[2].control.bytes[0] = val;
+            new_enable = io->timers[2].control.enable;
 
-            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
-            if (!old_enable && new_enable) {
-                timer_start(gba, 2);
-            } else if (old_enable && !new_enable) {
-                timer_stop(gba, 2);
+            if (old_enable && !new_enable) {
+                timer_schedule_stop(gba, 2);
+            } else if (!old_enable && new_enable) {
+                timer_schedule_start(gba, 2);
             }
             break;
         };
@@ -673,15 +667,13 @@ mem_io_write8(
             bool new_enable;
 
             old_enable = io->timers[3].control.enable;
-            new_enable = bitfield_get(val, 7);
-
             io->timers[3].control.bytes[0] = val;
+            new_enable = io->timers[3].control.enable;
 
-            // Copy the reload value to the counter value if the enable bit changed from 0 to 1
-            if (!old_enable && new_enable) {
-                timer_start(gba, 3);
-            } else if (old_enable && !new_enable) {
-                timer_stop(gba, 3);
+            if (old_enable && !new_enable) {
+                timer_schedule_stop(gba, 3);
+            } else if (!old_enable && new_enable) {
+                timer_schedule_start(gba, 3);
             }
             break;
         };
