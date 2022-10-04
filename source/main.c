@@ -362,7 +362,14 @@ main(
             float elapsed_ms;
 
             elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
-            SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
+
+            if (app.emulation.started) {  // If the emulator is running, cap the gui's FPS to 4x the display's refresh rate
+                SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
+            } else if (!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {  // Else if the window isn't focused, cap the gui's FPS to 5FPS.
+                SDL_Delay(max(0.f, floor((1000.f / 5.0f) - elapsed_ms)));
+            } else { // Else cap the gui's FPS to 60
+                SDL_Delay(max(0.f, floor((1000.f / 60.0f) - elapsed_ms)));
+            }
         }
     }
 
