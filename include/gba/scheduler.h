@@ -37,6 +37,8 @@ union event_arg {
 struct event_args {
     union event_arg a1;
     union event_arg a2;
+    union event_arg a3;
+    union event_arg a4;
 };
 
 struct scheduler_event {
@@ -107,8 +109,10 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
         .callback = (_callback),                                \
     }
 
-# define EVENT_ARGS_1(_args1)           ((struct event_args) { .a1 = (_args1), .a2 = EVENT_ARG_EMPTY })
-# define EVENT_ARGS_2(_args1, _args2)   ((struct event_args) { .a1 = (_args1), .a2 = (_args2) })
+# define EVENT_ARGS_1(_1)               ((struct event_args) { .a1 = (_1), .a2 = EVENT_ARG_EMPTY })
+# define EVENT_ARGS_2(_1, _2)           ((struct event_args) { .a1 = (_1), .a2 = (_2) })
+# define EVENT_ARGS_3(_1, _2, _3)       ((struct event_args) { .a1 = (_1), .a2 = (_2), .a3 = (_3) })
+# define EVENT_ARGS_4(_1, _2, _3, _4)   ((struct event_args) { .a1 = (_1), .a2 = (_2), .a3 = (_3), .a4 = (_4) })
 # define EVENT_ARGS(...)                CONCAT(EVENT_ARGS_, NARG(__VA_ARGS__))(__VA_ARGS__)
 # define EVENT_ARG(kind, _value)        ((union event_arg) { .kind = (_value) })
 # define EVENT_ARG_EMPTY                ((union event_arg) { 0 })
