@@ -114,6 +114,9 @@ struct app {
         float dpi;
         uint32_t scale;
 
+        /* Display refresh rate */
+        uint32_t refresh_rate;
+
         /* Size of the menu bar, used to re-scale the window */
         ImVec2 menubar_size;
 

@@ -262,12 +262,15 @@ main(
     logln(HS_GLOBAL, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
     logln(
         HS_GLOBAL,
-        "Dpi: %s%.1f%s, Scale factor: %s%u%s.",
+        "Dpi: %s%.1f%s, Scale factor: %s%u%s, Refresh Rate: %s%uHz%s.",
         g_light_magenta,
         app.ui.dpi,
         g_reset,
         g_light_magenta,
         app.ui.scale,
+        g_reset,
+        g_light_magenta,
+        app.ui.refresh_rate,
         g_reset
     );
 
@@ -359,7 +362,7 @@ main(
             float elapsed_ms;
 
             elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
-            SDL_Delay(max(0.f, floor((1000.f / 60.f) - elapsed_ms)));
+            SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
         }
     }
 
