@@ -75,7 +75,7 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
         .repeat = false,                    \
         .at = (_at),                        \
         .period = 0,                        \
-        .args = (struct event_args){ 0 },   \
+        .args = (struct event_args){{ 0 }},  \
         .callback = (_callback),            \
     }
 
@@ -95,7 +95,7 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
         .repeat = true,                             \
         .at = (_at),                                \
         .period = (_period),                        \
-        .args = (struct event_args){ 0 },           \
+        .args = (struct event_args){{ 0 }},         \
         .callback = (_callback),                    \
     }
 
