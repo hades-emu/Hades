@@ -53,8 +53,6 @@ sched_process_events(
     core = &gba->core;
     scheduler = &gba->scheduler;
     while (true) {
-        uint64_t diff;
-
         event = NULL;
 
         next_event = UINT64_MAX;
@@ -92,10 +90,7 @@ sched_process_events(
             event->active = false;
         }
 
-        diff = core->cycles - event->at;
-        core->cycles = event->at;
         event->callback(gba, event->args);
-        core->cycles += diff;
     }
 }
 
