@@ -23,7 +23,10 @@ void
 gui_sdl_video_init(
     struct app *app
 ) {
+    SDL_DisplayMode mode;
     char const *glsl_version;
+
+    memset(&mode, 0, sizeof(mode));
 
     /* Decide which OpenGL version to use */
 #if __APPLE__
@@ -50,6 +53,10 @@ gui_sdl_video_init(
 
     /* Get the display's DPI */
     SDL_GetDisplayDPI(0, &app->ui.dpi, NULL, NULL);
+
+    /* Get the display's refresh rate */
+    SDL_GetDisplayMode(0, 0, &mode);
+    app->ui.refresh_rate = (uint32_t)mode.refresh_rate;
 
     /* Setup ImGui DPI and scaling factors */
 #if __APPLE__
