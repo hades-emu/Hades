@@ -60,6 +60,8 @@ gui_win_game(
         ImGuiWindowFlags_NoBackground
     );
 
+    app->ui.game_window_id = igGetItemID();
+
     GLint last_texture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
 
