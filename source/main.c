@@ -359,15 +359,35 @@ main(
         sdl_counters[1] = SDL_GetPerformanceCounter();
         elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
 
-        if (app.emulation.started) {
+        if (app.emulation.started && app.emulation.running) {
             // If the emulator is running without vsync, cap the gui's FPS to 4x the display's refresh rate
             if (!app.video.vsync) {
                 SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
             }
+
+            app.ui.power_save_remaining_frames = 30;
         } else {
-            if (!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow) && !igIsWindowHovered(ImGuiHoveredFlags_AnyWindow)) { // If no imgui window is focused/hovered, cap the gui's FPS to 5.
+            bool use_power_save_mode;
+
+            use_power_save_mode = (
+                !igIsWindowFocused(ImGuiFocusedFlags_AnyWindow)
+                || !igGetHoveredID()
+                || igGetActiveID() == app.ui.game_window_id
+                || igGetHoveredID() == app.ui.game_window_id
+            );
+
+            if (use_power_save_mode) {
+                if (app.ui.power_save_remaining_frames) {
+                    app.ui.power_save_remaining_frames -= 1;
+                    use_power_save_mode = false;
+                }
+            } else {
+                app.ui.power_save_remaining_frames = 30;
+            }
+
+            if (use_power_save_mode) {
                 SDL_Delay(max(0.f, floor((1000.f / 5.0f) - elapsed_ms)));
-            } else { // Else cap the gui's FPS to 60
+            } else {
                 SDL_Delay(max(0.f, floor((1000.f / 60.0f) - elapsed_ms)));
             }
         }
