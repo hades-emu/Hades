@@ -308,6 +308,7 @@ main(
 
     while (app.run) {
         uint64_t sdl_counters[2];
+        float elapsed_ms;
 
         sdl_counters[0] = SDL_GetPerformanceCounter();
 
@@ -356,16 +357,15 @@ main(
         }
 
         sdl_counters[1] = SDL_GetPerformanceCounter();
+        elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
 
-        // Cap the frontend to 60 fps if vsync isn't enabled
-        if (!app.video.vsync) {
-            float elapsed_ms;
-
-            elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
-
-            if (app.emulation.started) {  // If the emulator is running, cap the gui's FPS to 4x the display's refresh rate
+        if (app.emulation.started) {
+            // If the emulator is running without vsync, cap the gui's FPS to 4x the display's refresh rate
+            if (!app.video.vsync) {
                 SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
-            } else if (!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {  // Else if the window isn't focused, cap the gui's FPS to 5FPS.
+            }
+        } else {
+            if (!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow) && !igIsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {  // If the window isn't focused, cap the gui's FPS to 5FPS.
                 SDL_Delay(max(0.f, floor((1000.f / 5.0f) - elapsed_ms)));
             } else { // Else cap the gui's FPS to 60
                 SDL_Delay(max(0.f, floor((1000.f / 60.0f) - elapsed_ms)));
