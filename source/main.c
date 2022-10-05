@@ -365,7 +365,7 @@ main(
                 SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
             }
         } else {
-            if (!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow) && !igIsWindowHovered(ImGuiHoveredFlags_AnyWindow)) {  // If the window isn't focused, cap the gui's FPS to 5FPS.
+            if (!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow) && !igIsWindowHovered(ImGuiHoveredFlags_AnyWindow)) { // If no imgui window is focused/hovered, cap the gui's FPS to 5.
                 SDL_Delay(max(0.f, floor((1000.f / 5.0f) - elapsed_ms)));
             } else { // Else cap the gui's FPS to 60
                 SDL_Delay(max(0.f, floor((1000.f / 60.0f) - elapsed_ms)));
