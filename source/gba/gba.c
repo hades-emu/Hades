@@ -364,6 +364,8 @@ gba_main_loop(
         */
         if (gba->state == GBA_STATE_PAUSE) {
             pthread_cond_wait(&gba->message_queue.ready, &gba->message_queue.lock);
+            last_measured_time = hs_tick_count();
+            accumulated_time = 0;
         }
 
         pthread_mutex_unlock(&gba->message_queue.lock);
