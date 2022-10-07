@@ -365,28 +365,21 @@ main(
                 SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
             }
 
-            app.ui.power_save_remaining_frames = 30;
+            app.ui.power_save_fcounter = POWER_SAVE_FRAME_DELAY;
         } else {
             bool use_power_save_mode;
 
-            use_power_save_mode = (
-                !igIsWindowFocused(ImGuiFocusedFlags_AnyWindow)
-                || !igGetHoveredID()
-                || igGetActiveID() == app.ui.game_window_id
-                || igGetHoveredID() == app.ui.game_window_id
-            );
+            use_power_save_mode = !igGetHoveredID();
 
             if (use_power_save_mode) {
-                if (app.ui.power_save_remaining_frames) {
-                    app.ui.power_save_remaining_frames -= 1;
-                    use_power_save_mode = false;
-                }
+                app.ui.power_save_fcounter -= !!(app.ui.power_save_fcounter);
+                use_power_save_mode = !(app.ui.power_save_fcounter);
             } else {
-                app.ui.power_save_remaining_frames = 30;
+                app.ui.power_save_fcounter = POWER_SAVE_FRAME_DELAY;
             }
 
             if (use_power_save_mode) {
-                SDL_Delay(max(0.f, floor((1000.f / 5.0f) - elapsed_ms)));
+                SDL_Delay(max(0.f, floor((1000.f / 15.0f) - elapsed_ms)));
             } else {
                 SDL_Delay(max(0.f, floor((1000.f / 60.0f) - elapsed_ms)));
             }

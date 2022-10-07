@@ -26,6 +26,7 @@
 
 # define MAX_RECENT_ROMS            5
 # define MAX_QUICKSAVES             5
+# define POWER_SAVE_FRAME_DELAY     30
 
 struct ImGuiIO;
 
@@ -117,11 +118,8 @@ struct app {
         /* Display refresh rate */
         uint32_t refresh_rate;
 
-        /* ID of the `game` window. */
-        ImGuiID game_window_id;
-
         /* How many frames before going back to power save mode? */
-        uint32_t power_save_remaining_frames;
+        uint32_t power_save_fcounter;
 
         /* Size of the menu bar, used to re-scale the window */
         ImVec2 menubar_size;
