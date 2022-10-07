@@ -46,13 +46,15 @@ sched_process_events(
 ) {
     struct core *core;
     struct scheduler *scheduler;
-    struct scheduler_event *event;
-    uint64_t next_event;
-    size_t i;
 
     core = &gba->core;
     scheduler = &gba->scheduler;
     while (true) {
+        struct scheduler_event *event;
+        uint64_t next_event;
+        uint64_t delay;
+        size_t i;
+
         event = NULL;
 
         next_event = UINT64_MAX;
@@ -79,6 +81,10 @@ sched_process_events(
             break;
         }
 
+        // We 'rollback' the cycle counter for the duration of the callback
+        delay = core->cycles - event->at;
+        core->cycles -= delay;
+
         if (event->repeat) {
             event->at += event->period;
 
@@ -91,6 +97,7 @@ sched_process_events(
         }
 
         event->callback(gba, event->args);
+        core->cycles += delay;
     }
 }
 
