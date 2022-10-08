@@ -297,6 +297,21 @@ gui_win_menubar_video(
 
         igSeparator();
 
+        /* Texture Filter */
+        if (igBeginMenu("Texture Filter", true)) {
+            if (igMenuItemBool("Nearest", NULL, app->video.texture_filter.kind == TEXTURE_FILTER_NEAREST, true)) {
+                app->video.texture_filter.kind = TEXTURE_FILTER_NEAREST;
+                app->video.texture_filter.refresh = true;
+            }
+
+            if (igMenuItemBool("Linear", NULL, app->video.texture_filter.kind == TEXTURE_FILTER_LINEAR, true)) {
+                app->video.texture_filter.kind = TEXTURE_FILTER_LINEAR;
+                app->video.texture_filter.refresh = true;
+            }
+
+            igEndMenu();
+        }
+
         /* Color Correction */
         if (igMenuItemBool("Color correction", NULL, app->video.color_correction, true)) {
             app->video.color_correction ^= 1;

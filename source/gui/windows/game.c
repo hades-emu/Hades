@@ -64,8 +64,23 @@ gui_win_game(
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
 
     glBindTexture(GL_TEXTURE_2D, app->sdl.game_texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    if (app->video.texture_filter.refresh) {
+        switch (app->video.texture_filter.kind) {
+            case TEXTURE_FILTER_NEAREST: {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                break;
+            };
+            case TEXTURE_FILTER_LINEAR: {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                break;
+            };
+
+        }
+        app->video.texture_filter.refresh = false;
+    }
 
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     pthread_mutex_lock(&app->emulation.gba->framebuffer_frontend_mutex);

@@ -249,6 +249,8 @@ main(
     app.video.display_size = 3;
     app.audio.mute = false;
     app.audio.level = 1.0f;
+    app.video.texture_filter.kind = TEXTURE_FILTER_NEAREST;
+    app.video.texture_filter.refresh = true;
     app.ui.refresh_windows_size = true;
 
     gui_config_load(&app);
