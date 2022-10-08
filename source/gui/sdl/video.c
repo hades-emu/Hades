@@ -119,6 +119,7 @@ gui_sdl_video_init(
     /* Set ImGui options */
     app->ui.ioptr = igGetIO();
     app->ui.ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    app->ui.ioptr->IniFilename = NULL;
 
     /* Setup ImGui font size */
     ImFontConfig *cfg;
