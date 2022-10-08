@@ -28,6 +28,11 @@
 # define MAX_QUICKSAVES             5
 # define POWER_SAVE_FRAME_DELAY     30
 
+enum texture_filter_kind {
+    TEXTURE_FILTER_NEAREST = 0,
+    TEXTURE_FILTER_LINEAR,
+};
+
 struct ImGuiIO;
 
 struct app {
@@ -100,6 +105,12 @@ struct app {
         bool vsync;
         bool color_correction;
         uint32_t display_size;
+
+        struct {
+            enum texture_filter_kind kind;
+            bool refresh;
+        } texture_filter;
+
     } video;
 
     struct {

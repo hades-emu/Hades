@@ -109,6 +109,11 @@ gui_config_load(
         if (mjson_get_bool(data, data_len, "$.video.color_correction", &b)) {
             app->video.color_correction = b;
         }
+
+        if (mjson_get_number(data, data_len, "$.video.texture_filter", &d)) {
+            app->video.texture_filter.kind = (int)d;
+            app->video.texture_filter.refresh = true;
+        }
     }
 
     // Video
@@ -170,7 +175,8 @@ gui_config_save(
             "video": {
                 "display_size": %d,
                 "vsync": %B,
-                "color_correction": %B
+                "color_correction": %B,
+                "texture_filter": %d
             },
 
             // Audio
@@ -194,6 +200,7 @@ gui_config_save(
         (int)app->video.display_size,
         (int)app->video.vsync,
         (int)app->video.color_correction,
+        (int)app->video.texture_filter.kind,
         (int)app->audio.mute,
         app->audio.level
     );
