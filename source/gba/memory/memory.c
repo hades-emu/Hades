@@ -395,15 +395,54 @@ mem_openbus_read(
                     })                                                                          \
                 );                                                                              \
                 break;                                                                          \
-            case PALRAM_REGION:                                                                 \
-                *(T *)((uint8_t *)((gba)->memory.palram) + ((addr) & PALRAM_MASK)) = (T)(val);  \
+            case PALRAM_REGION: {                                                               \
+                _Generic(val,                                                                   \
+                    uint32_t: ({                                                                \
+                        *(T *)((uint8_t *)((gba)->memory.palram) + ((addr) & PALRAM_MASK)) = (T)(val); \
+                    }),                                                                         \
+                    uint16_t: ({                                                                \
+                        *(T *)((uint8_t *)((gba)->memory.palram) + ((addr) & PALRAM_MASK)) = (T)(val); \
+                    }),                                                                         \
+                    default: ({                                                                 \
+                        addr &= ~(sizeof(uint16_t) - 1);                                        \
+                        *(T *)((uint8_t *)((gba)->memory.palram) + ((addr) & PALRAM_MASK)) = (T)(val); \
+                        *(T *)((uint8_t *)((gba)->memory.palram) + (((addr) + 1) & PALRAM_MASK)) = (T)(val); \
+                    })                                                                          \
+                );                                                                              \
                 break;                                                                          \
-            case VRAM_REGION:                                                                   \
-                *(T *)((uint8_t *)((gba)->memory.vram) + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
+            };                                                                                  \
+            case VRAM_REGION: {                                                                 \
+                _Generic(val,                                                                   \
+                    uint32_t: ({                                                                \
+                        *(T *)((uint8_t *)((gba)->memory.vram) + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
+                    }),                                                                         \
+                    uint16_t: ({                                                                \
+                        *(T *)((uint8_t *)((gba)->memory.vram) + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
+                    }),                                                                         \
+                    default: ({                                                                \
+                        addr &= ~(sizeof(uint16_t) - 1);                                        \
+                        *(T *)((uint8_t *)((gba)->memory.vram) + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
+                        *(T *)((uint8_t *)((gba)->memory.vram) + (((addr) + 1) & ((((addr) + 1) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
+                    })                                                                          \
+                );                                                                              \
                 break;                                                                          \
-            case OAM_REGION:                                                                    \
-                *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK)) = (T)(val);        \
+            };                                                                                  \
+            case OAM_REGION: {                                                                  \
+                _Generic(val,                                                                   \
+                    uint32_t: ({                                                                \
+                        *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK)) = (T)(val); \
+                    }),                                                                         \
+                    uint16_t: ({                                                                \
+                        *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK)) = (T)(val); \
+                    }),                                                                         \
+                    default: ({                                                                \
+                        addr &= ~(sizeof(uint16_t) - 1);                                        \
+                        *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK)) = (T)(val); \
+                        *(T *)((uint8_t *)((gba)->memory.oam) + (((addr) + 1) & OAM_MASK)) = (T)(val); \
+                    })                                                                          \
+                );                                                                              \
                 break;                                                                          \
+            };                                                                                  \
             case CART_REGION_START ... CART_REGION_END: {                                       \
                 if (   ((addr) & (gba)->memory.eeprom.mask) == (gba)->memory.eeprom.range       \
                     && ((gba)->memory.backup_storage_type == BACKUP_EEPROM_4K                   \
