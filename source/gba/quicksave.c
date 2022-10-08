@@ -41,9 +41,14 @@ quicksave(
         || fwrite(&gba->memory.pbuffer, sizeof(gba->memory.pbuffer), 1, file) != 1
         || fwrite(&gba->memory.flash, sizeof(gba->memory.flash), 1, file) != 1
         || fwrite(&gba->memory.eeprom, sizeof(gba->memory.eeprom), 1, file) != 1
+        || fwrite(&gba->memory.bios_bus, sizeof(gba->memory.bios_bus), 1, file) != 1
+        || fwrite(&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use), 1, file) != 1
         || fwrite(&gba->io, sizeof(gba->io), 1, file) != 1
         || fwrite(&gba->ppu, sizeof(gba->ppu), 1, file) != 1
         || fwrite(&gba->gpio, sizeof(gba->gpio), 1, file) != 1
+        || fwrite(&gba->apu.fifos, sizeof(gba->apu.fifos), 1, file) != 1
+        || fwrite(&gba->apu.wave, sizeof(gba->apu.wave), 1, file) != 1
+        || fwrite(&gba->apu.latch, sizeof(gba->apu.latch), 1, file) != 1
         || fwrite(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
         goto err;
@@ -59,6 +64,7 @@ quicksave(
             || fwrite(&event->repeat, sizeof(bool), 1, file) != 1
             || fwrite(&event->at, sizeof(uint64_t), 1, file) != 1
             || fwrite(&event->period, sizeof(uint64_t), 1, file) != 1
+            || fwrite(&event->args, sizeof(struct event_args), 1, file) != 1
         ) {
             goto err;
         }
@@ -117,9 +123,14 @@ quickload(
         || fread(&gba->memory.pbuffer, sizeof(gba->memory.pbuffer), 1, file) != 1
         || fread(&gba->memory.flash, sizeof(gba->memory.flash), 1, file) != 1
         || fread(&gba->memory.eeprom, sizeof(gba->memory.eeprom), 1, file) != 1
+        || fread(&gba->memory.bios_bus, sizeof(gba->memory.bios_bus), 1, file) != 1
+        || fread(&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use), 1, file) != 1
         || fread(&gba->io, sizeof(gba->io), 1, file) != 1
         || fread(&gba->ppu, sizeof(gba->ppu), 1, file) != 1
         || fread(&gba->gpio, sizeof(gba->gpio), 1, file) != 1
+        || fread(&gba->apu.fifos, sizeof(gba->apu.fifos), 1, file) != 1
+        || fread(&gba->apu.wave, sizeof(gba->apu.wave), 1, file) != 1
+        || fread(&gba->apu.latch, sizeof(gba->apu.latch), 1, file) != 1
         || fread(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
     ) {
         goto err;
@@ -135,6 +146,7 @@ quickload(
             || fread(&event->repeat, sizeof(bool), 1, file) != 1
             || fread(&event->at, sizeof(uint64_t), 1, file) != 1
             || fread(&event->period, sizeof(uint64_t), 1, file) != 1
+            || fread(&event->args, sizeof(struct event_args), 1, file) != 1
         ) {
             goto err;
         }
