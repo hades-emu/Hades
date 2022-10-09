@@ -67,23 +67,23 @@ mem_backup_storage_detect(
 
     /* Auto-detection algorithm are very simple: they look for a bunch of strings in the game's ROM. */
     if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "EEPROM_V", 7)) {
-        logln(HS_GLOBAL, "Detected EEPROM 64K memory.");
+        logln(HS_INFO, "Detected EEPROM 64K memory.");
         logln(HS_WARNING, "If you are having issues with corrupted saves, try EEPROM 8K instead.");
         gba->memory.backup_storage_type = BACKUP_EEPROM_64K;
     } else if (
            array_search(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_V", 5)
         || array_search(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_F_V", 5)
     ) {
-        logln(HS_GLOBAL, "Detected SRAM memory");
+        logln(HS_INFO, "Detected SRAM memory");
         gba->memory.backup_storage_type = BACKUP_SRAM;
     } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH1M_V", 8)) {
-        logln(HS_GLOBAL, "Detected Flash 128 kilobytes / 1 megabit");
+        logln(HS_INFO, "Detected Flash 128 kilobytes / 1 megabit");
         gba->memory.backup_storage_type = BACKUP_FLASH128;
     } else if (
            array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH_V", 6)
         || array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH512_V", 9)
     ) {
-        logln(HS_GLOBAL, "Detected Flash 64 kilobytes / 512 kilobits");
+        logln(HS_INFO, "Detected Flash 64 kilobytes / 512 kilobits");
         gba->memory.backup_storage_type = BACKUP_FLASH64;
     } else {
         gba->memory.backup_storage_type = BACKUP_NONE;
@@ -98,7 +98,7 @@ mem_backup_storage_init(
 
     if (gba->memory.backup_storage_type > BACKUP_NONE) {
         logln(
-            HS_GLOBAL,
+            HS_INFO,
             "Backup memory is %s%s%s (%s).",
             g_light_magenta,
             backup_storage_names[gba->memory.backup_storage_type],
@@ -106,7 +106,7 @@ mem_backup_storage_init(
             backup_storage_sources_str[gba->memory.backup_storage_source]
         );
     } else {
-        logln(HS_GLOBAL, "No backup storage (%s).", backup_storage_sources_str[gba->memory.backup_storage_source]);
+        logln(HS_INFO, "No backup storage (%s).", backup_storage_sources_str[gba->memory.backup_storage_source]);
     }
 
     if (   gba->memory.backup_storage_type == BACKUP_EEPROM_4K

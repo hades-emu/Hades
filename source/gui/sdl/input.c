@@ -49,7 +49,7 @@ gui_sdl_handle_inputs(
                     app->sdl.controller.joystick.idx = SDL_JoystickInstanceID(joystick);
                     app->sdl.controller.connected = true;
                     logln(
-                        HS_GLOBAL,
+                        HS_INFO,
                         "Controller \"%s%s%s\" connected.",
                         g_light_magenta,
                         SDL_GameControllerName(app->sdl.controller.ptr),
@@ -61,7 +61,7 @@ gui_sdl_handle_inputs(
             case SDL_CONTROLLERDEVICEREMOVED: {
                 if (event.cdevice.which >= 0 && event.cdevice.which == app->sdl.controller.joystick.idx) {
                     logln(
-                        HS_GLOBAL,
+                        HS_INFO,
                         "Controller \"%s%s%s\" disconnected.",
                         g_light_magenta,
                         SDL_GameControllerName(app->sdl.controller.ptr),
