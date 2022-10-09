@@ -18,10 +18,13 @@ struct verbosity_arg {
 };
 
 struct verbosity_arg verbosities[] = {
-    { "io",         g_verbose + HS_IO       },
-    { "global",     g_verbose + HS_GLOBAL   },
-    { "err",        g_verbose + HS_ERROR    },
+    { "global",     &g_verbose_global       },
+
+    { "info",       g_verbose + HS_INFO     },
     { "warn",       g_verbose + HS_WARNING  },
+    { "err",        g_verbose + HS_ERROR    },
+
+    { "io",         g_verbose + HS_IO       },
     { "core",       g_verbose + HS_CORE     },
     { "video",      g_verbose + HS_VIDEO    },
     { "dma",        g_verbose + HS_DMA      },
@@ -29,6 +32,7 @@ struct verbosity_arg verbosities[] = {
     { "mem",        g_verbose + HS_MEMORY   },
     { "timer",      g_verbose + HS_TIMER    },
     { "debug",      g_verbose + HS_DEBUG    },
+
     { NULL,         NULL                    },
 };
 
@@ -39,13 +43,17 @@ debugger_cmd_verbose(
     struct arg const *argv
 ) {
     if (argc == 0) {
-        g_verbose_global = !g_verbose_global;
-        printf(
-            "Verbosity set to %s%s%s\n",
-            g_light_magenta,
-            g_verbose_global ? "true" : "false",
-            g_reset
-        );
+        uint32_t i;
+
+        for (i = 0; verbosities[i].name; ++i) {
+            printf(
+                "%6s: %s%s%s\n",
+                verbosities[i].name,
+                *verbosities[i].flag ? g_light_green : g_light_red,
+                *verbosities[i].flag ? "true" : "false",
+                g_reset
+            );
+        }
     } else if (argc == 1) {
         uint32_t i;
 
@@ -69,7 +77,12 @@ debugger_cmd_verbose(
             }
         }
 
-        printf("Unknown verbosity \"%s\".\n", verbosities[i].name);
+        printf(
+            "Unknown verbosity \"%s%s%s\".\n",
+            g_light_green,
+            argv[0].value.s,
+            g_reset
+        );
     } else {
         printf("Usage: %s\n", g_commands[CMD_VERBOSE].usage);
     }

@@ -47,7 +47,7 @@
 # define ARRAY_LEN(x)       (sizeof(x) / sizeof((x)[0]))
 
 enum modules {
-    HS_GLOBAL      = 0,
+    HS_INFO      = 0,
 
     HS_ERROR,
     HS_WARNING,
@@ -66,7 +66,7 @@ enum modules {
 };
 
 static char const * const modules_str[] = {
-    [HS_GLOBAL]     = " HADES ",
+    [HS_INFO]       = " INFO  ",
     [HS_ERROR]      = " ERROR ",
     [HS_WARNING]    = " WARN  ",
     [HS_CORE]       = " CORE  ",

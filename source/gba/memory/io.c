@@ -332,7 +332,7 @@ mem_io_write8(
 ) {
     struct io *io;
 
-    logln(HS_IO, "IO write to register %s (%#08x) (%x)", mem_io_reg_name(addr), addr, val);
+    logln(HS_IO, "IO write to register %s (%#08x) (%#02x)", mem_io_reg_name(addr), addr, val);
 
     io = &gba->io;
     switch (addr) {

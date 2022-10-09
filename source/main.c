@@ -259,11 +259,11 @@ main(
 
     gui_sdl_init(&app);
 
-    logln(HS_GLOBAL, "Welcome to Hades v" HADES_VERSION);
-    logln(HS_GLOBAL, "=========================");
-    logln(HS_GLOBAL, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
+    logln(HS_INFO, "Welcome to Hades v" HADES_VERSION);
+    logln(HS_INFO, "=========================");
+    logln(HS_INFO, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
     logln(
-        HS_GLOBAL,
+        HS_INFO,
         "Dpi: %s%.1f%s, Scale factor: %s%u%s, Refresh Rate: %s%uHz%s.",
         g_light_magenta,
         app.ui.dpi,

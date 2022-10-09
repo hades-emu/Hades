@@ -43,7 +43,7 @@ timer_schedule_start(
     timer = &gba->io.timers[timer_idx];
     timer->counter.raw = timer->reload.raw;
 
-    logln(HS_TIMER, "Timer %u started with initial value %04x", timer_idx, timer->reload.raw);
+    logln(HS_TIMER, "Timer %u started with initial value %#04x", timer_idx, timer->reload.raw);
 
     if (!timer->control.count_up) {
         timer->handler = sched_add_event(

@@ -16,7 +16,7 @@
 */
 bool g_verbose_global = true;
 bool g_verbose[HS_END] = {
-    [HS_GLOBAL] = true,
+    [HS_INFO] = true,
     [HS_WARNING] = true,
     [HS_ERROR] = true,
 };
@@ -78,13 +78,13 @@ logln(
 ) {
     va_list va;
 
-    if (module == HS_GLOBAL || (g_verbose_global && g_verbose[module])) {
+    if (g_verbose_global && g_verbose[module]) {
         va_start(va, fmt);
 
         printf("[%s] ", modules_str[module]);
 
         if (module == HS_ERROR) {
-            printf("%s", g_light_red);
+            printf("%s%s", g_bold, g_light_red);
         }
 
         vprintf(fmt, va);

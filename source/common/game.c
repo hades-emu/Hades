@@ -185,7 +185,7 @@ app_game_load_save(
         if (read_len != file_len) {
             logln(HS_WARNING, "Failed to read the save file. Is it corrupted?");
         } else {
-            logln(HS_GLOBAL, "Save data successfully loaded.");
+            logln(HS_INFO, "Save data successfully loaded.");
             gba_send_backup(app->emulation.gba, data, file_len, free);
         }
     } else {
@@ -423,7 +423,7 @@ app_game_screenshot(
 
     if (out) {
         logln(
-            HS_GLOBAL,
+            HS_INFO,
             "Screenshot saved in %s%s%s.",
             g_light_green,
             filename,

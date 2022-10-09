@@ -73,7 +73,7 @@ quicksave(
     fflush(file);
 
     logln(
-        HS_GLOBAL,
+        HS_INFO,
         "State saved to %s%s%s",
         g_light_magenta,
         path,
@@ -84,7 +84,7 @@ quicksave(
 
 err:
     logln(
-        HS_GLOBAL,
+        HS_INFO,
         "%sError: failed to save state to %s: %s%s",
         g_light_red,
         path,
@@ -153,7 +153,7 @@ quickload(
     }
 
     logln(
-        HS_GLOBAL,
+        HS_INFO,
         "State loaded from %s%s%s",
         g_light_magenta,
         path,
@@ -164,7 +164,7 @@ quickload(
 
 err:
     logln(
-        HS_GLOBAL,
+        HS_INFO,
         "%sError: failed to load state from %s: %s%s",
         g_light_red,
         path,
