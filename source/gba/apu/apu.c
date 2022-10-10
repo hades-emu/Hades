@@ -151,7 +151,7 @@ apu_on_timer_overflow(
 
             for (dma_idx = 1; dma_idx <= 2; ++dma_idx) {
                 if (mem_dma_is_fifo(gba, dma_idx, fifo_idx)) {
-                    mem_schedule_dma_fifo(gba, dma_idx);
+                    mem_schedule_dma_transfers_for(gba, dma_idx, DMA_TIMING_SPECIAL); // Fifo DMA
                 }
             }
         }

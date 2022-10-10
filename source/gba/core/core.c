@@ -165,6 +165,10 @@ core_idle_for(
     struct gba *gba,
     uint32_t cycles
 ) {
+    if (gba->core.pending_dma && !gba->core.is_dma_running) {
+        mem_dma_do_all_pending_transfers(gba);
+    }
+
     gba->core.cycles += cycles;
 
     /*
@@ -173,7 +177,7 @@ core_idle_for(
     ** According to Fleroviux (https://github.com/fleroviux/) this
     ** leads to better accuracy but the reasons why aren't well known yet.
     */
-    if (gba->memory.pbuffer.enabled && !gba->memory.gamepak_bus_in_use && !gba->core.current_dma) {
+    if (gba->memory.pbuffer.enabled && !gba->memory.gamepak_bus_in_use && !gba->core.is_dma_running) {
         mem_prefetch_buffer_step(gba, cycles);
     }
 

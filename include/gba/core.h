@@ -119,7 +119,11 @@ struct core {
 
     uint64_t cycles;                        // Amount of cycles spent by the CPU since initialization
 
+    bool is_dma_running;                    // Set to `true` when waiting for a DMA to complete.
     struct dma_channel *current_dma;        // The DMA the core is currently waiting for. Can be NULL.
+
+    uint32_t pending_dma;                   // A mask of all DMA's index waiting for transfer
+    bool reenter_dma_transfer_loop;
 };
 
 /*

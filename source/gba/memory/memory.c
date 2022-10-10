@@ -134,7 +134,7 @@ mem_access(
     }
 
     gba->memory.gamepak_bus_in_use = (page >= CART_REGION_START && page <= CART_REGION_END);
-    if (gba->memory.gamepak_bus_in_use && gba->memory.pbuffer.enabled && !gba->core.current_dma) {
+    if (gba->memory.gamepak_bus_in_use && gba->memory.pbuffer.enabled && !gba->core.is_dma_running) {
         mem_prefetch_buffer_access(gba, addr, cycles);
     } else {
         core_idle_for(gba, cycles);
@@ -220,12 +220,9 @@ mem_openbus_read(
     uint32_t val;
     uint32_t shift;
 
-    logln(HS_MEMORY, "Invalid read at address 0x%08x", addr);
-
     shift = addr & 0x3;
 
     if (gba->core.current_dma) {
-        hs_assert(gba->core.current_dma);
         return (gba->core.current_dma->bus >> (8 * shift));
     }
 
@@ -294,6 +291,7 @@ mem_openbus_read(
                     }                                                                       \
                     _ret = (gba)->memory.bios_bus >> (8 * (align));                         \
                 } else {                                                                    \
+                    logln(HS_MEMORY, "Invalid BIOS read of size %zu from 0x%08x", sizeof(T), (addr)); \
                     _ret = mem_openbus_read((gba), (addr));                                 \
                 }                                                                           \
                 break;                                                                      \
@@ -354,6 +352,7 @@ mem_openbus_read(
                 );                                                                          \
                 break;                                                                      \
             default: {                                                                      \
+                logln(HS_MEMORY, "Invalid read of size %zu from 0x%08x", sizeof(T), (addr)); \
                 _ret = mem_openbus_read((gba), (addr));                                     \
                 break;                                                                      \
             }                                                                               \
@@ -473,7 +472,7 @@ mem_openbus_read(
                 );                                                                              \
                 break;                                                                          \
             default: {                                                                          \
-                logln(HS_MEMORY, "Invalid write at address 0x%08x", addr);                      \
+                logln(HS_MEMORY, "Invalid write of size %zu to 0x%08x", sizeof(T), (addr));     \
                 break;                                                                          \
             };                                                                                  \
         };                                                                                      \
