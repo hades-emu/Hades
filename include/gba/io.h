@@ -190,6 +190,8 @@ struct dma_channel {
     bool is_fifo;
     bool is_video;
 
+    event_handler_t enable_event_handle;
+
     union {
         struct {
             uint16_t : 5;

@@ -442,7 +442,7 @@ ppu_hblank(
     }
 
     if (io->vcount.raw >= 2 && io->vcount.raw < GBA_SCREEN_HEIGHT + 2) {
-        mem_schedule_dma_video(gba);
+        mem_schedule_dma_transfers_for(gba, 3, DMA_TIMING_SPECIAL);  // Video DMA
     }
 }
 

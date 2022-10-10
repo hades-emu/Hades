@@ -253,11 +253,11 @@ struct gba;
 struct dma_channel;
 
 /* gba/memory/dma.c */
-void mem_dma_load(struct dma_channel *channel);
-void mem_schedule_dma_transfers(struct gba *gba, enum dma_timings timing);
+void mem_io_dma_ctl_write8(struct gba *gba, struct dma_channel *, uint8_t val);
 bool mem_dma_is_fifo(struct gba const *gba, uint32_t dma_channel_idx, uint32_t fifo_idx);
-void mem_schedule_dma_fifo(struct gba *gba, uint32_t dma_channel_idx);
-void mem_schedule_dma_video(struct gba *gba);
+void mem_schedule_dma_transfers_for(struct gba *gba, uint32_t channel_idx, enum dma_timings timing);
+void mem_schedule_dma_transfers(struct gba *gba, enum dma_timings timing);
+void mem_dma_do_all_pending_transfers(struct gba *gba);
 
 /* gba/memory/io.c */
 uint8_t mem_io_read8(struct gba const *gba, uint32_t addr);

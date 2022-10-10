@@ -16,21 +16,63 @@ static uint32_t dst_mask[4]   = {0x07FFFFFF, 0x07FFFFFF, 0x07FFFFFF, 0x0FFFFFFF}
 static uint32_t count_mask[4] = {0x3FFF,     0x3FFF,     0x3FFF,     0xFFFF};
 
 void
-mem_dma_load(
-    struct dma_channel *channel
+mem_io_dma_ctl_write8(
+    struct gba *gba,
+    struct dma_channel *channel,
+    uint8_t val
 ) {
-    channel->is_fifo = (channel->index >= 1 && channel->index <= 2 && channel->control.timing == DMA_TIMING_SPECIAL);
-    channel->is_video = (channel->index == 3 && channel->control.timing == DMA_TIMING_SPECIAL);
-    if (channel->is_fifo) {
-        channel->internal_count = 4;
+    bool old;
+    bool new;
+
+    channel = &gba->io.dma[channel->index];
+
+    old = channel->control.enable;
+    channel->control.bytes[1] = val;
+    channel->control.gamepak_drq &= (channel->index == 3);
+    new = channel->control.enable;
+
+    if (!old) {
+        // 0 -> 1, the DMA is enabled
+        if (new) {
+            channel->is_fifo = (channel->index >= 1 && channel->index <= 2 && channel->control.timing == DMA_TIMING_SPECIAL);
+            channel->is_video = (channel->index == 3 && channel->control.timing == DMA_TIMING_SPECIAL);
+
+            // Find the amount of transfers the DMA will do
+            if (channel->is_fifo) {
+                channel->internal_count = 4;
+            } else {
+                channel->internal_count = channel->count.raw;
+                channel->internal_count &= count_mask[channel->index];
+
+                // A count of 0 is treated as max length.
+                if (channel->internal_count == 0) {
+                    channel->internal_count = count_mask[channel->index] + 1;
+                }
+            }
+
+            channel->internal_src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1);
+            channel->internal_src &= src_mask[channel->index];
+            channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1);
+            channel->internal_dst &= dst_mask[channel->index];
+
+            if (channel->control.timing == DMA_TIMING_NOW) {
+                mem_schedule_dma_transfers_for(gba, channel->index, DMA_TIMING_NOW);
+            }
+        }
     } else {
-        channel->internal_count = channel->count.raw;
-        channel->internal_count &= count_mask[channel->index];
+        // 1 -> 0, the DMA is canceled
+        if (!new) {
+            if (channel->enable_event_handle != INVALID_EVENT_HANDLE) {
+                sched_cancel_event(gba, channel->enable_event_handle);
+                channel->enable_event_handle = INVALID_EVENT_HANDLE;
+            }
+
+            gba->core.pending_dma &= ~(1 << channel->index);
+            if (gba->core.is_dma_running) {
+                gba->core.reenter_dma_transfer_loop = true;
+            }
+        }
     }
-    channel->internal_src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1);
-    channel->internal_src &= src_mask[channel->index];
-    channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1);
-    channel->internal_dst &= dst_mask[channel->index];
 }
 
 /*
@@ -40,30 +82,12 @@ static
 void
 dma_run_channel(
     struct gba *gba,
-    struct dma_channel *channel,
-    bool first
+    struct dma_channel *channel
 ) {
-    struct dma_channel *prev_dma;
     enum access_types access;
     int32_t src_step;
     int32_t dst_step;
     int32_t unit_size;
-
-    prev_dma = gba->core.current_dma;
-    gba->core.current_dma = channel;
-
-    // The first DMA take at least two internal cycles
-    // (Supposedly to transition from CPU to DMA)
-    if (likely(first)) {
-        core_idle_for(gba, 2);
-    }
-
-    bool src_in_gamepak = ((channel->internal_src >> 24) >= CART_REGION_START && (channel->internal_src) <= CART_REGION_END);
-    bool dst_in_gamepak = ((channel->internal_dst >> 24) >= CART_REGION_START && (channel->internal_dst) <= CART_REGION_END);
-
-    if (src_in_gamepak || dst_in_gamepak) {
-        core_idle_for(gba, 2);
-    }
 
     unit_size = channel->control.unit_size ? sizeof(uint32_t) : sizeof(uint16_t); // In  bytes
 
@@ -85,11 +109,6 @@ dma_run_channel(
         case 0b11:      src_step = 0; break;
     }
 
-    // A count of 0 is treated as max length.
-    if (channel->internal_count == 0) {
-        channel->internal_count = count_mask[channel->index] + 1;
-    }
-
     logln(
         HS_DMA,
         "DMA transfer from 0x%08x%c to 0x%08x%c (len=%#08x, unit_size=%u, channel %zu)",
@@ -104,7 +123,7 @@ dma_run_channel(
 
     access = NON_SEQUENTIAL;
     if (unit_size == 4) {
-        while (channel->internal_count > 0) {
+        while (channel->internal_count > 0 && !gba->core.reenter_dma_transfer_loop) {
             if (likely(channel->internal_src >= EWRAM_START)) {
                 channel->bus = mem_read32(gba, channel->internal_src, access);
             } else {
@@ -117,12 +136,12 @@ dma_run_channel(
             access = SEQUENTIAL;
         }
     } else { // unit_size == 2
-        while (channel->internal_count > 0) {
+        while (channel->internal_count > 0 && !gba->core.reenter_dma_transfer_loop) {
             if (likely(channel->internal_src >= EWRAM_START)) {
 
                 /*
-                ** Not sure what's the expected behaviour, this is more
-                ** or less random.
+                ** Not sure what's the expected behaviour regarding the DMA's open bus behaviour/latch management,
+                ** this is more or less random.
                 */
                 channel->bus <<= 16;
                 channel->bus |= mem_read16(gba, channel->internal_src, access);
@@ -137,6 +156,11 @@ dma_run_channel(
         }
     }
 
+    if (gba->core.reenter_dma_transfer_loop) {
+        return ;
+    }
+
+    gba->core.pending_dma &= ~(1 << channel->index);
     gba->io.int_flag.raw |= (channel->control.irq_end << (IRQ_DMA0 + channel->index));
 
     if (channel->control.repeat) {
@@ -166,66 +190,82 @@ dma_run_channel(
     } else {
         channel->control.enable = false;
     }
-
-    gba->core.current_dma = prev_dma;
 }
 
 /*
 ** Go through all DMA channels and process all the ones waiting for the given timing.
 */
-static
 void
-mem_dma_do_all_transfers(
-    struct gba *gba,
-    struct event_args args
+mem_dma_do_all_pending_transfers(
+    struct gba *gba
 ) {
-    enum dma_timings timing;
-    bool first;
     size_t i;
 
-    first = !gba->core.current_dma;
-    timing = args.a1.u32;
-
-    for (i = 0; i < 4; ++i) {
-        struct dma_channel *channel;
-
-        channel = &gba->io.dma[i];
-
-        // Skip channels that aren't enabled or that shouldn't happen at the given timing
-        if (!channel->control.enable || channel->control.timing != timing) {
-            continue;
-        }
-
-        dma_run_channel(gba, channel, first);
-        first = false;
+    if (!gba->core.pending_dma) {
+        return ;
     }
+
+    gba->core.is_dma_running = true;
+    core_idle(gba);
+
+    while (gba->core.pending_dma) {
+        gba->core.reenter_dma_transfer_loop = false;
+
+        for (i = 0; i < 4; ++i) {
+            struct dma_channel *channel;
+
+            channel = &gba->io.dma[i];
+
+            // Skip channels that aren't enabled or that shouldn't happen at the given timing
+            if (!(gba->core.pending_dma & (1 << i))) {
+                continue;
+            }
+
+            gba->core.current_dma = channel;
+            dma_run_channel(gba, channel);
+            gba->core.current_dma = NULL;
+            break;
+        }
+    }
+
+    core_idle(gba);
+    gba->core.is_dma_running = false;
 }
 
 static
 void
-mem_dma_run_fifo(
+mem_dma_add_to_pending(
     struct gba *gba,
     struct event_args args
 ) {
-    struct dma_channel *channel;
+    uint32_t channel_idx;
 
-    channel = &gba->io.dma[args.a1.u32];
-    if (channel->control.enable && channel->control.timing == DMA_TIMING_SPECIAL) {
-        dma_run_channel(gba, channel, !(gba->core.current_dma));
+    channel_idx = args.a1.u32;
+    gba->io.dma[channel_idx].enable_event_handle = INVALID_EVENT_HANDLE;
+    gba->core.pending_dma |= (1 << channel_idx);
+    if (gba->core.is_dma_running) {
+        gba->core.reenter_dma_transfer_loop = true;
     }
 }
 
-static
 void
-mem_dma_run_video(
+mem_schedule_dma_transfers_for(
     struct gba *gba,
-    struct event_args args __unused
+    uint32_t channel_idx,
+    enum dma_timings timing
 ) {
     struct dma_channel *channel;
 
-    channel = &gba->io.dma[3];
-    if (channel->control.enable && channel->control.timing == DMA_TIMING_SPECIAL) {
-        dma_run_channel(gba, channel, !(gba->core.current_dma));
+    channel = &gba->io.dma[channel_idx];
+    if (channel->control.enable && channel->control.timing == timing) {
+        channel->enable_event_handle = sched_add_event(
+            gba,
+            NEW_FIX_EVENT_ARGS(
+                gba->core.cycles + 2,
+                mem_dma_add_to_pending,
+                EVENT_ARG(u32, channel_idx)
+            )
+        );
     }
 }
 
@@ -234,42 +274,11 @@ mem_schedule_dma_transfers(
     struct gba *gba,
     enum dma_timings timing
 ) {
-    sched_add_event(
-        gba,
-        NEW_FIX_EVENT_ARGS(
-            gba->core.cycles + 2,
-            mem_dma_do_all_transfers,
-            EVENT_ARG(u32, timing)
-        )
-    );
-}
+    uint32_t i;
 
-void
-mem_schedule_dma_fifo(
-    struct gba *gba,
-    uint32_t dma_channel_idx
-) {
-    sched_add_event(
-        gba,
-        NEW_FIX_EVENT_ARGS(
-            gba->core.cycles + 2,
-            mem_dma_run_fifo,
-            EVENT_ARG(u32, dma_channel_idx)
-        )
-    );
-}
-
-void
-mem_schedule_dma_video(
-    struct gba *gba
-) {
-    sched_add_event(
-        gba,
-        NEW_FIX_EVENT(
-            gba->core.cycles + 2,
-            mem_dma_run_video
-        )
-    );
+    for (i = 0; i < 4; ++i) {
+        mem_schedule_dma_transfers_for(gba, i, timing);
+    }
 }
 
 bool

@@ -29,6 +29,10 @@ io_init(
     io->timers[1].handler = INVALID_EVENT_HANDLE;
     io->timers[2].handler = INVALID_EVENT_HANDLE;
     io->timers[3].handler = INVALID_EVENT_HANDLE;
+    io->dma[0].enable_event_handle = INVALID_EVENT_HANDLE;
+    io->dma[1].enable_event_handle = INVALID_EVENT_HANDLE;
+    io->dma[2].enable_event_handle = INVALID_EVENT_HANDLE;
+    io->dma[3].enable_event_handle = INVALID_EVENT_HANDLE;
     io->soundbias.bias = 0x200;
     io->dma[0].index = 0;
     io->dma[1].index = 1;
@@ -537,12 +541,7 @@ mem_io_write8(
         case IO_REG_DMA0CNT:                io->dma[0].count.bytes[0] = val; break;
         case IO_REG_DMA0CNT + 1:            io->dma[0].count.bytes[1] = val; break;
         case IO_REG_DMA0CTL:                io->dma[0].control.bytes[0] = val & 0xE0; break;
-        case IO_REG_DMA0CTL + 1: {
-            io->dma[0].control.bytes[1] = val & 0xF7;
-            mem_dma_load(&io->dma[0]);
-            mem_schedule_dma_transfers(gba, DMA_TIMING_NOW);
-            break;
-        };
+        case IO_REG_DMA0CTL + 1:            mem_io_dma_ctl_write8(gba, &io->dma[0], val); break;
 
         /* DMA - Channel 1 */
         case IO_REG_DMA1SAD:                io->dma[1].src.bytes[0] = val; break;
@@ -556,12 +555,7 @@ mem_io_write8(
         case IO_REG_DMA1CNT:                io->dma[1].count.bytes[0] = val; break;
         case IO_REG_DMA1CNT + 1:            io->dma[1].count.bytes[1] = val; break;
         case IO_REG_DMA1CTL:                io->dma[1].control.bytes[0] = val & 0xE0; break;
-        case IO_REG_DMA1CTL + 1: {
-            io->dma[1].control.bytes[1] = val & 0xF7;
-            mem_dma_load(&io->dma[1]);
-            mem_schedule_dma_transfers(gba, DMA_TIMING_NOW);
-            break;
-        };
+        case IO_REG_DMA1CTL + 1:            mem_io_dma_ctl_write8(gba, &io->dma[1], val); break;
 
         /* DMA - Channel 2 */
         case IO_REG_DMA2SAD:                io->dma[2].src.bytes[0] = val; break;
@@ -575,12 +569,7 @@ mem_io_write8(
         case IO_REG_DMA2CNT:                io->dma[2].count.bytes[0] = val; break;
         case IO_REG_DMA2CNT + 1:            io->dma[2].count.bytes[1] = val; break;
         case IO_REG_DMA2CTL:                io->dma[2].control.bytes[0] = val & 0xE0; break;
-        case IO_REG_DMA2CTL + 1: {
-            io->dma[2].control.bytes[1] = val & 0xF7;
-            mem_dma_load(&io->dma[2]);
-            mem_schedule_dma_transfers(gba, DMA_TIMING_NOW);
-            break;
-        };
+        case IO_REG_DMA2CTL + 1:            mem_io_dma_ctl_write8(gba, &io->dma[2], val); break;
 
         /* DMA - Channel 3 */
         case IO_REG_DMA3SAD:                io->dma[3].src.bytes[0] = val; break;
@@ -594,12 +583,7 @@ mem_io_write8(
         case IO_REG_DMA3CNT:                io->dma[3].count.bytes[0] = val; break;
         case IO_REG_DMA3CNT + 1:            io->dma[3].count.bytes[1] = val; break;
         case IO_REG_DMA3CTL:                io->dma[3].control.bytes[0] = val & 0xE0; break;
-        case IO_REG_DMA3CTL + 1: {
-            io->dma[3].control.bytes[1] = val;
-            mem_dma_load(&io->dma[3]);
-            mem_schedule_dma_transfers(gba, DMA_TIMING_NOW);
-            break;
-        };
+        case IO_REG_DMA3CTL + 1:            mem_io_dma_ctl_write8(gba, &io->dma[3], val); break;
 
         /* Timer 0 */
         case IO_REG_TM0CNT_LO:              io->timers[0].reload.bytes[0] = val; break;
