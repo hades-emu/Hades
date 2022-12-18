@@ -23,6 +23,7 @@ void gui_sdl_init(struct app *app);
 void gui_sdl_cleanup(struct app *app);
 
 /* gui/sdl/input.c */
+void gui_sdl_setup_default_binds(struct app *app);
 void gui_sdl_handle_inputs(struct app *app);
 
 /* gui/sdl/video.c */
