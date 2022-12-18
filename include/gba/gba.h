@@ -72,8 +72,8 @@ enum keyinput {
     KEY_R,
     KEY_UP,
     KEY_DOWN,
-    KEY_RIGHT,
     KEY_LEFT,
+    KEY_RIGHT,
     KEY_START,
     KEY_SELECT,
 };

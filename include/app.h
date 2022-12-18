@@ -35,6 +35,29 @@ enum texture_filter_kind {
 
 struct ImGuiIO;
 
+enum bind_actions {
+    BIND_UNASSIGNED = 0,
+
+    BIND_GBA_A,
+    BIND_GBA_B,
+    BIND_GBA_L,
+    BIND_GBA_R,
+    BIND_GBA_UP,
+    BIND_GBA_DOWN,
+    BIND_GBA_LEFT,
+    BIND_GBA_RIGHT,
+    BIND_GBA_START,
+    BIND_GBA_SELECT,
+
+    BIND_EMULATOR_UNBOUNDED_SPEED,
+    BIND_EMULATOR_SCREENSHOT,
+    BIND_EMULATOR_QUICKSAVE,
+    BIND_EMULATOR_QUICKLOAD,
+
+    BIND_MAX,
+    BIND_MIN = BIND_GBA_A,
+};
+
 struct app {
     atomic_bool run;
 
@@ -150,6 +173,16 @@ struct app {
         /* Indicates if the user wants to resize the windows to `video->display_size`. */
         bool refresh_windows_size;
     } ui;
+
+    struct {
+        /*
+        ** For the keyboard, we bind a key to each action.
+        ** For controllers, we bind an action to each key.
+        */
+
+        SDL_Keycode keyboard[BIND_MAX];
+        enum bind_actions controller[SDL_CONTROLLER_BUTTON_MAX];
+    } binds;
 
 #if WITH_DEBUGGER
     struct {

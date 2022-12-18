@@ -18,6 +18,82 @@
 #include "gui/gui.h"
 
 void
+gui_sdl_setup_default_binds(
+    struct app *app
+) {
+    app->binds.keyboard[BIND_GBA_A] = SDL_GetKeyFromName("P");
+    app->binds.keyboard[BIND_GBA_B] = SDL_GetKeyFromName("L");
+    app->binds.keyboard[BIND_GBA_L] = SDL_GetKeyFromName("E");
+    app->binds.keyboard[BIND_GBA_R] = SDL_GetKeyFromName("O");
+    app->binds.keyboard[BIND_GBA_UP] = SDL_GetKeyFromName("W");
+    app->binds.keyboard[BIND_GBA_DOWN] = SDL_GetKeyFromName("S");
+    app->binds.keyboard[BIND_GBA_LEFT] = SDL_GetKeyFromName("A");
+    app->binds.keyboard[BIND_GBA_RIGHT] = SDL_GetKeyFromName("D");
+    app->binds.keyboard[BIND_GBA_START] = SDL_GetKeyFromName("Return");
+    app->binds.keyboard[BIND_GBA_SELECT] = SDL_GetKeyFromName("Backspace");
+    app->binds.keyboard[BIND_EMULATOR_UNBOUNDED_SPEED] = SDL_GetKeyFromName("F1");
+    app->binds.keyboard[BIND_EMULATOR_SCREENSHOT] = SDL_GetKeyFromName("F2");
+    app->binds.keyboard[BIND_EMULATOR_QUICKSAVE] = SDL_GetKeyFromName("F5");
+    app->binds.keyboard[BIND_EMULATOR_QUICKLOAD] = SDL_GetKeyFromName("F8");
+
+    app->binds.controller[SDL_CONTROLLER_BUTTON_A] = BIND_GBA_A;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_B] = BIND_GBA_B;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_X] = BIND_GBA_B;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_Y] = BIND_GBA_A;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_LEFTSHOULDER] = BIND_GBA_L;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] = BIND_GBA_R;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_DPAD_UP] = BIND_GBA_UP;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_DPAD_DOWN] = BIND_GBA_DOWN;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_DPAD_LEFT] = BIND_GBA_LEFT;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_DPAD_RIGHT] = BIND_GBA_RIGHT;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_START] = BIND_GBA_START;
+    app->binds.controller[SDL_CONTROLLER_BUTTON_BACK] = BIND_GBA_SELECT;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    app->binds.controller[SDL_CONTROLLER_BUTTON_TOUCHPAD] = BIND_EMULATOR_UNBOUNDED_SPEED;
+#endif
+    printf("INPUT PRE-SET\n");
+}
+
+static
+void
+gui_sdl_handle_bind(
+    struct app *app,
+    enum bind_actions bind,
+    bool pressed
+) {
+    switch (bind) {
+        case BIND_GBA_UP:                       gba_send_keyinput(app->emulation.gba, KEY_UP, pressed); break;
+        case BIND_GBA_DOWN:                     gba_send_keyinput(app->emulation.gba, KEY_DOWN, pressed); break;
+        case BIND_GBA_LEFT:                     gba_send_keyinput(app->emulation.gba, KEY_LEFT, pressed); break;
+        case BIND_GBA_RIGHT:                    gba_send_keyinput(app->emulation.gba, KEY_RIGHT, pressed); break;
+        case BIND_GBA_A:                        gba_send_keyinput(app->emulation.gba, KEY_A, pressed); break;
+        case BIND_GBA_B:                        gba_send_keyinput(app->emulation.gba, KEY_B, pressed); break;
+        case BIND_GBA_L:                        gba_send_keyinput(app->emulation.gba, KEY_L, pressed); break;
+        case BIND_GBA_R:                        gba_send_keyinput(app->emulation.gba, KEY_R, pressed); break;
+        case BIND_GBA_SELECT:                   gba_send_keyinput(app->emulation.gba, KEY_SELECT, pressed); break;
+        case BIND_GBA_START:                    gba_send_keyinput(app->emulation.gba, KEY_START, pressed); break;
+        default: break;
+    }
+
+    /* The next binds are only triggered when the key is pressed, not when it is released. */
+    if (!pressed) {
+        return ;
+    }
+
+    switch (bind) {
+        case BIND_EMULATOR_UNBOUNDED_SPEED: {
+            app->emulation.unbounded ^= 1;
+            gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
+            break;
+        };
+        case BIND_EMULATOR_SCREENSHOT:          app_game_screenshot(app); break;
+        case BIND_EMULATOR_QUICKSAVE:           app_game_quicksave(app, 0); break;
+        case BIND_EMULATOR_QUICKLOAD:           app_game_quickload(app, 0); break;
+        default: break;
+    }
+}
+
+void
 gui_sdl_handle_inputs(
     struct app *app
 ) {
@@ -74,101 +150,26 @@ gui_sdl_handle_inputs(
                 }
                 break;
             };
-            case SDL_KEYDOWN: {
-
-                /* Ignore repeat keys */
-                if (event.key.repeat) {
-                    break;
-                }
-
-                switch (event.key.keysym.sym) {
-                    case SDLK_UP:
-                    case SDLK_w:                gba_send_keyinput(app->emulation.gba, KEY_UP, true); break;
-                    case SDLK_DOWN:
-                    case SDLK_s:                gba_send_keyinput(app->emulation.gba, KEY_DOWN, true); break;
-                    case SDLK_LEFT:
-                    case SDLK_a:                gba_send_keyinput(app->emulation.gba, KEY_LEFT, true); break;
-                    case SDLK_RIGHT:
-                    case SDLK_d:                gba_send_keyinput(app->emulation.gba, KEY_RIGHT, true); break;
-                    case SDLK_p:                gba_send_keyinput(app->emulation.gba, KEY_A, true); break;
-                    case SDLK_l:                gba_send_keyinput(app->emulation.gba, KEY_B, true); break;
-                    case SDLK_e:                gba_send_keyinput(app->emulation.gba, KEY_L, true); break;
-                    case SDLK_o:                gba_send_keyinput(app->emulation.gba, KEY_R, true); break;
-                    case SDLK_BACKSPACE:        gba_send_keyinput(app->emulation.gba, KEY_SELECT, true); break;
-                    case SDLK_RETURN:           gba_send_keyinput(app->emulation.gba, KEY_START, true); break;
-                }
-                break;
-            };
+            case SDL_KEYDOWN:
             case SDL_KEYUP: {
+                size_t i;
 
                 /* Ignore repeat keys */
                 if (event.key.repeat) {
                     break;
                 }
 
-                switch (event.key.keysym.sym) {
-                    case SDLK_UP:
-                    case SDLK_w:                gba_send_keyinput(app->emulation.gba, KEY_UP, false); break;
-                    case SDLK_DOWN:
-                    case SDLK_s:                gba_send_keyinput(app->emulation.gba, KEY_DOWN, false); break;
-                    case SDLK_LEFT:
-                    case SDLK_a:                gba_send_keyinput(app->emulation.gba, KEY_LEFT, false); break;
-                    case SDLK_RIGHT:
-                    case SDLK_d:                gba_send_keyinput(app->emulation.gba, KEY_RIGHT, false); break;
-                    case SDLK_p:                gba_send_keyinput(app->emulation.gba, KEY_A, false); break;
-                    case SDLK_l:                gba_send_keyinput(app->emulation.gba, KEY_B, false); break;
-                    case SDLK_e:                gba_send_keyinput(app->emulation.gba, KEY_L, false); break;
-                    case SDLK_o:                gba_send_keyinput(app->emulation.gba, KEY_R, false); break;
-                    case SDLK_BACKSPACE:        gba_send_keyinput(app->emulation.gba, KEY_SELECT, false); break;
-                    case SDLK_RETURN:           gba_send_keyinput(app->emulation.gba, KEY_START, false); break;
-                    case SDLK_F1: {
-                        app->emulation.unbounded ^= 1;
-                        gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
-                        break;
-                    };
-                    case SDLK_F2:               app_game_screenshot(app); break;
-                    case SDLK_F5:               app_game_quicksave(app, 0); break;
-                    case SDLK_F8:               app_game_quickload(app, 0); break;
-                    default:
-                        break;
+                for (i = BIND_MIN; i < BIND_MAX; ++i) {
+                    if (app->binds.keyboard[i] == event.key.keysym.sym) {
+                        gui_sdl_handle_bind(app, i, event.type == SDL_KEYDOWN);
+                    }
                 }
+
                 break;
             };
+            case SDL_CONTROLLERBUTTONUP:
             case SDL_CONTROLLERBUTTONDOWN: {
-                switch (event.cbutton.button) {
-                    case SDL_CONTROLLER_BUTTON_B:               gba_send_keyinput(app->emulation.gba, KEY_B, true); break;
-                    case SDL_CONTROLLER_BUTTON_A:               gba_send_keyinput(app->emulation.gba, KEY_A, true); break;
-                    case SDL_CONTROLLER_BUTTON_Y:               gba_send_keyinput(app->emulation.gba, KEY_A, true); break;
-                    case SDL_CONTROLLER_BUTTON_X:               gba_send_keyinput(app->emulation.gba, KEY_B, true); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       gba_send_keyinput(app->emulation.gba, KEY_LEFT, true); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      gba_send_keyinput(app->emulation.gba, KEY_RIGHT, true); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_UP:         gba_send_keyinput(app->emulation.gba, KEY_UP, true); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       gba_send_keyinput(app->emulation.gba, KEY_DOWN, true); break;
-                    case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    gba_send_keyinput(app->emulation.gba, KEY_L, true); break;
-                    case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   gba_send_keyinput(app->emulation.gba, KEY_R, true); break;
-                    case SDL_CONTROLLER_BUTTON_START:           gba_send_keyinput(app->emulation.gba, KEY_START, true); break;
-                    case SDL_CONTROLLER_BUTTON_BACK:            gba_send_keyinput(app->emulation.gba, KEY_SELECT, true); break;
-                }
-                break;
-            };
-            case SDL_CONTROLLERBUTTONUP: {
-                switch (event.cbutton.button) {
-                    case SDL_CONTROLLER_BUTTON_B:               gba_send_keyinput(app->emulation.gba, KEY_B, false); break;
-                    case SDL_CONTROLLER_BUTTON_A:               gba_send_keyinput(app->emulation.gba, KEY_A, false); break;
-                    case SDL_CONTROLLER_BUTTON_Y:               gba_send_keyinput(app->emulation.gba, KEY_A, false); break;
-                    case SDL_CONTROLLER_BUTTON_X:               gba_send_keyinput(app->emulation.gba, KEY_B, false); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT:       gba_send_keyinput(app->emulation.gba, KEY_LEFT, false); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:      gba_send_keyinput(app->emulation.gba, KEY_RIGHT, false); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_UP:         gba_send_keyinput(app->emulation.gba, KEY_UP, false); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN:       gba_send_keyinput(app->emulation.gba, KEY_DOWN, false); break;
-                    case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:    gba_send_keyinput(app->emulation.gba, KEY_L, false); break;
-                    case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:   gba_send_keyinput(app->emulation.gba, KEY_R, false); break;
-                    case SDL_CONTROLLER_BUTTON_START:           gba_send_keyinput(app->emulation.gba, KEY_START, false); break;
-                    case SDL_CONTROLLER_BUTTON_BACK:            gba_send_keyinput(app->emulation.gba, KEY_SELECT, false); break;
-#if SDL_VERSION_ATLEAST(2, 0, 14)
-                    case SDL_CONTROLLER_BUTTON_MISC1:           app_game_screenshot(app); break;
-#endif
-                }
+                gui_sdl_handle_bind(app, app->binds.controller[event.cbutton.button], event.type == SDL_CONTROLLERBUTTONDOWN);
                 break;
             };
             case SDL_CONTROLLERAXISMOTION: {
@@ -178,17 +179,17 @@ gui_sdl_handle_inputs(
                 state_a = (event.jaxis.value >= INT16_MAX / 2);  // At least 50% of the axis
                 state_b = (event.jaxis.value <= INT16_MIN / 2);
                 if (event.jaxis.axis == 0 && state_a != app->sdl.controller.joystick.right) {
-                    gba_send_keyinput(app->emulation.gba, KEY_RIGHT, state_a);
                     app->sdl.controller.joystick.right = state_a;
+                    gui_sdl_handle_bind(app, BIND_GBA_RIGHT, state_a);
                 } else if (event.jaxis.axis == 0 && state_b != app->sdl.controller.joystick.left) {
-                    gba_send_keyinput(app->emulation.gba, KEY_LEFT, state_b);
                     app->sdl.controller.joystick.left = state_b;
+                    gui_sdl_handle_bind(app, BIND_GBA_LEFT, state_b);
                 } else if (event.jaxis.axis == 1 && state_a != app->sdl.controller.joystick.down) {
-                    gba_send_keyinput(app->emulation.gba, KEY_DOWN, state_a);
                     app->sdl.controller.joystick.down = state_a;
+                    gui_sdl_handle_bind(app, BIND_GBA_DOWN, state_a);
                 } else if (event.jaxis.axis == 1 && state_b != app->sdl.controller.joystick.up) {
-                    gba_send_keyinput(app->emulation.gba, KEY_UP, state_b);
                     app->sdl.controller.joystick.up = state_b;
+                    gui_sdl_handle_bind(app, BIND_GBA_UP, state_b);
                 }
                 break;
             }

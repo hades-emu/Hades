@@ -43,7 +43,7 @@ gui_config_load(
         char *recent_rom_path;
         int i;
 
-        if (mjson_get_string(data, data_len, "$.file.bios", str, sizeof(str))) {
+        if (mjson_get_string(data, data_len, "$.file.bios", str, sizeof(str)) > 0) {
             free(app->file.bios_path);
             app->file.bios_path = strdup(str);
         }
@@ -52,7 +52,7 @@ gui_config_load(
         for (i = 0; i < MAX_RECENT_ROMS; ++i) {
 
             recent_rom_path[strlen(recent_rom_path) - 2] = '0' + i;
-            if (mjson_get_string(data, data_len, recent_rom_path, str, sizeof(str))) {
+            if (mjson_get_string(data, data_len, recent_rom_path, str, sizeof(str)) > 0) {
                 free(app->file.recent_roms[i]);
                 app->file.recent_roms[i] = strdup(str);
             }
@@ -131,6 +131,67 @@ gui_config_load(
         }
     }
 
+    // Binds
+    {
+        char str[4096];
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.a", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_A] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.b", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_B] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.l", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_L] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.r", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_R] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.up", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_UP] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.down", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_DOWN] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.left", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_LEFT] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.right", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_RIGHT] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.start", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_START] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_string(data, data_len, "$.binds.keyboard.select", str, sizeof(str)) > 0) {
+            app->binds.keyboard[BIND_GBA_SELECT] = SDL_GetKeyFromName(str);
+        }
+    }
+
+    size_t i;
+
+    for (i = 0; i < BIND_MAX; ++i) {
+        int32_t key;
+
+        key = app->binds.keyboard[i];
+        printf("Key ID: %i Key Name: %s\n", key, SDL_GetKeyName(key));
+    }
+
+    for (i = 0; i < BIND_MAX; ++i) {
+        int32_t key;
+
+        key = app->binds.controller[i];
+        printf("Button ID: %i Button Name: %s\n", key, SDL_GameControllerGetStringForButton(key));
+    }
+
 end:
     fclose(config_file);
 }
@@ -143,6 +204,8 @@ gui_config_save(
     int out;
     char *data;
     char *pretty_data;
+    char *keyboard_binds_name[BIND_MAX];
+    size_t i;
 
     data = NULL;
     pretty_data = NULL;
@@ -151,6 +214,12 @@ gui_config_save(
     if (!config_file) {
         logln(HS_ERROR, "Failed to open \"%s\": %s", app->file.config_path, strerror(errno));
         return ;
+    }
+
+    // We need to fill `keyboard_binds_name` with a copy of all the keyboard's bind name because
+    // the output of `SDL_GetKeyName()` lasts only until the next call to the function.
+    for (i = 0; i < BIND_MAX; ++i) {
+        keyboard_binds_name[i] = strdup(SDL_GetKeyName(app->binds.keyboard[i]));
     }
 
     data = mjson_aprintf(
@@ -183,6 +252,22 @@ gui_config_save(
             "audio": {
                 "mute": %B,
                 "level": %g
+            },
+
+            // Binds
+            "binds": {
+                "keyboard": {
+                    "a": %Q,
+                    "b": %Q,
+                    "l": %Q,
+                    "r": %Q,
+                    "up": %Q,
+                    "down": %Q,
+                    "left": %Q,
+                    "right": %Q,
+                    "start": %Q,
+                    "select": %Q,
+                }
             }
         }),
         app->file.bios_path,
@@ -202,7 +287,19 @@ gui_config_save(
         (int)app->video.color_correction,
         (int)app->video.texture_filter.kind,
         (int)app->audio.mute,
-        app->audio.level
+        app->audio.level,
+
+        // Keyboard binds
+        keyboard_binds_name[BIND_GBA_A],
+        keyboard_binds_name[BIND_GBA_B],
+        keyboard_binds_name[BIND_GBA_L],
+        keyboard_binds_name[BIND_GBA_R],
+        keyboard_binds_name[BIND_GBA_UP],
+        keyboard_binds_name[BIND_GBA_DOWN],
+        keyboard_binds_name[BIND_GBA_LEFT],
+        keyboard_binds_name[BIND_GBA_RIGHT],
+        keyboard_binds_name[BIND_GBA_START],
+        keyboard_binds_name[BIND_GBA_SELECT]
     );
 
     if (!data) {
@@ -222,6 +319,10 @@ gui_config_save(
     }
 
 end:
+    for (i = 0; i < BIND_MAX; ++i) {
+        free(keyboard_binds_name[i]);
+    }
+
     free(data);
     free(pretty_data);
     fclose(config_file);
