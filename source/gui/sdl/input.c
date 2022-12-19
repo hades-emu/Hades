@@ -51,7 +51,6 @@ gui_sdl_setup_default_binds(
 #if SDL_VERSION_ATLEAST(2, 0, 14)
     app->binds.controller[SDL_CONTROLLER_BUTTON_TOUCHPAD] = BIND_EMULATOR_UNBOUNDED_SPEED;
 #endif
-    printf("INPUT PRE-SET\n");
 }
 
 static
