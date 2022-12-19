@@ -106,7 +106,7 @@ elif host_machine.system() == 'darwin'
     add_languages('objc')
     nfde_src += ['nfde/src/nfd_cocoa.m']
     nfde_dep += [
-        dependency('appleframeworks', required: true, modules: 'AppKit'),
+        dependency('appleframeworks', required: true, modules: ['AppKit', 'UniformTypeIdentifiers']),
     ]
 else
     nfde_src += ['nfde/src/nfd_gtk.cpp']
