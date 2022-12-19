@@ -176,22 +176,6 @@ gui_config_load(
         }
     }
 
-    size_t i;
-
-    for (i = 0; i < BIND_MAX; ++i) {
-        int32_t key;
-
-        key = app->binds.keyboard[i];
-        printf("Key ID: %i Key Name: %s\n", key, SDL_GetKeyName(key));
-    }
-
-    for (i = 0; i < BIND_MAX; ++i) {
-        int32_t key;
-
-        key = app->binds.controller[i];
-        printf("Button ID: %i Button Name: %s\n", key, SDL_GameControllerGetStringForButton(key));
-    }
-
 end:
     fclose(config_file);
 }
