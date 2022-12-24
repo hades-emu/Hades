@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2022 - The Hades Authors
+**  Copyright (C) 2021-2023 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -41,7 +41,7 @@ ppu_render_background_text(
     palette_type = io->bgcnt[bg_idx].palette_type;
     screen_addr = (uint32_t)io->bgcnt[bg_idx].screen_base * 0x800;
     chrs_addr = (uint32_t)io->bgcnt[bg_idx].character_base * 0x4000;
-    
+
     /*
     ** Do all the maths for the Y coordinate first, since those do not change until the next scanline.
     */
@@ -77,7 +77,7 @@ ppu_render_background_text(
         rel_x += io->bg_hoffset[bg_idx].raw;
 
         tile_x = (rel_x / 8);
-        up_x = tile_x & 0b100000; 
+        up_x = tile_x & 0b100000;
         tile_x %= 32;
         chr_x = rel_x % 8;
 
@@ -117,12 +117,12 @@ ppu_render_background_text(
 
         if (palette_idx) {
             struct rich_color c;
-        
+
             c.raw = mem_palram_read16(
                 gba,
                 (tile.palette * 16 * !palette_type + palette_idx) * sizeof(union color)
             );
-        
+
             c.visible = true;
             c.idx = bg_idx;
             c.force_blend = false;
