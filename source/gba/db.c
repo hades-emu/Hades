@@ -1738,17 +1738,20 @@ void
 db_lookup_game(
     struct gba *gba
 ) {
+    char const *name;
     size_t i;
 
     gba->game_entry = NULL;
+    name = (char *)gba->memory.rom + 0xAC;
+
     for (i = 0; i < ARRAY_LEN(game_database); ++i) {
-        if (!strncmp((char *)gba->memory.rom + 0xAC, game_database[i].code, 3)) {
+        if (!strncmp(name, game_database[i].code, 3)) {
             gba->game_entry = game_database + i;
             logln(
                 HS_INFO,
                 "Game code %s%.3s%s identified as %s%s%s.",
                 g_light_magenta,
-                (char *)gba->memory.rom + 0xAC,
+                name,
                 g_reset,
                 g_light_magenta,
                 gba->game_entry->title,
@@ -1760,9 +1763,9 @@ db_lookup_game(
 
     logln(
         HS_WARNING,
-        "No game with the code \"%s%.3s%s\" could be found in Hades game database.",
+        "No game with the code \"%s%.3s%s\" could be found in the Hades game database.",
         g_light_magenta,
-        (char *)gba->memory.rom + 0xAC,
+        name,
         g_reset
     );
 }
