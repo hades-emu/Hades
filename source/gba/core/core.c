@@ -165,6 +165,9 @@ core_idle_for(
     struct gba *gba,
     uint32_t cycles
 ) {
+    /*
+    ** As far as I understand, DMA can start as soon as the CPU is idling after their two cycles startup delay.
+    */
     if (gba->core.pending_dma && !gba->core.is_dma_running) {
         mem_dma_do_all_pending_transfers(gba);
     }
