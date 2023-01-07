@@ -19,38 +19,39 @@ void
 gui_win_game(
     struct app *app
 ) {
-    float game_scale;
-    float rel_x;
-    float rel_y;
-    int width;
-    int height;
+    GLint last_texture;
+    float game_pos_x;
+    float game_pos_y;
+    float game_size_x;
+    float game_size_y;
 
-    /* Resize the window to keep the correct aspect ratio */
-    SDL_GetWindowSize(app->sdl.window, &width, &height);
-    height = max(0, height - app->ui.menubar_size.y);
-    game_scale = min(width / (float)GBA_SCREEN_WIDTH, height / (float)GBA_SCREEN_HEIGHT);
-    rel_x = (width  - (GBA_SCREEN_WIDTH  * game_scale)) * 0.5f;
-    rel_y = (height - (GBA_SCREEN_HEIGHT * game_scale)) * 0.5f;
+    /* Resize the game to keep the correct aspect ratio */
+    switch (app->video.aspect_ratio) {
+        case ASPECT_RATIO_RESIZE:
+        case ASPECT_RATIO_BORDERS: {
+            float game_scale;
+
+            game_scale = min(app->ui.game.width / (float)GBA_SCREEN_WIDTH, app->ui.game.height / (float)GBA_SCREEN_HEIGHT);
+            game_pos_x = (app->ui.game.width  - (GBA_SCREEN_WIDTH  * game_scale)) * 0.5f;
+            game_pos_y = (app->ui.game.height - (GBA_SCREEN_HEIGHT * game_scale)) * 0.5f;
+            game_size_x = GBA_SCREEN_WIDTH * game_scale;
+            game_size_y = GBA_SCREEN_HEIGHT * game_scale;
+            break;
+        };
+        case ASPECT_RATIO_STRETCH: {
+            game_pos_x = 0;
+            game_pos_y = 0;
+            game_size_x = app->ui.game.width;
+            game_size_y = app->ui.game.height;
+            break;
+        };
+    }
 
     igPushStyleVarVec2(ImGuiStyleVar_WindowPadding, (ImVec2){.x = 0, .y = 0});
     igPushStyleVarFloat(ImGuiStyleVar_WindowBorderSize, 0);
 
-    igSetNextWindowPos(
-        (ImVec2){
-            .x = rel_x,
-            .y = (float)app->ui.menubar_size.y + rel_y,
-        },
-        ImGuiCond_Always,
-        (ImVec2){.x = 0, .y = 0}
-    );
-
-    igSetNextWindowSize(
-        (ImVec2){
-            .x = GBA_SCREEN_WIDTH * game_scale,
-            .y = GBA_SCREEN_HEIGHT * game_scale
-        },
-        ImGuiCond_Always
-    );
+    igSetNextWindowPos((ImVec2){.x = game_pos_x, .y = (float)app->ui.menubar_size.y + game_pos_y}, ImGuiCond_Always, (ImVec2){.x = 0, .y = 0});
+    igSetNextWindowSize((ImVec2){.x = game_size_x, .y = game_size_y}, ImGuiCond_Always);
 
     igBegin(
         "Game",
@@ -60,9 +61,7 @@ gui_win_game(
         ImGuiWindowFlags_NoBackground
     );
 
-    GLint last_texture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-
     glBindTexture(GL_TEXTURE_2D, app->sdl.game_texture);
 
     if (app->video.texture_filter.refresh) {
@@ -91,7 +90,7 @@ gui_win_game(
 
     igImage(
         (void *)(uintptr_t)app->sdl.game_texture,
-        (ImVec2){.x = GBA_SCREEN_WIDTH * game_scale, .y = GBA_SCREEN_HEIGHT * game_scale},
+        (ImVec2){.x = game_size_x, .y = game_size_y},
         (ImVec2){.x = 0, .y = 0},
         (ImVec2){.x = 1, .y = 1},
         (ImVec4){.x = 1, .y = 1, .z = 1, .w = 1},

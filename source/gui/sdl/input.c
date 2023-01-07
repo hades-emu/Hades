@@ -108,10 +108,38 @@ gui_sdl_handle_inputs(
                 break;
             };
             case SDL_WINDOWEVENT: {
-                if (event.window.event == SDL_WINDOWEVENT_CLOSE
-                    && event.window.windowID == SDL_GetWindowID(app->sdl.window)
-                ) {
-                    app->run = false;
+                /* Keep only events related to our current window. */
+                if (event.window.windowID != SDL_GetWindowID(app->sdl.window)) {
+                    break;
+                }
+
+                switch (event.window.event) {
+                    case SDL_WINDOWEVENT_CLOSE: {
+                        app->run = false;
+                        break;
+                    };
+                    case SDL_WINDOWEVENT_SIZE_CHANGED: {
+                        app->ui.win.old_area = app->ui.win.width * app->ui.win.height;
+                        app->ui.win.width = event.window.data1;
+                        app->ui.win.height = event.window.data2;
+
+                        app->ui.game.width = app->ui.win.width;
+                        app->ui.game.height = app->ui.win.height - app->ui.menubar_size.y;
+                        break;
+                    };
+                    case SDL_WINDOWEVENT_RESIZED: {
+                        if (app->video.aspect_ratio == ASPECT_RATIO_RESIZE) {
+                            app->ui.win.resize = true;
+                            app->ui.win.resize_with_ratio = true;
+
+                            if (app->ui.win.width * app->ui.win.height >= app->ui.win.old_area) { // The window was made bigger
+                                app->ui.win.resize_ratio = max(app->ui.game.width / (float)GBA_SCREEN_WIDTH, app->ui.game.height / (float)GBA_SCREEN_HEIGHT);
+                            } else {
+                                app->ui.win.resize_ratio = min(app->ui.game.width / (float)GBA_SCREEN_WIDTH, app->ui.game.height / (float)GBA_SCREEN_HEIGHT);
+                            }
+                        }
+                        break;
+                    };
                 }
                 break;
             };

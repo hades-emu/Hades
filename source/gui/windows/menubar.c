@@ -269,7 +269,7 @@ gui_win_menubar_video(
             int width;
             int height;
 
-            char const *display_sizes[] = {
+            static char const * const display_sizes[] = {
                 "x1",
                 "x2",
                 "x3",
@@ -288,8 +288,44 @@ gui_win_menubar_video(
                     true
                 )) {
                     app->video.display_size = x;
-                    app->ui.refresh_windows_size = true;
+                    app->ui.win.resize = true;
+                    app->ui.win.resize_with_ratio = false;
                 }
+            }
+
+            igEndMenu();
+        }
+
+        /* Aspect Ratio */
+        if (igBeginMenu("Aspect Ratio", true)) {
+            if (igMenuItemBool(
+                "Auto resize",
+                NULL,
+                app->video.aspect_ratio == ASPECT_RATIO_RESIZE,
+                true
+            )) {
+                app->video.aspect_ratio = ASPECT_RATIO_RESIZE;
+                app->ui.win.resize = true;
+                app->ui.win.resize_with_ratio = true;
+                app->ui.win.resize_ratio = min(app->ui.game.width / (float)GBA_SCREEN_WIDTH, app->ui.game.height / (float)GBA_SCREEN_HEIGHT);
+            }
+
+            if (igMenuItemBool(
+                "Black borders",
+                NULL,
+                app->video.aspect_ratio == ASPECT_RATIO_BORDERS,
+                true
+            )) {
+                app->video.aspect_ratio = ASPECT_RATIO_BORDERS;
+            }
+
+            if (igMenuItemBool(
+                "Stretch",
+                NULL,
+                app->video.aspect_ratio == ASPECT_RATIO_STRETCH,
+                true
+            )) {
+                app->video.aspect_ratio = ASPECT_RATIO_STRETCH;
             }
 
             igEndMenu();
