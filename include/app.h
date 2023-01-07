@@ -191,6 +191,7 @@ struct app {
         struct {
             int width;
             int height;
+            bool maximized;
 
             /* Used when resizing, to know if the new window is bigger or smaller than the previous one. */
             uint32_t old_area;

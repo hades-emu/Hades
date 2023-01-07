@@ -307,7 +307,7 @@ gui_win_menubar_video(
                 app->video.aspect_ratio = ASPECT_RATIO_RESIZE;
                 app->ui.win.resize = true;
                 app->ui.win.resize_with_ratio = true;
-                app->ui.win.resize_ratio = min(app->ui.game.width / (float)GBA_SCREEN_WIDTH, app->ui.game.height / (float)GBA_SCREEN_HEIGHT);
+                app->ui.win.resize_ratio = min(app->ui.game.width / ((float)GBA_SCREEN_WIDTH * app->ui.scale), app->ui.game.height / ((float)GBA_SCREEN_HEIGHT * app->ui.scale));
             }
 
             if (igMenuItemBool(

@@ -369,6 +369,7 @@ main(
                 new_height = app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.video.display_size * app.ui.scale;
             }
 
+            SDL_SetWindowMinimumSize(app.sdl.window, GBA_SCREEN_WIDTH * app.ui.scale, app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.ui.scale);
             SDL_SetWindowSize(app.sdl.window, new_width, new_height);
             app.ui.win.resize = false;
             app.ui.win.resize_with_ratio = false;
