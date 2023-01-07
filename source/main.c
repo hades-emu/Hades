@@ -253,7 +253,7 @@ main(
     app.video.texture_filter.kind = TEXTURE_FILTER_NEAREST;
     app.video.texture_filter.refresh = true;
     app.ui.win.resize = true;
-    app.ui.win.resize_ratio = 3;
+    app.ui.win.resize_with_ratio = false;
     gui_sdl_setup_default_binds(&app);
 
     gui_config_load(&app);

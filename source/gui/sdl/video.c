@@ -85,12 +85,17 @@ gui_sdl_video_init(
     ** unknown at this stage.
     ** The size given here is merely a guess as to what the real size will be, hence the magical +19.f for the window's height.
     */
+    app->ui.game.width = GBA_SCREEN_WIDTH * app->video.display_size * app->ui.scale;
+    app->ui.game.height = GBA_SCREEN_HEIGHT * app->video.display_size * app->ui.scale;
+    app->ui.win.width = app->ui.game.width;
+    app->ui.win.height = app->ui.game.height + 19.f * app->ui.scale;
+
     app->sdl.window = SDL_CreateWindow(
         "Hades",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        GBA_SCREEN_WIDTH * app->video.display_size * app->ui.scale,
-        (GBA_SCREEN_HEIGHT * app->video.display_size + 19.f) * app->ui.scale ,
+        app->ui.win.width,
+        app->ui.win.height,
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
 
@@ -98,6 +103,7 @@ gui_sdl_video_init(
         logln(HS_ERROR, "Failed to create the window: %s", SDL_GetError());
         exit(EXIT_FAILURE);
     }
+
 
     /* Create the OpenGL context */
     app->sdl.gl_context = SDL_GL_CreateContext(app->sdl.window);
