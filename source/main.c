@@ -247,11 +247,13 @@ main(
     app.video.color_correction = true;
     app.video.vsync = false;
     app.video.display_size = 3;
+    app.video.aspect_ratio = ASPECT_RATIO_RESIZE;
     app.audio.mute = false;
     app.audio.level = 1.0f;
     app.video.texture_filter.kind = TEXTURE_FILTER_NEAREST;
     app.video.texture_filter.refresh = true;
-    app.ui.refresh_windows_size = true;
+    app.ui.win.resize = true;
+    app.ui.win.resize_ratio = 3;
     gui_sdl_setup_default_binds(&app);
 
     gui_config_load(&app);
@@ -350,13 +352,26 @@ main(
             }
         }
 
-        if (app.ui.refresh_windows_size) {
-            SDL_SetWindowSize(
-                app.sdl.window,
-                GBA_SCREEN_WIDTH * app.video.display_size * app.ui.scale,
-                app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.video.display_size * app.ui.scale
-            );
-            app.ui.refresh_windows_size = false;
+        /* The window needs to be resized */
+        if (app.ui.win.resize) {
+            uint32_t new_width;
+            uint32_t new_height;
+
+            /*
+            ** Do we wanna resize it to the aspect ratio given in `app.ui.win.resize_ratio`?
+            ** Otherwise, use `app.video.display_size`.
+            */
+            if (app.ui.win.resize_with_ratio) {
+                new_width = GBA_SCREEN_WIDTH * app.ui.win.resize_ratio * app.ui.scale;
+                new_height = app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.ui.win.resize_ratio * app.ui.scale;
+            } else {
+                new_width = GBA_SCREEN_WIDTH * app.video.display_size * app.ui.scale;
+                new_height = app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.video.display_size * app.ui.scale;
+            }
+
+            SDL_SetWindowSize(app.sdl.window, new_width, new_height);
+            app.ui.win.resize = false;
+            app.ui.win.resize_with_ratio = false;
         }
 
         sdl_counters[1] = SDL_GetPerformanceCounter();

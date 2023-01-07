@@ -28,12 +28,26 @@
 # define MAX_QUICKSAVES             5
 # define POWER_SAVE_FRAME_DELAY     30
 
+struct ImGuiIO;
+
 enum texture_filter_kind {
+    TEXTURE_FILTER_MIN = 0,
+
     TEXTURE_FILTER_NEAREST = 0,
-    TEXTURE_FILTER_LINEAR,
+    TEXTURE_FILTER_LINEAR = 1,
+
+    TEXTURE_FILTER_MAX = 1,
 };
 
-struct ImGuiIO;
+enum aspect_ratio {
+    ASPECT_RATIO_MIN = 0,
+
+    ASPECT_RATIO_RESIZE = 0,
+    ASPECT_RATIO_BORDERS = 1,
+    ASPECT_RATIO_STRETCH = 2,
+
+    ASPECT_RATIO_MAX = 2,
+};
 
 enum bind_actions {
     BIND_UNASSIGNED = 0,
@@ -125,9 +139,10 @@ struct app {
     } file;
 
     struct {
+        uint32_t display_size;
+        enum aspect_ratio aspect_ratio;
         bool vsync;
         bool color_correction;
-        uint32_t display_size;
 
         struct {
             enum texture_filter_kind kind;
@@ -155,23 +170,47 @@ struct app {
         /* How many frames before going back to power save mode? */
         uint32_t power_save_fcounter;
 
-        /* Size of the menu bar, used to re-scale the window */
-        ImVec2 menubar_size;
+        /* Temporary value used to measure the FPS. */
+        uint32_t ticks_last_frame;
+
+        /*
+        ** The size of the `game` window.
+        ** Usually the size of the window minus the menubar's height (if it is visible).
+        */
+        struct {
+            int width;
+            int height;
+        } game;
 
         /* Size of the FPS counter within the menubar. */
         float menubar_fps_width;
 
-        // Temporary value used to measure the FPS.
-        uint32_t ticks_last_frame;
+        /* Size of the menu bar */
+        ImVec2 menubar_size;
+
+        struct {
+            int width;
+            int height;
+
+            /* Used when resizing, to know if the new window is bigger or smaller than the previous one. */
+            uint32_t old_area;
+
+            /* Indicates if the window needs to be resized */
+            bool resize;
+
+            /*
+            ** Indicates if the user wants to resize the windows to the given ratio.
+            ** Otherwise, `video->display_size` is taken
+            **/
+            bool resize_with_ratio;
+            float resize_ratio;
+        } win;
 
         /* The error message to print, if any. */
         struct {
             char *msg;
             bool active;
         } error;
-
-        /* Indicates if the user wants to resize the windows to `video->display_size`. */
-        bool refresh_windows_size;
     } ui;
 
     struct {

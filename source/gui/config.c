@@ -102,6 +102,11 @@ gui_config_load(
             app->video.display_size = max(1, min(app->video.display_size, 5));
         }
 
+        if (mjson_get_number(data, data_len, "$.video.aspect_ratio", &d)) {
+            app->video.aspect_ratio = (int)d;
+            app->video.aspect_ratio = max(ASPECT_RATIO_MIN, min(app->video.aspect_ratio, ASPECT_RATIO_MAX));
+        }
+
         if (mjson_get_bool(data, data_len, "$.video.vsync", &b)) {
             app->video.vsync = b;
         }
@@ -112,6 +117,7 @@ gui_config_load(
 
         if (mjson_get_number(data, data_len, "$.video.texture_filter", &d)) {
             app->video.texture_filter.kind = (int)d;
+            app->video.texture_filter.kind = max(TEXTURE_FILTER_MIN, min(app->video.texture_filter.kind, TEXTURE_FILTER_MAX));
             app->video.texture_filter.refresh = true;
         }
     }
@@ -227,6 +233,7 @@ gui_config_save(
             // Video
             "video": {
                 "display_size": %d,
+                "aspect_ratio": %d,
                 "vsync": %B,
                 "color_correction": %B,
                 "texture_filter": %d
@@ -267,6 +274,7 @@ gui_config_save(
         (int)app->emulation.rtc_autodetect,
         (int)app->emulation.rtc_force_enabled,
         (int)app->video.display_size,
+        (int)app->video.aspect_ratio,
         (int)app->video.vsync,
         (int)app->video.color_correction,
         (int)app->video.texture_filter.kind,
