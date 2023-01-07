@@ -38,7 +38,8 @@ gui_win_game(
             game_size_y = GBA_SCREEN_HEIGHT * game_scale;
             break;
         };
-        case ASPECT_RATIO_STRETCH: {
+        case ASPECT_RATIO_STRETCH:
+        default: {
             game_pos_x = 0;
             game_pos_y = 0;
             game_size_x = app->ui.game.width;

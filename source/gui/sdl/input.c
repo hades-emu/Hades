@@ -118,24 +118,37 @@ gui_sdl_handle_inputs(
                         app->run = false;
                         break;
                     };
+                    case SDL_WINDOWEVENT_MAXIMIZED: {
+                        app->ui.win.maximized = true;
+                        break;
+                    };
+                    case SDL_WINDOWEVENT_RESTORED: {
+                        app->ui.win.maximized = false;
+                        break;
+                    };
                     case SDL_WINDOWEVENT_SIZE_CHANGED: {
                         app->ui.win.old_area = app->ui.win.width * app->ui.win.height;
                         app->ui.win.width = event.window.data1;
                         app->ui.win.height = event.window.data2;
-
                         app->ui.game.width = app->ui.win.width;
                         app->ui.game.height = app->ui.win.height - app->ui.menubar_size.y;
                         break;
                     };
                     case SDL_WINDOWEVENT_RESIZED: {
-                        if (app->video.aspect_ratio == ASPECT_RATIO_RESIZE) {
+                        /*
+                        ** The "auto-resize the window to keep the aspect ration" feature conflicts with the "maximized window" feature of modern
+                        ** exploitation systems.
+                        **
+                        ** In that case, we do not auto-resize the window and display black borders instead.
+                        */
+                        if (app->video.aspect_ratio == ASPECT_RATIO_RESIZE && !app->ui.win.maximized) {
                             app->ui.win.resize = true;
                             app->ui.win.resize_with_ratio = true;
 
                             if (app->ui.win.width * app->ui.win.height >= app->ui.win.old_area) { // The window was made bigger
-                                app->ui.win.resize_ratio = max(app->ui.game.width / (float)GBA_SCREEN_WIDTH, app->ui.game.height / (float)GBA_SCREEN_HEIGHT);
+                                app->ui.win.resize_ratio = max(app->ui.game.width / ((float)GBA_SCREEN_WIDTH * app->ui.scale), app->ui.game.height / ((float)GBA_SCREEN_HEIGHT * app->ui.scale));
                             } else {
-                                app->ui.win.resize_ratio = min(app->ui.game.width / (float)GBA_SCREEN_WIDTH, app->ui.game.height / (float)GBA_SCREEN_HEIGHT);
+                                app->ui.win.resize_ratio = min(app->ui.game.width / ((float)GBA_SCREEN_WIDTH * app->ui.scale), app->ui.game.height / ((float)GBA_SCREEN_HEIGHT * app->ui.scale));
                             }
                         }
                         break;
