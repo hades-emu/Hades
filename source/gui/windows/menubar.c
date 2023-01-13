@@ -104,7 +104,7 @@ gui_win_menubar_emulation(
 
             for (x = 0; x <= 5; ++x) {
                 if (!x) {
-                    if (igMenuItemBool(speed[x], "F1", app->emulation.unbounded, true)) {
+                    if (igMenuItemBool(speed[x], "Space", app->emulation.unbounded, true)) {
                         app->emulation.unbounded ^= 1;
                         gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
                     }

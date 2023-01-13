@@ -222,6 +222,12 @@ struct app {
 
         SDL_Keycode keyboard[BIND_MAX];
         enum bind_actions controller[SDL_CONTROLLER_BUTTON_MAX];
+
+        /*
+        ** If `true`, "unbound speed" is toggled when the key is pressed,
+        ** otherwise it happens only when it is pressed.
+        */
+        bool unbound_speed_toggle;
     } binds;
 
 #if WITH_DEBUGGER

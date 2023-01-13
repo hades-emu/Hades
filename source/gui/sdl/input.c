@@ -31,7 +31,7 @@ gui_sdl_setup_default_binds(
     app->binds.keyboard[BIND_GBA_RIGHT] = SDL_GetKeyFromName("D");
     app->binds.keyboard[BIND_GBA_START] = SDL_GetKeyFromName("Return");
     app->binds.keyboard[BIND_GBA_SELECT] = SDL_GetKeyFromName("Backspace");
-    app->binds.keyboard[BIND_EMULATOR_UNBOUNDED_SPEED] = SDL_GetKeyFromName("F1");
+    app->binds.keyboard[BIND_EMULATOR_UNBOUNDED_SPEED] = SDL_GetKeyFromName("Space");
     app->binds.keyboard[BIND_EMULATOR_SCREENSHOT] = SDL_GetKeyFromName("F2");
     app->binds.keyboard[BIND_EMULATOR_QUICKSAVE] = SDL_GetKeyFromName("F5");
     app->binds.keyboard[BIND_EMULATOR_QUICKLOAD] = SDL_GetKeyFromName("F8");
@@ -51,6 +51,7 @@ gui_sdl_setup_default_binds(
 #if SDL_VERSION_ATLEAST(2, 0, 14)
     app->binds.controller[SDL_CONTROLLER_BUTTON_TOUCHPAD] = BIND_EMULATOR_UNBOUNDED_SPEED;
 #endif
+    app->binds.unbound_speed_toggle = false;
 }
 
 static
@@ -71,6 +72,13 @@ gui_sdl_handle_bind(
         case BIND_GBA_R:                        gba_send_keyinput(app->emulation.gba, KEY_R, pressed); break;
         case BIND_GBA_SELECT:                   gba_send_keyinput(app->emulation.gba, KEY_SELECT, pressed); break;
         case BIND_GBA_START:                    gba_send_keyinput(app->emulation.gba, KEY_START, pressed); break;
+        case BIND_EMULATOR_UNBOUNDED_SPEED: {
+            if (!app->binds.unbound_speed_toggle) {
+                app->emulation.unbounded = pressed;
+                gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
+            }
+            break;
+        };
         default: break;
     }
 
@@ -81,8 +89,10 @@ gui_sdl_handle_bind(
 
     switch (bind) {
         case BIND_EMULATOR_UNBOUNDED_SPEED: {
-            app->emulation.unbounded ^= 1;
-            gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
+            if (app->binds.unbound_speed_toggle) {
+                app->emulation.unbounded ^= 1;
+                gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
+            }
             break;
         };
         case BIND_EMULATOR_SCREENSHOT:          app_game_screenshot(app); break;

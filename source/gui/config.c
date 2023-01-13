@@ -139,6 +139,7 @@ gui_config_load(
 
     // Binds
     {
+        int b;
         char str[4096];
 
         if (mjson_get_string(data, data_len, "$.binds.keyboard.a", str, sizeof(str)) > 0) {
@@ -179,6 +180,10 @@ gui_config_load(
 
         if (mjson_get_string(data, data_len, "$.binds.keyboard.select", str, sizeof(str)) > 0) {
             app->binds.keyboard[BIND_GBA_SELECT] = SDL_GetKeyFromName(str);
+        }
+
+        if (mjson_get_bool(data, data_len, "$.binds.unbound_speed_toggle", &b)) {
+            app->binds.unbound_speed_toggle = b;
         }
     }
 
@@ -258,7 +263,8 @@ gui_config_save(
                     "right": %Q,
                     "start": %Q,
                     "select": %Q,
-                }
+                },
+                "unbound_speed_toggle": %B
             }
         }),
         app->file.bios_path,
@@ -291,7 +297,9 @@ gui_config_save(
         keyboard_binds_name[BIND_GBA_LEFT],
         keyboard_binds_name[BIND_GBA_RIGHT],
         keyboard_binds_name[BIND_GBA_START],
-        keyboard_binds_name[BIND_GBA_SELECT]
+        keyboard_binds_name[BIND_GBA_SELECT],
+
+        app->binds.unbound_speed_toggle
     );
 
     if (!data) {
