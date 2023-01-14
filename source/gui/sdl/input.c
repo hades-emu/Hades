@@ -21,6 +21,15 @@ void
 gui_sdl_setup_default_binds(
     struct app *app
 ) {
+    size_t i;
+
+    for (i = BIND_MIN; i < BIND_MAX; ++i) {
+        app->binds.keyboard[i] = SDLK_UNKNOWN;
+        app->binds.keyboard_alt[i] = SDLK_UNKNOWN;
+        app->binds.controller[i] = SDL_CONTROLLER_BUTTON_INVALID;
+        app->binds.controller_alt[i] = SDL_CONTROLLER_BUTTON_INVALID;
+    }
+
     app->binds.keyboard[BIND_GBA_A] = SDL_GetKeyFromName("P");
     app->binds.keyboard[BIND_GBA_B] = SDL_GetKeyFromName("L");
     app->binds.keyboard[BIND_GBA_L] = SDL_GetKeyFromName("E");
@@ -31,27 +40,85 @@ gui_sdl_setup_default_binds(
     app->binds.keyboard[BIND_GBA_RIGHT] = SDL_GetKeyFromName("D");
     app->binds.keyboard[BIND_GBA_START] = SDL_GetKeyFromName("Return");
     app->binds.keyboard[BIND_GBA_SELECT] = SDL_GetKeyFromName("Backspace");
-    app->binds.keyboard[BIND_EMULATOR_UNBOUNDED_SPEED] = SDL_GetKeyFromName("Space");
+    app->binds.keyboard[BIND_EMULATOR_SPEED_X1] = SDL_GetKeyFromName("1");
+    app->binds.keyboard[BIND_EMULATOR_SPEED_X2] = SDL_GetKeyFromName("2");
+    app->binds.keyboard[BIND_EMULATOR_SPEED_X3] = SDL_GetKeyFromName("3");
+    app->binds.keyboard[BIND_EMULATOR_SPEED_X4] = SDL_GetKeyFromName("4");
+    app->binds.keyboard[BIND_EMULATOR_SPEED_X5] = SDL_GetKeyFromName("5");
+    app->binds.keyboard[BIND_EMULATOR_SPEED_MAX_TOGGLE] = SDL_GetKeyFromName("F1");
+    app->binds.keyboard[BIND_EMULATOR_SPEED_MAX_HOLD] = SDL_GetKeyFromName("Space");
     app->binds.keyboard[BIND_EMULATOR_SCREENSHOT] = SDL_GetKeyFromName("F2");
     app->binds.keyboard[BIND_EMULATOR_QUICKSAVE] = SDL_GetKeyFromName("F5");
     app->binds.keyboard[BIND_EMULATOR_QUICKLOAD] = SDL_GetKeyFromName("F8");
 
-    app->binds.controller[SDL_CONTROLLER_BUTTON_A] = BIND_GBA_A;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_B] = BIND_GBA_B;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_X] = BIND_GBA_B;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_Y] = BIND_GBA_A;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_LEFTSHOULDER] = BIND_GBA_L;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] = BIND_GBA_R;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_DPAD_UP] = BIND_GBA_UP;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_DPAD_DOWN] = BIND_GBA_DOWN;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_DPAD_LEFT] = BIND_GBA_LEFT;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_DPAD_RIGHT] = BIND_GBA_RIGHT;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_START] = BIND_GBA_START;
-    app->binds.controller[SDL_CONTROLLER_BUTTON_BACK] = BIND_GBA_SELECT;
+    app->binds.keyboard_alt[BIND_GBA_UP] = SDL_GetKeyFromName("Up");
+    app->binds.keyboard_alt[BIND_GBA_DOWN] = SDL_GetKeyFromName("Down");
+    app->binds.keyboard_alt[BIND_GBA_LEFT] = SDL_GetKeyFromName("Left");
+    app->binds.keyboard_alt[BIND_GBA_RIGHT] = SDL_GetKeyFromName("Right");
+
+    app->binds.controller[BIND_GBA_A] = SDL_CONTROLLER_BUTTON_A;
+    app->binds.controller[BIND_GBA_B] = SDL_CONTROLLER_BUTTON_B;
+    app->binds.controller[BIND_GBA_L] = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+    app->binds.controller[BIND_GBA_R] = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+    app->binds.controller[BIND_GBA_UP] = SDL_CONTROLLER_BUTTON_DPAD_UP;
+    app->binds.controller[BIND_GBA_DOWN] = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+    app->binds.controller[BIND_GBA_LEFT] = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+    app->binds.controller[BIND_GBA_RIGHT] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+    app->binds.controller[BIND_GBA_START] = SDL_CONTROLLER_BUTTON_START;
+    app->binds.controller[BIND_GBA_SELECT] = SDL_CONTROLLER_BUTTON_BACK;
+    app->binds.controller[BIND_EMULATOR_SCREENSHOT] = SDL_CONTROLLER_BUTTON_GUIDE;
+    app->binds.controller[BIND_EMULATOR_SPEED_X1] = SDL_CONTROLLER_BUTTON_LEFTSTICK;
+    app->binds.controller[BIND_EMULATOR_SPEED_X2] = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
 #if SDL_VERSION_ATLEAST(2, 0, 14)
-    app->binds.controller[SDL_CONTROLLER_BUTTON_TOUCHPAD] = BIND_EMULATOR_UNBOUNDED_SPEED;
+    app->binds.controller[BIND_EMULATOR_SPEED_MAX_TOGGLE] = SDL_CONTROLLER_BUTTON_TOUCHPAD;
 #endif
-    app->binds.unbound_speed_toggle = false;
+
+    app->binds.controller_alt[BIND_GBA_A] = SDL_CONTROLLER_BUTTON_Y;
+    app->binds.controller_alt[BIND_GBA_B] = SDL_CONTROLLER_BUTTON_X;
+}
+
+/*
+** Clear any existing keybindings matching the given key.
+*/
+static
+void
+gui_sdl_bind_keyboard_clear(
+    struct app *app,
+    SDL_KeyCode key
+) {
+    size_t i;
+
+    for (i = BIND_MIN; i < BIND_MAX; ++i) {
+        if (app->binds.keyboard[i] == key) {
+            app->binds.keyboard[i] = SDLK_UNKNOWN;
+        }
+
+        if (app->binds.keyboard_alt[i] == key) {
+            app->binds.keyboard_alt[i] = SDLK_UNKNOWN;
+        }
+    }
+}
+
+/*
+** Clear any existing keybindings matching the given key.
+*/
+static
+void
+gui_sdl_bind_controller_clear(
+    struct app *app,
+    SDL_GameControllerButton btn
+) {
+    size_t i;
+
+    for (i = BIND_MIN; i < BIND_MAX; ++i) {
+        if (app->binds.controller[i] == btn) {
+            app->binds.controller[i] = SDL_CONTROLLER_BUTTON_INVALID;
+        }
+
+        if (app->binds.controller_alt[i] == btn) {
+            app->binds.controller_alt[i] = SDL_CONTROLLER_BUTTON_INVALID;
+        }
+    }
 }
 
 static
@@ -72,11 +139,9 @@ gui_sdl_handle_bind(
         case BIND_GBA_R:                        gba_send_keyinput(app->emulation.gba, KEY_R, pressed); break;
         case BIND_GBA_SELECT:                   gba_send_keyinput(app->emulation.gba, KEY_SELECT, pressed); break;
         case BIND_GBA_START:                    gba_send_keyinput(app->emulation.gba, KEY_START, pressed); break;
-        case BIND_EMULATOR_UNBOUNDED_SPEED: {
-            if (!app->binds.unbound_speed_toggle) {
-                app->emulation.unbounded = pressed;
-                gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
-            }
+        case BIND_EMULATOR_SPEED_MAX_HOLD: {
+            app->emulation.unbounded = pressed;
+            gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
             break;
         };
         default: break;
@@ -88,11 +153,19 @@ gui_sdl_handle_bind(
     }
 
     switch (bind) {
-        case BIND_EMULATOR_UNBOUNDED_SPEED: {
-            if (app->binds.unbound_speed_toggle) {
-                app->emulation.unbounded ^= 1;
-                gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
-            }
+        case BIND_EMULATOR_SPEED_X1:
+        case BIND_EMULATOR_SPEED_X2:
+        case BIND_EMULATOR_SPEED_X3:
+        case BIND_EMULATOR_SPEED_X4:
+        case BIND_EMULATOR_SPEED_X5: {
+            app->emulation.unbounded = false;
+            app->emulation.speed = 1 + (bind - BIND_EMULATOR_SPEED_X1);
+            gba_send_speed(app->emulation.gba, app->emulation.speed);
+            break;
+        };
+        case BIND_EMULATOR_SPEED_MAX_TOGGLE: {
+            app->emulation.unbounded ^= true;
+            gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
             break;
         };
         case BIND_EMULATOR_SCREENSHOT:          app_game_screenshot(app); break;
@@ -209,8 +282,36 @@ gui_sdl_handle_inputs(
                     break;
                 }
 
+                /* Handle the special case where we are creating new keybindings. */
+                if (app->ui.keybindings_editor.visible) {
+                    if (event.type == SDL_KEYDOWN) {
+                        // The `Escape` key is used to clear a bind.
+                        if (event.key.keysym.sym == SDLK_ESCAPE) {
+                            if (app->ui.keybindings_editor.keyboard_target) {
+                                *app->ui.keybindings_editor.keyboard_target = SDLK_UNKNOWN;
+                                app->ui.keybindings_editor.keyboard_target = NULL;
+                            }
+                            if (app->ui.keybindings_editor.controller_target) {
+                                *app->ui.keybindings_editor.controller_target = SDL_CONTROLLER_BUTTON_INVALID;
+                                app->ui.keybindings_editor.controller_target = NULL;
+                            }
+                        } else if (app->ui.keybindings_editor.keyboard_target) {
+                            gui_sdl_bind_keyboard_clear(app, event.key.keysym.sym);
+                            *app->ui.keybindings_editor.keyboard_target = event.key.keysym.sym;
+                            app->ui.keybindings_editor.keyboard_target = NULL;
+                        }
+                    }
+                    break ;
+                }
+
                 for (i = BIND_MIN; i < BIND_MAX; ++i) {
+                    // Normal binds
                     if (app->binds.keyboard[i] == event.key.keysym.sym) {
+                        gui_sdl_handle_bind(app, i, event.type == SDL_KEYDOWN);
+                    }
+
+                    // Alternative binds
+                    if (app->binds.keyboard_alt[i] == event.key.keysym.sym) {
                         gui_sdl_handle_bind(app, i, event.type == SDL_KEYDOWN);
                     }
                 }
@@ -219,12 +320,39 @@ gui_sdl_handle_inputs(
             };
             case SDL_CONTROLLERBUTTONUP:
             case SDL_CONTROLLERBUTTONDOWN: {
-                gui_sdl_handle_bind(app, app->binds.controller[event.cbutton.button], event.type == SDL_CONTROLLERBUTTONDOWN);
+                size_t i;
+
+                /* Handle the special case where we are creating new keybindings. */
+                if (app->ui.keybindings_editor.visible) {
+                    if (event.type == SDL_CONTROLLERBUTTONDOWN && app->ui.keybindings_editor.controller_target) {
+                        gui_sdl_bind_controller_clear(app, event.cbutton.button);
+                        *app->ui.keybindings_editor.controller_target = event.cbutton.button;
+                        app->ui.keybindings_editor.controller_target = NULL;
+                    }
+                    break ;
+                }
+
+                for (i = BIND_MIN; i < BIND_MAX; ++i) {
+                    // Normal binds
+                    if (app->binds.controller[i] == event.cbutton.button) {
+                        gui_sdl_handle_bind(app, i, event.type == SDL_CONTROLLERBUTTONDOWN);
+                    }
+
+                    // Alternative binds
+                    if (app->binds.controller_alt[i] == event.cbutton.button) {
+                        gui_sdl_handle_bind(app, i, event.type == SDL_CONTROLLERBUTTONDOWN);
+                    }
+                }
                 break;
             };
             case SDL_CONTROLLERAXISMOTION: {
                 bool state_a;
                 bool state_b;
+
+                /* Disable the joysticks if the keybindings editor is visible */
+                if (app->ui.keybindings_editor.visible) {
+                    break;
+                }
 
                 state_a = (event.jaxis.value >= INT16_MAX / 2);  // At least 50% of the axis
                 state_b = (event.jaxis.value <= INT16_MIN / 2);

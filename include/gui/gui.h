@@ -31,6 +31,9 @@ void gui_sdl_video_init(struct app *app);
 void gui_sdl_video_cleanup(struct app *app);
 void gui_sdl_video_render_frame(struct app *app);
 
+/* gui/windows/keybinds.c */
+void gui_win_keybinds_editor(struct app *app);
+
 /* gui/windows/error.c */
 void gui_new_error(struct app *app, char *msg);
 void gui_win_error(struct app *app);

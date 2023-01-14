@@ -188,6 +188,8 @@ gui_sdl_video_render_frame(
         gui_win_game(app);
     }
 
+    gui_win_keybinds_editor(app);
+
     gui_win_error(app);
 
     /* Render the imGui frame */

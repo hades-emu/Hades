@@ -77,6 +77,13 @@ gui_win_menubar_file(
                 NFD_FreePath(path);
             }
         }
+
+        igSeparator();
+
+        if (igMenuItemBool("Keybindings", NULL, false, true)) {
+            app->ui.keybindings_editor.open = true;
+        }
+
         igEndMenu();
     }
 }
@@ -104,7 +111,10 @@ gui_win_menubar_emulation(
 
             for (x = 0; x <= 5; ++x) {
                 if (!x) {
-                    if (igMenuItemBool(speed[x], "Space", app->emulation.unbounded, true)) {
+                    char const *bind;
+
+                    bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_MAX_TOGGLE]);
+                    if (igMenuItemBool(speed[x], bind ? bind : "", app->emulation.unbounded, true)) {
                         app->emulation.unbounded ^= 1;
                         gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
                     }
@@ -261,6 +271,8 @@ void
 gui_win_menubar_video(
     struct app *app
 ) {
+    char const *bind;
+
     if (igBeginMenu("Video", true)) {
 
         /* Display Size */
@@ -363,7 +375,8 @@ gui_win_menubar_video(
         igSeparator();
 
         /* Take a screenshot */
-        if (igMenuItemBool("Screenshot", "F2", false, app->emulation.started)) {
+        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SCREENSHOT]);
+        if (igMenuItemBool("Screenshot", bind ? bind : "", false, app->emulation.started)) {
             app_game_screenshot(app);
         }
 
@@ -430,6 +443,13 @@ gui_win_menubar_help(
     if (open_about) {
         igOpenPopup("About", ImGuiPopupFlags_None);
     }
+
+    // Always center the modal
+    igSetNextWindowPos(
+        (ImVec2){.x = app->ui.ioptr->DisplaySize.x * 0.5f, .y = app->ui.ioptr->DisplaySize.y * 0.5f},
+        ImGuiCond_Always,
+        (ImVec2){.x = 0.5f, .y = 0.5f}
+    );
 
     if (igBeginPopupModal("About", NULL, ImGuiWindowFlags_Popup | ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
         igText("Hades");
