@@ -15,8 +15,9 @@ libgui = static_library(
     'sdl/input.c',
     'sdl/video.c',
     'windows/error.c',
-    'windows/menubar.c',
     'windows/game.c',
+    'windows/keybinds.c',
+    'windows/menubar.c',
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
     ],

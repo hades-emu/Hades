@@ -139,46 +139,30 @@ gui_config_load(
 
     // Binds
     {
-        char str[4096];
+        char path[256];
+        char str[256];
+        size_t layer;
+        size_t bind;
 
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.a", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_A] = SDL_GetKeyFromName(str);
-        }
+        static char const *layers_name[] = {
+            "keyboard",
+            "keyboard_alt",
+            "controller",
+            "controller_alt"
+        };
 
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.b", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_B] = SDL_GetKeyFromName(str);
-        }
-
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.l", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_L] = SDL_GetKeyFromName(str);
-        }
-
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.r", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_R] = SDL_GetKeyFromName(str);
-        }
-
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.up", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_UP] = SDL_GetKeyFromName(str);
-        }
-
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.down", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_DOWN] = SDL_GetKeyFromName(str);
-        }
-
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.left", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_LEFT] = SDL_GetKeyFromName(str);
-        }
-
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.right", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_RIGHT] = SDL_GetKeyFromName(str);
-        }
-
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.start", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_START] = SDL_GetKeyFromName(str);
-        }
-
-        if (mjson_get_string(data, data_len, "$.binds.keyboard.select", str, sizeof(str)) > 0) {
-            app->binds.keyboard[BIND_GBA_SELECT] = SDL_GetKeyFromName(str);
+        for (layer = 0; layer < 4; ++layer) {
+            for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
+                snprintf(path, sizeof(path), "$.binds.%s.%s", layers_name[layer], binds_slug[bind]);
+                if (mjson_get_string(data, data_len, path, str, sizeof(str)) > 0) {
+                    switch (layer) {
+                        case 0: app->binds.keyboard[bind] = SDL_GetKeyFromName(str); break;
+                        case 1: app->binds.keyboard_alt[bind] = SDL_GetKeyFromName(str); break;
+                        case 2: app->binds.controller[bind] = SDL_GameControllerGetButtonFromString(str); break;
+                        case 3: app->binds.controller_alt[bind] = SDL_GameControllerGetButtonFromString(str); break;
+                    }
+                }
+            }
         }
     }
 
@@ -244,22 +228,6 @@ gui_config_save(
                 "mute": %B,
                 "level": %g
             },
-
-            // Binds
-            "binds": {
-                "keyboard": {
-                    "a": %Q,
-                    "b": %Q,
-                    "l": %Q,
-                    "r": %Q,
-                    "up": %Q,
-                    "down": %Q,
-                    "left": %Q,
-                    "right": %Q,
-                    "start": %Q,
-                    "select": %Q,
-                }
-            }
         }),
         app->file.bios_path,
         app->file.recent_roms[0],
@@ -279,24 +247,65 @@ gui_config_save(
         (int)app->video.color_correction,
         (int)app->video.texture_filter.kind,
         (int)app->audio.mute,
-        app->audio.level,
-
-        // Keyboard binds
-        keyboard_binds_name[BIND_GBA_A],
-        keyboard_binds_name[BIND_GBA_B],
-        keyboard_binds_name[BIND_GBA_L],
-        keyboard_binds_name[BIND_GBA_R],
-        keyboard_binds_name[BIND_GBA_UP],
-        keyboard_binds_name[BIND_GBA_DOWN],
-        keyboard_binds_name[BIND_GBA_LEFT],
-        keyboard_binds_name[BIND_GBA_RIGHT],
-        keyboard_binds_name[BIND_GBA_START],
-        keyboard_binds_name[BIND_GBA_SELECT]
+        app->audio.level
     );
 
     if (!data) {
         logln(HS_ERROR, "Failed to write the configuration to \"%s\": the formatted JSON is invalid.", app->file.config_path);
         goto end;
+    }
+
+    // Add binds dynamically
+    {
+        char str[256];
+        size_t layer;
+        size_t bind;
+
+        static char const *layers_name[] = {
+            "keyboard",
+            "keyboard_alt",
+            "controller",
+            "controller_alt"
+        };
+
+        for (layer = 0; layer < 4; ++layer) {
+            for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
+                char *tmp_data;
+                char const *key_name;
+
+                switch (layer) {
+                    case 0: key_name = SDL_GetKeyName(app->binds.keyboard[bind]); break;
+                    case 1: key_name = SDL_GetKeyName(app->binds.keyboard_alt[bind]); break;
+                    case 2: key_name = SDL_GameControllerGetStringForButton(app->binds.controller[bind]); break;
+                    case 3: key_name = SDL_GameControllerGetStringForButton(app->binds.controller_alt[bind]); break;
+                }
+
+                // Build a temporary JSON containing our bind
+                snprintf(
+                    str,
+                    sizeof(str),
+                    STR({
+                        "binds": {
+                            "%s": {
+                                "%s": "%s",
+                            },
+                        },
+                    }),
+                    layers_name[layer],
+                    binds_slug[bind],
+                    key_name ? key_name : ""
+                );
+
+                tmp_data = NULL;
+
+                // Merge that json with the previous one into `tmp_data`.
+                mjson_merge(data, strlen(data), str, strlen(str), mjson_print_dynamic_buf, &tmp_data);
+
+                // Swap `data` with `tmp_data`.
+                free(data);
+                data = tmp_data;
+            }
+        }
     }
 
     out = mjson_pretty(data, strlen(data), "  ", mjson_print_dynamic_buf, &pretty_data);
