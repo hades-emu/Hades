@@ -22,7 +22,7 @@
 
 ## Features
 
-Hades is still under heavy development but it aimes to have a decent balance between usability, speed and accuracy.
+Hades is still under heavy development but it aims to have a decent balance between usability, speed and accuracy.
 
 Currently, Hades features:
   - Decent accuracy
@@ -39,7 +39,7 @@ You can download the latest nightly build for your favorite operating system [he
 
 You need a game ROM and a legitimate GameBoy Advance BIOS or a [replacement BIOS](https://github.com/Cult-of-GBA/BIOS/blob/master/bios.bin).
 
-Sart Hades, then click on `File` -> `Open BIOS` and select the BIOS (`bios.bin`) you downloaded above.
+Start Hades, then click on `File` -> `Open BIOS` and select the BIOS (`bios.bin`) you downloaded above.
 
 You can now play all your favorite games! Click on `File` -> `Open` and select the ROM (`<game>.gba`) you want to run.
 
