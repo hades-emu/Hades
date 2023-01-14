@@ -63,14 +63,28 @@ enum bind_actions {
     BIND_GBA_START,
     BIND_GBA_SELECT,
 
-    BIND_EMULATOR_UNBOUNDED_SPEED,
+    BIND_EMULATOR_SPEED_X1,
+    BIND_EMULATOR_SPEED_X2,
+    BIND_EMULATOR_SPEED_X3,
+    BIND_EMULATOR_SPEED_X4,
+    BIND_EMULATOR_SPEED_X5,
+    BIND_EMULATOR_SPEED_MAX_TOGGLE,
+    BIND_EMULATOR_SPEED_MAX_HOLD,
     BIND_EMULATOR_SCREENSHOT,
     BIND_EMULATOR_QUICKSAVE,
     BIND_EMULATOR_QUICKLOAD,
 
     BIND_MAX,
     BIND_MIN = BIND_GBA_A,
+
+    BIND_GBA_MIN = BIND_GBA_A,
+    BIND_GBA_MAX = BIND_GBA_SELECT,
+    BIND_EMULATOR_MIN = BIND_EMULATOR_SPEED_X1,
+    BIND_EMULATOR_MAX = BIND_EMULATOR_QUICKLOAD,
 };
+
+extern char const * const binds_pretty_name[];
+extern char const * const binds_slug[];
 
 struct app {
     atomic_bool run;
@@ -212,16 +226,21 @@ struct app {
             char *msg;
             bool active;
         } error;
+
+        struct {
+            bool open;
+            bool visible;
+
+            SDL_Keycode *keyboard_target;
+            SDL_GameControllerButton *controller_target;
+        } keybindings_editor;
     } ui;
 
     struct {
-        /*
-        ** For the keyboard, we bind a key to each action.
-        ** For controllers, we bind an action to each key.
-        */
-
         SDL_Keycode keyboard[BIND_MAX];
-        enum bind_actions controller[SDL_CONTROLLER_BUTTON_MAX];
+        SDL_Keycode keyboard_alt[BIND_MAX];
+        SDL_GameControllerButton controller[BIND_MAX];
+        SDL_GameControllerButton controller_alt[BIND_MAX];
     } binds;
 
 #if WITH_DEBUGGER
