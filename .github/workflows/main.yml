@@ -62,6 +62,34 @@ jobs:
       - name: Test Hades
         run: |
           /tmp/build/Hades.app/Contents/MacOS/hades --help
+
+      - name: Sign Hades App
+        # Only run if a certificate is set
+        if: ${{ env.MACOS_CODESIGN_CRT != '' && env.MACOS_CODESIGN_CRT_IDENTITY != '' }}
+        run: |
+          # Create keychain with certificate to use to sign the binaries.
+          echo "$MACOS_CODESIGN_CRT" | base64 -d > certificate.p12
+          security create-keychain -p test123 build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p test123 build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CODESIGN_CRT_PWD" -T /usr/bin/codesign
+          # Delete certificate to avoid leaking it to next steps
+          rm certificate.p12
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k test123 build.keychain
+
+          echo "Signing file /tmp/build/Hades.app"
+          /usr/bin/codesign --deep --force -s "$MACOS_CODESIGN_CRT_IDENTITY" --options runtime "/tmp/build/Hades.app" -v
+
+          # Get rid of the keychain containing certificate to avoid leaking it
+          # to next steps.
+          security lock-keychain build.keychain
+          security default-keychain -s
+          security delete-keychain build.keychain
+        env:
+          MACOS_CODESIGN_CRT: ${{ secrets.MACOS_CODESIGN_CRT }}
+          MACOS_CODESIGN_CRT_PWD: ${{ secrets.MACOS_CODESIGN_CRT_PWD }}
+          MACOS_CODESIGN_CRT_IDENTITY: ${{ secrets.MACOS_CODESIGN_CRT_IDENTITY }}
+
       - name: Pack Hades
         run: |
           rm -rf Hades.dmg
@@ -80,6 +108,17 @@ jobs:
               --app-drop-link 425 225 \
               Hades-Installer.dmg \
               /tmp/build/
+
+      - name: Notarize Hades DMG
+        if: ${{ env.MACOS_APPLE_USERNAME != '' }}
+        run: |
+          echo "Notarizing file $file"
+          xcrun notarytool submit --apple-id "$MACOS_APPLE_USERNAME" --password "$MACOS_APPLE_PASSWORD" --team-id "$MACOS_APPLE_TEAMID" --wait "Hades-Installer.dmg"
+          xcrun stapler staple -v "Hades-Installer.dmg"
+        env:
+          MACOS_APPLE_USERNAME: ${{ secrets.MACOS_APPLE_USERNAME }}
+          MACOS_APPLE_PASSWORD: ${{ secrets.MACOS_APPLE_PASSWORD }}
+          MACOS_APPLE_TEAMID: ${{ secrets.MACOS_APPLE_TEAMID }}
 
       - name: Collect Artifacts
         uses: actions/upload-artifact@v2
