@@ -5,7 +5,7 @@
 [![Build](https://github.com/Arignir/Hades/actions/workflows/main.yml/badge.svg)](https://github.com/Arignir/Hades/actions/workflows/main.yml)
 
 <p align="center"><img src="https://i.imgur.com/4OrVpX2.png"></p>
-<p align="center"><i>A Nintendo Game Boy Advance emulator.</i></p>
+<p align="center"><i>A Nintendo Game Boy Advance Emulator</i></p>
 
 ## Screenshots
 
@@ -26,10 +26,11 @@ Hades is still under heavy development but it aims to have a decent balance betw
 
 Currently, Hades features:
   - Decent accuracy
-  - Color correction
+  - Game controller support
+  - Keys and buttons remapping
   - Quick Saves (also known as Save State)
   - Real Time Clock (RTC) support
-  - Game controller support
+  - Color correction
 
 It is the third 🥉 software emulator to pass the AGS Aging Cartridge used to test Game Boy Advance systems.
 
@@ -55,11 +56,12 @@ The build dependencies are:
   - `SDL2`
   - `OpenGL`
   - `glew`
+  - `gtk3`
 
 On Ubuntu, you can install all those dependencies with:
 
 ```bash
-$ apt install meson ninja-build gcc libsdl2-dev libglew-dev
+$ apt install meson ninja-build gcc libsdl2-dev libglew-dev libgtk-3-dev
 ```
 
 To build Hades, run:
