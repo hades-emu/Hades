@@ -82,8 +82,10 @@ enum io_regs {
     IO_REG_WAVE_RAM1    = 0x04000094,
     IO_REG_WAVE_RAM2    = 0x04000098,
     IO_REG_WAVE_RAM3    = 0x0400009C,
-    IO_REG_FIFO_A       = 0x040000A0,
-    IO_REG_FIFO_B       = 0x040000A4,
+    IO_REG_FIFO_A_L     = 0x040000A0,
+    IO_REG_FIFO_A_H     = 0x040000A2,
+    IO_REG_FIFO_B_L     = 0x040000A4,
+    IO_REG_FIFO_B_H     = 0x040000A6,
 
     /* DMA Transfer Channels */
 

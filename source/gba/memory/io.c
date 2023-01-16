@@ -104,8 +104,10 @@ mem_io_reg_name(
         case IO_REG_WAVE_RAM1:      return ("wave_ram1");
         case IO_REG_WAVE_RAM2:      return ("wave_ram2");
         case IO_REG_WAVE_RAM3:      return ("wave_ram3");
-        case IO_REG_FIFO_A:         return ("fifo_a");
-        case IO_REG_FIFO_B:         return ("fifo_b");
+        case IO_REG_FIFO_A_L:       return ("fifo_a_l");
+        case IO_REG_FIFO_A_H:       return ("fifo_a_h");
+        case IO_REG_FIFO_B_L:       return ("fifo_b_l");
+        case IO_REG_FIFO_B_H:       return ("fifo_b_h");
         case IO_REG_DMA0SAD_LO:     return ("dma0sad_lo");
         case IO_REG_DMA0SAD_HI:     return ("dma0sad_hi");
         case IO_REG_DMA0DAD_LO:     return ("dma0dad_lo");
@@ -514,17 +516,17 @@ mem_io_write8(
             io->waveram[!io->sound3cnt_l.bank_select][addr - IO_REG_WAVE_RAM0] = val;
             break;
         };
-        case IO_REG_FIFO_A + 0:
-        case IO_REG_FIFO_A + 1:
-        case IO_REG_FIFO_A + 2:
-        case IO_REG_FIFO_A + 3: {
+        case IO_REG_FIFO_A_L + 0:
+        case IO_REG_FIFO_A_L + 1:
+        case IO_REG_FIFO_A_H + 0:
+        case IO_REG_FIFO_A_H + 1: {
             apu_fifo_write8(gba, FIFO_A, val);
             break;
         };
-        case IO_REG_FIFO_B + 0:
-        case IO_REG_FIFO_B + 1:
-        case IO_REG_FIFO_B + 2:
-        case IO_REG_FIFO_B + 3: {
+        case IO_REG_FIFO_B_L + 0:
+        case IO_REG_FIFO_B_L + 1:
+        case IO_REG_FIFO_B_H + 0:
+        case IO_REG_FIFO_B_H + 1: {
             apu_fifo_write8(gba, FIFO_B, val);
             break;
         };
