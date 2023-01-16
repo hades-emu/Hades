@@ -360,9 +360,9 @@ extern bool g_verbose[HS_END];
 extern bool g_verbose_global;
 
 /* common/log.c */
-void logln(enum modules module, char const *fmt, ...);
-void panic(enum modules module, char const *fmt, ...) __attribute__((noreturn));
-void unimplemented(enum modules module, char const *fmt, ...) __attribute__((noreturn));
+void logln(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3)));
+void panic(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
+void unimplemented(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
 void disable_colors(void);
 
 /* common/utils.c */
