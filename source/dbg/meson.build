@@ -16,6 +16,7 @@ libdbg = static_library(
     'cmd/exit.c',
     'cmd/frame.c',
     'cmd/help.c',
+    'cmd/io.c',
     'cmd/print.c',
     'cmd/registers.c',
     'cmd/reset.c',
@@ -29,6 +30,7 @@ libdbg = static_library(
     'lang/utils.c',
     'lang/variables.c',
     'dbg.c',
+    'io.c',
     dependencies: [
         dependency('libedit', required: true, static: get_option('static_executable')),
         dependency('capstone', required: true, static: get_option('static_executable')),

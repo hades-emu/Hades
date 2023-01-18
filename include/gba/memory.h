@@ -279,8 +279,11 @@ uint32_t mem_read32(struct gba *gba, uint32_t addr, enum access_types access_typ
 uint32_t mem_read32_raw(struct gba *gba, uint32_t addr);
 uint32_t mem_read32_ror(struct gba *gba, uint32_t addr, enum access_types access_type);
 void mem_write8(struct gba *gba, uint32_t addr, uint8_t val, enum access_types access_type);
+void mem_write8_raw(struct gba *gba, uint32_t addr, uint8_t val);
 void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_types access_type);
+void mem_write16_raw(struct gba *gba, uint32_t addr, uint16_t val);
 void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_types access_type);
+void mem_write32_raw(struct gba *gba, uint32_t addr, uint32_t val);
 
 /* gba/memory/storage/eeprom.c */
 uint8_t mem_eeprom_read8(struct gba *gba);
