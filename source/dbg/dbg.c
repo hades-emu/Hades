@@ -130,6 +130,13 @@ struct command g_commands[] = {
         .description = "Run until the end of the current frame.",
         .func = debugger_cmd_frame,
     },
+    [CMD_IO] = {
+        .name = "io",
+        .alias = NULL,
+        .usage = "io [REGISTER] [VALUE]",
+        .description = "Print or set the value of an IO register.",
+        .func = debugger_cmd_io,
+    },
     {
         .name = NULL,
     }
@@ -310,6 +317,9 @@ debugger_run(
             debugger_lang_const_variables_push(app, name, ptr);
         }
     }
+
+    /* Build the IO registers table */
+    debugger_io_init();
 
     debugger_wait_for_emulator(app, true);
 

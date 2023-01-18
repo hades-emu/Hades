@@ -639,6 +639,15 @@ mem_write8(
     template_write(uint8_t, gba, addr, val);
 }
 
+void
+mem_write8_raw(
+    struct gba *gba,
+    uint32_t addr,
+    uint8_t val
+) {
+    template_write(uint8_t, gba, addr, val);
+}
+
 /*
 ** write a half-word at the given address.
 */
@@ -659,6 +668,16 @@ mem_write16(
     template_write(uint16_t, gba, addr, val);
 }
 
+void
+mem_write16_raw(
+    struct gba *gba,
+    uint32_t addr,
+    uint16_t val
+) {
+    addr &= ~(sizeof(uint16_t) - 1);
+    template_write(uint16_t, gba, addr, val);
+}
+
 /*
 ** Write a word at the given address.
 */
@@ -676,5 +695,15 @@ mem_write32(
 #endif
 
     mem_access(gba, addr, sizeof(uint32_t), access_type);
+    template_write(uint32_t, gba, addr, val);
+}
+
+void
+mem_write32_raw(
+    struct gba *gba,
+    uint32_t addr,
+    uint32_t val
+) {
+    addr &= ~(sizeof(uint32_t) - 1);
     template_write(uint32_t, gba, addr, val);
 }

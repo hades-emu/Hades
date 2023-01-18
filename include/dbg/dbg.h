@@ -131,6 +131,22 @@ enum commands_list {
     CMD_VERBOSE,
     CMD_RESET,
     CMD_FRAME,
+    CMD_IO,
+};
+
+struct io_bits {
+    size_t start;
+    size_t end;
+    char const *label;
+    char const *hint;
+};
+
+struct io_register {
+    uint32_t address;
+    size_t size;
+    char const *name;
+    struct io_bits *bits;
+    size_t bits_len;
 };
 
 /*
@@ -138,61 +154,74 @@ enum commands_list {
 */
 extern struct command g_commands[];
 
-/* platform/gui/debugger/cmd/break.c */
+/*
+** An array containing a description of every bits in all IO registers.
+*/
+extern struct io_register *g_io_registers;
+extern size_t g_io_registers_len;
+
+/* dbg/cmd/break.c */
 void debugger_cmd_break(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/context.c */
+/* dbg/cmd/context.c */
 void debugger_dump_context(struct app *, bool);
 void debugger_dump_context_compact(struct app *);
 void debugger_dump_context_compact_header(void);
 void debugger_cmd_context(struct app *, size_t, struct arg const *);
 void debugger_cmd_context_compact(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/continue.c */
+/* dbg/cmd/continue.c */
 void debugger_cmd_continue(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/disas.c */
+/* dbg/cmd/disas.c */
 void debugger_cmd_disas(struct app *, size_t, struct arg const *);
 void debugger_cmd_disas_at(struct app *app, uint32_t ptr, bool);
 
-/* platform/gui/debugger/cmd/exit.c */
+/* dbg/cmd/exit.c */
 void debugger_cmd_exit(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/frame.c */
+/* dbg/cmd/frame.c */
 void debugger_cmd_frame(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/help.c */
+/* dbg/cmd/help.c */
 void debugger_cmd_help(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/print.c */
+/* dbg/cmd/io.c */
+void debugger_cmd_io(struct app *, size_t, struct arg const *);
+
+/* dbg/cmd/print.c */
 void debugger_cmd_print(struct app *, size_t, struct arg const *);
 void debugger_cmd_print_u8(struct app const *, uint32_t, size_t, size_t);
 void debugger_cmd_print_u16(struct app const *, uint32_t, size_t, size_t);
 void debugger_cmd_print_u32(struct app const *, uint32_t, size_t, size_t);
 
-/* platform/gui/debugger/cmd/registers.c */
+/* dbg/cmd/registers.c */
 void debugger_cmd_registers(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/reset.c */
+/* dbg/cmd/reset.c */
 void debugger_cmd_reset(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/step.c */
+/* dbg/cmd/step.c */
 void debugger_cmd_step_in(struct app *, size_t, struct arg const *);
 void debugger_cmd_step_over(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/trace.c */
+/* dbg/cmd/trace.c */
 void debugger_cmd_trace(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/verbose.c */
+/* dbg/cmd/verbose.c */
 void debugger_cmd_verbose(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/cmd/watch.c */
+/* dbg/cmd/watch.c */
 void debugger_cmd_watch(struct app *, size_t, struct arg const *);
 
-/* platform/gui/debugger/debugger.c */
+/* dbg/debugger.c */
 void debugger_run(struct app *app);
 void debugger_reset_terminal(void);
 bool debugger_check_arg_type(enum commands_list command, struct arg const *arg, enum args_type expected);
 void debugger_wait_for_emulator(struct app *, bool);
+
+/* dbg/io.c */
+void debugger_io_init(void);
+struct io_register *debugger_io_lookup_reg(uint32_t address);
 
 #endif /* !defined(GUI_DEBUGGER_H) && defined(WITH_DEBUGGER) */

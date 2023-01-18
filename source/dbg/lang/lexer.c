@@ -86,7 +86,11 @@ debugger_lang_lexe(
                 struct token *t;
 
                 t = token_new(lexer, TOKEN_LITTERAL);
-                t->value.litteral = strtoull(input + i, &end, 0);
+                if (input[i] == '0' && input[i + 1] == 'b') {
+                    t->value.litteral = strtoull(input + i + 2, &end, 2);
+                } else {
+                    t->value.litteral = strtoull(input + i, &end, 0);
+                }
                 i += end - (input + i);
                 if (isalpha(input[i])) {
                     asprintf(&lexer->error, "Invalid character \'%c\'", input[i]);
