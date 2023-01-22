@@ -335,6 +335,17 @@ mem_openbus_read(
                     _ret = mem_eeprom_read8(gba);                                           \
                 } else if (unlikely((addr) >= GPIO_REG_START && (addr) <= GPIO_REG_END && (gba)->gpio.readable)) { \
                     _ret = gpio_read_u8((gba), (addr));                                     \
+                } else if (unlikely(((addr) & 0x00FFFFFF) >= (gba)->memory.rom_size)) {     \
+                    _ret = _Generic(_ret,                                                   \
+                        uint32_t: (                                                         \
+                            (((addr) >> 1) & 0xFFFF) |                                      \
+                            (((((addr) + 2) >> 1) & 0xFFFF) << 16)                          \
+                        ),                                                                  \
+                        uint16_t: (                                                         \
+                            ((addr) >> 1) & 0xFFFF                                          \
+                        ),                                                                  \
+                        default: (((addr) >> (1 + 8 * (align))) & 0xFF) \
+                    );                                                                      \
                 } else {                                                                    \
                     _ret = *(T *)((uint8_t *)((gba)->memory.rom) + ((addr) & CART_MASK));   \
                 }                                                                           \

@@ -186,7 +186,7 @@ core_arm_hsdt(
                 break;
             case 0b11: // Signed Halfword Load
                 // (Unligned addresses are a bitch)
-                if (bitfield_get(addr, 0)) {
+                if (bitfield_get(effective_addr, 0)) {
                     val = (int32_t)(int8_t)mem_read8(gba, effective_addr, NON_SEQUENTIAL);
                 } else {
                     val = (int32_t)(int16_t)mem_read16(gba, effective_addr, NON_SEQUENTIAL);
