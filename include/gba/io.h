@@ -43,13 +43,21 @@ enum io_regs {
     IO_REG_BG2PC        = 0x04000024,
     IO_REG_BG2PD        = 0x04000026,
     IO_REG_BG2X         = 0x04000028,
+    IO_REG_BG2X_L       = 0x04000028,
+    IO_REG_BG2X_H       = 0x0400002A,
     IO_REG_BG2Y         = 0x0400002C,
+    IO_REG_BG2Y_L       = 0x0400002C,
+    IO_REG_BG2Y_H       = 0x0400002E,
     IO_REG_BG3PA        = 0x04000030,
     IO_REG_BG3PB        = 0x04000032,
     IO_REG_BG3PC        = 0x04000034,
     IO_REG_BG3PD        = 0x04000036,
     IO_REG_BG3X         = 0x04000038,
+    IO_REG_BG3X_L       = 0x04000038,
+    IO_REG_BG3X_H       = 0x0400003A,
     IO_REG_BG3Y         = 0x0400003C,
+    IO_REG_BG3Y_L       = 0x0400003C,
+    IO_REG_BG3Y_H       = 0x0400003E,
 
     IO_REG_WIN0H        = 0x04000040,
     IO_REG_WIN1H        = 0x04000042,
@@ -346,12 +354,14 @@ struct io {
     // REG_BGXX
     union {
         uint32_t raw;
+        uint16_t words[2];
         uint8_t bytes[4];
     } bg_x[2];
 
     // REG_BGXY
     union {
         uint32_t raw;
+        uint16_t words[2];
         uint8_t bytes[4];
     } bg_y[2];
 
