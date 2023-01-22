@@ -134,7 +134,7 @@ enum commands_list {
     CMD_IO,
 };
 
-struct io_bits {
+struct io_bitfield {
     size_t start;
     size_t end;
     char const *label;
@@ -145,8 +145,12 @@ struct io_register {
     uint32_t address;
     size_t size;
     char const *name;
-    struct io_bits *bits;
-    size_t bits_len;
+    union {
+        uint16_t *ptr16;
+        uint32_t *ptr32;
+    };
+    struct io_bitfield bitfield[16];
+    size_t bitfield_len;
 };
 
 /*
@@ -157,7 +161,7 @@ extern struct command g_commands[];
 /*
 ** An array containing a description of every bits in all IO registers.
 */
-extern struct io_register *g_io_registers;
+extern struct io_register g_io_registers[];
 extern size_t g_io_registers_len;
 
 /* dbg/cmd/break.c */
@@ -221,7 +225,7 @@ bool debugger_check_arg_type(enum commands_list command, struct arg const *arg, 
 void debugger_wait_for_emulator(struct app *, bool);
 
 /* dbg/io.c */
-void debugger_io_init(void);
+void debugger_io_init(struct gba *);
 struct io_register *debugger_io_lookup_reg(uint32_t address);
 
 #endif /* !defined(GUI_DEBUGGER_H) && defined(WITH_DEBUGGER) */

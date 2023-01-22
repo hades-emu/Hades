@@ -13,6 +13,19 @@
 #include "dbg/dbg.h"
 
 static
+uint32_t
+debugger_cmd_io_read_register(
+    struct app *app,
+    struct io_register *reg
+) {
+    if (reg->size == 2) {
+        return (reg->ptr16 ? *reg->ptr16: mem_read16_raw(app->emulation.gba, reg->address));
+    } else {
+        return (reg->ptr32 ? *reg->ptr32: mem_read32_raw(app->emulation.gba, reg->address));
+    }
+}
+
+static
 void
 debugger_cmd_io_dump_binary(
     struct io_register *reg,
@@ -75,11 +88,7 @@ debugger_cmd_io_dump_reg(
     size_t i;
     uint32_t val;
 
-    if (reg->size == 2) {
-        val = mem_read16_raw(app->emulation.gba, reg->address);
-    } else {
-        val = mem_read32_raw(app->emulation.gba, reg->address);
-    }
+    val = debugger_cmd_io_read_register(app, reg);
     printf(
         "%sRegister%s: %s%s%s (%s%s%s)\n",
         g_light_green,
@@ -102,19 +111,19 @@ debugger_cmd_io_dump_reg(
     debugger_cmd_io_dump_hex(reg, val);
     printf(")\n");
 
-    for (i = 0; i < reg->bits_len; ++i) {
-        struct io_bits *bits;
+    for (i = 0; i < reg->bitfield_len; ++i) {
+        struct io_bitfield *bitfield;
         uint32_t value;
 
-        bits = &reg->bits[i];
-        value = bitfield_get_range(val, bits->start, bits->end + 1);
+        bitfield = &reg->bitfield[i];
+        value = bitfield_get_range(val, bitfield->start, bitfield->end + 1);
         printf(
             "%s%3i%s | %-30s %s\n",
             value ? g_light_magenta : g_dark_gray,
             value,
             g_reset,
-            bits->label,
-            bits->hint
+            bitfield->label,
+            bitfield->hint
         );
     }
 }
@@ -130,12 +139,20 @@ debugger_cmd_io(
         size_t i;
 
         printf(
-            "| %-8s | %-18s | %-18s | %-6s |\n"
-            "|%.10s|%.20s|%.20s|%.8s|\n",
+            "|%.12s|%.10s|%.20s|%.20s|%.8s|\n"
+            "| %-10s | %-8s | %-18s | %-18s | %-6s |\n"
+            "|%.12s|%.10s|%.20s|%.20s|%.8s|\n",
+            "-------------------------------------",
+            "-------------------------------------",
+            "-------------------------------------",
+            "-------------------------------------",
+            "-------------------------------------",
+            "Address",
             "Name",
             "Description",
             "Binary",
             "Hex",
+            "-------------------------------------",
             "-------------------------------------",
             "-------------------------------------",
             "-------------------------------------",
@@ -146,20 +163,15 @@ debugger_cmd_io(
             struct io_register *reg;
 
             reg = &g_io_registers[i];
-            if (reg->size == 2) {
-                val = mem_read16_raw(app->emulation.gba, reg->address);
-            } else {
-                val = mem_read32_raw(app->emulation.gba, reg->address);
-            }
+            val = debugger_cmd_io_read_register(app, reg);
 
             printf(
-                "| %s%-8s%s | %s%-18s%s | ",
+                "| 0x%08x | %s%-8s%s | %-18s | ",
+                reg->address,
                 g_light_green,
                 mem_io_reg_name(reg->address),
                 g_reset,
-                g_light_green,
-                reg->name,
-                g_reset
+                reg->name
             );
             debugger_cmd_io_dump_binary(reg, val);
             printf(" | ");
@@ -168,7 +180,8 @@ debugger_cmd_io(
         }
 
         printf(
-            "|%.10s|%.20s|%.20s|%.8s|\n",
+            "|%.12s|%.10s|%.20s|%.20s|%.8s|\n",
+            "-------------------------------------",
             "-------------------------------------",
             "-------------------------------------",
             "-------------------------------------",

@@ -319,7 +319,7 @@ debugger_run(
     }
 
     /* Build the IO registers table */
-    debugger_io_init();
+    debugger_io_init(app->emulation.gba);
 
     debugger_wait_for_emulator(app, true);
 
