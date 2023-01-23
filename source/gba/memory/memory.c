@@ -429,7 +429,7 @@ mem_openbus_read(
                     uint16_t: ({                                                                \
                         *(T *)((uint8_t *)((gba)->memory.vram) + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
                     }),                                                                         \
-                    default: ({                                                                \
+                    default: ({                                                                 \
                         addr &= ~(sizeof(uint16_t) - 1);                                        \
                         *(T *)((uint8_t *)((gba)->memory.vram) + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
                         *(T *)((uint8_t *)((gba)->memory.vram) + (((addr) + 1) & ((((addr) + 1) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
@@ -445,10 +445,8 @@ mem_openbus_read(
                     uint16_t: ({                                                                \
                         *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK)) = (T)(val); \
                     }),                                                                         \
-                    default: ({                                                                \
-                        addr &= ~(sizeof(uint16_t) - 1);                                        \
-                        *(T *)((uint8_t *)((gba)->memory.oam) + ((addr) & OAM_MASK)) = (T)(val); \
-                        *(T *)((uint8_t *)((gba)->memory.oam) + (((addr) + 1) & OAM_MASK)) = (T)(val); \
+                    default: ({                                                                 \
+                        /* Ignore u8 write attemps to OAM memory */                             \
                     })                                                                          \
                 );                                                                              \
                 break;                                                                          \
