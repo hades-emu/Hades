@@ -414,6 +414,7 @@ mem_openbus_read(
                         *(T *)((uint8_t *)((gba)->memory.palram) + ((addr) & PALRAM_MASK)) = (T)(val); \
                     }),                                                                         \
                     default: ({                                                                 \
+                        /* u8 writes to PALRAM are writting to both the upper/lower bytes */    \
                         addr &= ~(sizeof(uint16_t) - 1);                                        \
                         *(T *)((uint8_t *)((gba)->memory.palram) + ((addr) & PALRAM_MASK)) = (T)(val); \
                         *(T *)((uint8_t *)((gba)->memory.palram) + (((addr) + 1) & PALRAM_MASK)) = (T)(val); \
@@ -430,9 +431,21 @@ mem_openbus_read(
                         *(T *)((uint8_t *)((gba)->memory.vram) + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
                     }),                                                                         \
                     default: ({                                                                 \
-                        addr &= ~(sizeof(uint16_t) - 1);                                        \
-                        *(T *)((uint8_t *)((gba)->memory.vram) + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
-                        *(T *)((uint8_t *)((gba)->memory.vram) + (((addr) + 1) & ((((addr) + 1) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
+                        uint32_t new_addr;                                                      \
+                                                                                                \
+                        new_addr = (addr) & 0x1FFFF;                                            \
+                        /*
+                        ** Ignore u8 write attemps to OBJ VRAM memory
+                        ** OBJ VRAM size is different depending on the BG mode.
+                        */                                                                      \
+                        if (                                                                    \
+                            ((gba)->io.dispcnt.bg_mode <= 2 && (new_addr) < 0x10000)            \
+                            || ((gba)->io.dispcnt.bg_mode >= 3 && (new_addr) < 0x14000)         \
+                        ) {                                                                     \
+                            addr &= ~(sizeof(uint16_t) - 1);                                    \
+                            *(T *)((uint8_t *)((gba)->memory.vram) + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
+                            *(T *)((uint8_t *)((gba)->memory.vram) + (((addr) + 1) & ((((addr) + 1) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))) = (T)(val); \
+                        }                                                                       \
                     })                                                                          \
                 );                                                                              \
                 break;                                                                          \
