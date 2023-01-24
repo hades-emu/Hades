@@ -131,7 +131,7 @@ static struct hs_arm_insn const arm_insns[] = {
     {"swp",         "xxxx_00010_b_00nnnndddd00001001mmmm",              core_arm_swp},
 };
 
-static size_t const arm_insns_len = ARRAY_LEN(arm_insns);
+static size_t const arm_insns_len = array_length(arm_insns);
 
 void (*arm_lut[4096])(struct gba *gba, uint32_t op) = { 0 };
 bool cond_lut[256];
@@ -206,7 +206,7 @@ core_arm_decode_insns(void)
     ** Build the lookup table for ARM instructions.
     */
 
-    for (i = 0; i < ARRAY_LEN(arm_lut); ++i) {
+    for (i = 0; i < array_length(arm_lut); ++i) {
         uint32_t op;
         size_t j;
 
@@ -225,7 +225,7 @@ core_arm_decode_insns(void)
     ** Build the conditions lookup table for ARM instructions.
     */
 
-    for (i = 0; i < ARRAY_LEN(cond_lut); ++i) {
+    for (i = 0; i < array_length(cond_lut); ++i) {
         bool o;
         bool c;
         bool z;

@@ -49,7 +49,7 @@ gui_win_menubar_file(
         if (igBeginMenu("Open Recent", app->file.recent_roms[0] != NULL)) {
             uint32_t x;
 
-            for (x = 0; x < ARRAY_LEN(app->file.recent_roms) && app->file.recent_roms[x]; ++x) {
+            for (x = 0; x < array_length(app->file.recent_roms) && app->file.recent_roms[x]; ++x) {
                 if (igMenuItemBool(hs_basename(app->file.recent_roms[x]), NULL, false, true)) {
                     free(app->file.game_path);
                     app->file.game_path = strdup(app->file.recent_roms[x]);
@@ -219,7 +219,7 @@ gui_win_menubar_emulation(
 
             igSeparator();
 
-            for (x = 0; x < ARRAY_LEN(backup_types); ++x) {
+            for (x = 0; x < array_length(backup_types); ++x) {
                 if (igMenuItemBool(backup_types[x], NULL, app->emulation.backup_type == x, true)) {
                     app->emulation.backup_type = x;
                 }
