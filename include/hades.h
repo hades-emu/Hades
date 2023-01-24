@@ -124,6 +124,12 @@ static char const * const modules_str[] = {
 /* Return the value of the bits from `start` (inclusive) to `end` (exclusive) of `val`. */
 # define bitfield_get_range(val, start, end)    ((typeof(val))(((typeof(val))((val) << (sizeof(val) * 8 - (end)))) >> (sizeof(val) * 8 - (end) + (start))))
 
+/* Align `x` to the given power of two. */
+# define align_on(x, y)                         ((x) & ~((y) - 1))
+
+/* Align `x` to the size of T */
+# define align(T, x)                            ((typeof(x))(align_on((x), sizeof(T))))
+
 /*
 ** Sign-extend a 8-bits value to a signed 32-bit value.
 */

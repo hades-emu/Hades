@@ -96,6 +96,10 @@ enum access_types {
 #define SRAM_MASK               (SRAM_END - SRAM_START)
 #define SRAM_REGION             (SRAM_START >> 24)
 
+#define SRAM_MIRROR_START       (0x0F000000)
+#define SRAM_MIRROR_END         (0x0F00FFFF)
+#define SRAM_MIRROR_REGION      (SRAM_MIRROR_START >> 24)
+
 #define FLASH_START             (0x0E000000)
 #define FLASH_END               (0x0E00FFFF)
 #define FLASH64_SIZE            (FLASH_END - FLASH_START + 1)
