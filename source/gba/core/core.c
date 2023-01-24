@@ -38,11 +38,11 @@ core_init(
 
     memset(core, 0, sizeof(*core));
 
-    for (i = 0; i < ARRAY_LEN(core->registers); ++i) {
+    for (i = 0; i < array_length(core->registers); ++i) {
         core->registers[i] = 0;
     }
 
-    for (i = 0; i < ARRAY_LEN(core->bank_registers); ++i) {
+    for (i = 0; i < array_length(core->bank_registers); ++i) {
         core->bank_registers[i] = 0;
     }
 

@@ -23,7 +23,7 @@ debugger_io_new_register(
 ) {
     struct io_register *reg;
 
-    hs_assert(g_io_registers_len < ARRAY_LEN(g_io_registers));
+    hs_assert(g_io_registers_len < array_length(g_io_registers));
 
     reg = &g_io_registers[g_io_registers_len];
     ++g_io_registers_len;
@@ -60,7 +60,7 @@ debugger_io_new_bitfield(
 ) {
     struct io_bitfield *bitfield;
 
-    hs_assert(reg->bitfield_len < ARRAY_LEN(reg->bitfield));
+    hs_assert(reg->bitfield_len < array_length(reg->bitfield));
 
     bitfield = &reg->bitfield[reg->bitfield_len];
     ++reg->bitfield_len;
@@ -133,7 +133,7 @@ debugger_io_init(
                 bg3cnt,
             };
 
-            for (i = 0; i < ARRAY_LEN(bgxcnt); ++i) {
+            for (i = 0; i < array_length(bgxcnt); ++i) {
                 reg = bgxcnt[i];
 
                 debugger_io_new_bitfield(reg,  0, 1,  "BG Priority",               "(0-3, 0=Highest)");
@@ -184,7 +184,7 @@ debugger_io_init(
                 bg3vofs,
             };
 
-            for (i = 0; i < ARRAY_LEN(bgxhvofs); ++i) {
+            for (i = 0; i < array_length(bgxhvofs); ++i) {
                 reg = bgxhvofs[i];
 
                 debugger_io_new_bitfield(reg,  0, 8,   "Offset",       NULL);

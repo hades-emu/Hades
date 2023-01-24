@@ -96,7 +96,7 @@ static struct hs_thumb_insn const thumb_insns[] = {
     { "bl_2",           "11111xxxxxxxxxxx",          core_thumb_branch_link},
 };
 
-static size_t const thumb_insns_len = ARRAY_LEN(thumb_insns);
+static size_t const thumb_insns_len = array_length(thumb_insns);
 
 void (*thumb_lut[256])(struct gba *gba, uint16_t op) = { 0 };
 
@@ -170,7 +170,7 @@ core_thumb_decode_insns(void)
     ** Build the lookup table for thumb instructions.
     */
 
-    for (i = 0; i < ARRAY_LEN(thumb_lut); ++i) {
+    for (i = 0; i < array_length(thumb_lut); ++i) {
         uint16_t op;
         size_t j;
 

@@ -41,11 +41,6 @@
 #  define __noreturn        __attribute__((noreturn))
 # endif /* !__noreturn */
 
-/*
-** Calculate the number of elements of a static array.
-*/
-# define ARRAY_LEN(x)       (sizeof(x) / sizeof((x)[0]))
-
 enum modules {
     HS_INFO      = 0,
 

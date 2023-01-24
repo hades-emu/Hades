@@ -1744,7 +1744,7 @@ db_lookup_game(
     gba->game_entry = NULL;
     name = (char *)gba->memory.rom + 0xAC;
 
-    for (i = 0; i < ARRAY_LEN(game_database); ++i) {
+    for (i = 0; i < array_length(game_database); ++i) {
         if (!strncmp(name, game_database[i].code, 3)) {
             gba->game_entry = game_database + i;
             logln(
