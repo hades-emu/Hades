@@ -64,6 +64,12 @@ On Ubuntu, you can install all those dependencies with:
 $ apt install meson ninja-build gcc libsdl2-dev libglew-dev libgtk-3-dev
 ```
 
+On Fedora, you can install all those dependencies with:
+
+```bash
+$ dnf install meson ninja-build gcc SDL2-devel glew-devel gtk3-devel
+```
+
 To build Hades, run:
 
 ```bash
