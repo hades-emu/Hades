@@ -23,6 +23,7 @@ void
 gui_sdl_video_init(
     struct app *app
 ) {
+    int err;
     SDL_DisplayMode mode;
     char const *glsl_version;
 
@@ -113,7 +114,7 @@ gui_sdl_video_init(
     SDL_GL_SetSwapInterval(app->video.vsync);
 
     /* Initialize OpenGL */
-    int err = glewInit();
+    err = glewInit();
 
     if (err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY) {
         logln(HS_ERROR, "Failed to initialize OpenGL.");
