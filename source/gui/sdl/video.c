@@ -113,7 +113,9 @@ gui_sdl_video_init(
     SDL_GL_SetSwapInterval(app->video.vsync);
 
     /* Initialize OpenGL */
-    if (glewInit()) {
+    int err = glewInit();
+
+    if (err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY) {
         logln(HS_ERROR, "Failed to initialize OpenGL.");
         exit(EXIT_FAILURE);
     }
