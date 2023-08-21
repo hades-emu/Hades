@@ -219,17 +219,21 @@ struct memory {
     uint8_t rom[CART_SIZE];
     size_t rom_size;
 
-    // Backup Storage
-    uint8_t *backup_storage_data;
-    enum backup_storage_types backup_storage_type;
-    enum backup_storage_sources backup_storage_source;
-    atomic_bool backup_storage_dirty;
+    struct {
+        struct {
+            // Flash memory
+            struct flash flash;
 
-    // Flash memory
-    struct flash flash;
+            // EEPROM memory
+            struct eeprom eeprom;
+        } chip;
+        uint8_t *data;
+        size_t size;
+        enum backup_storage_types type;
+        enum backup_storage_sources source;
 
-    // EEPROM memory
-    struct eeprom eeprom;
+        atomic_bool dirty;
+    } backup_storage;
 
     // Prefetch
     struct prefetch_buffer pbuffer;

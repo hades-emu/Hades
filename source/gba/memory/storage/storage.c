@@ -58,35 +58,35 @@ mem_backup_storage_detect(
 ) {
     /* Prioritize the game database. */
     if (gba->game_entry) {
-        gba->memory.backup_storage_type = gba->game_entry->storage;
-        gba->memory.backup_storage_source = BACKUP_SOURCE_DATABASE;
+        gba->memory.backup_storage.type = gba->game_entry->storage;
+        gba->memory.backup_storage.source = BACKUP_SOURCE_DATABASE;
         return ;
     }
 
-    gba->memory.backup_storage_source = BACKUP_SOURCE_AUTO_DETECT;
+    gba->memory.backup_storage.source = BACKUP_SOURCE_AUTO_DETECT;
 
     /* Auto-detection algorithm are very simple: they look for a bunch of strings in the game's ROM. */
     if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "EEPROM_V", 7)) {
         logln(HS_INFO, "Detected EEPROM 64K memory.");
         logln(HS_WARNING, "If you are having issues with corrupted saves, try EEPROM 8K instead.");
-        gba->memory.backup_storage_type = BACKUP_EEPROM_64K;
+        gba->memory.backup_storage.type = BACKUP_EEPROM_64K;
     } else if (
            array_search(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_V", 5)
         || array_search(gba->memory.rom, sizeof(gba->memory.rom), "SRAM_F_V", 5)
     ) {
         logln(HS_INFO, "Detected SRAM memory");
-        gba->memory.backup_storage_type = BACKUP_SRAM;
+        gba->memory.backup_storage.type = BACKUP_SRAM;
     } else if (array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH1M_V", 8)) {
         logln(HS_INFO, "Detected Flash 128 kilobytes / 1 megabit");
-        gba->memory.backup_storage_type = BACKUP_FLASH128;
+        gba->memory.backup_storage.type = BACKUP_FLASH128;
     } else if (
            array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH_V", 6)
         || array_search(gba->memory.rom, sizeof(gba->memory.rom), "FLASH512_V", 9)
     ) {
         logln(HS_INFO, "Detected Flash 64 kilobytes / 512 kilobits");
-        gba->memory.backup_storage_type = BACKUP_FLASH64;
+        gba->memory.backup_storage.type = BACKUP_FLASH64;
     } else {
-        gba->memory.backup_storage_type = BACKUP_NONE;
+        gba->memory.backup_storage.type = BACKUP_NONE;
     }
 }
 
@@ -94,24 +94,25 @@ void
 mem_backup_storage_init(
     struct gba *gba
 ) {
-    free(gba->memory.backup_storage_data);
+    free(gba->memory.backup_storage.data);
 
-    if (gba->memory.backup_storage_type > BACKUP_NONE) {
+    if (gba->memory.backup_storage.type > BACKUP_NONE) {
         logln(
             HS_INFO,
             "Backup memory is %s%s%s (%s).",
             g_light_magenta,
-            backup_storage_names[gba->memory.backup_storage_type],
+            backup_storage_names[gba->memory.backup_storage.type],
             g_reset,
-            backup_storage_sources_str[gba->memory.backup_storage_source]
+            backup_storage_sources_str[gba->memory.backup_storage.source]
         );
     } else {
-        logln(HS_INFO, "No backup storage (%s).", backup_storage_sources_str[gba->memory.backup_storage_source]);
+        logln(HS_INFO, "No backup storage (%s).", backup_storage_sources_str[gba->memory.backup_storage.source]);
     }
 
-    if (   gba->memory.backup_storage_type == BACKUP_EEPROM_4K
-        || gba->memory.backup_storage_type == BACKUP_EEPROM_64K
+    if (   gba->memory.backup_storage.type == BACKUP_EEPROM_4K
+        || gba->memory.backup_storage.type == BACKUP_EEPROM_64K
     ) {
+        struct eeprom *eeprom;
 
         /*
         ** Those are masks applied to the address of any ROM data transfers
@@ -120,29 +121,29 @@ mem_backup_storage_init(
         **
         ** A data transfer is going to the EEPROM iff (addr & eeprom.mask) == eeprom.range.
         */
-
+        eeprom = &gba->memory.backup_storage.chip.eeprom;
         if (gba->memory.rom_size > 16 * 1024 * 1024) {
-            gba->memory.eeprom.mask = 0x01FFFF00;
-            gba->memory.eeprom.range = 0x01FFFF00;
+            eeprom->mask = 0x01FFFF00;
+            eeprom->range = 0x01FFFF00;
         } else {
-            gba->memory.eeprom.mask = 0xFF000000;
-            gba->memory.eeprom.range = 0x0d000000;
+            eeprom->mask = 0xFF000000;
+            eeprom->range = 0x0d000000;
         }
 
-        if (gba->memory.backup_storage_type == BACKUP_EEPROM_4K) {
-            gba->memory.eeprom.address_mask = EEPROM_4K_ADDR_MASK;
-            gba->memory.eeprom.address_len = EEPROM_4K_ADDR_LEN;
+        if (gba->memory.backup_storage.type == BACKUP_EEPROM_4K) {
+            eeprom->address_mask = EEPROM_4K_ADDR_MASK;
+            eeprom->address_len = EEPROM_4K_ADDR_LEN;
         } else { // EEPROM_64K
-            gba->memory.eeprom.address_mask = EEPROM_64K_ADDR_MASK;
-            gba->memory.eeprom.address_len = EEPROM_64K_ADDR_LEN;
+            eeprom->address_mask = EEPROM_64K_ADDR_MASK;
+            eeprom->address_len = EEPROM_64K_ADDR_LEN;
         }
     }
 
-    if (gba->memory.backup_storage_type > BACKUP_NONE) {
-        gba->memory.backup_storage_data = calloc(1, backup_storage_sizes[gba->memory.backup_storage_type]);
-        hs_assert(gba->memory.backup_storage_data);
+    if (gba->memory.backup_storage.type > BACKUP_NONE) {
+        gba->memory.backup_storage.data = calloc(1, backup_storage_sizes[gba->memory.backup_storage.type]);
+        hs_assert(gba->memory.backup_storage.data);
     } else {
-        gba->memory.backup_storage_data = NULL;
+        gba->memory.backup_storage.data = NULL;
     }
 }
 
@@ -151,13 +152,13 @@ mem_backup_storage_read8(
     struct gba const *gba,
     uint32_t addr
 ) {
-    switch (gba->memory.backup_storage_type) {
+    switch (gba->memory.backup_storage.type) {
         case BACKUP_FLASH64:
         case BACKUP_FLASH128:
             return (mem_flash_read8(gba, addr));
             break;
         case BACKUP_SRAM:
-            return (gba->memory.backup_storage_data[addr & SRAM_MASK]);
+            return (gba->memory.backup_storage.data[addr & SRAM_MASK]);
             break;
         default:
             return (0);
@@ -170,14 +171,14 @@ mem_backup_storage_write8(
     uint32_t addr,
     uint8_t val
 ) {
-    switch (gba->memory.backup_storage_type) {
+    switch (gba->memory.backup_storage.type) {
         case BACKUP_FLASH64:
         case BACKUP_FLASH128:
             mem_flash_write8(gba, addr, val);
             break;
         case BACKUP_SRAM:
-            gba->memory.backup_storage_data[addr & SRAM_MASK] = val;
-            gba->memory.backup_storage_dirty = true;
+            gba->memory.backup_storage.data[addr & SRAM_MASK] = val;
+            gba->memory.backup_storage.dirty = true;
             break;
         default:
             break;

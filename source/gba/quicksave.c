@@ -38,9 +38,8 @@ quicksave(
         || fwrite(gba->memory.palram, sizeof(gba->memory.palram), 1, file) != 1
         || fwrite(gba->memory.vram, sizeof(gba->memory.vram), 1, file) != 1
         || fwrite(gba->memory.oam, sizeof(gba->memory.oam), 1, file) != 1
+        || fwrite(&gba->memory.backup_storage.chip, sizeof(gba->memory.backup_storage.chip), 1, file) != 1
         || fwrite(&gba->memory.pbuffer, sizeof(gba->memory.pbuffer), 1, file) != 1
-        || fwrite(&gba->memory.flash, sizeof(gba->memory.flash), 1, file) != 1
-        || fwrite(&gba->memory.eeprom, sizeof(gba->memory.eeprom), 1, file) != 1
         || fwrite(&gba->memory.bios_bus, sizeof(gba->memory.bios_bus), 1, file) != 1
         || fwrite(&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use), 1, file) != 1
         || fwrite(&gba->io, sizeof(gba->io), 1, file) != 1
@@ -120,9 +119,8 @@ quickload(
         || fread(gba->memory.palram, sizeof(gba->memory.palram), 1, file) != 1
         || fread(gba->memory.vram, sizeof(gba->memory.vram), 1, file) != 1
         || fread(gba->memory.oam, sizeof(gba->memory.oam), 1, file) != 1
+        || fread(&gba->memory.backup_storage.chip, sizeof(gba->memory.backup_storage.chip), 1, file) != 1
         || fread(&gba->memory.pbuffer, sizeof(gba->memory.pbuffer), 1, file) != 1
-        || fread(&gba->memory.flash, sizeof(gba->memory.flash), 1, file) != 1
-        || fread(&gba->memory.eeprom, sizeof(gba->memory.eeprom), 1, file) != 1
         || fread(&gba->memory.bios_bus, sizeof(gba->memory.bios_bus), 1, file) != 1
         || fread(&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use), 1, file) != 1
         || fread(&gba->io, sizeof(gba->io), 1, file) != 1
