@@ -7,15 +7,14 @@
 **
 \******************************************************************************/
 
-#ifndef GBA_APU_H
-# define GBA_APU_H
+#pragma once
 
-# include <pthread.h>
+#include <pthread.h>
 
-# define FIFO_CAPACITY      32
+#define FIFO_CAPACITY       32
 
 // TODO: This should be dynamically set to a least 3x the value contained in `have.samples` (see `gui/sdl/audio.c`)
-# define APU_RBUFFER_CAPACITY (2048 * 3)
+#define APU_RBUFFER_CAPACITY (2048 * 3)
 
 enum fifo_idx {
     FIFO_A = 0,
@@ -69,5 +68,3 @@ void apu_on_timer_overflow(struct gba *gba, uint32_t timer_id);
 void apu_wave_init(struct gba *);
 void apu_wave_reset(struct gba *gba);
 void apu_wave_stop(struct gba *gba);
-
-#endif /* !GBA_APU_H */

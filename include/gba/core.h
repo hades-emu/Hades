@@ -13,13 +13,12 @@
 **      https://www.dwedit.org/files/ARM7TDMI.pdf
 */
 
-#ifndef GBA_CORE_H
-# define GBA_CORE_H
+#pragma once
 
-# include <stdbool.h>
-# include <stdint.h>
-# include "hades.h"
-# include "gba/memory.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include "hades.h"
+#include "gba/memory.h"
 
 struct gba;
 
@@ -221,5 +220,3 @@ uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t 
 
 /* gba/core/interrupt.c */
 void core_interrupt(struct gba *gba, enum arm_vectors vector, enum arm_modes mode);
-
-#endif /* !GBA_CORE_H */

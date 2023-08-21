@@ -7,21 +7,20 @@
 **
 \******************************************************************************/
 
-#ifndef GBA_GBA_H
-# define GBA_GBA_H
+#pragma once
 
-# include <stdatomic.h>
-# include "gba/core.h"
-# include "gba/memory.h"
-# include "gba/ppu.h"
-# include "gba/io.h"
-# include "gba/apu.h"
-# include "gba/scheduler.h"
-# include "gba/gpio.h"
+#include <stdatomic.h>
+#include "gba/core.h"
+#include "gba/memory.h"
+#include "gba/ppu.h"
+#include "gba/io.h"
+#include "gba/apu.h"
+#include "gba/scheduler.h"
+#include "gba/gpio.h"
 
-# ifdef WITH_DEBUGGER
-#  include "gba/debugger.h"
-# endif
+#ifdef WITH_DEBUGGER
+#include "gba/debugger.h"
+#endif
 
 enum gba_states {
     GBA_STATE_PAUSE = 0,
@@ -231,13 +230,9 @@ void gba_send_settings_color_correction(struct gba *gba, bool color_correction);
 void gba_send_settings_rtc(struct gba *gba, enum device_states state);
 
 #ifdef WITH_DEBUGGER
-
 void gba_send_dbg_frame(struct gba *gba);
 void gba_send_dbg_trace(struct gba *gba, size_t count, void *data, void (*tracer)(void *data));
 void gba_send_dbg_step(struct gba *gba, bool over, size_t count);
 void gba_send_dbg_breakpoints(struct gba *gba, struct breakpoint *breakpoints, size_t len, void (*cleanup)(void *));
 void gba_send_dbg_watchpoints(struct gba *gba, struct watchpoint *watchpoints, size_t len, void (*cleanup)(void *));
-
 #endif
-
-#endif /* GBA_GBA_H */

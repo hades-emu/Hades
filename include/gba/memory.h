@@ -7,11 +7,10 @@
 **
 \******************************************************************************/
 
-#ifndef GBA_MEMORY_H
-# define GBA_MEMORY_H
+#pragma once
 
-# include <stdint.h>
-# include "hades.h"
+#include <stdint.h>
+#include "hades.h"
 
 /*
 ** Access to the memory bus can either be sequential (the requested address follows the previous one)
@@ -314,11 +313,9 @@ void quickload(struct gba *gba, char const *);
 ** with no overhead and to prevent the cycle counter to be incremented.
 */
 
-# define mem_palram_read8(gba, addr)        ((gba)->memory.palram[(addr) & PALRAM_MASK])
-# define mem_vram_read8(gba, addr)          ((gba)->memory.vram[(addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2)])
-# define mem_oam_read8(gba, addr)           ((gba)->memory.oam[(addr) & OAM_MASK])
-# define mem_palram_read16(gba, addr)       (*(uint16_t *)((uint8_t *)(gba)->memory.palram + ((addr) & PALRAM_MASK)))
-# define mem_vram_read16(gba, addr)         (*(uint16_t *)((uint8_t *)(gba)->memory.vram + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))))
-# define mem_oam_read16(gba, addr)          (*(uint16_t *)((uint8_t *)(gba)->memory.oam + ((addr) & OAM_MASK)))
-
-#endif /* !GBA_MEMORY_H */
+#define mem_palram_read8(gba, addr)         ((gba)->memory.palram[(addr) & PALRAM_MASK])
+#define mem_vram_read8(gba, addr)           ((gba)->memory.vram[(addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2)])
+#define mem_oam_read8(gba, addr)            ((gba)->memory.oam[(addr) & OAM_MASK])
+#define mem_palram_read16(gba, addr)        (*(uint16_t *)((uint8_t *)(gba)->memory.palram + ((addr) & PALRAM_MASK)))
+#define mem_vram_read16(gba, addr)          (*(uint16_t *)((uint8_t *)(gba)->memory.vram + ((addr) & (((addr) & 0x10000) ? VRAM_MASK_1 : VRAM_MASK_2))))
+#define mem_oam_read16(gba, addr)           (*(uint16_t *)((uint8_t *)(gba)->memory.oam + ((addr) & OAM_MASK)))

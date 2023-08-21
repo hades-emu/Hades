@@ -7,18 +7,17 @@
 **
 \******************************************************************************/
 
-#ifndef GBA_PPU_H
-# define GBA_PPU_H
+#pragma once
 
-# include "hades.h"
+#include "hades.h"
 
-# define GBA_SCREEN_WIDTH           240
-# define GBA_SCREEN_HEIGHT          160
-# define GBA_SCREEN_REAL_WIDTH      308
-# define GBA_SCREEN_REAL_HEIGHT     228
-# define CYCLES_PER_PIXEL           4
-# define CYCLES_PER_FRAME           (CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT)
-# define CYCLES_PER_SECOND          (16 * 1024 * 1024)
+#define GBA_SCREEN_WIDTH            240
+#define GBA_SCREEN_HEIGHT           160
+#define GBA_SCREEN_REAL_WIDTH       308
+#define GBA_SCREEN_REAL_HEIGHT      228
+#define CYCLES_PER_PIXEL            4
+#define CYCLES_PER_FRAME            (CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT)
+#define CYCLES_PER_SECOND           (16 * 1024 * 1024)
 
 enum oam_mode {
     OAM_MODE_NORMAL,
@@ -152,5 +151,3 @@ void ppu_render_black_screen(struct gba *gba);
 /* gba/ppu/window.c */
 void ppu_window_build_masks(struct gba *gba, uint32_t y);
 uint8_t ppu_find_top_window(struct gba const *gba, struct scanline const *, uint32_t x);
-
-#endif /* !GBA_PPU_H */

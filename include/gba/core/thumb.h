@@ -7,11 +7,10 @@
 **
 \******************************************************************************/
 
-#ifndef CORE_THUMB_H
-# define CORE_THUMB_H
+#pragma once
 
-# include <stdint.h>
-# include <unistd.h>
+#include <stdint.h>
+#include <unistd.h>
 
 struct gba;
 
@@ -29,7 +28,6 @@ struct hs_thumb_decoded_insn {
 extern void (*thumb_lut[256])(struct gba *gba, uint16_t op);
 
 /* gba/thumb/alu.c */
-
 void core_thumb_lo_add(struct gba *gba, uint16_t op);
 void core_thumb_lo_sub(struct gba *gba, uint16_t op);
 void core_thumb_mov_imm(struct gba *gba, uint16_t op);
@@ -72,5 +70,3 @@ void core_thumb_sdt_sp(struct gba *gba, uint16_t op);
 
 /* gba/thumb/swi.c */
 void core_thumb_swi(struct gba *gba, uint16_t op);
-
-#endif /* !CORE_THUMB_H */

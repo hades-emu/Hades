@@ -7,10 +7,9 @@
 **
 \******************************************************************************/
 
-#ifndef GUI_GUI_H
-# define GUI_GUI_H
+#pragma once
 
-# include "hades.h"
+#include "hades.h"
 
 struct app;
 
@@ -48,5 +47,3 @@ void gui_win_menubar(struct app *app);
 void gui_config_load(struct app *app);
 void gui_config_save(struct app *app);
 void gui_config_push_recent_rom(struct app *app);
-
-#endif /* !GUI_GUI_H */

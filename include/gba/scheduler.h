@@ -7,10 +7,9 @@
 **
 \******************************************************************************/
 
-#ifndef GBA_SCHEDULER_H
-# define GBA_SCHEDULER_H
+#pragma once
 
-# define INVALID_EVENT_HANDLE   ((size_t)(-1))
+#define INVALID_EVENT_HANDLE    ((size_t)(-1))
 
 typedef size_t event_handler_t;
 
@@ -67,17 +66,17 @@ void sched_cancel_event(struct gba *gba, event_handler_t handler);
 void sched_process_events(struct gba *gba);
 void sched_run_for(struct gba *gba, uint64_t cycles);
 
-# define NEW_FIX_EVENT(_at, _callback)      \
+#define NEW_FIX_EVENT(_at, _callback)       \
     (struct scheduler_event){               \
         .active = true,                     \
         .repeat = false,                    \
         .at = (_at),                        \
         .period = 0,                        \
-        .args = (struct event_args){{ 0 }},  \
+        .args = (struct event_args){{ 0 }}, \
         .callback = (_callback),            \
     }
 
-# define NEW_FIX_EVENT_ARGS(_at, _callback, ...)    \
+#define NEW_FIX_EVENT_ARGS(_at, _callback, ...)     \
     (struct scheduler_event){                       \
         .active = true,                             \
         .repeat = false,                            \
@@ -87,7 +86,7 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
         .callback = (_callback),                    \
     }
 
-# define NEW_REPEAT_EVENT(_at, _period, _callback)  \
+#define NEW_REPEAT_EVENT(_at, _period, _callback)   \
     (struct scheduler_event){                       \
         .active = true,                             \
         .repeat = true,                             \
@@ -97,7 +96,7 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
         .callback = (_callback),                    \
     }
 
-# define NEW_REPEAT_EVENT_ARGS(_at, _period, _callback, ...)    \
+#define NEW_REPEAT_EVENT_ARGS(_at, _period, _callback, ...)     \
     (struct scheduler_event){                                   \
         .active = true,                                         \
         .repeat = true,                                         \
@@ -107,12 +106,10 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
         .callback = (_callback),                                \
     }
 
-# define EVENT_ARGS_1(_1)               ((struct event_args) { .a1 = (_1), .a2 = EVENT_ARG_EMPTY })
-# define EVENT_ARGS_2(_1, _2)           ((struct event_args) { .a1 = (_1), .a2 = (_2) })
-# define EVENT_ARGS_3(_1, _2, _3)       ((struct event_args) { .a1 = (_1), .a2 = (_2), .a3 = (_3) })
-# define EVENT_ARGS_4(_1, _2, _3, _4)   ((struct event_args) { .a1 = (_1), .a2 = (_2), .a3 = (_3), .a4 = (_4) })
-# define EVENT_ARGS(...)                CONCAT(EVENT_ARGS_, NARG(__VA_ARGS__))(__VA_ARGS__)
-# define EVENT_ARG(kind, _value)        ((union event_arg) { .kind = (_value) })
-# define EVENT_ARG_EMPTY                ((union event_arg) { 0 })
-
-#endif /* !GBA_SCHEDULER_H */
+#define EVENT_ARGS_1(_1)                ((struct event_args) { .a1 = (_1), .a2 = EVENT_ARG_EMPTY })
+#define EVENT_ARGS_2(_1, _2)            ((struct event_args) { .a1 = (_1), .a2 = (_2) })
+#define EVENT_ARGS_3(_1, _2, _3)        ((struct event_args) { .a1 = (_1), .a2 = (_2), .a3 = (_3) })
+#define EVENT_ARGS_4(_1, _2, _3, _4)    ((struct event_args) { .a1 = (_1), .a2 = (_2), .a3 = (_3), .a4 = (_4) })
+#define EVENT_ARGS(...)                 CONCAT(EVENT_ARGS_, NARG(__VA_ARGS__))(__VA_ARGS__)
+#define EVENT_ARG(kind, _value)         ((union event_arg) { .kind = (_value) })
+#define EVENT_ARG_EMPTY                 ((union event_arg) { 0 })
