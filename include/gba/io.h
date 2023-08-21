@@ -7,11 +7,10 @@
 **
 \******************************************************************************/
 
-#ifndef GBA_IO_H
-# define GBA_IO_H
+#pragma once
 
-# include "hades.h"
-# include "gba/scheduler.h"
+#include "hades.h"
+#include "gba/scheduler.h"
 
 /*
 ** An enumeration of all IO registers.
@@ -776,5 +775,3 @@ void timer_schedule_start(struct gba *gba, uint32_t timer_idx);
 void timer_schedule_stop(struct gba *gba, uint32_t timer_idx);
 uint16_t timer_update_counter(struct gba const *gba, uint32_t timer_idx);
 uint16_t timer_read_value(struct gba const *gba, uint32_t timer_idx);
-
-#endif /* GBA_IO_H */

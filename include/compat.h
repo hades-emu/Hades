@@ -7,27 +7,26 @@
 **
 \******************************************************************************/
 
-#ifndef UTILS_COMMON_H
-# define UTILS_COMMON_H
+#pragma once
 
-# include <stdio.h>
-# include <string.h>
-# include "hades.h"
+#include <stdio.h>
+#include <string.h>
+#include "hades.h"
 
-# if defined (_WIN32) && !defined (__CYGWIN__)
-#  include <sys/types.h>
-#  include <sys/stat.h>
-#  include <io.h>
-#  include <fileapi.h>
-#  include <stdio.h>
-#  include <stringapiset.h>
-#  include <windows.h>
-#  include <sysinfoapi.h>
-#  include <synchapi.h>
-#  include <shellapi.h>
+#if defined (_WIN32) && !defined (__CYGWIN__)
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <io.h>
+#include <fileapi.h>
+#include <stdio.h>
+#include <stringapiset.h>
+#include <windows.h>
+#include <sysinfoapi.h>
+#include <synchapi.h>
+#include <shellapi.h>
 
-#  define hs_isatty(x)          false
-#  define hs_mkdir(path)        CreateDirectoryA((path), NULL)
+#define hs_isatty(x)            false
+#define hs_mkdir(path)          CreateDirectoryA((path), NULL)
 
 static inline
 wchar_t *
@@ -173,16 +172,16 @@ hs_open_url(
     ShellExecuteA(NULL, "open", url, NULL, NULL, SW_SHOWDEFAULT);
 }
 
-# else
-#  include <sys/stat.h>
-#  include <unistd.h>
-#  include <time.h>
+#else
+#include <sys/stat.h>
+#include <unistd.h>
+#include <time.h>
 
-#  define hs_isatty(x)          isatty(x)
-#  define hs_mkdir(path)        mkdir((path), 0755);
-#  define hs_fopen(path, mode)  fopen((char const *)(path), (mode))
-#  define hs_usleep(x)          usleep(x)
-#  define hs_fexists(path)      (access((path), F_OK) == 0)
+#define hs_isatty(x)            isatty(x)
+#define hs_mkdir(path)          mkdir((path), 0755);
+#define hs_fopen(path, mode)    fopen((char const *)(path), (mode))
+#define hs_usleep(x)            usleep(x)
+#define hs_fexists(path)        (access((path), F_OK) == 0)
 
 static inline
 char const *
@@ -248,6 +247,4 @@ hs_open_url(
     _out = system(command);
 }
 
-# endif
-
-#endif /* !UTILS_COMMON_H */
+#endif

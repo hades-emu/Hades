@@ -7,13 +7,12 @@
 **
 \******************************************************************************/
 
-#ifndef GBA_DB_H
-# define GBA_DB_H
+#pragma once
 
-# include "gba/memory.h"
+#include "gba/memory.h"
 
-# define FLAGS_NONE 0x0
-# define FLAGS_RTC  0x1
+#define FLAGS_NONE      0x0
+#define FLAGS_RTC       0x1
 
 struct game_entry {
     char *code;
@@ -24,5 +23,3 @@ struct game_entry {
 
 /* gba/db.c */
 void db_lookup_game(struct gba *gba);
-
-#endif /* !GBA_DB_H */

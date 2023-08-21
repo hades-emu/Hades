@@ -7,26 +7,25 @@
 **
 \******************************************************************************/
 
-#ifndef GUI_APP_H
-# define GUI_APP_H
+#pragma once
 
-# define SDL_MAIN_HANDLED
-# define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#define SDL_MAIN_HANDLED
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 
-# if WITH_DEBUGGER
-#  include <capstone/capstone.h>
-# endif
+#if WITH_DEBUGGER
+#include <capstone/capstone.h>
+#endif
 
-# include <stdatomic.h>
-# include <GL/glew.h>
-# include <SDL2/SDL.h>
-# include <cimgui.h>
-# include "hades.h"
-# include "gba/gba.h"
+#include <stdatomic.h>
+#include <GL/glew.h>
+#include <SDL2/SDL.h>
+#include <cimgui.h>
+#include "hades.h"
+#include "gba/gba.h"
 
-# define MAX_RECENT_ROMS            5
-# define MAX_QUICKSAVES             5
-# define POWER_SAVE_FRAME_DELAY     30
+#define MAX_RECENT_ROMS             5
+#define MAX_QUICKSAVES              5
+#define POWER_SAVE_FRAME_DELAY      30
 
 struct ImGuiIO;
 
@@ -275,5 +274,3 @@ void app_game_frame(struct app *app);
 void app_game_trace(struct app *app, size_t, void (*)(struct app *));
 void app_game_step(struct app *app, bool over, size_t cnt);
 #endif
-
-#endif /* !GUI_APP_H */

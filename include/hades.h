@@ -7,39 +7,38 @@
 **
 \******************************************************************************/
 
-#ifndef HADES_H
-# define HADES_H
+#pragma once
 
-# include <stdatomic.h>
-# include <stdio.h>
-# include <stdint.h>
-# include <stdbool.h>
-# include <stdarg.h>
-# include <stdlib.h>
-# include <pthread.h>
+#include <stdatomic.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <pthread.h>
 
 /*
 ** A useful set of macros that act like keywords that are not available
 ** otherwise in C11.
 */
-# ifndef __used
-#  define __used            __attribute__((used))
-# endif /* !__used */
-# ifndef __unused
-#  define __unused          __attribute__((unused))
-# endif /* !__unused */
-# ifndef __packed
-#  define __packed          __attribute__((packed))
-# endif /* !__packed */
-# ifndef likely
-#  define likely(x)         __builtin_expect((x), 1)
-# endif /* !likely */
-# ifndef unlikely
-#  define unlikely(x)       __builtin_expect((x), 0)
-# endif /* !unlikely */
-# ifndef __noreturn
-#  define __noreturn        __attribute__((noreturn))
-# endif /* !__noreturn */
+#ifndef __used
+# define __used             __attribute__((used))
+#endif /* !__used */
+#ifndef __unused
+# define __unused           __attribute__((unused))
+#endif /* !__unused */
+#ifndef __packed
+# define __packed           __attribute__((packed))
+#endif /* !__packed */
+#ifndef likely
+# define likely(x)         __builtin_expect((x), 1)
+#endif /* !likely */
+#ifndef unlikely
+# define unlikely(x)        __builtin_expect((x), 0)
+#endif /* !unlikely */
+#ifndef __noreturn
+# define __noreturn         __attribute__((noreturn))
+#endif /* !__noreturn */
 
 enum modules {
     HS_INFO      = 0,
@@ -75,15 +74,15 @@ static char const * const modules_str[] = {
 };
 
 /* Panic if the given constant expression evaluates to `false`. */
-# undef static_assert
-# define static_assert(e)                                   \
+#undef static_assert
+#define static_assert(e)                                    \
     _Static_assert(                                         \
         e,                                                  \
         "(" #e ") evaluated to false (in " __FILE__ ")"     \
     )
 
 /* Panic if the given expression evaluates to `false` */
-# define hs_assert(expr)                                    \
+#define hs_assert(expr)                                     \
     do {                                                    \
         if (unlikely(!(expr))) {                            \
             panic(                                          \
@@ -106,29 +105,29 @@ static char const * const modules_str[] = {
 #define NARG(...)               NTH(, ##__VA_ARGS__, 5, 4, 3, 2, 1, 0)
 
 /* Return the minimum between `a` and `b`. */
-# ifndef min
-#  define min(a, b)                             ((a) > (b) ? (b) : (a))
-# endif /* !min */
+#ifndef min
+#define min(a, b)                               ((a) > (b) ? (b) : (a))
+#endif /* !min */
 
 /* Return the maximun between `a` and `b`. */
-# ifndef max
-#  define max(a, b)                             ((a) > (b) ? (a) : (b))
-# endif /* !max */
+#ifndef max
+#define max(a, b)                               ((a) > (b) ? (a) : (b))
+#endif /* !max */
 
 /* Return the size of static array */
-# define array_length(array)                    (sizeof(array) / sizeof(*(array)))
+#define array_length(array)                     (sizeof(array) / sizeof(*(array)))
 
 /* Get the `nth` bit of `val`. */
-# define bitfield_get(val, nth)                 ((typeof(val))(bool)((val) & (1u << (nth))))
+#define bitfield_get(val, nth)                  ((typeof(val))(bool)((val) & (1u << (nth))))
 
 /* Return the value of the bits from `start` (inclusive) to `end` (exclusive) of `val`. */
-# define bitfield_get_range(val, start, end)    ((typeof(val))(((typeof(val))((val) << (sizeof(val) * 8 - (end)))) >> (sizeof(val) * 8 - (end) + (start))))
+#define bitfield_get_range(val, start, end)     ((typeof(val))(((typeof(val))((val) << (sizeof(val) * 8 - (end)))) >> (sizeof(val) * 8 - (end) + (start))))
 
 /* Align `x` to the given power of two. */
-# define align_on(x, y)                         ((x) & ~((y) - 1))
+#define align_on(x, y)                          ((x) & ~((y) - 1))
 
 /* Align `x` to the size of T */
-# define align(T, x)                            ((typeof(x))(align_on((x), sizeof(T))))
+#define align(T, x)                             ((typeof(x))(align_on((x), sizeof(T))))
 
 /*
 ** Sign-extend a 8-bits value to a signed 32-bit value.
@@ -369,6 +368,3 @@ void disable_colors(void);
 /* common/utils.c */
 char **strsplit(char *str, size_t *size);
 void const *array_search(uint8_t const *haystack, size_t haystack_len, char const *needle, size_t needle_len);
-
-
-#endif /* !HADES_H */

@@ -7,11 +7,10 @@
 **
 \******************************************************************************/
 
-#ifndef CORE_ARM_H
-# define CORE_ARM_H
+#pragma once
 
-# include <stdint.h>
-# include <unistd.h>
+#include <stdint.h>
+#include <unistd.h>
 
 struct gba;
 
@@ -59,5 +58,3 @@ void core_arm_swi(struct gba *gba, uint32_t op);
 
 /* core/arm/swp.c */
 void core_arm_swp(struct gba *gba, uint32_t op);
-
-#endif /* !CORE_ARM_H */

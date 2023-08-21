@@ -8,10 +8,11 @@
 **
 \******************************************************************************/
 
-#if !defined(GUI_LANG_H) && defined(WITH_DEBUGGER)
-# define GUI_LANG_H
+#pragma once
 
-# include <stdint.h>
+#ifdef WITH_DEBUGGER
+
+#include <stdint.h>
 
 struct variable {
     char const *name;
@@ -147,4 +148,4 @@ void debugger_lang_mut_variables_push(struct app *app, char const *name, uint32_
 void debugger_lang_const_variables_push(struct app *app, char const *name, uint32_t);
 struct variable *debugger_lang_variables_lookup(struct app *app, char const *name);
 
-#endif /* !defined(GUI_LANG_H) && defined(WITH_DEBUGGER) */
+#endif /* WITH_DEBUGGER */

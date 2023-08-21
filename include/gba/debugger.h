@@ -7,10 +7,11 @@
 **
 \******************************************************************************/
 
-#if !defined(GBA_DEBUGGER_H) && defined(WITH_DEBUGGER)
-# define GBA_DEBUGGER_H
+#pragma once
 
-# include "hades.h"
+#ifdef WITH_DEBUGGER
+
+#include "hades.h"
 
 /*
 ** The different reasons why the emulation could be interrupted.
@@ -83,4 +84,4 @@ void debugger_eval_breakpoints(struct gba *gba);
 void debugger_eval_write_watchpoints(struct gba *gba, uint32_t addr, size_t size, uint32_t);
 void debugger_eval_read_watchpoints(struct gba *gba, uint32_t addr, size_t size);
 
-#endif /* !GBA_DEBUGGER_H */
+#endif /* WITH_DEBUGGER */

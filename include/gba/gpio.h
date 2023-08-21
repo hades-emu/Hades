@@ -7,10 +7,9 @@
 **
 \******************************************************************************/
 
-#ifndef GBA_GPIO_H
-# define GBA_GPIO_H
+#pragma once
 
-# include <stdint.h>
+#include <stdint.h>
 
 enum gpio_regs {
     GPIO_REG_START          = 0x80000C4,
@@ -78,5 +77,3 @@ void gpio_write_u8(struct gba *gba, uint32_t, uint8_t);
 void gpio_rtc_init(struct gba *);
 uint8_t gpio_rtc_read(struct gba *gba);
 void gpio_rtc_write(struct gba *gba, uint8_t);
-
-#endif /* !GBA_GPIO_H */

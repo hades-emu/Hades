@@ -7,12 +7,13 @@
 **
 \******************************************************************************/
 
-#if !defined(GUI_DEBUGGER_H) && defined(WITH_DEBUGGER)
-# define GUI_DEBUGGER_H
+#pragma once
 
-# include <stdbool.h>
-# include "hades.h"
-# include "gba/gba.h"
+#ifdef WITH_DEBUGGER
+
+#include <stdbool.h>
+#include "hades.h"
+#include "gba/gba.h"
 
 struct app;
 
@@ -228,4 +229,4 @@ void debugger_wait_for_emulator(struct app *, bool);
 void debugger_io_init(struct gba *);
 struct io_register *debugger_io_lookup_reg(uint32_t address);
 
-#endif /* !defined(GUI_DEBUGGER_H) && defined(WITH_DEBUGGER) */
+#endif /* WITH_DEBUGGER */
