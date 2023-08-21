@@ -142,11 +142,11 @@ gba_main_loop(
                     struct message_data *message_data;
 
                     message_data = (struct message_data *)message;
-                    memset(gba->memory.backup_storage_data, 0, backup_storage_sizes[gba->memory.backup_storage_type]);
+                    memset(gba->memory.backup_storage.data, 0, backup_storage_sizes[gba->memory.backup_storage.type]);
                     memcpy(
-                        gba->memory.backup_storage_data,
+                        gba->memory.backup_storage.data,
                         message_data->data,
-                        min(message_data->size, backup_storage_sizes[gba->memory.backup_storage_type])
+                        min(message_data->size, backup_storage_sizes[gba->memory.backup_storage.type])
                     );
                     if (message_data->cleanup) {
                         message_data->cleanup(message_data->data);
@@ -165,8 +165,8 @@ gba_main_loop(
                     if (message_backup_type->type == BACKUP_AUTO_DETECT) {
                         mem_backup_storage_detect(gba);
                     } else {
-                        gba->memory.backup_storage_type = message_backup_type->type;
-                        gba->memory.backup_storage_source = BACKUP_SOURCE_MANUAL;
+                        gba->memory.backup_storage.type = message_backup_type->type;
+                        gba->memory.backup_storage.source = BACKUP_SOURCE_MANUAL;
                     }
                     mem_backup_storage_init(gba);
                     break;

@@ -360,18 +360,18 @@ app_game_write_backup(
     struct app *app
 ) {
     if (   app->file.backup_file
-        && app->emulation.gba->memory.backup_storage_data
-        && app->emulation.gba->memory.backup_storage_dirty
+        && app->emulation.gba->memory.backup_storage.data
+        && app->emulation.gba->memory.backup_storage.dirty
     ) {
         fseek(app->file.backup_file, 0, SEEK_SET);
         fwrite(
-            app->emulation.gba->memory.backup_storage_data,
-            backup_storage_sizes[app->emulation.gba->memory.backup_storage_type],
+            app->emulation.gba->memory.backup_storage.data,
+            backup_storage_sizes[app->emulation.gba->memory.backup_storage.type],
             1,
             app->file.backup_file
         );
     }
-    app->emulation.gba->memory.backup_storage_dirty = false;
+    app->emulation.gba->memory.backup_storage.dirty = false;
 }
 
 void

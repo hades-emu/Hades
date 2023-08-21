@@ -18,18 +18,18 @@ mem_flash_read8(
 ) {
     struct flash const *flash;
 
-    flash = &gba->memory.flash;
+    flash = &gba->memory.backup_storage.chip.flash;
     addr &= FLASH_MASK;
 
     if (flash->identity_mode) {
         /* Use Panasonic (0x1b32) for Flash 64k and Sanyo (0x1362) for Flash 128k. */
         if (addr == 0x0) {
-            return (gba->memory.backup_storage_type == BACKUP_FLASH64 ? 0x32 : 0x62);
+            return (gba->memory.backup_storage.type == BACKUP_FLASH64 ? 0x32 : 0x62);
         } else if (addr == 0x1) {
-            return (gba->memory.backup_storage_type == BACKUP_FLASH64 ? 0x1b : 0x13);
+            return (gba->memory.backup_storage.type == BACKUP_FLASH64 ? 0x1b : 0x13);
         }
     }
-    return (gba->memory.backup_storage_data[addr + flash->bank * FLASH64_SIZE]);
+    return (gba->memory.backup_storage.data[addr + flash->bank * FLASH64_SIZE]);
 }
 
 void
@@ -40,7 +40,7 @@ mem_flash_write8(
 ) {
     struct flash *flash;
 
-    flash = &gba->memory.flash;
+    flash = &gba->memory.backup_storage.chip.flash;
     addr &= FLASH_MASK;
 
     if (addr == 0x5555 && val == 0xAA && flash->state == FLASH_STATE_READY) {
@@ -55,14 +55,14 @@ mem_flash_write8(
             case FLASH_CMD_PREP_ERASE:          flash->state = FLASH_STATE_ERASE; break;
             case FLASH_CMD_ERASE_CHIP: {
                 if (flash->state == FLASH_STATE_ERASE) {
-                    memset(gba->memory.backup_storage_data, 0xFF, backup_storage_sizes[gba->memory.backup_storage_type]);
-                    gba->memory.backup_storage_dirty = true;
+                    memset(gba->memory.backup_storage.data, 0xFF, backup_storage_sizes[gba->memory.backup_storage.type]);
+                    gba->memory.backup_storage.dirty = true;
                 }
                 break;
             };
             case FLASH_CMD_WRITE:               flash->state = FLASH_STATE_WRITE; break;
             case FLASH_CMD_SET_BANK: {
-                if (gba->memory.backup_storage_type == BACKUP_FLASH128) {
+                if (gba->memory.backup_storage.type == BACKUP_FLASH128) {
                     flash->state = FLASH_STATE_BANK;
                 }
                 break;
@@ -72,12 +72,12 @@ mem_flash_write8(
         // Erase the desired sector
 
         addr &= 0xF000;
-        memset(gba->memory.backup_storage_data + addr + flash->bank * FLASH64_SIZE, 0xFF, 0x1000);
-        gba->memory.backup_storage_dirty = true;
+        memset(gba->memory.backup_storage.data + addr + flash->bank * FLASH64_SIZE, 0xFF, 0x1000);
+        gba->memory.backup_storage.dirty = true;
         flash->state = FLASH_STATE_READY;
     } else if (flash->state == FLASH_STATE_WRITE) {
-        gba->memory.backup_storage_data[addr + flash->bank * FLASH64_SIZE] = val;
-        gba->memory.backup_storage_dirty = true;
+        gba->memory.backup_storage.data[addr + flash->bank * FLASH64_SIZE] = val;
+        gba->memory.backup_storage.dirty = true;
         flash->state = FLASH_STATE_READY;
     } else if (flash->state == FLASH_STATE_BANK && addr == 0x0) {
         flash->bank = val;

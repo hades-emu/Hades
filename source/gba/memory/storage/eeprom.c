@@ -16,7 +16,7 @@ mem_eeprom_read8(
 ) {
     struct eeprom *eeprom;
 
-    eeprom = &gba->memory.eeprom;
+    eeprom = &gba->memory.backup_storage.chip.eeprom;
 
     if (eeprom->cmd == EEPROM_CMD_READ) {
         if (eeprom->state == EEPROM_STATE_TRANSFER_JUNK) {
@@ -57,7 +57,7 @@ mem_eeprom_write8(
 ) {
     struct eeprom *eeprom;
 
-    eeprom = &gba->memory.eeprom;
+    eeprom = &gba->memory.backup_storage.chip.eeprom;
 
     switch (eeprom->state) {
         case EEPROM_STATE_READY: {
@@ -96,7 +96,7 @@ mem_eeprom_write8(
                         eeprom->transfer_data = 0;
                         for (i = 0; i < 8; ++i) {
                             eeprom->transfer_data <<= 8;
-                            eeprom->transfer_data |= gba->memory.backup_storage_data[eeprom->transfer_address + i];
+                            eeprom->transfer_data |= gba->memory.backup_storage.data[eeprom->transfer_address + i];
                         }
 
                         break;
@@ -122,9 +122,9 @@ mem_eeprom_write8(
                 eeprom->transfer_len = 0;
 
                 for (i = 0; i < 8; ++i) {
-                    gba->memory.backup_storage_data[eeprom->transfer_address + i] = (eeprom->transfer_data >> (56 - 8 * i)) & 0xFF;
+                    gba->memory.backup_storage.data[eeprom->transfer_address + i] = (eeprom->transfer_data >> (56 - 8 * i)) & 0xFF;
                 }
-                gba->memory.backup_storage_dirty = true;
+                gba->memory.backup_storage.dirty = true;
 
                 eeprom->state = EEPROM_STATE_END;
             }
