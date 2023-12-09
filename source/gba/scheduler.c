@@ -11,34 +11,7 @@
 #include "gba/gba.h"
 #include "gba/scheduler.h"
 #include "gba/memory.h"
-
-void
-sched_init(
-    struct gba *gba
-) {
-    struct scheduler *scheduler;
-
-    scheduler = &gba->scheduler;
-
-    memset(scheduler, 0, sizeof(*scheduler));
-
-    // Pre-allocate 64 events
-    scheduler->events_size = 64;
-    scheduler->events = calloc(scheduler->events_size, sizeof(struct scheduler_event));
-    hs_assert(scheduler->events);
-}
-
-void
-sched_cleanup(
-    struct gba *gba
-) {
-    struct scheduler *scheduler;
-
-    scheduler = &gba->scheduler;
-    free(scheduler->events);
-    scheduler->events = NULL;
-    scheduler->events_size = 0;
-}
+#include "common/compat.h"
 
 void
 sched_process_events(
@@ -166,7 +139,9 @@ sched_run_for(
     target = core->cycles + cycles;
 
 #ifdef WITH_DEBUGGER
-    while (core->cycles < target && !gba->debugger.interrupt.flag) {
+    gba->debugger.interrupted = false;
+
+    while (core->cycles < target && !gba->debugger.interrupted) {
 #else
     while (core->cycles < target) {
 #endif
@@ -184,4 +159,38 @@ sched_run_for(
             break;
         }
     }
+}
+
+void
+sched_frame_limiter(
+    struct gba *gba,
+    struct event_args args __unused
+) {
+    if (gba->scheduler.speed) {
+        uint64_t now;
+
+        now = hs_time();
+        gba->scheduler.accumulated_time += now - gba->scheduler.time_last_frame;
+        gba->scheduler.time_last_frame = now;
+
+        if (gba->scheduler.accumulated_time < gba->scheduler.time_per_frame) {
+            hs_usleep(gba->scheduler.time_per_frame - gba->scheduler.accumulated_time);
+        }
+        gba->scheduler.accumulated_time -= gba->scheduler.time_per_frame;
+    } else {
+        gba->scheduler.time_last_frame = hs_time();
+        gba->scheduler.accumulated_time = 0;
+    }
+}
+
+void
+sched_update_speed(
+    struct gba *gba,
+    uint32_t speed
+) {
+    struct scheduler *scheduler;
+
+    scheduler = &gba->scheduler;
+    scheduler->speed = speed;
+    scheduler->time_per_frame = speed ? (1.f / 59.737f * 1000.f * 1000.f / (float)speed) : 0;
 }

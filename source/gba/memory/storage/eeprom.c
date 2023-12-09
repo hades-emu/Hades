@@ -96,7 +96,7 @@ mem_eeprom_write8(
                         eeprom->transfer_data = 0;
                         for (i = 0; i < 8; ++i) {
                             eeprom->transfer_data <<= 8;
-                            eeprom->transfer_data |= gba->memory.backup_storage.data[eeprom->transfer_address + i];
+                            eeprom->transfer_data |= gba->shared_data.backup_storage.data[eeprom->transfer_address + i];
                         }
 
                         break;
@@ -122,9 +122,9 @@ mem_eeprom_write8(
                 eeprom->transfer_len = 0;
 
                 for (i = 0; i < 8; ++i) {
-                    gba->memory.backup_storage.data[eeprom->transfer_address + i] = (eeprom->transfer_data >> (56 - 8 * i)) & 0xFF;
+                    gba->shared_data.backup_storage.data[eeprom->transfer_address + i] = (eeprom->transfer_data >> (56 - 8 * i)) & 0xFF;
                 }
-                gba->memory.backup_storage.dirty = true;
+                gba->shared_data.backup_storage.dirty = true;
 
                 eeprom->state = EEPROM_STATE_END;
             }

@@ -18,7 +18,7 @@
 #include "hades.h"
 #include "app.h"
 #include "gui/gui.h"
-#include "compat.h"
+#include "common/compat.h"
 
 static
 void
@@ -38,8 +38,7 @@ gui_win_menubar_file(
             );
 
             if (result == NFD_OKAY) {
-                free(app->file.game_path);
-                app->file.game_path = strdup(path);
+                app_game_configure(app, path);
                 NFD_FreePath(path);
                 app_game_reset(app);
                 app_game_run(app);
@@ -51,10 +50,17 @@ gui_win_menubar_file(
 
             for (x = 0; x < array_length(app->file.recent_roms) && app->file.recent_roms[x]; ++x) {
                 if (igMenuItemBool(hs_basename(app->file.recent_roms[x]), NULL, false, true)) {
-                    free(app->file.game_path);
-                    app->file.game_path = strdup(app->file.recent_roms[x]);
+                    char *path;
+
+                    // app->file.recent_roms[] is modified by `app_game_configure()` so we need to copy
+                    // the path to a safe space first.
+                    path = strdup(app->file.recent_roms[x]);
+
+                    app_game_configure(app, path);
                     app_game_reset(app);
                     app_game_run(app);
+
+                    free(path);
                 }
             }
             igEndMenu();
@@ -98,7 +104,7 @@ gui_win_menubar_emulation(
             app->emulation.skip_bios ^= 1;
         }
 
-        if (igBeginMenu("Speed", app->emulation.started)) {
+        if (igBeginMenu("Speed", app->emulation.is_started)) {
             uint32_t x;
             char const *speed[] = {
                 "Unbounded",
@@ -116,13 +122,13 @@ gui_win_menubar_emulation(
                     bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_MAX_TOGGLE]);
                     if (igMenuItemBool(speed[x], bind ? bind : "", app->emulation.unbounded, true)) {
                         app->emulation.unbounded ^= 1;
-                        gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
+                        app_game_speed(app, app->emulation.speed * !app->emulation.unbounded);
                     }
                     igSeparator();
                 } else {
                     if (igMenuItemBool(speed[x], NULL, app->emulation.speed == x, !app->emulation.unbounded)) {
                         app->emulation.speed = x;
-                        gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
+                        app_game_speed(app, app->emulation.speed * !app->emulation.unbounded);
                     }
                 }
             }
@@ -132,17 +138,11 @@ gui_win_menubar_emulation(
 
         igSeparator();
 
-        if (igBeginMenu("Quick Save", app->emulation.started)) {
+        if (igBeginMenu("Quick Save", app->emulation.is_started)) {
             size_t i;
 
             for (i = 0; i < MAX_QUICKSAVES; ++i) {
                 char *text;
-
-                if (app->file.flush_qsaves_cache) {
-                    free(app->file.qsaves[i].mtime);
-                    app->file.qsaves[i].exist = hs_fexists(app->file.qsaves[i].path);
-                    app->file.qsaves[i].mtime = hs_fmtime(app->file.qsaves[i].path);
-                }
 
                 if (app->file.qsaves[i].exist && app->file.qsaves[i].mtime) {
                     hs_assert(asprintf(&text, "%zu: %s", i + 1, app->file.qsaves[i].mtime) != -1);
@@ -159,24 +159,14 @@ gui_win_menubar_emulation(
                 free(text);
             }
 
-            app->file.flush_qsaves_cache = false;
-
             igEndMenu();
-        } else {
-            app->file.flush_qsaves_cache = true;
         }
 
-        if (igBeginMenu("Quick Load", app->emulation.started)) {
+        if (igBeginMenu("Quick Load", app->emulation.is_started)) {
             size_t i;
 
             for (i = 0; i < MAX_QUICKSAVES; ++i) {
                 char *text;
-
-                if (app->file.flush_qsaves_cache) {
-                    free(app->file.qsaves[i].mtime);
-                    app->file.qsaves[i].exist = hs_fexists(app->file.qsaves[i].path);
-                    app->file.qsaves[i].mtime = hs_fmtime(app->file.qsaves[i].path);
-                }
 
                 if (app->file.qsaves[i].exist && app->file.qsaves[i].mtime) {
                     hs_assert(asprintf(&text, "%zu: %s", i + 1, app->file.qsaves[i].mtime) != -1);
@@ -193,71 +183,60 @@ gui_win_menubar_emulation(
                 free(text);
             }
 
-            app->file.flush_qsaves_cache = false;
-
             igEndMenu();
-        } else {
-            app->file.flush_qsaves_cache = true;
         }
 
         igSeparator();
 
-        if (igBeginMenu("Backup type", !app->emulation.started)) {
+        if (igBeginMenu("Backup Storage", !app->emulation.is_started)) {
             uint32_t x;
-            char const *backup_types[] = {
-                "None",
-                "EEPROM 4k",
-                "EEPROM 64k",
-                "SRAM",
-                "Flash 64k",
-                "Flash 128k"
-            };
 
-            if (igMenuItemBool("Auto-detect", NULL, app->emulation.backup_type == BACKUP_AUTO_DETECT, true)) {
-                app->emulation.backup_type = BACKUP_AUTO_DETECT;
+            if (igMenuItemBool("Auto-detect", NULL, app->emulation.backup_storage.autodetect, true)) {
+                app->emulation.backup_storage.autodetect ^= 1;
             }
 
             igSeparator();
 
-            for (x = 0; x < array_length(backup_types); ++x) {
-                if (igMenuItemBool(backup_types[x], NULL, app->emulation.backup_type == x, true)) {
-                    app->emulation.backup_type = x;
+            for (x = BACKUP_MIN; x < BACKUP_LEN; ++x) {
+                if (igMenuItemBool(backup_storage_names[x], NULL, !app->emulation.backup_storage.autodetect && app->emulation.backup_storage.type == x, true)) {
+                    app->emulation.backup_storage.type = x;
+                    app->emulation.backup_storage.autodetect = false;
                 }
             }
 
             igEndMenu();
         }
 
-        /* GPIO */
-        if (igBeginMenu("Devices", !app->emulation.started)) {
+        /* Backup storage & GPIO */
+        if (igBeginMenu("Devices", !app->emulation.is_started)) {
 
             igText("RTC");
             igSeparator();
 
-            if (igMenuItemBool("Auto-detect", NULL, app->emulation.rtc_autodetect, true)) {
-                app->emulation.rtc_autodetect ^= 1;
+            if (igMenuItemBool("Auto-detect", NULL, app->emulation.rtc.autodetect, true)) {
+                app->emulation.rtc.autodetect ^= 1;
             }
-            if (igMenuItemBool("Enable", NULL, app->emulation.rtc_force_enabled, !app->emulation.rtc_autodetect)) {
-                app->emulation.rtc_force_enabled ^= 1;
+            if (igMenuItemBool("Enable", NULL, app->emulation.rtc.enabled, !app->emulation.rtc.autodetect)) {
+                app->emulation.rtc.enabled ^= 1;
             }
             igEndMenu();
         }
 
         igSeparator();
 
-        if (igMenuItemBool("Pause", NULL, !app->emulation.running, app->emulation.started)) {
-            if (app->emulation.running) {
+        if (igMenuItemBool("Pause", NULL, !app->emulation.is_running, app->emulation.is_started)) {
+            if (app->emulation.is_running) {
                 app_game_pause(app);
             } else {
                 app_game_run(app);
             }
         }
 
-        if (igMenuItemBool("Stop", NULL, false, app->emulation.started)) {
+        if (igMenuItemBool("Stop", NULL, false, app->emulation.is_started)) {
             app_game_stop(app);
         }
 
-        if (igMenuItemBool("Reset", NULL, false, app->emulation.started)) {
+        if (igMenuItemBool("Reset", NULL, false, app->emulation.is_started)) {
             app_game_reset(app);
             app_game_run(app);
         }
@@ -347,14 +326,14 @@ gui_win_menubar_video(
 
         /* Texture Filter */
         if (igBeginMenu("Texture Filter", true)) {
-            if (igMenuItemBool("Nearest", NULL, app->video.texture_filter.kind == TEXTURE_FILTER_NEAREST, true)) {
-                app->video.texture_filter.kind = TEXTURE_FILTER_NEAREST;
-                app->video.texture_filter.refresh = true;
+            if (igMenuItemBool("Nearest", NULL, app->gfx.texture_filter == TEXTURE_FILTER_NEAREST, true)) {
+                app->gfx.texture_filter = TEXTURE_FILTER_NEAREST;
+                gui_sdl_video_rebuild_pipeline(app);
             }
 
-            if (igMenuItemBool("Linear", NULL, app->video.texture_filter.kind == TEXTURE_FILTER_LINEAR, true)) {
-                app->video.texture_filter.kind = TEXTURE_FILTER_LINEAR;
-                app->video.texture_filter.refresh = true;
+            if (igMenuItemBool("Linear", NULL, app->gfx.texture_filter == TEXTURE_FILTER_LINEAR, true)) {
+                app->gfx.texture_filter = TEXTURE_FILTER_LINEAR;
+                gui_sdl_video_rebuild_pipeline(app);
             }
 
             igEndMenu();
@@ -363,7 +342,7 @@ gui_win_menubar_video(
         /* Color Correction */
         if (igMenuItemBool("Color correction", NULL, app->video.color_correction, true)) {
             app->video.color_correction ^= 1;
-            gba_send_settings_color_correction(app->emulation.gba, app->video.color_correction);
+            gui_sdl_video_rebuild_pipeline(app);
         }
 
         /* VSync */
@@ -376,7 +355,7 @@ gui_win_menubar_video(
 
         /* Take a screenshot */
         bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SCREENSHOT]);
-        if (igMenuItemBool("Screenshot", bind ? bind : "", false, app->emulation.started)) {
+        if (igMenuItemBool("Screenshot", bind ? bind : "", false, app->emulation.is_started)) {
             app_game_screenshot(app);
         }
 
@@ -477,7 +456,7 @@ gui_win_menubar_fps_counter(
     struct app *app
 ) {
     /* FPS Counter */
-    if (app->emulation.started && app->emulation.running) {
+    if (app->emulation.is_started && app->emulation.is_running) {
         float spacing;
         ImVec2 out;
 

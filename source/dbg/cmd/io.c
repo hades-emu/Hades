@@ -134,6 +134,11 @@ debugger_cmd_io(
     size_t argc,
     struct arg const *argv
 ) {
+    if (!app->debugger.is_started) {
+        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        return;
+    }
+
     if (argc == 0) {
         uint32_t val;
         size_t i;

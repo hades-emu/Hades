@@ -17,7 +17,12 @@ debugger_cmd_frame(
     size_t argc __unused,
     struct arg const *argv __unused
 ) {
-    app->emulation.gba->debugger.interrupt.flag = false;
+    if (!app->debugger.is_started) {
+        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        return;
+    }
+
     app_game_frame(app);
-    debugger_wait_for_emulator(app, true);
+    debugger_wait_for_emulator(app);
+    debugger_dump_context_auto(app);
 }

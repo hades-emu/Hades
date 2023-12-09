@@ -116,10 +116,6 @@ enum access_types {
 ** The different types of backup storage a game can use.
 */
 enum backup_storage_types {
-    BACKUP_MIN = -1,
-
-    BACKUP_AUTO_DETECT = -1,
-
     BACKUP_NONE = 0,
     BACKUP_EEPROM_4K = 1,
     BACKUP_EEPROM_64K = 2,
@@ -127,13 +123,19 @@ enum backup_storage_types {
     BACKUP_FLASH64 = 4,
     BACKUP_FLASH128 = 5,
 
-    BACKUP_MAX = 5,
+    BACKUP_MIN = BACKUP_NONE,
+    BACKUP_MAX = BACKUP_FLASH128,
+    BACKUP_LEN = BACKUP_MAX + 1,
 };
 
-enum backup_storage_sources {
-    BACKUP_SOURCE_AUTO_DETECT,
-    BACKUP_SOURCE_MANUAL,
-    BACKUP_SOURCE_DATABASE,
+
+static char const * const backup_storage_names[] = {
+    "None",
+    "EEPROM 4k",
+    "EEPROM 64k",
+    "SRAM",
+    "Flash 64k",
+    "Flash 128k",
 };
 
 enum flash_states {
@@ -219,6 +221,7 @@ struct memory {
     uint8_t rom[CART_SIZE];
     size_t rom_size;
 
+    // Backup Storage
     struct {
         struct {
             // Flash memory
@@ -227,15 +230,11 @@ struct memory {
             // EEPROM memory
             struct eeprom eeprom;
         } chip;
-        uint8_t *data;
-        size_t size;
-        enum backup_storage_types type;
-        enum backup_storage_sources source;
 
-        atomic_bool dirty;
+        enum backup_storage_types type;
     } backup_storage;
 
-    // Prefetch
+    // Prefetch buffer
     struct prefetch_buffer pbuffer;
 
     // Open Bus
@@ -271,7 +270,6 @@ uint8_t mem_io_read8(struct gba const *gba, uint32_t addr);
 void mem_io_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /* gba/memory/memory.c */
-void mem_reset(struct memory *memory);
 void mem_access(struct gba *gba, uint32_t addr, uint32_t size, enum access_types access_type);
 void mem_update_waitstates(struct gba const *gba);
 void mem_prefetch_buffer_access(struct gba *gba, uint32_t addr, uint32_t intended_cycles);
@@ -301,16 +299,13 @@ uint8_t mem_flash_read8(struct gba const *gba, uint32_t addr);
 void mem_flash_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /* gba/memory/storage/storage.c */
-extern size_t backup_storage_sizes[];
-void mem_backup_storage_detect(struct gba *gba);
-void mem_backup_storage_init(struct gba *gba);
 uint8_t mem_backup_storage_read8(struct gba const *gba, uint32_t addr);
 void mem_backup_storage_write8(struct gba *gba, uint32_t addr, uint8_t value);
 void mem_backup_storage_write_to_disk(struct gba *gba);
 
 /* gba/quicksave.c */
-void quicksave(struct gba const *gba, char const *);
-void quickload(struct gba *gba, char const *);
+void quicksave(struct gba const *gba, uint8_t **data, size_t *size);
+bool quickload(struct gba *gba, uint8_t *data, size_t size);
 
 /*
 ** The following memory-accessors are used by the PPU for fast memory access

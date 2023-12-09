@@ -39,12 +39,12 @@ debugger_cmd_break(
         }
     } else if (argc == 1) {
         if (!debugger_check_arg_type(CMD_BREAK, &argv[0], ARGS_INTEGER)) {
-            struct breakpoint *clone;
-
             app->debugger.breakpoints = realloc(
                 app->debugger.breakpoints,
                 sizeof(struct breakpoint) * (app->debugger.breakpoints_len + 1)
             );
+
+            hs_assert(app->debugger.breakpoints);
 
             app->debugger.breakpoints[app->debugger.breakpoints_len].ptr = argv[0].value.i64;
             ++app->debugger.breakpoints_len;
@@ -56,14 +56,9 @@ debugger_cmd_break(
                 g_reset
             );
 
-            clone = malloc(sizeof(struct breakpoint) * (app->debugger.breakpoints_len));
-            hs_assert(clone);
-            memcpy(clone, app->debugger.breakpoints, sizeof(struct breakpoint) * (app->debugger.breakpoints_len));
-
-            gba_send_dbg_breakpoints(app->emulation.gba, clone, app->debugger.breakpoints_len, free);
+            app_game_set_breakpoints_list(app, app->debugger.breakpoints, app->debugger.breakpoints_len);
         }
     } else if (argc == 2) {
-        struct breakpoint *clone;
         size_t idx;
 
         if (debugger_check_arg_type(CMD_BREAK, &argv[0], ARGS_STRING)
@@ -94,14 +89,11 @@ debugger_cmd_break(
             app->debugger.breakpoints,
             sizeof(struct breakpoint) * (app->debugger.breakpoints_len - 1)
         );
-        app->debugger.breakpoints_len -= 1;
+        --app->debugger.breakpoints_len;
+
         hs_assert(app->debugger.breakpoints);
 
-        clone = malloc(sizeof(struct breakpoint) * (app->debugger.breakpoints_len));
-        hs_assert(clone);
-        memcpy(clone, app->debugger.breakpoints, sizeof(struct breakpoint) * (app->debugger.breakpoints_len));
-
-        gba_send_dbg_breakpoints(app->emulation.gba, clone, app->debugger.breakpoints_len, free);
+        app_game_set_breakpoints_list(app, app->debugger.breakpoints, app->debugger.breakpoints_len);
     } else {
         printf("Usage: %s\n", g_commands[CMD_BREAK].usage);
     }

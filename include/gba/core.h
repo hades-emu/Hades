@@ -207,7 +207,6 @@ static char const * const arm_modes_name[] = {
 };
 
 /* gba/core/core.c */
-void core_init(struct gba *gba);
 void core_run(struct gba *gba);
 void core_next(struct gba *gba);
 void core_idle(struct gba *gba);

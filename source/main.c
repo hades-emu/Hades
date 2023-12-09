@@ -40,10 +40,9 @@
 #include <string.h>
 #include "hades.h"
 #include "app.h"
-#include "compat.h"
 #include "gba/gba.h"
-#include "gba/db.h"
 #include "gui/gui.h"
+#include "common/compat.h"
 
 #ifdef WITH_DEBUGGER
 # include "dbg/dbg.h"
@@ -136,21 +135,23 @@ args_parse(
         }
 
         switch (c) {
-            case 0:
+            case 0: {
                 switch (option_index) {
-                    case CLI_HELP: // --help
+                    case CLI_HELP: { // --help
                         print_usage(stdout, name);
                         exit(EXIT_SUCCESS);
                         break;
-                    case CLI_VERSION: // --version
+                    };
+                    case CLI_VERSION: { // --version
                         printf("Hades v" HADES_VERSION "\n");
                         exit(EXIT_SUCCESS);
                         break;
-                    case CLI_BIOS: // --bios
-                        free(app->file.bios_path);
-                        app->file.bios_path = strdup(optarg);
+                    };
+                    case CLI_BIOS: { // --bios
+                        app->args.bios_path = optarg;
                         break;
-                    case CLI_COLOR: // --color
+                    };
+                    case CLI_COLOR: { // --color
                         if (optarg) {
                             if (!strcmp(optarg, "auto")) {
                                 color = 0;
@@ -169,40 +170,49 @@ args_parse(
                             color = 0;
                         }
                         break;
-                    default:
+                    };
+                    default: {
                         print_usage(stderr, name);
                         exit(EXIT_FAILURE);
                         break;
+                    };
                 }
                 break;
-            case 'b':
-                free(app->file.bios_path);
-                app->file.bios_path = strdup(optarg);
+            };
+            case 'b': {
+                app->args.bios_path = optarg;
                 break;
-            case 'h':
+            };
+            case 'h': {
                 print_usage(stdout, name);
                 exit(EXIT_SUCCESS);
                 break;
-            case 'v':
+            };
+            case 'v': {
                 printf("Hades v" HADES_VERSION "\n");
                 exit(EXIT_SUCCESS);
                 break;
-            default:
+            };
+            default: {
                 print_usage(stderr, name);
                 exit(EXIT_FAILURE);
                 break;
+            };
         }
     }
 
     switch (argc - optind) {
-        case 0:
+        case 0: {
             break;
-        case 1:
-            app->file.game_path = strdup(argv[optind]);
+        };
+        case 1: {
+            app->args.rom_path = argv[optind];
             break;
-        default:
+        };
+        default: {
             print_usage(stderr, name);
             exit(EXIT_FAILURE);
+        };
     }
 
     switch (color) {
@@ -229,29 +239,27 @@ main(
 #endif
 
     memset(&app, 0, sizeof(app));
-    app.emulation.gba = calloc(1, sizeof(*app.emulation.gba));
-    hs_assert(app.emulation.gba);
-    gba_init(app.emulation.gba);
+    app.emulation.gba = gba_create();
 
     /* Default value for all options, before config and argument parsing. */
     app.run = true;
     app.file.bios_path = strdup("./bios.bin");
     app.file.config_path = strdup("./config.json");
-    app.emulation.started = false;
-    app.emulation.running = false;
+    app.emulation.is_started = false;
+    app.emulation.is_running = false;
     app.emulation.speed = 1;
     app.emulation.unbounded = false;
-    app.emulation.backup_type = BACKUP_AUTO_DETECT;
-    app.emulation.rtc_autodetect = true;
-    app.emulation.rtc_force_enabled = true;
+    app.emulation.backup_storage.autodetect = true;
+    app.emulation.backup_storage.type = BACKUP_NONE;
+    app.emulation.rtc.autodetect = true;
+    app.emulation.rtc.enabled = true;
     app.video.color_correction = true;
     app.video.vsync = false;
     app.video.display_size = 3;
     app.video.aspect_ratio = ASPECT_RATIO_RESIZE;
     app.audio.mute = false;
     app.audio.level = 1.0f;
-    app.video.texture_filter.kind = TEXTURE_FILTER_NEAREST;
-    app.video.texture_filter.refresh = true;
+    app.gfx.texture_filter = TEXTURE_FILTER_NEAREST;
     app.ui.win.resize = true;
     app.ui.win.resize_with_ratio = false;
     gui_sdl_setup_default_binds(&app);
@@ -283,18 +291,25 @@ main(
     pthread_create(
         &gba_thread,
         NULL,
-        (void *(*)(void *))gba_main_loop,
+        (void *(*)(void *))gba_run,
         app.emulation.gba
     );
 
+    if (app.args.rom_path) {
+        app_game_configure(&app, app.args.rom_path);
+        if (app.emulation.launch_config) {
+            app_game_reset(&app);
+
+#ifdef WITH_DEBUGGER
+            app_game_pause(&app);
+#else
+            app_game_run(&app);
+#endif
+        }
+    }
+
 #ifdef WITH_DEBUGGER
     signal(SIGINT, &sighandler);
-
-    app_game_stop(&app);
-    if (app.file.game_path) {
-        app_game_reset(&app);
-        app_game_pause(&app);
-    }
 
     /* Start the debugger thread */
     pthread_create(
@@ -303,12 +318,6 @@ main(
         (void *(*)(void *))debugger_run,
         &app
     );
-#else
-    app_game_stop(&app);
-    if (app.file.game_path) {
-        app_game_reset(&app);
-        app_game_run(&app);
-    }
 #endif
 
     while (app.run) {
@@ -316,6 +325,8 @@ main(
         float elapsed_ms;
 
         sdl_counters[0] = SDL_GetPerformanceCounter();
+
+        app_game_process_all_notifs(&app);
 
         gui_sdl_handle_inputs(&app);
         gui_sdl_video_render_frame(&app);
@@ -327,25 +338,25 @@ main(
         }
 #endif
 
-        if (app.emulation.started && app.emulation.running) {
+        if (app.emulation.is_started && app.emulation.is_running) {
             uint32_t now;
 
             now = SDL_GetTicks();
             if ((now - app.ui.ticks_last_frame) >= 1000) {
-                app.emulation.fps = atomic_exchange(&app.emulation.gba->framecounter, 0);
+                app.emulation.fps = gba_shared_reset_frame_counter(app.emulation.gba);
                 app.ui.ticks_last_frame = now;
 
                 /*
                 ** We also want to store the content of the backup storage
                 ** on the disk every second (if it is dirty).
                 */
-                app_game_write_backup(&app);
+                app_game_update_backup(&app);
 
                 /*
                 ** We also update the Window's name with the game title
                 */
-                if (app.emulation.gba->game_entry) {
-                    SDL_SetWindowTitle(app.sdl.window, app.emulation.gba->game_entry->title);
+                if (app.emulation.game_entry) {
+                    SDL_SetWindowTitle(app.sdl.window, app.emulation.game_entry->title);
                 } else {
                     SDL_SetWindowTitle(app.sdl.window, "Hades");
                 }
@@ -378,7 +389,12 @@ main(
         sdl_counters[1] = SDL_GetPerformanceCounter();
         elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
 
-        if (app.emulation.started && app.emulation.running) {
+        /*
+        ** Handle the power-save mode.
+        **
+        ** Required because imgui uses quite a lot of CPU even when nothing is happening.
+        */
+        if (app.emulation.is_started && app.emulation.is_running) {
             // If the emulator is running without vsync, cap the gui's FPS to 4x the display's refresh rate
             if (!app.video.vsync) {
                 SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
@@ -403,9 +419,24 @@ main(
                 SDL_Delay(max(0.f, floor((1000.f / 60.0f) - elapsed_ms)));
             }
         }
+
+        // Flush the quick save cache
+        if (app.file.flush_qsaves_cache) {
+            size_t i;
+
+            for (i = 0; i < MAX_QUICKSAVES; ++i) {
+                free(app.file.qsaves[i].mtime);
+                app.file.qsaves[i].exist = hs_fexists(app.file.qsaves[i].path);
+                app.file.qsaves[i].mtime = hs_fmtime(app.file.qsaves[i].path);
+                app.file.flush_qsaves_cache = false;
+            }
+
+            app.file.flush_qsaves_cache = false;
+        }
+
     }
 
-    gba_send_exit(app.emulation.gba);
+    app_game_exit(&app);
     pthread_join(gba_thread, NULL);
 
 #ifdef WITH_DEBUGGER
@@ -415,6 +446,9 @@ main(
     gui_sdl_cleanup(&app);
 
     gui_config_save(&app);
+
+    gba_delete(app.emulation.gba);
+    app.emulation.gba = NULL;
 
     return (EXIT_SUCCESS);
 }

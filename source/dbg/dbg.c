@@ -13,7 +13,6 @@
 #include <readline/history.h>
 #include "hades.h"
 #include "app.h"
-#include "compat.h"
 #include "dbg/lang.h"
 #include "dbg/dbg.h"
 #include "gba/gba.h"
@@ -142,70 +141,189 @@ struct command g_commands[] = {
     }
 };
 
+/*
+** Process a single notifiation, updating the content of `app->debugger` accordingly.
+*/
 void
-debugger_wait_for_emulator(
+debugger_process_notif(
     struct app *app,
-    bool dump_context
+    struct notification const *notif
 ) {
-    while (!app->emulation.gba->debugger.interrupt.flag) {
-        // This is to ensure the loop has a side-effect (otherwise it's UB)
-        // and to help the CPU save some energy.
-        hs_usleep(100000);
-    }
+    switch (notif->header.kind) {
+        case NOTIFICATION_RUN: {
+            app->debugger.is_started = true;
+            app->debugger.is_running = true;
+            break;
+        };
+        case NOTIFICATION_STOP: {
+            app->debugger.is_started = false;
+            app->debugger.is_running = false;
+            break;
+        };
+        case NOTIFICATION_RESET: {
+            app->debugger.is_started = true;
+            break;
+        };
+        case NOTIFICATION_PAUSE: {
+            app->debugger.is_running = false;
+            break;
+        };
+        case NOTIFICATION_BREAKPOINT: {
+            struct notification_breakpoint const *notif_bp;
 
-    if (dump_context) {
-        debugger_dump_context(app, false);
-    }
-
-    switch (app->emulation.gba->debugger.interrupt.reason) {
-        case GBA_INTERRUPT_REASON_BREAKPOINT_REACHED: {
+            notif_bp = (struct notification_breakpoint const *)notif;
             printf(
                 ">>>>> Breakpoint %s0x%08x%s hit! <<<<<\n",
                 g_light_magenta,
-                app->emulation.gba->debugger.interrupt.data.breakpoint->ptr,
+                notif_bp->addr,
                 g_reset
             );
             break;
         };
-        case GBA_INTERRUPT_REASON_WATCHPOINT_REACHED: {
-            if (app->emulation.gba->debugger.interrupt.data.access.write) {
+        case NOTIFICATION_WATCHPOINT: {
+            struct notification_watchpoint const *notif_wp;
+
+            notif_wp = (struct notification_watchpoint const *)notif;
+            if (notif_wp->access.write) {
                 printf(
                     ">>>>> Watchpoint %s0x%08x%s hit with a %swrite%s of %s0x%0*x%s to %s0x%08x%s! <<<<<\n",
                     g_light_magenta,
-                    app->emulation.gba->debugger.interrupt.data.watchpoint->ptr,
+                    notif_wp->addr,
                     g_reset,
                     g_light_green,
                     g_reset,
                     g_light_magenta,
-                    app->emulation.gba->debugger.interrupt.data.access.size * 2,
-                    app->emulation.gba->debugger.interrupt.data.access.val,
+                    notif_wp->access.size,
+                    notif_wp->access.val,
                     g_reset,
                     g_light_magenta,
-                    app->emulation.gba->debugger.interrupt.data.access.ptr,
+                    notif_wp->access.addr,
                     g_reset
                 );
             } else {
                 printf(
                     ">>>>> Watchpoint %s0x%08x%s hit with a %sread%s of size %s%i%s to %s0x%08x%s! <<<<<\n",
                     g_light_magenta,
-                    app->emulation.gba->debugger.interrupt.data.watchpoint->ptr,
+                    notif_wp->addr,
                     g_reset,
                     g_light_green,
                     g_reset,
                     g_light_magenta,
-                    app->emulation.gba->debugger.interrupt.data.access.size,
+                    notif_wp->access.size,
                     g_reset,
                     g_light_magenta,
-                    app->emulation.gba->debugger.interrupt.data.access.ptr,
+                    notif_wp->access.addr,
                     g_reset
                 );
             }
             break;
         };
-        default: break;
+    }
+    gba_delete_notification(notif);
+}
+
+/*
+** Process all remaining notifications in the debug channel.
+*/
+void
+debugger_process_all_notifs(
+    struct app *app
+) {
+    struct channel *channel;
+
+    channel = &app->emulation.gba->channels.debug;
+    channel_lock(channel);
+    {
+        struct event_header const *event;
+
+        event = channel_next(channel, NULL);
+        while (event) {
+            debugger_process_notif(app, (struct notification const *)event);
+            event = channel_next(channel, event);
+        }
+        channel_clear(channel);
+    }
+    channel_release(channel);
+}
+
+/*
+** Wait for a specific notification.
+*/
+void
+debugger_wait_for_notif(
+    struct app *app,
+    enum notification_kind kind
+) {
+    struct channel *channel;
+    bool ok;
+
+    channel = &app->emulation.gba->channels.debug;
+    ok = false;
+
+    channel_lock(channel);
+
+    while (!ok) {
+        struct event_header const *event;
+
+        event = channel_next(channel, NULL);
+        while (event) {
+            debugger_process_notif(app, (struct notification const *)event);
+            ok = (event->kind == kind);
+            event = channel_next(channel, event);
+        }
+
+        channel_clear(channel);
+
+        if (!ok) {
+            channel_wait(channel);
+        }
     }
 
-    app_game_pause(app);
+    channel_release(channel);
+}
+
+
+/*
+** Wait for the emulator to send us a RUN and PAUSE notification in succession.
+**
+** Used by a lot of commands to wait before the emulator finishes whatever they want it to do.
+*/
+void
+debugger_wait_for_emulator(
+    struct app *app
+) {
+    struct channel *channel;
+    enum gba_states state;
+
+    channel = &app->emulation.gba->channels.debug;
+    state = GBA_STATE_STOP;
+
+    channel_lock(channel);
+
+    while (state != GBA_STATE_PAUSE) {
+        struct event_header const *event;
+
+        event = channel_next(channel, NULL);
+        while (event) {
+            debugger_process_notif(app, (struct notification const *)event);
+
+            if (event->kind == NOTIFICATION_RUN && state == GBA_STATE_STOP) {
+                state = GBA_STATE_RUN;
+            } else if (event->kind == NOTIFICATION_PAUSE && state == GBA_STATE_RUN) {
+                state = GBA_STATE_PAUSE;
+            }
+
+            event = channel_next(channel, event);
+        }
+
+        channel_clear(channel);
+
+        if (state != GBA_STATE_PAUSE) {
+            channel_wait(channel);
+        }
+    }
+
+    channel_release(channel);
 }
 
 static
@@ -260,6 +378,10 @@ debugger_run_command(
         // TODO FIXME free stuff
     }
 
+    // Ensure the state of `is_running` and `is_started` is as up-to-date as possible.
+    debugger_process_all_notifs(app);
+
+    // Call the command.
     cmd->func(app, len, args);
 }
 
@@ -321,7 +443,10 @@ debugger_run(
     /* Build the IO registers table */
     debugger_io_init(app->emulation.gba);
 
-    debugger_wait_for_emulator(app, true);
+    debugger_process_all_notifs(app);
+    if (app->debugger.is_started) {
+        debugger_dump_context_auto(app);
+    }
 
     while (app->run && (input = readline("$ ")) != NULL) {
         char *saveptr;
@@ -383,7 +508,7 @@ debugger_run(
                         if (cmd->func) {
                             debugger_run_command(app, cmd, &ast);
                         } else {
-                            printf("command \"%s\" isn't implemented yet.\n", input_cmd);
+                            printf("Command \"%s\" isn't implemented yet.\n", input_cmd);
                         }
                         goto cleanup;
                     }

@@ -24,39 +24,6 @@
 #include "gba/gba.h"
 
 /*
-** Initialize the core by initializing its registers
-** to their default values.
-*/
-void
-core_init(
-    struct gba *gba
-) {
-    struct core *core;
-    int i;
-
-    core = &gba->core;
-
-    memset(core, 0, sizeof(*core));
-
-    for (i = 0; i < array_length(core->registers); ++i) {
-        core->registers[i] = 0;
-    }
-
-    for (i = 0; i < array_length(core->bank_registers); ++i) {
-        core->bank_registers[i] = 0;
-    }
-
-    core->r13_irq = 0x03007FA0;
-    core->r13_svc = 0x03007FE0;
-    core->sp = 0x03007F00;
-    core->cpsr.mode = MODE_SYS;
-    core->prefetch_access_type = NON_SEQUENTIAL;
-    mem_update_waitstates(gba);
-    core_interrupt(gba, VEC_RESET, MODE_SVC);
-    core->cycles = 0;
-}
-
-/*
 ** Fetch, decode and execute the next instruction.
 */
 void

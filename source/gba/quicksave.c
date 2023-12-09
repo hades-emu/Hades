@@ -8,130 +8,141 @@
 \******************************************************************************/
 
 #include <string.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include "gba/gba.h"
-#include "gba/scheduler.h"
-#include "compat.h"
+
+// Not always true, but it's for optimization purposes so it's not a big deal
+// if the page size isn't 4k.
+#define PAGE_SIZE           4096u
+#define PAGE_MASK           (PAGE_SIZE - 1)
+#define PAGE_ALIGN(size)    ((size + PAGE_SIZE) & ~PAGE_MASK)
+
+struct quicksave_buffer {
+    uint8_t *data;
+    size_t size;    // Allocated size
+    size_t index;   // Read/Write index
+};
+
+static
+void
+quicksave_write(
+    struct quicksave_buffer *buffer,
+    uint8_t const *data,
+    size_t length
+) {
+    if (buffer->index + length > buffer->size) {
+        buffer->size = PAGE_ALIGN(buffer->size + length);
+        buffer->data = realloc(buffer->data, buffer->size);
+        hs_assert(buffer->data);
+    }
+
+    hs_assert(buffer->size >= buffer->index + length);
+
+    memcpy(buffer->data + buffer->index, data, length);
+    buffer->index += length;
+}
+
+static
+bool
+quicksave_read(
+    struct quicksave_buffer *buffer,
+    uint8_t *data,
+    size_t length
+) {
+    if (buffer->size < buffer->index + length) {
+        return (true);
+    }
+
+    memcpy(data, buffer->data + buffer->index, length);
+    buffer->index += length;
+    return (false);
+}
 
 /*
-** Save the current state of the emulator in the file pointed by `path`.
+** Save the current state of the emulator in the given buffer.
 */
 void
 quicksave(
     struct gba const *gba,
-    char const *path
+    uint8_t **data,
+    size_t *size
 ) {
-    FILE *file;
+    struct quicksave_buffer buffer;
     size_t i;
 
-    file = hs_fopen(path, "wb");
-    if (!file) {
-        goto err;
-    }
+    buffer.data = NULL;
+    buffer.size = 0;
+    buffer.index = 0;
 
-    if (
-           fwrite(&gba->core, sizeof(gba->core), 1, file) != 1
-        || fwrite(gba->memory.ewram, sizeof(gba->memory.ewram), 1, file) != 1
-        || fwrite(gba->memory.iwram, sizeof(gba->memory.iwram), 1, file) != 1
-        || fwrite(gba->memory.palram, sizeof(gba->memory.palram), 1, file) != 1
-        || fwrite(gba->memory.vram, sizeof(gba->memory.vram), 1, file) != 1
-        || fwrite(gba->memory.oam, sizeof(gba->memory.oam), 1, file) != 1
-        || fwrite(&gba->memory.backup_storage.chip, sizeof(gba->memory.backup_storage.chip), 1, file) != 1
-        || fwrite(&gba->memory.pbuffer, sizeof(gba->memory.pbuffer), 1, file) != 1
-        || fwrite(&gba->memory.bios_bus, sizeof(gba->memory.bios_bus), 1, file) != 1
-        || fwrite(&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use), 1, file) != 1
-        || fwrite(&gba->io, sizeof(gba->io), 1, file) != 1
-        || fwrite(&gba->ppu, sizeof(gba->ppu), 1, file) != 1
-        || fwrite(&gba->gpio, sizeof(gba->gpio), 1, file) != 1
-        || fwrite(&gba->apu.fifos, sizeof(gba->apu.fifos), 1, file) != 1
-        || fwrite(&gba->apu.wave, sizeof(gba->apu.wave), 1, file) != 1
-        || fwrite(&gba->apu.latch, sizeof(gba->apu.latch), 1, file) != 1
-        || fwrite(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
-    ) {
-        goto err;
-    }
+    quicksave_write(&buffer, (uint8_t *)&gba->core, sizeof(gba->core));
+    quicksave_write(&buffer, (uint8_t *)gba->memory.ewram, sizeof(gba->memory.ewram));
+    quicksave_write(&buffer, (uint8_t *)gba->memory.iwram, sizeof(gba->memory.iwram));
+    quicksave_write(&buffer, (uint8_t *)gba->memory.palram, sizeof(gba->memory.palram));
+    quicksave_write(&buffer, (uint8_t *)gba->memory.vram, sizeof(gba->memory.vram));
+    quicksave_write(&buffer, (uint8_t *)gba->memory.oam, sizeof(gba->memory.oam));
+    quicksave_write(&buffer, (uint8_t *)&gba->memory.backup_storage.chip, sizeof(gba->memory.backup_storage.chip));
+    quicksave_write(&buffer, (uint8_t *)&gba->memory.pbuffer, sizeof(gba->memory.pbuffer));
+    quicksave_write(&buffer, (uint8_t *)&gba->memory.bios_bus, sizeof(gba->memory.bios_bus));
+    quicksave_write(&buffer, (uint8_t *)&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use));
+    quicksave_write(&buffer, (uint8_t *)&gba->io, sizeof(gba->io));
+    quicksave_write(&buffer, (uint8_t *)&gba->ppu, sizeof(gba->ppu));
+    quicksave_write(&buffer, (uint8_t *)&gba->gpio, sizeof(gba->gpio));
+    quicksave_write(&buffer, (uint8_t *)&gba->apu.fifos, sizeof(gba->apu.fifos));
+    quicksave_write(&buffer, (uint8_t *)&gba->apu.wave, sizeof(gba->apu.wave));
+    quicksave_write(&buffer, (uint8_t *)&gba->apu.latch, sizeof(gba->apu.latch));
+    quicksave_write(&buffer, (uint8_t *)&gba->scheduler.next_event, sizeof(uint64_t));
 
     // Serialize the scheduler's event list
     for (i = 0; i < gba->scheduler.events_size; ++i) {
         struct scheduler_event *event;
 
         event = gba->scheduler.events + i;
-        if (
-               fwrite(&event->active, sizeof(bool), 1, file) != 1
-            || fwrite(&event->repeat, sizeof(bool), 1, file) != 1
-            || fwrite(&event->at, sizeof(uint64_t), 1, file) != 1
-            || fwrite(&event->period, sizeof(uint64_t), 1, file) != 1
-            || fwrite(&event->args, sizeof(struct event_args), 1, file) != 1
-        ) {
-            goto err;
-        }
+        quicksave_write(&buffer, (uint8_t *)&event->active, sizeof(bool));
+        quicksave_write(&buffer, (uint8_t *)&event->repeat, sizeof(bool));
+        quicksave_write(&buffer, (uint8_t *)&event->at, sizeof(uint64_t));
+        quicksave_write(&buffer, (uint8_t *)&event->period, sizeof(uint64_t));
+        quicksave_write(&buffer, (uint8_t *)&event->args, sizeof(struct event_args));
     }
 
-    fflush(file);
-
-    logln(
-        HS_INFO,
-        "State saved to %s%s%s",
-        g_light_magenta,
-        path,
-        g_reset
-    );
-
-    goto finally;
-
-err:
-    logln(
-        HS_INFO,
-        "%sError: failed to save state to %s: %s%s",
-        g_light_red,
-        path,
-        strerror(errno),
-        g_reset
-    );
-
-finally:
-
-    fclose(file);
+    *data = buffer.data;
+    *size = buffer.size;
 }
 
 /*
-** Load a new state for the emulator from the content of the file pointed by `path`.
+** Load a new state for the emulator from the given save state.
 */
-void
+bool
 quickload(
     struct gba *gba,
-    char const *path
+    uint8_t *data,
+    size_t size
 ) {
-    FILE *file;
+    struct quicksave_buffer buffer;
     size_t i;
 
-    file = hs_fopen(path, "rb");
-    if (!file) {
-        goto err;
-    }
+    buffer.data = data;
+    buffer.size = size;
+    buffer.index = 0;
 
     if (
-           fread(&gba->core, sizeof(gba->core), 1, file) != 1
-        || fread(gba->memory.ewram, sizeof(gba->memory.ewram), 1, file) != 1
-        || fread(gba->memory.iwram, sizeof(gba->memory.iwram), 1, file) != 1
-        || fread(gba->memory.palram, sizeof(gba->memory.palram), 1, file) != 1
-        || fread(gba->memory.vram, sizeof(gba->memory.vram), 1, file) != 1
-        || fread(gba->memory.oam, sizeof(gba->memory.oam), 1, file) != 1
-        || fread(&gba->memory.backup_storage.chip, sizeof(gba->memory.backup_storage.chip), 1, file) != 1
-        || fread(&gba->memory.pbuffer, sizeof(gba->memory.pbuffer), 1, file) != 1
-        || fread(&gba->memory.bios_bus, sizeof(gba->memory.bios_bus), 1, file) != 1
-        || fread(&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use), 1, file) != 1
-        || fread(&gba->io, sizeof(gba->io), 1, file) != 1
-        || fread(&gba->ppu, sizeof(gba->ppu), 1, file) != 1
-        || fread(&gba->gpio, sizeof(gba->gpio), 1, file) != 1
-        || fread(&gba->apu.fifos, sizeof(gba->apu.fifos), 1, file) != 1
-        || fread(&gba->apu.wave, sizeof(gba->apu.wave), 1, file) != 1
-        || fread(&gba->apu.latch, sizeof(gba->apu.latch), 1, file) != 1
-        || fread(&gba->scheduler.next_event, sizeof(uint64_t), 1, file) != 1
+           quicksave_read(&buffer, (uint8_t *)&gba->core, sizeof(gba->core))
+        || quicksave_read(&buffer, (uint8_t *)gba->memory.ewram, sizeof(gba->memory.ewram))
+        || quicksave_read(&buffer, (uint8_t *)gba->memory.iwram, sizeof(gba->memory.iwram))
+        || quicksave_read(&buffer, (uint8_t *)gba->memory.palram, sizeof(gba->memory.palram))
+        || quicksave_read(&buffer, (uint8_t *)gba->memory.vram, sizeof(gba->memory.vram))
+        || quicksave_read(&buffer, (uint8_t *)gba->memory.oam, sizeof(gba->memory.oam))
+        || quicksave_read(&buffer, (uint8_t *)&gba->memory.backup_storage.chip, sizeof(gba->memory.backup_storage.chip))
+        || quicksave_read(&buffer, (uint8_t *)&gba->memory.pbuffer, sizeof(gba->memory.pbuffer))
+        || quicksave_read(&buffer, (uint8_t *)&gba->memory.bios_bus, sizeof(gba->memory.bios_bus))
+        || quicksave_read(&buffer, (uint8_t *)&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use))
+        || quicksave_read(&buffer, (uint8_t *)&gba->io, sizeof(gba->io))
+        || quicksave_read(&buffer, (uint8_t *)&gba->ppu, sizeof(gba->ppu))
+        || quicksave_read(&buffer, (uint8_t *)&gba->gpio, sizeof(gba->gpio))
+        || quicksave_read(&buffer, (uint8_t *)&gba->apu.fifos, sizeof(gba->apu.fifos))
+        || quicksave_read(&buffer, (uint8_t *)&gba->apu.wave, sizeof(gba->apu.wave))
+        || quicksave_read(&buffer, (uint8_t *)&gba->apu.latch, sizeof(gba->apu.latch))
+        || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.next_event, sizeof(uint64_t))
     ) {
-        goto err;
+        return (true);
     }
 
     // Serialize the scheduler's event list
@@ -140,39 +151,15 @@ quickload(
 
         event = gba->scheduler.events + i;
         if (
-               fread(&event->active, sizeof(bool), 1, file) != 1
-            || fread(&event->repeat, sizeof(bool), 1, file) != 1
-            || fread(&event->at, sizeof(uint64_t), 1, file) != 1
-            || fread(&event->period, sizeof(uint64_t), 1, file) != 1
-            || fread(&event->args, sizeof(struct event_args), 1, file) != 1
+               quicksave_read(&buffer, (uint8_t *)&event->active, sizeof(bool))
+            || quicksave_read(&buffer, (uint8_t *)&event->repeat, sizeof(bool))
+            || quicksave_read(&buffer, (uint8_t *)&event->at, sizeof(uint64_t))
+            || quicksave_read(&buffer, (uint8_t *)&event->period, sizeof(uint64_t))
+            || quicksave_read(&buffer, (uint8_t *)&event->args, sizeof(struct event_args))
         ) {
-            goto err;
+            return (true);
         }
     }
 
-    logln(
-        HS_INFO,
-        "State loaded from %s%s%s",
-        g_light_magenta,
-        path,
-        g_reset
-    );
-
-    goto finally;
-
-err:
-    logln(
-        HS_INFO,
-        "%sError: failed to load state from %s: %s%s",
-        g_light_red,
-        path,
-        strerror(errno),
-        g_reset
-    );
-
-finally:
-
-    if (file) {
-        fclose(file);
-    }
+    return (false);
 }

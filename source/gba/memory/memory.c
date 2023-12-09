@@ -49,28 +49,6 @@ static uint32_t access_time32[2][16] = {
 static uint32_t gamepak_nonseq_waitstates[4] = { 4, 3, 2, 8 };
 
 /*
-** Initialize the memory to its initial state, before the system is up.
-*/
-void
-mem_reset(
-    struct memory *memory
-) {
-    memset(memory->ewram, 0, sizeof(memory->ewram));
-    memset(memory->iwram, 0, sizeof(memory->iwram));
-    memset(memory->palram, 0, sizeof(memory->palram));
-    memset(memory->vram, 0, sizeof(memory->vram));
-    memset(memory->oam, 0, sizeof(memory->oam));
-    memset(&memory->pbuffer, 0, sizeof(memory->pbuffer));
-    memset(&memory->backup_storage.chip.flash, 0, sizeof(memory->backup_storage.chip.flash));
-    memory->gamepak_bus_in_use = false;
-    memory->bios_bus = 0;
-    memory->backup_storage.chip.eeprom.state = EEPROM_STATE_READY;
-    memory->backup_storage.chip.eeprom.transfer_address = 0;
-    memory->backup_storage.chip.eeprom.transfer_data = 0;
-    memory->backup_storage.chip.eeprom.transfer_len = 0;
-}
-
-/*
 ** Set the waitstates for ROM/SRAM memory according to the content of REG_WAITCNT.
 */
 void

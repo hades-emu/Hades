@@ -263,6 +263,11 @@ debugger_cmd_print(
     size_t quantity;
     uint32_t addr;
 
+    if (!app->debugger.is_started) {
+        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        return;
+    }
+
     if (argc != 2 && argc != 3) {
         printf("Usage: %s\n", g_commands[CMD_PRINT].usage);
         return ;

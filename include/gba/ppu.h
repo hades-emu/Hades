@@ -10,14 +10,7 @@
 #pragma once
 
 #include "hades.h"
-
-#define GBA_SCREEN_WIDTH            240
-#define GBA_SCREEN_HEIGHT           160
-#define GBA_SCREEN_REAL_WIDTH       308
-#define GBA_SCREEN_REAL_HEIGHT      228
-#define CYCLES_PER_PIXEL            4
-#define CYCLES_PER_FRAME            (CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT)
-#define CYCLES_PER_SECOND           (16 * 1024 * 1024)
+#include "gba/gba.h"
 
 enum oam_mode {
     OAM_MODE_NORMAL,
@@ -118,6 +111,9 @@ union oam_entry {
 static_assert(sizeof(union oam_entry) == 3 * sizeof(uint16_t));
 
 struct ppu {
+    // The emulator's screen as it is being rendered.
+    uint32_t framebuffer[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+
     // Internal registers used for affine backgrounds
     int32_t internal_px[2];
     int32_t internal_py[2];
@@ -145,8 +141,9 @@ void ppu_step_affine_internal_registers(struct gba *gba);
 void ppu_prerender_oam(struct gba *gba, struct scanline *scanline, int32_t line);
 
 /* gba/ppu/ppu.c */
-void ppu_init(struct gba *);
 void ppu_render_black_screen(struct gba *gba);
+void ppu_hblank(struct gba *gba, struct event_args args);
+void ppu_hdraw(struct gba *gba, struct event_args args);
 
 /* gba/ppu/window.c */
 void ppu_window_build_masks(struct gba *gba, uint32_t y);

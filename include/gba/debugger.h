@@ -13,6 +13,14 @@
 
 #include "hades.h"
 
+enum gba_run_modes {
+    GBA_RUN_MODE_NORMAL,
+    GBA_RUN_MODE_FRAME,
+    GBA_RUN_MODE_TRACE,
+    GBA_RUN_MODE_STEP_IN,
+    GBA_RUN_MODE_STEP_OVER,
+};
+
 /*
 ** The different reasons why the emulation could be interrupted.
 */
@@ -36,28 +44,14 @@ struct watchpoint {
 };
 
 struct debugger {
-    struct {
-        atomic_bool flag;
-        enum interrupt_reasons reason;
+    // The "run mode" of the gba (how it should behave when running).
+    enum gba_run_modes run_mode;
 
-        union {
-            struct breakpoint *breakpoint;
-            struct {
-                struct watchpoint *watchpoint;
-                struct {
-                    uint32_t ptr;
-                    uint32_t val;
-                    uint8_t size;
-                    bool write;
-                } access;
-            };
-        } data;
-    } interrupt;
+    bool interrupted;
 
     struct {
         struct breakpoint *list;
         size_t len;
-        void (*cleanup)(void *);
     } breakpoints;
 
     struct {
@@ -68,8 +62,8 @@ struct debugger {
 
     struct {
         size_t count;
-        void *data;
-        void (*tracer)(void *);
+        void (*tracer_cb)(void *);
+        void *arg;
     } trace;
 
     struct {
@@ -83,5 +77,6 @@ void debugger_init(struct debugger *debugger);
 void debugger_eval_breakpoints(struct gba *gba);
 void debugger_eval_write_watchpoints(struct gba *gba, uint32_t addr, size_t size, uint32_t);
 void debugger_eval_read_watchpoints(struct gba *gba, uint32_t addr, size_t size);
+void debugger_execute_run_mode(struct gba *gba);
 
 #endif /* WITH_DEBUGGER */

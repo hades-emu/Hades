@@ -39,7 +39,7 @@ apu_wave_reset(
         gba->apu.wave.length = 0;
     }
 
-    period = CYCLES_PER_SECOND / (2097152 / (2048 - gba->io.sound3cnt_x.sample_rate));
+    period = GBA_CYCLES_PER_SECOND / (2097152 / (2048 - gba->io.sound3cnt_x.sample_rate));
 
     gba->apu.wave.step_handler = sched_add_event(
         gba,

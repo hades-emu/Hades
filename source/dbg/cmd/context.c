@@ -13,7 +13,7 @@
 #include "hades.h"
 #include "app.h"
 #include "dbg/dbg.h"
-#include "compat.h"
+#include "common/compat.h"
 
 /*
 ** Dump the registers' content, a disassembly of instructions around the PC
@@ -21,13 +21,8 @@
 */
 void
 debugger_dump_context(
-    struct app *app,
-    bool force
+    struct app *app
 ) {
-    if (!force && !hs_isatty(STDIN_FILENO)) {
-        return ;
-    }
-
     printf("---------------------------------Registers----------------------------------\n");
     debugger_cmd_registers(
         app,
@@ -48,6 +43,18 @@ debugger_dump_context(
         16
     );
     printf("----------------------------------------------------------------------------\n");
+}
+
+/*
+** Same as `debugger_dump_context`, but is a no-op if stdout isn't a tty.
+*/
+void
+debugger_dump_context_auto(
+    struct app *app
+) {
+    if (hs_isatty(STDIN_FILENO)) {
+        debugger_dump_context(app);
+    }
 }
 
 void
@@ -120,7 +127,12 @@ debugger_cmd_context(
     size_t argc __unused,
     struct arg const *argv __unused
 ) {
-    debugger_dump_context(app, true);
+    if (!app->debugger.is_started) {
+        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        return;
+    }
+
+    debugger_dump_context(app);
 }
 
 void
@@ -129,6 +141,11 @@ debugger_cmd_context_compact(
     size_t argc __unused,
     struct arg const *argv __unused
 ) {
+    if (!app->debugger.is_started) {
+        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        return;
+    }
+
     debugger_dump_context_compact(app);
     debugger_dump_context_compact_header();
 }

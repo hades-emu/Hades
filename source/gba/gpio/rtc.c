@@ -11,23 +11,6 @@
 #include "gba/gba.h"
 #include "gba/gpio.h"
 
-void
-gpio_rtc_init(
-    struct gba *gba
-) {
-    struct rtc *rtc;
-
-    rtc = &gba->gpio.rtc;
-    rtc->state = RTC_COMMAND;
-    rtc->data_len = 8;
-    rtc->data_count = 0;
-    rtc->data = 0;
-    rtc->sck = 0;
-    rtc->sio = 0;
-    rtc->cs = 0;
-    rtc->control.raw = 0x0;
-}
-
 static inline
 bool
 gpio_rtc_write_sio(

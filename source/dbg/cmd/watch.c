@@ -52,8 +52,6 @@ debugger_cmd_watch(
         write = !strcmp(argv[0].value.s, "write") || !strcmp(argv[0].value.s, "w");
 
         if (read || write) {
-            struct watchpoint *clone;
-
             app->debugger.watchpoints = realloc(
                 app->debugger.watchpoints,
                 sizeof(struct watchpoint) * (app->debugger.watchpoints_len + 1)
@@ -73,13 +71,8 @@ debugger_cmd_watch(
                 g_reset
             );
 
-            clone = malloc(sizeof(struct watchpoint) * (app->debugger.watchpoints_len));
-            hs_assert(clone);
-            memcpy(clone, app->debugger.watchpoints, sizeof(struct watchpoint) * (app->debugger.watchpoints_len));
-
-            gba_send_dbg_watchpoints(app->emulation.gba, clone, app->debugger.watchpoints_len, free);
+            app_game_set_watchpoints_list(app, app->debugger.watchpoints, app->debugger.watchpoints_len);
         } else if (!strcmp(argv[0].value.s, "delete") || !strcmp(argv[0].value.s, "d")) {
-            struct watchpoint *clone;
             size_t idx;
 
             idx = argv[1].value.i64;
@@ -102,11 +95,7 @@ debugger_cmd_watch(
             app->debugger.watchpoints_len -= 1;
             hs_assert(app->debugger.watchpoints);
 
-            clone = malloc(sizeof(struct watchpoint) * (app->debugger.watchpoints_len));
-            hs_assert(clone);
-            memcpy(clone, app->debugger.watchpoints, sizeof(struct watchpoint) * (app->debugger.watchpoints_len));
-
-            gba_send_dbg_watchpoints(app->emulation.gba, clone, app->debugger.watchpoints_len, free);
+            app_game_set_watchpoints_list(app, app->debugger.watchpoints, app->debugger.watchpoints_len);
         } else {
             printf("Usage: %s\n", g_commands[CMD_WATCH].usage);
         }

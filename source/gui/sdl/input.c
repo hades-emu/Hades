@@ -15,6 +15,7 @@
 #include <cimgui_impl.h>
 #include "hades.h"
 #include "app.h"
+#include "common/channel/event.h"
 #include "gui/gui.h"
 
 void
@@ -129,19 +130,19 @@ gui_sdl_handle_bind(
     bool pressed
 ) {
     switch (bind) {
-        case BIND_GBA_UP:                       gba_send_keyinput(app->emulation.gba, KEY_UP, pressed); break;
-        case BIND_GBA_DOWN:                     gba_send_keyinput(app->emulation.gba, KEY_DOWN, pressed); break;
-        case BIND_GBA_LEFT:                     gba_send_keyinput(app->emulation.gba, KEY_LEFT, pressed); break;
-        case BIND_GBA_RIGHT:                    gba_send_keyinput(app->emulation.gba, KEY_RIGHT, pressed); break;
-        case BIND_GBA_A:                        gba_send_keyinput(app->emulation.gba, KEY_A, pressed); break;
-        case BIND_GBA_B:                        gba_send_keyinput(app->emulation.gba, KEY_B, pressed); break;
-        case BIND_GBA_L:                        gba_send_keyinput(app->emulation.gba, KEY_L, pressed); break;
-        case BIND_GBA_R:                        gba_send_keyinput(app->emulation.gba, KEY_R, pressed); break;
-        case BIND_GBA_SELECT:                   gba_send_keyinput(app->emulation.gba, KEY_SELECT, pressed); break;
-        case BIND_GBA_START:                    gba_send_keyinput(app->emulation.gba, KEY_START, pressed); break;
+        case BIND_GBA_UP:                       app_game_key(app, KEY_UP, pressed); break;
+        case BIND_GBA_DOWN:                     app_game_key(app, KEY_DOWN, pressed); break;
+        case BIND_GBA_LEFT:                     app_game_key(app, KEY_LEFT, pressed); break;
+        case BIND_GBA_RIGHT:                    app_game_key(app, KEY_RIGHT, pressed); break;
+        case BIND_GBA_A:                        app_game_key(app, KEY_A, pressed); break;
+        case BIND_GBA_B:                        app_game_key(app, KEY_B, pressed); break;
+        case BIND_GBA_L:                        app_game_key(app, KEY_L, pressed); break;
+        case BIND_GBA_R:                        app_game_key(app, KEY_R, pressed); break;
+        case BIND_GBA_SELECT:                   app_game_key(app, KEY_SELECT, pressed); break;
+        case BIND_GBA_START:                    app_game_key(app, KEY_START, pressed); break;
         case BIND_EMULATOR_SPEED_MAX_HOLD: {
             app->emulation.unbounded = pressed;
-            gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
+            app_game_speed(app, app->emulation.speed * !app->emulation.unbounded);
             break;
         };
         default: break;
@@ -160,12 +161,12 @@ gui_sdl_handle_bind(
         case BIND_EMULATOR_SPEED_X5: {
             app->emulation.unbounded = false;
             app->emulation.speed = 1 + (bind - BIND_EMULATOR_SPEED_X1);
-            gba_send_speed(app->emulation.gba, app->emulation.speed);
+            app_game_speed(app, app->emulation.speed * !app->emulation.unbounded);
             break;
         };
         case BIND_EMULATOR_SPEED_MAX_TOGGLE: {
             app->emulation.unbounded ^= true;
-            gba_send_speed(app->emulation.gba, app->emulation.speed * !app->emulation.unbounded);
+            app_game_speed(app, app->emulation.speed * !app->emulation.unbounded);
             break;
         };
         case BIND_EMULATOR_SCREENSHOT:          app_game_screenshot(app); break;

@@ -29,7 +29,7 @@ mem_flash_read8(
             return (gba->memory.backup_storage.type == BACKUP_FLASH64 ? 0x1b : 0x13);
         }
     }
-    return (gba->memory.backup_storage.data[addr + flash->bank * FLASH64_SIZE]);
+    return (gba->shared_data.backup_storage.data[addr + flash->bank * FLASH64_SIZE]);
 }
 
 void
@@ -55,8 +55,8 @@ mem_flash_write8(
             case FLASH_CMD_PREP_ERASE:          flash->state = FLASH_STATE_ERASE; break;
             case FLASH_CMD_ERASE_CHIP: {
                 if (flash->state == FLASH_STATE_ERASE) {
-                    memset(gba->memory.backup_storage.data, 0xFF, backup_storage_sizes[gba->memory.backup_storage.type]);
-                    gba->memory.backup_storage.dirty = true;
+                    memset(gba->shared_data.backup_storage.data, 0xFF, gba->shared_data.backup_storage.size);
+                    gba->shared_data.backup_storage.dirty = true;
                 }
                 break;
             };
@@ -72,12 +72,12 @@ mem_flash_write8(
         // Erase the desired sector
 
         addr &= 0xF000;
-        memset(gba->memory.backup_storage.data + addr + flash->bank * FLASH64_SIZE, 0xFF, 0x1000);
-        gba->memory.backup_storage.dirty = true;
+        memset(gba->shared_data.backup_storage.data + addr + flash->bank * FLASH64_SIZE, 0xFF, 0x1000);
+        gba->shared_data.backup_storage.dirty = true;
         flash->state = FLASH_STATE_READY;
     } else if (flash->state == FLASH_STATE_WRITE) {
-        gba->memory.backup_storage.data[addr + flash->bank * FLASH64_SIZE] = val;
-        gba->memory.backup_storage.dirty = true;
+        gba->shared_data.backup_storage.data[addr + flash->bank * FLASH64_SIZE] = val;
+        gba->shared_data.backup_storage.dirty = true;
         flash->state = FLASH_STATE_READY;
     } else if (flash->state == FLASH_STATE_BANK && addr == 0x0) {
         flash->bank = val;

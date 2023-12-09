@@ -18,6 +18,8 @@ gui_new_error(
     struct app *app,
     char *msg
 ) {
+    logln(HS_ERROR, "Error: %s", msg);
+
     free(app->ui.error.msg);
     app->ui.error.msg = msg;
     app->ui.error.active = true;
@@ -32,7 +34,6 @@ gui_win_error(
     if (app->ui.error.active) {
         app->ui.error.active = false;
         igOpenPopup("Error", ImGuiPopupFlags_None);
-        logln(HS_ERROR, "Error: %s", app->ui.error.msg);
     }
 
     // #B2354E

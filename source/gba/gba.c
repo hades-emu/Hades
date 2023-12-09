@@ -9,852 +9,637 @@
 
 #include <string.h>
 #include "hades.h"
-#include "compat.h"
+#include "gba/gba.h"
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
-#include "gba/gba.h"
-#include "gba/db.h"
+#include "common/compat.h"
+#include "common/channel/channel.h"
+#include "common/channel/event.h"
 
 /*
-** Initialize the `gba` structure with sane, default values.
+** Create a new GBA emulator.
 */
-void
-gba_init(
-    struct gba *gba
-) {
+struct gba *
+gba_create(void)
+{
+    struct gba *gba;
+
+    gba = malloc(sizeof(struct gba));
+    hs_assert(gba);
+
     memset(gba, 0, sizeof(*gba));
 
-    /* Initialize the ARM decoder */
-    core_arm_decode_insns();
-    core_thumb_decode_insns();
+    // Initialize the ARM and Thumb decoder
+    {
+        core_arm_decode_insns();
+        core_thumb_decode_insns();
+    }
 
-    pthread_mutex_init(&gba->message_queue.lock, NULL);
-    pthread_cond_init(&gba->message_queue.ready, NULL);
+    // Channels
+    {
+        channel_init(&gba->channels.messages);
+        channel_init(&gba->channels.notifications);
+#ifdef WITH_DEBUGGER
+        channel_init(&gba->channels.debug);
+#endif
+    }
+
+    // Shared Data
+    {
+        pthread_mutex_init(&gba->shared_data.framebuffer.lock, NULL);
+        pthread_mutex_init(&gba->shared_data.audio_rbuffer_mutex, NULL);
+    }
+
+    return (gba);
 }
 
-/*
-** Reset the GBA system to its initial state.
-*/
-static
 void
-gba_reset(
+gba_send_notification_raw(
+    struct gba *gba,
+    struct event_header const *notif_header
+) {
+    switch (notif_header->kind) {
+        case NOTIFICATION_RESET:
+        case NOTIFICATION_PAUSE:
+        case NOTIFICATION_STOP:
+        case NOTIFICATION_RUN: {
+            channel_lock(&gba->channels.notifications);
+            channel_push(&gba->channels.notifications, notif_header);
+            channel_release(&gba->channels.notifications);
+
+#ifdef WITH_DEBUGGER
+            channel_lock(&gba->channels.debug);
+            channel_push(&gba->channels.debug, notif_header);
+            channel_release(&gba->channels.debug);
+#endif
+
+            break;
+        };
+        case NOTIFICATION_QUICKSAVE:
+        case NOTIFICATION_QUICKLOAD: {
+            channel_lock(&gba->channels.notifications);
+            channel_push(&gba->channels.notifications, notif_header);
+            channel_release(&gba->channels.notifications);
+            break;
+        };
+#ifdef WITH_DEBUGGER
+        case NOTIFICATION_BREAKPOINTS_LIST_SET:
+        case NOTIFICATION_WATCHPOINTS_LIST_SET:
+        case NOTIFICATION_WATCHPOINT:
+        case NOTIFICATION_BREAKPOINT: {
+            channel_lock(&gba->channels.debug);
+            channel_push(&gba->channels.debug, notif_header);
+            channel_release(&gba->channels.debug);
+            break;
+        }
+#endif
+        default: {
+            unimplemented(HS_ERROR, "Unimplemented notification kind %i.", notif_header->kind);
+            break;
+        }
+    }
+}
+
+void
+gba_send_notification(
+    struct gba *gba,
+    enum notification_kind kind
+) {
+    struct notification notif;
+
+    notif.header.kind = kind;
+    notif.header.size = sizeof(notif);
+    gba_send_notification_raw(gba, &notif.header);
+}
+
+static void
+gba_state_stop(
     struct gba *gba
 ) {
-    gba->started = false;
+    free(gba->scheduler.events);
+    gba->scheduler.events = NULL;
+
+    free(gba->shared_data.backup_storage.data);
+    gba->shared_data.backup_storage.data = NULL;
+
+    gba->state = GBA_STATE_STOP;
+    gba_send_notification(gba, NOTIFICATION_STOP);
+}
+
+void
+gba_state_pause(
+    struct gba *gba
+) {
     gba->state = GBA_STATE_PAUSE;
-
-    sched_cleanup(gba);
-
-    sched_init(gba);
-    mem_reset(&gba->memory);
-    io_init(&gba->io);
-    ppu_init(gba);
-    apu_init(gba);
-    core_init(gba);
-    gpio_init(gba);
-
-#ifdef WITH_DEBUGGER
-    debugger_init(&gba->debugger);
-#endif
+    gba_send_notification(gba, NOTIFICATION_PAUSE);
 }
 
-/*
-** Skip the BIOS, setting all the registers to their final state.
-**
-** This is meant to be called right after `gba_reset()`.
-*/
+void
+gba_state_run(
+    struct gba *gba
+) {
+    gba->state = GBA_STATE_RUN;
+    gba_send_notification(gba, NOTIFICATION_RUN);
+}
+
+static void
+gba_state_reset(
+    struct gba *gba,
+    struct launch_config const *config
+) {
+    // Scheduler
+    {
+        struct scheduler *scheduler;
+
+        scheduler = &gba->scheduler;
+        memset(scheduler, 0, sizeof(*scheduler));
+
+        scheduler->events_size = 64;
+        scheduler->events = calloc(scheduler->events_size, sizeof(struct scheduler_event));
+        hs_assert(scheduler->events);
+
+        sched_update_speed(gba, config->speed);
+        scheduler->time_last_frame = hs_time();
+
+        // Frame limiter
+        sched_add_event(
+            gba,
+            NEW_REPEAT_EVENT(
+                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT,  // Timing of first trigger
+                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT,  // Period
+                sched_frame_limiter
+            )
+        );
+    }
+
+    // Memory
+    {
+        struct memory *memory;
+
+        memory = &gba->memory;
+        memset(memory, 0, sizeof(*memory));
+
+        // Copy the BIOS and ROM to memory
+        memcpy(gba->memory.bios, config->bios.data, min(config->bios.size, BIOS_SIZE));
+        memcpy(gba->memory.rom, config->rom.data, min(config->rom.size, CART_SIZE));
+        gba->memory.rom_size = config->rom.size;
+    }
+
+    // IO
+    {
+        struct io *io;
+
+        io = &gba->io;
+        memset(io, 0, sizeof(*io));
+
+        io->keyinput.raw = 0x3FF; // Every button set to "released"
+        io->soundbias.bias = 0x200;
+        io->bg_pa[0].raw = 0x100;
+        io->bg_pd[0].raw = 0x100;
+        io->bg_pa[1].raw = 0x100;
+        io->bg_pd[1].raw = 0x100;
+        io->timers[0].handler = INVALID_EVENT_HANDLE;
+        io->timers[1].handler = INVALID_EVENT_HANDLE;
+        io->timers[2].handler = INVALID_EVENT_HANDLE;
+        io->timers[3].handler = INVALID_EVENT_HANDLE;
+        io->dma[0].enable_event_handle = INVALID_EVENT_HANDLE;
+        io->dma[1].enable_event_handle = INVALID_EVENT_HANDLE;
+        io->dma[2].enable_event_handle = INVALID_EVENT_HANDLE;
+        io->dma[3].enable_event_handle = INVALID_EVENT_HANDLE;
+        io->dma[0].index = 0;
+        io->dma[1].index = 1;
+        io->dma[2].index = 2;
+        io->dma[3].index = 3;
+    }
+
+    // APU
+    {
+        struct apu *apu;
+
+        apu = &gba->apu;
+        memset(apu, 0, sizeof(*apu));
+
+        // Wave Channel
+        gba->apu.wave.step_handler = INVALID_EVENT_HANDLE;
+        gba->apu.wave.counter_handler = INVALID_EVENT_HANDLE;
+
+        sched_add_event(
+            gba,
+            NEW_REPEAT_EVENT(
+                0,
+                GBA_CYCLES_PER_SECOND / 256,
+                apu_sequencer
+            )
+        );
+
+        if (config->audio_frequency) {
+            sched_add_event(
+                gba,
+                NEW_REPEAT_EVENT(
+                    0,
+                    config->audio_frequency,
+                    apu_resample
+                )
+            );
+        }
+    }
+
+    // PPU
+    {
+        struct ppu *ppu;
+
+        ppu = &gba->ppu;
+        memset(ppu, 0, sizeof(*ppu));
+
+        // HDraw
+        sched_add_event(
+            gba,
+            NEW_REPEAT_EVENT(
+                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Timing of first trigger
+                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Period
+                ppu_hdraw
+            )
+        );
+
+        // HBlank
+        sched_add_event(
+            gba,
+            NEW_REPEAT_EVENT(
+                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_WIDTH + 46,       // Timing of first trigger
+                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Period
+                ppu_hblank
+            )
+        );
+    }
+
+    // GPIO
+    {
+        struct gpio *gpio;
+
+        gpio = &gba->gpio;
+        memset(gpio, 0, sizeof(*gpio));
+
+        if (config->rtc) {
+            gpio->rtc.enabled = true;
+            gpio->rtc.state = RTC_COMMAND;
+            gpio->rtc.data_len = 8;
+        }
+    }
+
+    // Backup storage
+    {
+        gba->memory.backup_storage.type = config->backup_storage.type;
+        switch (gba->memory.backup_storage.type) {
+            case BACKUP_EEPROM_4K: {
+                gba->memory.backup_storage.chip.eeprom.mask = (gba->memory.rom_size > 16 * 1024 * 1024) ? 0x01FFFF00 : 0xFF000000;
+                gba->memory.backup_storage.chip.eeprom.range = (gba->memory.rom_size > 16 * 1024 * 1024) ? 0x01FFFF00 : 0x0d000000;
+                gba->memory.backup_storage.chip.eeprom.address_mask = EEPROM_4K_ADDR_MASK;
+                gba->memory.backup_storage.chip.eeprom.address_len = EEPROM_4K_ADDR_LEN;
+                gba->shared_data.backup_storage.size = EEPROM_4K_SIZE;
+                break;
+            };
+            case BACKUP_EEPROM_64K: {
+                gba->memory.backup_storage.chip.eeprom.mask = (gba->memory.rom_size > 16 * 1024 * 1024) ? 0x01FFFF00 : 0xFF000000;
+                gba->memory.backup_storage.chip.eeprom.range = (gba->memory.rom_size > 16 * 1024 * 1024) ? 0x01FFFF00 : 0x0d000000;
+                gba->memory.backup_storage.chip.eeprom.address_mask = EEPROM_64K_ADDR_MASK;
+                gba->memory.backup_storage.chip.eeprom.address_len = EEPROM_64K_ADDR_LEN;
+                gba->shared_data.backup_storage.size = EEPROM_64K_SIZE;
+                break;
+            };
+            case BACKUP_SRAM: gba->shared_data.backup_storage.size = SRAM_SIZE; break;
+            case BACKUP_FLASH64: gba->shared_data.backup_storage.size = FLASH64_SIZE; break;
+            case BACKUP_FLASH128:gba->shared_data.backup_storage.size = FLASH128_SIZE; break;
+            case BACKUP_NONE: gba->shared_data.backup_storage.size = 0; break;
+            default: panic(HS_CORE, "Unknown backup type %i", gba->memory.backup_storage.type); break;
+        }
+
+        if (gba->shared_data.backup_storage.size) {
+            gba->shared_data.backup_storage.data = calloc(1, gba->shared_data.backup_storage.size);
+            hs_assert(gba->shared_data.backup_storage.data);
+
+            if (config->backup_storage.data && config->backup_storage.size) {
+                memcpy(gba->shared_data.backup_storage.data, config->backup_storage.data, min(gba->shared_data.backup_storage.size, config->backup_storage.size));
+            }
+        }
+    }
+
+    // Core
+    {
+        struct core *core;
+
+        core = &gba->core;
+
+        memset(core, 0, sizeof(*core));
+
+        mem_update_waitstates(gba);
+
+        core->cpsr.mode = MODE_SYS;
+        core->prefetch[0] = 0xF0000000;
+        core->prefetch[1] = 0xF0000000;
+        core->prefetch_access_type = NON_SEQUENTIAL;
+
+        if (config->skip_bios) {
+            core->r13_irq = 0x03007FA0;
+            core->r13_svc = 0x03007FE0;
+            core->sp = 0x03007F00;
+            core->pc = 0x08000000;
+            gba->io.postflg = 1;
+            core_reload_pipeline(gba);
+        } else {
+            core_interrupt(gba, VEC_RESET, MODE_SVC);
+        }
+    }
+
+    gba_send_notification(gba, NOTIFICATION_RESET);
+}
+
 static
 void
-gba_skip_bios(
-    struct gba *gba
+gba_process_message(
+    struct gba *gba,
+    struct message const *message
 ) {
-    core_switch_mode(&gba->core, MODE_SYS);
-    gba->core.cpsr.raw &= 0x1F;
-    gba->core.r13_svc = 0x03007FE0;
-    gba->core.r13_irq = 0x03007FA0;
-    gba->core.sp = 0X03007F00;
-    gba->core.pc = 0x08000000;
-    gba->io.postflg = 1;
-    core_reload_pipeline(gba);
+    switch (message->header.kind) {
+        case MESSAGE_EXIT: {
+            gba->exit = true;
+            break;
+        };
+        case MESSAGE_RESET: {
+            struct message_reset const *msg_reset;
+
+            msg_reset = (struct message_reset const *)message;
+
+            gba_state_stop(gba);
+            gba_state_reset(gba, &msg_reset->config);
+            break;
+        };
+        case MESSAGE_RUN: {
+#ifdef WITH_DEBUGGER
+            gba->debugger.run_mode = GBA_RUN_MODE_NORMAL;
+#endif
+            gba_state_run(gba);
+            break;
+        };
+        case MESSAGE_STOP: {
+            gba_state_stop(gba);
+            break;
+        };
+        case MESSAGE_PAUSE: {
+            gba_state_pause(gba);
+            break;
+        };
+        case MESSAGE_KEY: {
+            struct message_key const *msg_key;
+
+            msg_key = (struct message_key const *)message;
+            switch (msg_key->key) {
+                case KEY_A:         gba->io.keyinput.a = !msg_key->pressed; break;
+                case KEY_B:         gba->io.keyinput.b = !msg_key->pressed; break;
+                case KEY_L:         gba->io.keyinput.l = !msg_key->pressed; break;
+                case KEY_R:         gba->io.keyinput.r = !msg_key->pressed; break;
+                case KEY_UP:        gba->io.keyinput.up = !msg_key->pressed; break;
+                case KEY_DOWN:      gba->io.keyinput.down = !msg_key->pressed; break;
+                case KEY_RIGHT:     gba->io.keyinput.right = !msg_key->pressed; break;
+                case KEY_LEFT:      gba->io.keyinput.left = !msg_key->pressed; break;
+                case KEY_START:     gba->io.keyinput.start = !msg_key->pressed; break;
+                case KEY_SELECT:    gba->io.keyinput.select = !msg_key->pressed; break;
+            };
+
+            io_scan_keypad_irq(gba);
+            break;
+        };
+        case MESSAGE_SPEED: {
+            struct message_speed const *msg_speed;
+
+            msg_speed = (struct message_speed const *)message;
+            sched_update_speed(gba, msg_speed->speed);
+            break;
+        };
+        case MESSAGE_QUICKSAVE: {
+            struct notification_quicksave notif;
+
+            notif.header.kind = NOTIFICATION_QUICKSAVE;
+            notif.header.size = sizeof(struct notification_quicksave);
+            quicksave(gba, &notif.data, &notif.size);
+            gba_send_notification_raw(gba, &notif.header);
+            break;
+        };
+        case MESSAGE_QUICKLOAD: {
+            struct message_quickload const *msg_quickload;
+
+            msg_quickload = (struct message_quickload const *)message;
+            quickload(gba, msg_quickload->data, msg_quickload->size); // TODO FIXME Send back & handle any errors when loading the save state.
+            gba_send_notification(gba, NOTIFICATION_QUICKLOAD);
+            break;
+        };
+#ifdef WITH_DEBUGGER
+        case MESSAGE_FRAME: {
+            gba->debugger.run_mode = GBA_RUN_MODE_FRAME;
+
+            gba_state_run(gba);
+            break;
+        };
+        case MESSAGE_TRACE: {
+            struct message_trace const *msg_trace;
+
+            msg_trace = (struct message_trace const *)message;
+
+            gba->debugger.trace.count = msg_trace->count;
+            gba->debugger.trace.tracer_cb = msg_trace->tracer_cb;
+            gba->debugger.trace.arg = msg_trace->arg;
+
+            gba->debugger.run_mode = GBA_RUN_MODE_TRACE;
+            gba_state_run(gba);
+            break;
+        };
+        case MESSAGE_STEP_IN:
+        case MESSAGE_STEP_OVER: {
+            struct message_step const *msg_step;
+
+            msg_step = (struct message_step const *)message;
+
+            gba->debugger.step.count = msg_step->count;
+            gba->debugger.step.next_pc = gba->core.pc + (gba->core.cpsr.thumb ? 2 : 4);
+
+            gba->debugger.run_mode = message->header.kind == MESSAGE_STEP_OVER ? GBA_RUN_MODE_STEP_OVER : GBA_RUN_MODE_STEP_IN;
+            gba_state_run(gba);
+            break;
+        };
+        case MESSAGE_SET_BREAKPOINTS_LIST: {
+            struct message_set_breakpoints_list const *msg_set_breakpoints_list;
+
+            msg_set_breakpoints_list = (struct message_set_breakpoints_list const *)message;
+
+            free(gba->debugger.breakpoints.list);
+            gba->debugger.breakpoints.len = msg_set_breakpoints_list->len;
+            gba->debugger.breakpoints.list = calloc(gba->debugger.breakpoints.len, sizeof(struct breakpoint));
+            hs_assert(gba->debugger.breakpoints.list);
+            memcpy(gba->debugger.breakpoints.list, msg_set_breakpoints_list->breakpoints, sizeof(struct breakpoint) * gba->debugger.breakpoints.len);
+
+            gba_send_notification(gba, NOTIFICATION_BREAKPOINTS_LIST_SET);
+            break;
+        };
+        case MESSAGE_SET_WATCHPOINTS_LIST: {
+            struct message_set_watchpoints_list const *msg_set_watchpoints_list;
+
+            msg_set_watchpoints_list = (struct message_set_watchpoints_list const *)message;
+
+            free(gba->debugger.watchpoints.list);
+            gba->debugger.watchpoints.len = msg_set_watchpoints_list->len;
+            gba->debugger.watchpoints.list = calloc(gba->debugger.watchpoints.len, sizeof(struct watchpoint));
+            hs_assert(gba->debugger.watchpoints.list);
+            memcpy(gba->debugger.watchpoints.list, msg_set_watchpoints_list->watchpoints, sizeof(struct watchpoint) * gba->debugger.watchpoints.len);
+
+            gba_send_notification(gba, NOTIFICATION_WATCHPOINTS_LIST_SET);
+            break;
+        };
+#endif
+    }
 }
 
 /*
-** Run the emulator, consuming messages that dictate what the emulator should do.
-**
-** Messages are used as a mono-directional communication between the frontend and the emulator.
-**
-** Those messages can be:
-**   - A new key was pressed
-**   - The user requested a quickload/quicksave
-**   - The emulator must run until the next frame, for one instruction, etc.
-**   - The emulator must pause, reset, etc.
+** Run the given GBA emulator.
+** This will process all the message sent to the gba until an exit message is sent.
 */
 void
-gba_main_loop(
+gba_run(
     struct gba *gba
 ) {
-    uint64_t last_measured_time;
-    uint64_t accumulated_time;
-    uint64_t time_per_frame;
+    struct channel *messages;
 
-    last_measured_time = hs_tick_count();
-    accumulated_time = 0;
-    time_per_frame = 0;
-    while (true) {
-        struct message_queue *mqueue;
-        struct message *message;
+    messages = &gba->channels.messages;
 
-        pthread_mutex_lock(&gba->message_queue.lock);
+    while (!gba->exit) {
+        // Consume all messages
+        {
+            struct message const *msg;
 
-        mqueue = &gba->message_queue;
-        message = mqueue->messages;
-        while (mqueue->length) {
-            switch (message->type) {
-                case MESSAGE_EXIT: {
-                    pthread_mutex_unlock(&gba->message_queue.lock);
-                    return ;
-                };
-                case MESSAGE_BIOS: {
-                    struct message_data *message_data;
+            channel_lock(messages);
 
-                    message_data = (struct message_data *)message;
-                    memset(gba->memory.bios, 0, BIOS_MASK);
-                    memcpy(gba->memory.bios, message_data->data, min(message_data->size, BIOS_MASK));
-                    if (message_data->cleanup) {
-                        message_data->cleanup(message_data->data);
-                    }
-                    break;
-                };
-                case MESSAGE_ROM: {
-                    struct message_data *message_data;
-
-                    message_data = (struct message_data *)message;
-                    memset(gba->memory.rom, 0, CART_SIZE);
-                    gba->memory.rom_size = min(message_data->size, CART_SIZE);
-                    memcpy(gba->memory.rom, message_data->data, gba->memory.rom_size);
-                    if (message_data->cleanup) {
-                        message_data->cleanup(message_data->data);
-                    }
-                    db_lookup_game(gba);
-                    break;
-                };
-                case MESSAGE_BACKUP: {
-                    struct message_data *message_data;
-
-                    message_data = (struct message_data *)message;
-                    memset(gba->memory.backup_storage.data, 0, backup_storage_sizes[gba->memory.backup_storage.type]);
-                    memcpy(
-                        gba->memory.backup_storage.data,
-                        message_data->data,
-                        min(message_data->size, backup_storage_sizes[gba->memory.backup_storage.type])
-                    );
-                    if (message_data->cleanup) {
-                        message_data->cleanup(message_data->data);
-                    }
-                    break;
-                };
-                case MESSAGE_BACKUP_TYPE: {
-                    struct message_backup_type *message_backup_type;
-
-                    /* Ignore if emulation is already started. */
-                    if (gba->started) {
-                        break;
-                    }
-
-                    message_backup_type = (struct message_backup_type *)message;
-                    if (message_backup_type->type == BACKUP_AUTO_DETECT) {
-                        mem_backup_storage_detect(gba);
-                    } else {
-                        gba->memory.backup_storage.type = message_backup_type->type;
-                        gba->memory.backup_storage.source = BACKUP_SOURCE_MANUAL;
-                    }
-                    mem_backup_storage_init(gba);
-                    break;
-                };
-                case MESSAGE_RESET: {
-                    struct message_reset *message_reset;
-
-                    message_reset = (struct message_reset *)message;
-
-                    gba_reset(gba);
-                    last_measured_time = hs_tick_count();
-                    accumulated_time = 0;
-
-                    if (message_reset->skip_bios) {
-                        gba_skip_bios(gba);
-                    }
-                    break;
-                };
-                case MESSAGE_SPEED: {
-                    struct message_speed *message_run;
-
-                    message_run = (struct message_speed *)message;
-                    gba->speed = message_run->speed;
-                    if (message_run->speed) {
-                        time_per_frame = 1.f / 59.737f * 1000.f * 1000.f / (float)gba->speed;
-                        accumulated_time = 0;
-                    } else {
-                        time_per_frame = 0.f;
-                    }
-                    break;
-                };
-                case MESSAGE_RUN: {
-                    gba->started = true;
-                    gba->state = GBA_STATE_RUN;
-                    break;
-                };
-                case MESSAGE_PAUSE: {
-                    gba->state = GBA_STATE_PAUSE;
-#ifdef WITH_DEBUGGER
-                    gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_PAUSE;
-                    gba->debugger.interrupt.flag = true;
-#endif
-                    break;
-                };
-                case MESSAGE_KEYINPUT: {
-                    struct message_keyinput *message_keyinput;
-
-                    message_keyinput = (struct message_keyinput *)message;
-                    switch (message_keyinput->key) {
-                        case KEY_A:         gba->io.keyinput.a = !message_keyinput->pressed; break;
-                        case KEY_B:         gba->io.keyinput.b = !message_keyinput->pressed; break;
-                        case KEY_L:         gba->io.keyinput.l = !message_keyinput->pressed; break;
-                        case KEY_R:         gba->io.keyinput.r = !message_keyinput->pressed; break;
-                        case KEY_UP:        gba->io.keyinput.up = !message_keyinput->pressed; break;
-                        case KEY_DOWN:      gba->io.keyinput.down = !message_keyinput->pressed; break;
-                        case KEY_RIGHT:     gba->io.keyinput.right = !message_keyinput->pressed; break;
-                        case KEY_LEFT:      gba->io.keyinput.left = !message_keyinput->pressed; break;
-                        case KEY_START:     gba->io.keyinput.start = !message_keyinput->pressed; break;
-                        case KEY_SELECT:    gba->io.keyinput.select = !message_keyinput->pressed; break;
-                    };
-
-                    io_scan_keypad_irq(gba);
-                    break;
-                };
-                case MESSAGE_QUICKLOAD: {
-                    struct message_data *message_data;
-
-                    message_data = (struct message_data *)message;
-                    quickload(gba, (char const *)message_data->data);
-                    if (message_data->cleanup) {
-                        message_data->cleanup(message_data->data);
-                    }
-                    break;
-                };
-                case MESSAGE_QUICKSAVE: {
-                    struct message_data *message_data;
-
-                    message_data = (struct message_data *)message;
-                    quicksave(gba, (char const *)message_data->data);
-                    if (message_data->cleanup) {
-                        message_data->cleanup(message_data->data);
-                    }
-                    break;
-                };
-                case MESSAGE_AUDIO_RESAMPLE_FREQ: {
-                    struct message_audio_freq *message_audio_freq;
-
-                    message_audio_freq = (struct message_audio_freq *)message;
-                    gba->apu.resample_frequency = message_audio_freq->resample_frequency;
-                    break;
-                };
-                case MESSAGE_SETTINGS_COLOR_CORRECTION: {
-                    struct message_color_correction *message_color_correction;
-
-                    message_color_correction = (struct message_color_correction *)message;
-                    gba->color_correction = message_color_correction->color_correction;
-                    break;
-                };
-                case MESSAGE_SETTINGS_RTC: {
-                    struct message_device_state *message_device_state;
-
-                    /* Ignore if emulation is already started. */
-                    if (gba->started) {
-                        break;
-                    }
-
-                    message_device_state = (struct message_device_state *)message;
-                    switch (message_device_state->state) {
-                        case DEVICE_AUTO_DETECT: {
-                            gba->rtc_auto_detect = true;
-                            gba->rtc_enabled = false;
-                            break;
-                        };
-                        case DEVICE_ENABLED: {
-                            gba->rtc_auto_detect = false;
-                            gba->rtc_enabled = true;
-                            break;
-                        };
-                        case DEVICE_DISABLED: {
-                            gba->rtc_auto_detect = false;
-                            gba->rtc_enabled = false;
-                            break;
-                        };
-                    }
-                    break;
-                };
-#ifdef WITH_DEBUGGER
-                case MESSAGE_DBG_FRAME: {
-                    gba->started = true;
-                    gba->state = GBA_STATE_FRAME;
-                    break;
-                };
-                case MESSAGE_DBG_TRACE: {
-                    struct message_dbg_trace *message_dbg_trace;
-
-                    message_dbg_trace = (struct message_dbg_trace *)message;
-                    gba->debugger.trace.count = message_dbg_trace->count;
-                    gba->debugger.trace.data = message_dbg_trace->data;
-                    gba->debugger.trace.tracer = message_dbg_trace->tracer;
-
-                    gba->started = true;
-                    gba->state = GBA_STATE_TRACE;
-                    break;
-                };
-                case MESSAGE_DBG_STEP: {
-                    struct message_dbg_step *message_dbg_step;
-
-                    message_dbg_step = (struct message_dbg_step *)message;
-
-                    gba->started = true;
-                    gba->state = message_dbg_step->over ? GBA_STATE_STEP_OVER : GBA_STATE_STEP_IN;
-                    gba->debugger.step.count = message_dbg_step->count;
-                    gba->debugger.step.next_pc = gba->core.pc + (gba->core.cpsr.thumb ? 2 : 4);
-                    break;
-                };
-                case MESSAGE_DBG_BREAKPOINTS: {
-                    struct message_dbg_breakpoints *message_dbg_breakpoints;
-
-                    message_dbg_breakpoints = (struct message_dbg_breakpoints *)message;
-                    if (gba->debugger.breakpoints.cleanup) {
-                        gba->debugger.breakpoints.cleanup(gba->debugger.breakpoints.list);
-                    }
-                    gba->debugger.breakpoints.list = message_dbg_breakpoints->breakpoints;
-                    gba->debugger.breakpoints.len = message_dbg_breakpoints->len;
-                    gba->debugger.breakpoints.cleanup = message_dbg_breakpoints->cleanup;
-                    break;
-                };
-                case MESSAGE_DBG_WATCHPOINTS: {
-                    struct message_dbg_watchpoints *message_dbg_watchpoints;
-
-                    message_dbg_watchpoints = (struct message_dbg_watchpoints *)message;
-                    if (gba->debugger.watchpoints.cleanup) {
-                        gba->debugger.watchpoints.cleanup(gba->debugger.watchpoints.list);
-                    }
-                    gba->debugger.watchpoints.list = message_dbg_watchpoints->watchpoints;
-                    gba->debugger.watchpoints.len = message_dbg_watchpoints->len;
-                    gba->debugger.watchpoints.cleanup = message_dbg_watchpoints->cleanup;
-                    break;
-                };
-#endif
-                default: unimplemented(HS_CORE, "GBA message type with ID %i unimplemented.", message->type);
+            msg = (struct message const *)channel_next(messages, NULL);
+            while (msg) {
+                gba_process_message(gba, msg);
+                msg = (struct message const *)channel_next(messages, &msg->header);
             }
-            mqueue->allocated_size -= message->size;
-            --mqueue->length;
-            message = (struct message *)((uint8_t *)message + message->size);
-        }
-        free(mqueue->messages);
-        mqueue->messages = NULL;
 
-        /*
-        ** Wait until there's new messages in the message queue.
-        **
-        ** We must do this here and not in the switch/case below because `gba->message_queue.lock`
-        ** must be locked when calling `pthread_cond_wait()`.
-        */
-        if (gba->state == GBA_STATE_PAUSE) {
-            pthread_cond_wait(&gba->message_queue.ready, &gba->message_queue.lock);
-            last_measured_time = hs_tick_count();
-            accumulated_time = 0;
+            channel_clear(messages);
+
+            // If the exit flag was raised, leave now
+            if (gba->exit) {
+                return ;
+            }
+
+            // Wait until there's new messages in the message queue.
+            if (gba->state == GBA_STATE_PAUSE) {
+                channel_wait(messages);
+            }
+
+            channel_release(messages);
         }
 
-        pthread_mutex_unlock(&gba->message_queue.lock);
-
+        // Process the current state
         switch (gba->state) {
-            case GBA_STATE_PAUSE: break;
-            case GBA_STATE_RUN: {
-                sched_run_for(gba, CYCLES_PER_FRAME);
+            case GBA_STATE_STOP:
+            case GBA_STATE_PAUSE: {
                 break;
-            };
-#ifdef WITH_DEBUGGER
-            case GBA_STATE_FRAME: {
-                sched_run_for(gba, CYCLES_PER_FRAME - (gba->core.cycles % CYCLES_PER_FRAME));
-                gba->state = GBA_STATE_PAUSE;
-                gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_FRAME_FINISHED;
-                gba->debugger.interrupt.flag = true;
-                break;
-            };
-            case GBA_STATE_TRACE: {
-                size_t cnt;
-
-                cnt = 1000; // Split the process in chunks of 1000 insns.
-
-                while (cnt && gba->debugger.trace.count) {
-                    sched_run_for(gba, 1);
-                    gba->debugger.trace.tracer(gba->debugger.trace.data);
-
-                    --gba->debugger.trace.count;
-                    --cnt;
-                }
-
-                if (!gba->debugger.trace.count) {
-                    gba->state = GBA_STATE_PAUSE;
-                    gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_TRACE_FINISHED;
-                    gba->debugger.interrupt.flag = true;
-                }
-                break;
-            };
-            case GBA_STATE_STEP_IN: {
-                size_t cnt;
-
-                cnt = 1000; // Split the process in chunks of 1000 insns.
-
-                while (cnt && gba->debugger.step.count) {
-                    sched_run_for(gba, 1);
-                    --gba->debugger.step.count;
-                    --cnt;
-                }
-
-                if (!gba->debugger.step.count) {
-                    gba->state = GBA_STATE_PAUSE;
-                    gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_STEP_FINISHED;
-                    gba->debugger.interrupt.flag = true;
-                }
-                break;
-            };
-            case GBA_STATE_STEP_OVER: {
-                size_t cnt;
-
-                cnt = 1000; // Split the process in chunks of 1000 insns.
-
-                while (cnt && gba->debugger.step.count) {
-                    while (cnt && gba->core.pc != gba->debugger.step.next_pc) {
-                        sched_run_for(gba, 1);
-                        --cnt;
-                    }
-
-                    if (gba->core.pc == gba->debugger.step.next_pc) {
-                        --gba->debugger.step.count;
-                        gba->debugger.step.next_pc += (gba->core.cpsr.thumb ? 2 : 4);
-                    }
-                }
-
-                if (!gba->debugger.step.count) {
-                    gba->state = GBA_STATE_PAUSE;
-                    gba->debugger.interrupt.reason = GBA_INTERRUPT_REASON_STEP_FINISHED;
-                    gba->debugger.interrupt.flag = true;
-                }
-                break;
-            };
-#endif
-            default: unimplemented(HS_DEBUG, "Unimplemented GBA run operation %i.", gba->state);
-        }
-
-        /* Limit FPS */
-        if (gba->speed) {
-            uint64_t now;
-
-            now = hs_tick_count();
-            accumulated_time += now - last_measured_time;
-            last_measured_time = now;
-
-            if (accumulated_time < time_per_frame) {
-                hs_usleep(time_per_frame - accumulated_time);
-                now = hs_tick_count();
-                accumulated_time += now - last_measured_time;
-                last_measured_time = now;
             }
-            accumulated_time -= time_per_frame;
-        } else {
-            last_measured_time = hs_tick_count();
-            accumulated_time = 0;
+            case GBA_STATE_RUN: {
+#ifdef WITH_DEBUGGER
+                debugger_execute_run_mode(gba);
+#else
+                sched_run_for(gba, GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH);
+#endif
+                break;
+            };
         }
     }
 }
 
 /*
-** Put the given message in the message queue.
+** Delete the given GBA and all its resources.
 */
-static
 void
-gba_message_push(
-    struct gba *gba,
-    struct message *message
-) {
-    size_t new_size;
-    struct message_queue *mqueue;
-
-    mqueue = &gba->message_queue;
-    pthread_mutex_lock(&gba->message_queue.lock);
-
-    new_size = mqueue->allocated_size + message->size;
-
-    mqueue->messages = realloc(mqueue->messages, new_size);
-    hs_assert(mqueue->messages);
-    memcpy((uint8_t *)mqueue->messages + mqueue->allocated_size, message, message->size);
-
-    mqueue->length += 1;
-    mqueue->allocated_size = new_size;
-
-    pthread_cond_broadcast(&gba->message_queue.ready);
-    pthread_mutex_unlock(&gba->message_queue.lock);
-}
-
-void
-gba_send_exit(
+gba_delete(
     struct gba *gba
 ) {
-    gba_message_push(
-        gba,
-        &((struct message) {
-            .type = MESSAGE_EXIT,
-            .size = sizeof(struct message),
-        })
-    );
+    free(gba);
 }
 
+/*
+** Lock the mutex protecting the framebuffer shared with the frontend.
+*/
 void
-gba_send_bios(
-    struct gba *gba,
-    uint8_t *data,
-    void (*cleanup)(void *)
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_data) {
-            .super = (struct message){
-                .size = sizeof(struct message_data),
-                .type = MESSAGE_BIOS,
-            },
-            .data = data,
-            .size = BIOS_SIZE,
-            .cleanup = cleanup,
-        })
-    );
-}
-
-void
-gba_send_rom(
-    struct gba *gba,
-    uint8_t *data,
-    size_t size,
-    void (*cleanup)(void *)
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_data) {
-            .super = (struct message){
-                .type = MESSAGE_ROM,
-                .size = sizeof(struct message_data),
-            },
-            .data = data,
-            .size = size,
-            .cleanup = cleanup,
-        })
-    );
-}
-
-void
-gba_send_backup(
-    struct gba *gba,
-    uint8_t *data,
-    size_t size,
-    void (*cleanup)(void *)
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_data) {
-            .super = (struct message){
-                .type = MESSAGE_BACKUP,
-                .size = sizeof(struct message_data),
-            },
-            .data = data,
-            .size = size,
-            .cleanup = cleanup,
-        })
-    );
-}
-
-void
-gba_send_backup_type(
-    struct gba *gba,
-    enum backup_storage_types backup_type
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_backup_type) {
-            .super = (struct message){
-                .type = MESSAGE_BACKUP_TYPE,
-                .size = sizeof(struct message_backup_type),
-            },
-            .type = backup_type,
-        })
-    );
-}
-
-void
-gba_send_speed(
-    struct gba *gba,
-    uint32_t speed
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_speed) {
-            .super = (struct message){
-                .type = MESSAGE_SPEED,
-                .size = sizeof(struct message_speed),
-            },
-            .speed = speed,
-        })
-    );
-}
-
-void
-gba_send_reset(
-    struct gba *gba,
-    bool skip_bios
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_reset) {
-            .super = (struct message){
-                .type = MESSAGE_RESET,
-                .size = sizeof(struct message_reset),
-            },
-            .skip_bios = skip_bios,
-        })
-    );
-}
-
-void
-gba_send_run(
+gba_shared_framebuffer_lock(
     struct gba *gba
 ) {
-    gba_message_push(
-        gba,
-        &((struct message) {
-            .type = MESSAGE_RUN,
-            .size = sizeof(struct message),
-        })
-    );
+    pthread_mutex_lock(&gba->shared_data.framebuffer.lock);
 }
 
+/*
+** Release the mutex protecting the framebuffer shared with the frontend.
+*/
 void
-gba_send_pause(
+gba_shared_framebuffer_release(
     struct gba *gba
 ) {
-    gba_message_push(
-        gba,
-        &((struct message) {
-            .type = MESSAGE_PAUSE,
-            .size = sizeof(struct message),
-        })
-    );
+    pthread_mutex_unlock(&gba->shared_data.framebuffer.lock);
 }
 
+/*
+** Lock the mutex protecting the audio ring buffer shared with the frontend.
+*/
 void
-gba_send_keyinput(
-    struct gba *gba,
-    enum keyinput key,
-    bool pressed
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_keyinput) {
-            .super = (struct message){
-                .type = MESSAGE_KEYINPUT,
-                .size = sizeof(struct message_keyinput),
-            },
-            .key = key,
-            .pressed = pressed,
-        })
-    );
-}
-
-void
-gba_send_quickload(
-    struct gba *gba,
-    char const *path
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_data) {
-            .super = (struct message){
-                .type = MESSAGE_QUICKLOAD,
-                .size = sizeof(struct message_data),
-            },
-            .data = (unsigned char *)strdup(path),
-            .size = strlen(path),
-            .cleanup = free,
-        })
-    );
-}
-
-void
-gba_send_quicksave(
-    struct gba *gba,
-    char const *path
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_data) {
-            .super = (struct message){
-                .type = MESSAGE_QUICKSAVE,
-                .size = sizeof(struct message_data),
-            },
-            .data = (unsigned char *)strdup(path),
-            .size = strlen(path),
-            .cleanup = free,
-        })
-    );
-}
-
-void
-gba_send_audio_resample_freq(
-    struct gba *gba,
-    uint64_t resample_freq
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_audio_freq) {
-            .super = (struct message){
-                .type = MESSAGE_AUDIO_RESAMPLE_FREQ,
-                .size = sizeof(struct message_audio_freq),
-            },
-            .resample_frequency = resample_freq,
-        })
-    );
-}
-
-void
-gba_send_settings_color_correction(
-    struct gba *gba,
-    bool color_correction
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_color_correction) {
-            .super = (struct message){
-                .type = MESSAGE_SETTINGS_COLOR_CORRECTION,
-                .size = sizeof(struct message_color_correction),
-            },
-            .color_correction = color_correction,
-        })
-    );
-}
-
-void
-gba_send_settings_rtc(
-    struct gba *gba,
-    enum device_states state
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_device_state) {
-            .super = (struct message){
-                .type = MESSAGE_SETTINGS_RTC,
-                .size = sizeof(struct message_device_state),
-            },
-            .state = state,
-        })
-    );
-}
-
-#ifdef WITH_DEBUGGER
-
-void
-gba_send_dbg_frame(
+gba_shared_audio_rbuffer_lock(
     struct gba *gba
 ) {
-    gba_message_push(
-        gba,
-        &((struct message) {
-            .type = MESSAGE_DBG_FRAME,
-            .size = sizeof(struct message),
-        })
-    );
+    pthread_mutex_lock(&gba->shared_data.audio_rbuffer_mutex);
 }
 
+/*
+** Release the mutex protecting the audio ring buffer shared with the frontend.
+*/
 void
-gba_send_dbg_trace(
-    struct gba *gba,
-    size_t count,
-    void *data,
-    void (*tracer)(void *gba)
+gba_shared_audio_rbuffer_release(
+    struct gba *gba
 ) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_dbg_trace) {
-            .super = (struct message){
-                .type = MESSAGE_DBG_TRACE,
-                .size = sizeof(struct message_dbg_trace),
-            },
-            .count = count,
-            .data = data,
-            .tracer = tracer,
-        })
-    );
+    pthread_mutex_unlock(&gba->shared_data.audio_rbuffer_mutex);
 }
 
+/*
+** Release the mutex protecting the audio ring buffer shared with the frontend.
+*/
+uint32_t
+gba_shared_audio_rbuffer_pop_sample(
+    struct gba *gba
+) {
+    return (apu_rbuffer_pop(&gba->shared_data.audio_rbuffer));
+}
+
+/*
+** Reset the frame counter and return its old value.
+*/
+uint32_t
+gba_shared_reset_frame_counter(
+    struct gba *gba
+) {
+    return (atomic_exchange(&gba->shared_data.frame_counter, 0));
+}
+
+/*
+** Delete a notification.
+** Must be called by the frontend/debugger for each received notifications.
+*/
 void
-gba_send_dbg_step(
-    struct gba *gba,
-    bool over,
-    size_t count
+gba_delete_notification(
+    struct notification const *notif
 ) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_dbg_step) {
-            .super = (struct message){
-                .type = MESSAGE_DBG_STEP,
-                .size = sizeof(struct message_dbg_step),
-            },
-            .over = over,
-            .count = count,
-        })
-    );
-}
+    switch (notif->header.kind) {
+        case NOTIFICATION_QUICKSAVE: {
+            struct notification_quicksave *qsave;
 
-void
-gba_send_dbg_breakpoints(
-    struct gba *gba,
-    struct breakpoint *breakpoints,
-    size_t len,
-    void (*cleanup)(void *)
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_dbg_breakpoints) {
-            .super = (struct message){
-                .type = MESSAGE_DBG_BREAKPOINTS,
-                .size = sizeof(struct message_dbg_breakpoints),
-            },
-            .breakpoints = breakpoints,
-            .len = len,
-            .cleanup = cleanup,
-        })
-    );
+            qsave = (struct notification_quicksave *)notif;
+            free(qsave->data);
+            break;
+        }
+    }
 }
-
-void
-gba_send_dbg_watchpoints(
-    struct gba *gba,
-    struct watchpoint *watchpoints,
-    size_t len,
-    void (*cleanup)(void *)
-) {
-    gba_message_push(
-        gba,
-        (struct message *)&((struct message_dbg_watchpoints) {
-            .super = (struct message){
-                .type = MESSAGE_DBG_WATCHPOINTS,
-                .size = sizeof(struct message_dbg_watchpoints),
-            },
-            .watchpoints = watchpoints,
-            .len = len,
-            .cleanup = cleanup,
-        })
-    );
-}
-
-#endif

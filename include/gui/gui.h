@@ -13,6 +13,8 @@
 
 struct app;
 
+#define GLSL(src)           "#version 330 core\n" #src
+
 /* gui/sdl/audio.c */
 void gui_sdl_audio_init(struct app *app);
 void gui_sdl_audio_cleanup(struct app *app);
@@ -29,6 +31,13 @@ void gui_sdl_handle_inputs(struct app *app);
 void gui_sdl_video_init(struct app *app);
 void gui_sdl_video_cleanup(struct app *app);
 void gui_sdl_video_render_frame(struct app *app);
+void gui_sdl_video_rebuild_pipeline(struct app *app);
+
+/* gui/shaders/frag-color-correction.c */
+extern char const *SHADER_FRAG_COLOR_CORRECTION;
+
+/* gui/shaders/vertex-common.c */
+extern char const *SHADER_VERTEX_COMMON;
 
 /* gui/windows/keybinds.c */
 void gui_win_keybinds_editor(struct app *app);
@@ -46,4 +55,4 @@ void gui_win_menubar(struct app *app);
 /* config.c */
 void gui_config_load(struct app *app);
 void gui_config_save(struct app *app);
-void gui_config_push_recent_rom(struct app *app);
+void gui_config_push_recent_rom(struct app *app, char const *path);
