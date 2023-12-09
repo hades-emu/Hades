@@ -12,40 +12,6 @@
 #include "gba/apu.h"
 #include "gba/scheduler.h"
 
-static void apu_sequencer(struct gba *gba, struct event_args args);
-static void apu_resample(struct gba *gba, struct event_args args);
-
-void
-apu_init(
-    struct gba *gba
-) {
-    memset(gba->apu.fifos, 0, sizeof(gba->apu.fifos));
-    memset(&gba->apu.frontend_channels, 0, sizeof(gba->apu.frontend_channels));
-
-    pthread_mutex_init(&gba->apu.frontend_channels_mutex, NULL);
-    apu_wave_init(gba);
-
-    sched_add_event(
-        gba,
-        NEW_REPEAT_EVENT(
-            0,
-            CYCLES_PER_SECOND / 256,
-            apu_sequencer
-        )
-    );
-
-    if (gba->apu.resample_frequency) {
-        sched_add_event(
-            gba,
-            NEW_REPEAT_EVENT(
-                0,
-                gba->apu.resample_frequency,
-                apu_resample
-            )
-        );
-    }
-}
-
 void
 apu_reset_fifo(
     struct gba *gba,
@@ -161,7 +127,6 @@ apu_on_timer_overflow(
 /*
 ** Called at a rate of 256Hz to handle the different modulation units (length, envelope and sweep)
 */
-static
 void
 apu_sequencer(
     struct gba *gba,
@@ -181,7 +146,6 @@ apu_sequencer(
 **
 ** The goal here is to feed `apu_rbuffer` with whatever sound the GBA would be playing at this time, which is contained in `gba->apu.latch`.
 */
-static
 void
 apu_resample(
     struct gba *gba,
@@ -216,7 +180,7 @@ apu_resample(
     sample_l *= 32; // Otherwise we can't hear much
     sample_r *= 32;
 
-    pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
-    apu_rbuffer_push(&gba->apu.frontend_channels, (int16_t)sample_l, (int16_t)sample_r);
-    pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
+    pthread_mutex_lock(&gba->shared_data.audio_rbuffer_mutex);
+    apu_rbuffer_push(&gba->shared_data.audio_rbuffer, (int16_t)sample_l, (int16_t)sample_r);
+    pthread_mutex_unlock(&gba->shared_data.audio_rbuffer_mutex);
 }

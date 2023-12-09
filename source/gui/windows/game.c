@@ -19,11 +19,55 @@ void
 gui_win_game(
     struct app *app
 ) {
-    GLint last_texture;
     float game_pos_x;
     float game_pos_y;
     float game_size_x;
     float game_size_y;
+
+    if (!app->gfx.active_programs_length) {
+        // If there's no shaders loaded, we shortcut the pipeline and simply load the game's framebuffer in the corresponding texture
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_out);
+
+        pthread_mutex_lock(&app->emulation.gba->shared_data.framebuffer.lock);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, (uint8_t *)app->emulation.gba->shared_data.framebuffer.data);
+        pthread_mutex_unlock(&app->emulation.gba->shared_data.framebuffer.lock);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+    } else {
+        size_t i;
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_in);
+
+        pthread_mutex_lock(&app->emulation.gba->shared_data.framebuffer.lock);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, (uint8_t *)app->emulation.gba->shared_data.framebuffer.data);
+        pthread_mutex_unlock(&app->emulation.gba->shared_data.framebuffer.lock);
+
+        glViewport(0, 0, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT);
+        glBindVertexArray(app->gfx.vao);
+        glBindFramebuffer(GL_FRAMEBUFFER, app->gfx.fbo);
+
+        for (i = 0; i < app->gfx.active_programs_length; ++i) {
+            GLuint target_texture;
+
+            glUseProgram(app->gfx.active_programs[i]);
+            if (i == app->gfx.active_programs_length - 1) {
+                target_texture = app->gfx.game_texture_out;
+            } else {
+                target_texture = app->gfx.game_texture_in;
+            }
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target_texture, 0);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+
+        glUseProgram(0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
     /* Resize the game to keep the correct aspect ratio */
     switch (app->video.aspect_ratio) {
@@ -62,35 +106,8 @@ gui_win_game(
         ImGuiWindowFlags_NoBackground
     );
 
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-    glBindTexture(GL_TEXTURE_2D, app->sdl.game_texture);
-
-    if (app->video.texture_filter.refresh) {
-        switch (app->video.texture_filter.kind) {
-            case TEXTURE_FILTER_NEAREST: {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                break;
-            };
-            case TEXTURE_FILTER_LINEAR: {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                break;
-            };
-
-        }
-        app->video.texture_filter.refresh = false;
-    }
-
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    pthread_mutex_lock(&app->emulation.gba->framebuffer_frontend_mutex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, (uint8_t *)app->emulation.gba->framebuffer_frontend);
-    pthread_mutex_unlock(&app->emulation.gba->framebuffer_frontend_mutex);
-
-    glBindTexture(GL_TEXTURE_2D, last_texture);
-
     igImage(
-        (void *)(uintptr_t)app->sdl.game_texture,
+        (void *)(uintptr_t)app->gfx.game_texture_out,
         (ImVec2){.x = game_size_x, .y = game_size_y},
         (ImVec2){.x = 0, .y = 0},
         (ImVec2){.x = 1, .y = 1},

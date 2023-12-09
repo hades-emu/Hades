@@ -17,19 +17,24 @@ debugger_cmd_step_in(
     size_t argc,
     struct arg const *argv
 ) {
+    if (!app->debugger.is_started) {
+        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        return;
+    }
+
     if (argc == 0) {
-        app->emulation.gba->debugger.interrupt.flag = false;
-        app_game_step(app, false, 1);
-        debugger_wait_for_emulator(app, true);
+        app_game_step_in(app, 1);
+        debugger_wait_for_emulator(app);
+        debugger_dump_context_auto(app);
     } else if (argc == 1) {
 
         if (debugger_check_arg_type(CMD_STEP_IN, &argv[0], ARGS_INTEGER)) {
             return ;
         }
 
-        app->emulation.gba->debugger.interrupt.flag = false;
-        app_game_step(app, false, argv[0].value.i64);
-        debugger_wait_for_emulator(app, true);
+        app_game_step_in(app, argv[0].value.i64);
+        debugger_wait_for_emulator(app);
+        debugger_dump_context_auto(app);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP_IN].usage);
         return ;
@@ -42,19 +47,24 @@ debugger_cmd_step_over(
     size_t argc,
     struct arg const *argv
 ) {
+    if (!app->debugger.is_started) {
+        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        return;
+    }
+
     if (argc == 0) {
-        app->emulation.gba->debugger.interrupt.flag = false;
-        app_game_step(app, true, 1);
-        debugger_wait_for_emulator(app, true);
+        app_game_step_over(app, 1);
+        debugger_wait_for_emulator(app);
+        debugger_dump_context_auto(app);
     } else if (argc == 1) {
 
         if (debugger_check_arg_type(CMD_STEP_OVER, &argv[0], ARGS_INTEGER)) {
             return ;
         }
 
-        app->emulation.gba->debugger.interrupt.flag = false;
-        app_game_step(app, true, argv[0].value.i64);
-        debugger_wait_for_emulator(app, true);
+        app_game_step_over(app, argv[0].value.i64);
+        debugger_wait_for_emulator(app);
+        debugger_dump_context_auto(app);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP_OVER].usage);
         return ;

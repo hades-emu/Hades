@@ -289,7 +289,7 @@ ppu_draw_scanline(
         struct rich_color c;
 
         c = scanline->result[x];
-        gba->framebuffer[GBA_SCREEN_WIDTH * y + x] = 0xFF000000
+        gba->ppu.framebuffer[GBA_SCREEN_WIDTH * y + x] = 0xFF000000
             | (((uint32_t)c.red   << 3 ) | (((uint32_t)c.red   >> 2) & 0b111)) << 0
             | (((uint32_t)c.green << 3 ) | (((uint32_t)c.green >> 2) & 0b111)) << 8
             | (((uint32_t)c.blue  << 3 ) | (((uint32_t)c.blue  >> 2) & 0b111)) << 16
@@ -298,48 +298,9 @@ ppu_draw_scanline(
 }
 
 /*
-** Compose the content of the framebuffer based on the content of `scanline->result` and/or the backdrop color.
-** This algorithm applies a color correction.
-**
-** NOTE: lcd_gamma is 4.0, out_gamma is 2.0.
-** Reference:
-**   - https://near.sh/articles/video/color-emulation
-*/
-static
-void
-ppu_draw_scanline_color_correction(
-    struct gba *gba,
-    struct scanline const *scanline
-) {
-    uint32_t x;
-    uint32_t y;
-
-    y = gba->io.vcount.raw;
-    for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
-        struct rich_color c;
-        float r;
-        float g;
-        float b;
-
-        c = scanline->result[x];
-
-        r = c.red * c.red * c.red * c.red           / (31.0 * 31.0 * 31.0 * 31.0);  // <=> pow(c.red   / 31.0, lcd_gamma);
-        g = c.green * c.green * c.green * c.green   / (31.0 * 31.0 * 31.0 * 31.0);  // <=> pow(c.green / 31.0, lcd_gamma);
-        b = c.blue * c.blue * c.blue * c.blue       / (31.0 * 31.0 * 31.0 * 31.0);  // <=> pow(c.blue  / 31.0, lcd_gamma);
-
-        gba->framebuffer[GBA_SCREEN_WIDTH * y + x] = 0xFF000000
-            | (uint32_t)(sqrt(            0.196 * g + 1.000 * r) * 213.0) << 0      // <=> pow(r, 1.0 / out_gamma);
-            | (uint32_t)(sqrt(0.118 * b + 0.902 * g + 0.039 * r) * 240.0) << 8      // <=> pow(g, 1.0 / out_gamma);
-            | (uint32_t)(sqrt(0.863 * b + 0.039 * g + 0.196 * r) * 232.0) << 16     // <=> pow(b, 1.0 / out_gamma);
-        ;
-    }
-}
-
-/*
 ** Called when the PPU enters HDraw, this function updates some IO registers
 ** to reflect the progress of the PPU and eventually triggers an IRQ.
 */
-static
 void
 ppu_hdraw(
     struct gba *gba,
@@ -354,7 +315,7 @@ ppu_hdraw(
 
     if (io->vcount.raw >= GBA_SCREEN_REAL_HEIGHT) {
         io->vcount.raw = 0;
-        ++gba->framecounter;
+        atomic_fetch_add(&gba->shared_data.frame_counter, 1);
     } else if (io->vcount.raw == GBA_SCREEN_HEIGHT) {
         /*
         ** Now that the frame is finished, we can copy the current framebuffer to
@@ -362,9 +323,9 @@ ppu_hdraw(
         **
         ** Doing it now will avoid tearing.
         */
-        pthread_mutex_lock(&gba->framebuffer_frontend_mutex);
-        memcpy(gba->framebuffer_frontend, gba->framebuffer, sizeof(gba->framebuffer));
-        pthread_mutex_unlock(&gba->framebuffer_frontend_mutex);
+        pthread_mutex_lock(&gba->shared_data.framebuffer.lock);
+        memcpy(gba->shared_data.framebuffer.data, gba->ppu.framebuffer, sizeof(gba->ppu.framebuffer));
+        pthread_mutex_unlock(&gba->shared_data.framebuffer.lock);
     }
 
     io->dispstat.vcount_eq = (io->vcount.raw == io->dispstat.vcount_val);
@@ -397,7 +358,6 @@ ppu_hdraw(
 ** Called when the PPU enters HBlank, this function updates some IO registers
 ** to reflect the progress of the PPU and eventually triggers an IRQ.
 */
-static
 void
 ppu_hblank(
     struct gba *gba,
@@ -418,11 +378,7 @@ ppu_hblank(
             ppu_render_scanline(gba, &scanline);
         }
 
-        if (gba->color_correction) {
-            ppu_draw_scanline_color_correction(gba, &scanline);
-        } else {
-            ppu_draw_scanline(gba, &scanline);
-        }
+        ppu_draw_scanline(gba, &scanline);
 
         ppu_step_affine_internal_registers(gba);
     }
@@ -447,41 +403,13 @@ ppu_hblank(
 }
 
 /*
-** Initialize the PPU.
-*/
-void
-ppu_init(
-    struct gba *gba
-) {
-    // HDraw
-    sched_add_event(
-        gba,
-        NEW_REPEAT_EVENT(
-            CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Timing of first trigger
-            CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Period
-            ppu_hdraw
-        )
-    );
-
-    // HBlank
-    sched_add_event(
-        gba,
-        NEW_REPEAT_EVENT(
-            CYCLES_PER_PIXEL * GBA_SCREEN_WIDTH + 46,       // Timing of first trigger
-            CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Period
-            ppu_hblank
-        )
-    );
-}
-
-/*
 ** Called when the CPU enters stop-mode to render the screen black.
 */
 void
 ppu_render_black_screen(
     struct gba *gba
 ) {
-    pthread_mutex_lock(&gba->framebuffer_frontend_mutex);
-    memset(gba->framebuffer_frontend, 0x00, sizeof(gba->framebuffer));
-    pthread_mutex_unlock(&gba->framebuffer_frontend_mutex);
+    pthread_mutex_lock(&gba->shared_data.framebuffer.lock);
+    memset(gba->shared_data.framebuffer.data, 0x00, sizeof(gba->ppu.framebuffer));
+    pthread_mutex_unlock(&gba->shared_data.framebuffer.lock);
 }

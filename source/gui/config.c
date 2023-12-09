@@ -12,7 +12,7 @@
 #include "hades.h"
 #include "app.h"
 #include "gui/gui.h"
-#include "compat.h"
+#include "common/compat.h"
 
 void
 gui_config_load(
@@ -74,17 +74,20 @@ gui_config_load(
             app->emulation.speed = max(1, min(app->emulation.speed, 5));
         }
 
-        if (mjson_get_number(data, data_len, "$.emulation.backup_type", &d)) {
-            app->emulation.backup_type = (int)d;
-            app->emulation.backup_type = max(BACKUP_MIN, min(app->emulation.backup_type, BACKUP_MAX));
+        if (mjson_get_bool(data, data_len, "$.emulation.backup_storage.autodetect", &b)) {
+            app->emulation.backup_storage.autodetect = b;
         }
 
-        if (mjson_get_bool(data, data_len, "$.emulation.rtc_autodetect", &b)) {
-            app->emulation.rtc_autodetect = b;
+        if (mjson_get_number(data, data_len, "$.emulation.backup_storage.type", &d)) {
+            app->emulation.backup_storage.type = max(BACKUP_MIN, min((int)d, BACKUP_MAX));
         }
 
-        if (mjson_get_bool(data, data_len, "$.emulation.rtc_force_enabled", &b)) {
-            app->emulation.rtc_force_enabled = b;
+        if (mjson_get_bool(data, data_len, "$.emulation.rtc.autodetect", &b)) {
+            app->emulation.rtc.autodetect = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.rtc.enabled", &b)) {
+            app->emulation.rtc.enabled = b;
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.skip_bios", &b)) {
@@ -116,9 +119,8 @@ gui_config_load(
         }
 
         if (mjson_get_number(data, data_len, "$.video.texture_filter", &d)) {
-            app->video.texture_filter.kind = (int)d;
-            app->video.texture_filter.kind = max(TEXTURE_FILTER_MIN, min(app->video.texture_filter.kind, TEXTURE_FILTER_MAX));
-            app->video.texture_filter.refresh = true;
+            app->gfx.texture_filter = (int)d;
+            app->gfx.texture_filter = max(TEXTURE_FILTER_MIN, min(app->gfx.texture_filter, TEXTURE_FILTER_MAX));
         }
     }
 
@@ -209,9 +211,14 @@ gui_config_save(
                 "skip_bios": %B,
                 "speed": %d,
                 "unbounded": %B,
-                "backup_type": %d,
-                "rtc_autodetect": %B,
-                "rtc_force_enabled": %B
+                "backup_storage": {
+                    "autodetect": %B,
+                    "type": %d
+                },
+                "rtc": {
+                    "autodetect": %B,
+                    "enabled": %B
+                }
             },
 
             // Video
@@ -238,14 +245,15 @@ gui_config_save(
         (int)app->emulation.skip_bios,
         (int)app->emulation.speed,
         (int)app->emulation.unbounded,
-        (int)app->emulation.backup_type,
-        (int)app->emulation.rtc_autodetect,
-        (int)app->emulation.rtc_force_enabled,
+        (int)app->emulation.backup_storage.autodetect,
+        (int)app->emulation.backup_storage.type,
+        (int)app->emulation.rtc.autodetect,
+        (int)app->emulation.rtc.enabled,
         (int)app->video.display_size,
         (int)app->video.aspect_ratio,
         (int)app->video.vsync,
         (int)app->video.color_correction,
-        (int)app->video.texture_filter.kind,
+        (int)app->gfx.texture_filter,
         (int)app->audio.mute,
         app->audio.level
     );
@@ -334,18 +342,19 @@ end:
 */
 void
 gui_config_push_recent_rom(
-    struct app *app
+    struct app *app,
+    char const *rom_path
 ) {
     char *new_recent_roms[MAX_RECENT_ROMS];
     int32_t i;
     int32_t j;
 
     memset(new_recent_roms, 0, sizeof(new_recent_roms));
-    new_recent_roms[0] = strdup(app->file.game_path);
+    new_recent_roms[0] = strdup(rom_path);
 
     j = 0;
     for (i = 1; i < MAX_RECENT_ROMS && j < MAX_RECENT_ROMS; ++j) {
-        if (!app->file.recent_roms[j] || strcmp(app->file.recent_roms[j], app->file.game_path)) {
+        if (!app->file.recent_roms[j] || strcmp(app->file.recent_roms[j], rom_path)) {
             new_recent_roms[i] = app->file.recent_roms[j];
             ++i;
         } else {

@@ -10,18 +10,6 @@
 #include <string.h>
 #include "gba/gba.h"
 #include "gba/gpio.h"
-#include "gba/db.h"
-
-void
-gpio_init(
-    struct gba *gba
-) {
-    memset(&gba->gpio, 0, sizeof(gba->gpio));
-    if (gba->rtc_enabled || (gba->rtc_auto_detect && gba->game_entry && gba->game_entry->flags & FLAGS_RTC)) {
-        gpio_rtc_init(gba);
-        gba->rtc_enabled = true;
-    }
-}
 
 uint8_t
 gpio_read_u8(
@@ -35,7 +23,7 @@ gpio_read_u8(
         case GPIO_REG_DATA: {
             uint8_t val;
 
-            if (gba->rtc_enabled) {
+            if (gba->gpio.rtc.enabled) {
                 val = gpio_rtc_read(gba);
             } else {
                 val = 0;
@@ -61,7 +49,7 @@ gpio_write_u8(
             break;
         };
         case GPIO_REG_DATA: {
-            if (gba->rtc_enabled) {
+            if (gba->gpio.rtc.enabled) {
                 gpio_rtc_write(gba, val);
             }
             break;

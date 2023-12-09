@@ -295,12 +295,17 @@ debugger_cmd_disas(
     size_t op_len;
     uint32_t ptr;
 
+    if (!app->debugger.is_started) {
+        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        return;
+    }
+
     core = &app->emulation.gba->core;
     thumb = core->cpsr.thumb;
     op_len = thumb ? 2 : 4;
 
     if (argc == 0) {
-        ptr = core->pc - op_len * 2;
+        ptr = core->pc >= op_len * 2 ? core->pc - op_len * 2 : 0;
     } else if (argc == 1) {
         if (debugger_check_arg_type(CMD_DISAS, &argv[0], ARGS_INTEGER)) {
             return ;

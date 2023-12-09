@@ -43,8 +43,6 @@ struct apu_rbuffer {
 };
 
 struct apu {
-    uint64_t resample_frequency; // In cycles
-
     struct fifo fifos[2];
     struct wave wave;
 
@@ -52,19 +50,16 @@ struct apu {
         int16_t fifo[2];
         int16_t wave;
     } latch;
-
-    pthread_mutex_t frontend_channels_mutex;
-    struct apu_rbuffer frontend_channels;
 };
 
 /* gba/apu/apu.c */
-void apu_init(struct gba *gba);
 void apu_reset_fifo(struct gba *gba, enum fifo_idx fifo_idx);
 void apu_fifo_write8(struct gba *gba, enum fifo_idx fifo_idx, uint8_t val);
 uint32_t apu_rbuffer_pop(struct apu_rbuffer *rbuffer);
 void apu_on_timer_overflow(struct gba *gba, uint32_t timer_id);
+void apu_sequencer(struct gba *gba, struct event_args args);
+void apu_resample(struct gba *gba, struct event_args args);
 
 /* gba/apu/wave.c */
-void apu_wave_init(struct gba *);
 void apu_wave_reset(struct gba *gba);
 void apu_wave_stop(struct gba *gba);

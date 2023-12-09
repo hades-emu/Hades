@@ -26,6 +26,7 @@
 #define MAX_RECENT_ROMS             5
 #define MAX_QUICKSAVES              5
 #define POWER_SAVE_FRAME_DELAY      30
+#define MAX_GFX_PROGRAMS            10
 
 struct ImGuiIO;
 
@@ -88,11 +89,20 @@ extern char const * const binds_slug[];
 struct app {
     atomic_bool run;
 
+    struct args {
+        char const *rom_path;
+        char const *bios_path;
+    } args;
+
     struct {
         struct gba *gba;
+        struct launch_config *launch_config;
+        struct game_entry const *game_entry;
 
-        bool started;
-        bool running;
+        FILE *backup_file;
+
+        bool is_started;
+        bool is_running;
 
         // Current FPS
         uint32_t fps;
@@ -105,18 +115,33 @@ struct app {
         bool skip_bios;
 
         // Backup storage
-        enum backup_storage_types backup_type;
+        struct {
+            bool autodetect;
+            enum backup_storage_types type;
+        } backup_storage;
 
         // RTC
-        bool rtc_autodetect;
-        bool rtc_force_enabled;
+        struct {
+            bool autodetect;
+            bool enabled;
+        } rtc;
+
+        // The current quicksave request
+        struct {
+            bool enabled;
+            size_t idx;
+        } quicksave_request;
+
+        // The current quickload request
+        struct {
+            bool enabled;
+            void *data;
+        } quickload_request;
     } emulation;
 
     struct {
         SDL_Window *window;
-        SDL_GLContext gl_context;
         SDL_AudioDeviceID audio_device;
-        GLuint game_texture;
 
         /* Game controller */
         struct {
@@ -133,14 +158,26 @@ struct app {
     } sdl;
 
     struct {
+        SDL_GLContext gl_context;
+
+        enum texture_filter_kind texture_filter;
+        GLuint game_texture_in;
+        GLuint game_texture_out;
+        GLuint fbo;
+        GLuint vao;
+        GLuint vbo;
+
+        GLuint program_color_correction;
+
+        GLuint active_programs[MAX_GFX_PROGRAMS];
+        size_t active_programs_length;
+    } gfx;
+
+    struct {
         char *config_path;
 
         char *bios_path;
-        char *game_path;
         char *recent_roms[MAX_RECENT_ROMS];
-
-        char *backup_path;
-        FILE *backup_file;
 
         struct {
             char *path;
@@ -148,7 +185,7 @@ struct app {
             bool exist;
         } qsaves[MAX_QUICKSAVES];
 
-        bool flush_qsaves_cache;
+        bool flush_qsaves_cache; // Set to true if the `mtime` and `exist` field of `qsaves` needs to be refreshed.
     } file;
 
     struct {
@@ -156,17 +193,12 @@ struct app {
         enum aspect_ratio aspect_ratio;
         bool vsync;
         bool color_correction;
-
-        struct {
-            enum texture_filter_kind kind;
-            bool refresh;
-        } texture_filter;
-
     } video;
 
     struct {
         bool mute;
         float level;
+        uint32_t resample_frequency;
     } audio;
 
     struct {
@@ -244,6 +276,9 @@ struct app {
 
 #if WITH_DEBUGGER
     struct {
+        bool is_running;
+        bool is_started;
+
         csh handle_arm;             // Capstone handle for ARM mode
         csh handle_thumb;           // Capstone handle for Thumb mode
 
@@ -260,17 +295,27 @@ struct app {
 };
 
 /* common/game.c */
-void app_game_reset(struct app *app);
+void app_game_process_all_notifs(struct app *app);
+void app_game_configure(struct app *app, char const *rom_path);
 void app_game_stop(struct app *app);
 void app_game_run(struct app *app);
 void app_game_pause(struct app *app);
-void app_game_write_backup(struct app *app);
+void app_game_reset(struct app *app);
+void app_game_exit(struct app *app);
+void app_game_key(struct app *app, enum keys key, bool pressed);
+void app_game_speed(struct app *app, uint32_t);
+void app_game_update_backup(struct app *app);
 void app_game_screenshot(struct app *app);
-void app_game_quicksave(struct app *, size_t);
-void app_game_quickload(struct app *, size_t);
+void app_game_quicksave(struct app *app, size_t idx);
+void app_game_quickload(struct app *app, size_t idx);
 
 #ifdef WITH_DEBUGGER
+
 void app_game_frame(struct app *app);
 void app_game_trace(struct app *app, size_t, void (*)(struct app *));
-void app_game_step(struct app *app, bool over, size_t cnt);
+void app_game_step_in(struct app *app, size_t cnt);
+void app_game_step_over(struct app *app, size_t cnt);
+void app_game_set_breakpoints_list(struct app *app, struct breakpoint *breakpoints, size_t len);
+void app_game_set_watchpoints_list(struct app *app, struct watchpoint *watchpoints, size_t len);
+
 #endif

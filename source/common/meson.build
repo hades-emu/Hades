@@ -9,6 +9,7 @@
 
 libcommon = static_library(
     'common',
+    'channel.c',
     'game.c',
     'log.c',
     'utils.c',

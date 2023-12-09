@@ -35,13 +35,13 @@ gui_sdl_audio_callback(
     stream = (int16_t *)raw_stream;
     len = raw_stream_len / (2 * sizeof(*stream));
 
-    pthread_mutex_lock(&gba->apu.frontend_channels_mutex);
+    pthread_mutex_lock(&gba->shared_data.audio_rbuffer_mutex);
     for (i = 0; i < len; ++i) {
         uint32_t val;
         int16_t left;
         int16_t right;
 
-        val = apu_rbuffer_pop(&gba->apu.frontend_channels);
+        val = apu_rbuffer_pop(&gba->shared_data.audio_rbuffer);
         left = (int16_t)((val >> 16) & 0xFFFF);
         right = (int16_t)(val & 0xFFFF);
 
@@ -49,7 +49,7 @@ gui_sdl_audio_callback(
         stream[1] = (int16_t)(right * !app->audio.mute * app->audio.level);
         stream += 2;
     }
-    pthread_mutex_unlock(&gba->apu.frontend_channels_mutex);
+    pthread_mutex_unlock(&gba->shared_data.audio_rbuffer_mutex);
 }
 
 void
@@ -73,7 +73,7 @@ gui_sdl_audio_init(
         exit(EXIT_FAILURE);
     }
 
-    gba_send_audio_resample_freq(app->emulation.gba, CYCLES_PER_SECOND / have.freq);
+    app->audio.resample_frequency = have.freq;
 
     SDL_PauseAudioDevice(app->sdl.audio_device, SDL_FALSE);
 }

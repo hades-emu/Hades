@@ -24,6 +24,11 @@ debugger_cmd_registers(
     size_t i;
     struct core *core;
 
+    if (!app->debugger.is_started) {
+        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        return;
+    }
+
     core = &app->emulation.gba->core;
     for (i = 0; i < 4; ++i) {
         printf(

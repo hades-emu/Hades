@@ -17,8 +17,9 @@
 #include <string.h>
 #include <errno.h>
 #include "gba/gba.h"
-#include "gba/db.h"
 
+// TODO FIXME
+#if 0
 size_t backup_storage_sizes[] = {
     [BACKUP_NONE] = 0,
     [BACKUP_EEPROM_4K] = EEPROM_4K_SIZE,
@@ -89,7 +90,6 @@ mem_backup_storage_detect(
         gba->memory.backup_storage.type = BACKUP_NONE;
     }
 }
-
 void
 mem_backup_storage_init(
     struct gba *gba
@@ -146,6 +146,7 @@ mem_backup_storage_init(
         gba->memory.backup_storage.data = NULL;
     }
 }
+#endif
 
 uint8_t
 mem_backup_storage_read8(
@@ -158,7 +159,7 @@ mem_backup_storage_read8(
             return (mem_flash_read8(gba, addr));
             break;
         case BACKUP_SRAM:
-            return (gba->memory.backup_storage.data[addr & SRAM_MASK]);
+            return (gba->shared_data.backup_storage.data[addr & SRAM_MASK]);
             break;
         default:
             return (0);
@@ -177,8 +178,8 @@ mem_backup_storage_write8(
             mem_flash_write8(gba, addr, val);
             break;
         case BACKUP_SRAM:
-            gba->memory.backup_storage.data[addr & SRAM_MASK] = val;
-            gba->memory.backup_storage.dirty = true;
+            gba->shared_data.backup_storage.data[addr & SRAM_MASK] = val;
+            gba->shared_data.backup_storage.dirty = true;
             break;
         default:
             break;

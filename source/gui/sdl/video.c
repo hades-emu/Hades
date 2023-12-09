@@ -10,6 +10,7 @@
 #define SDL_MAIN_HANDLED
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 
+#include <errno.h>
 #include <GL/glew.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
@@ -18,6 +19,8 @@
 #include "app.h"
 #include "gui/gui.h"
 #include "gba/gba.h"
+
+static GLuint build_shader_program(char const *name, char const *frag_path, char const *vertex_path);
 
 void
 gui_sdl_video_init(
@@ -107,8 +110,8 @@ gui_sdl_video_init(
 
 
     /* Create the OpenGL context */
-    app->sdl.gl_context = SDL_GL_CreateContext(app->sdl.window);
-    SDL_GL_MakeCurrent(app->sdl.window, app->sdl.gl_context);
+    app->gfx.gl_context = SDL_GL_CreateContext(app->sdl.window);
+    SDL_GL_MakeCurrent(app->sdl.window, app->gfx.gl_context);
 
     /* Enable VSync */
     SDL_GL_SetSwapInterval(app->video.vsync);
@@ -139,11 +142,38 @@ gui_sdl_video_init(
     ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
     ImGuiStyle_ScaleAllSizes(igGetStyle(), app->ui.scale);
 
-    ImGui_ImplSDL2_InitForOpenGL(app->sdl.window, app->sdl.gl_context);
+    ImGui_ImplSDL2_InitForOpenGL(app->sdl.window, app->gfx.gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    /* Create the OpenGL texture that will hold the game's output */
-    glGenTextures(1, &app->sdl.game_texture);
+    /* Create the OpenGL objects required to build the pipeline */
+    glGenTextures(1, &app->gfx.game_texture_in);
+    glGenTextures(1, &app->gfx.game_texture_out);
+    app->gfx.program_color_correction = build_shader_program("color_correction", SHADER_FRAG_COLOR_CORRECTION, SHADER_VERTEX_COMMON);
+    glGenFramebuffers(1, &app->gfx.fbo);
+    glGenVertexArrays(1, &app->gfx.vao);
+    glGenBuffers(1, &app->gfx.vbo);
+
+    float vertices[] = {
+        // position   | UV coord
+        -1., 1.,        0., 1.,     // Top left
+        1., 1.,         1., 1.,     // Top right
+        1., -1.,        1., 0.,     // Bottom right
+        1., -1.,        1., 0.,     // Bottom right
+        -1., -1.,       0., 0.,     // Bottom left
+        -1., 1.,        0., 1.,     // Top left
+    };
+
+    /* Setup the OpenGL objects */
+    glBindVertexArray(app->gfx.vao);
+    glBindBuffer(GL_ARRAY_BUFFER, app->gfx.vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, false, 4 * sizeof(float), 0); // position
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * sizeof(float), (void *)(2 * sizeof(float))); // UV
+    glEnableVertexAttribArray(1);
+
+    /* Build the OpenGL pipeline. */
+    gui_sdl_video_rebuild_pipeline(app);
 
     /* Setup the game controller stuff */
     app->sdl.controller.ptr = NULL;
@@ -152,6 +182,181 @@ gui_sdl_video_init(
 
     /* Setup the Native File Dialog extension */
     NFD_Init();
+}
+
+void
+gui_sdl_video_rebuild_pipeline(
+    struct app *app
+) {
+    GLint texture_filter;
+
+    switch (app->gfx.texture_filter) {
+        case TEXTURE_FILTER_LINEAR: texture_filter = GL_LINEAR; break;
+        case TEXTURE_FILTER_NEAREST: texture_filter = GL_NEAREST; break;
+        default: texture_filter = GL_NEAREST; break;
+    }
+
+    // Setup the input texture (RGBA)
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_in);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        GBA_SCREEN_WIDTH,
+        GBA_SCREEN_HEIGHT,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL
+    );
+
+    // Setup the output texture (RGBA)
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_out);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_filter);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        GBA_SCREEN_WIDTH,
+        GBA_SCREEN_HEIGHT,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL
+    );
+
+    app->gfx.active_programs_length = 0;
+
+    if (app->video.color_correction) {
+        app->gfx.active_programs[app->gfx.active_programs_length] = app->gfx.program_color_correction;
+        ++app->gfx.active_programs_length;
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, app->gfx.fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, app->gfx.game_texture_out, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+struct shader_descriptor {
+    char const *path;
+    GLenum type;
+    char *src;
+    GLuint shader;
+};
+
+static
+GLuint
+build_shader_program(
+    char const *name,
+    char const *frag_src,
+    char const *vertex_src
+) {
+    GLuint program;
+    GLuint frag;
+    GLuint vertex;
+    GLint status;
+    GLint len;
+
+    // Create the program
+    program = glCreateProgram();
+
+    // Compile the fragment shader
+    frag = glCreateShader(GL_FRAGMENT_SHADER);
+    len = strlen(frag_src);
+    glShaderSource(frag, 1, &frag_src, &len);
+    glCompileShader(frag);
+
+    // Check the fragment shader compiled correctly
+    glGetShaderiv(frag, GL_COMPILE_STATUS, &status);
+    if (status != GL_TRUE) {
+        GLint log_len;
+        GLchar *error;
+
+        log_len = 0;
+        glGetShaderiv(frag, GL_INFO_LOG_LENGTH, &log_len);
+
+        error = calloc(log_len, 1);
+        hs_assert(error);
+
+        glGetShaderInfoLog(frag, log_len, &log_len, error);
+
+        panic(
+            HS_ERROR,
+            "Failed to compile the \"%s%s%s/fragment%s\" shader:\n"
+            "====== BEGIN ======\n"
+            "%s"
+            "======  END  ======",
+            g_bold,
+            g_magenta,
+            name,
+            g_reset,
+            error
+        );
+    }
+
+    // Attach the fragment shader to the program
+    glAttachShader(program, frag);
+
+    // Compile the vertex shader
+    vertex = glCreateShader(GL_VERTEX_SHADER);
+    len = strlen(vertex_src);
+    glShaderSource(vertex, 1, &vertex_src, &len);
+    glCompileShader(vertex);
+
+    // Check the vertex shader compiled correctly
+    glGetShaderiv(vertex, GL_COMPILE_STATUS, &status);
+    if (status != GL_TRUE) {
+        GLint log_len;
+        GLchar *error;
+
+        log_len = 0;
+        glGetShaderiv(vertex, GL_INFO_LOG_LENGTH, &log_len);
+
+        error = calloc(log_len, 1);
+        hs_assert(error);
+
+        glGetShaderInfoLog(vertex, log_len, &log_len, error);
+
+        panic(
+            HS_ERROR,
+            "Failed to compile the \"%s%s%s/vertex%s\" shader:\n"
+            "====== BEGIN ======\n"
+            "%s"
+            "======  END  ======",
+            g_bold,
+            g_magenta,
+            name,
+            g_reset,
+            error
+        );
+    }
+
+    // Attach the vertex shader to the program
+    glAttachShader(program, vertex);
+
+    // Link the program
+    glLinkProgram(program);
+    glGetShaderiv(program, GL_LINK_STATUS, &status);
+    if (status != GL_TRUE) {
+        panic(HS_ERROR, "Failed to link shader.");
+    }
+
+    // Detach and delete both shaders
+    glDetachShader(program, frag);
+    glDetachShader(program, vertex);
+    glDeleteShader(frag);
+    glDeleteShader(vertex);
+
+    return program;
 }
 
 void
@@ -167,8 +372,13 @@ gui_sdl_video_cleanup(
     igDestroyContext(NULL);
 
     // Cleanup OpenGL
-    glDeleteTextures(1, &app->sdl.game_texture);
-    SDL_GL_DeleteContext(app->sdl.gl_context);
+    glDeleteProgram(app->gfx.program_color_correction);
+    glDeleteBuffers(1, &app->gfx.vbo);
+    glDeleteVertexArrays(1, &app->gfx.vbo);
+    glDeleteFramebuffers(1, &app->gfx.fbo);
+    glDeleteTextures(1, &app->gfx.game_texture_in);
+    glDeleteTextures(1, &app->gfx.game_texture_out);
+    SDL_GL_DeleteContext(app->gfx.gl_context);
 
     // Close the Wingowd
     SDL_DestroyWindow(app->sdl.window);
@@ -187,7 +397,7 @@ gui_sdl_video_render_frame(
 
     gui_win_menubar(app);
 
-    if (app->emulation.started) {
+    if (app->emulation.is_started) {
         gui_win_game(app);
     }
 
@@ -198,11 +408,11 @@ gui_sdl_video_render_frame(
     /* Render the imGui frame */
     igRender();
 
-    SDL_GL_MakeCurrent(app->sdl.window, app->sdl.gl_context);
+    SDL_GL_MakeCurrent(app->sdl.window, app->gfx.gl_context);
     glViewport(0, 0, (int)app->ui.ioptr->DisplaySize.x, (int)app->ui.ioptr->DisplaySize.y);
 
     /* Change the background color if the game is running */
-    if (app->emulation.started) {
+    if (app->emulation.is_started) {
         glClearColor(0.f, 0.f, 0.f, 1.f);
     } else {
         glClearColor(176.f / 255.f, 124.f / 255.f, 223.f / 255.f, 1.f);

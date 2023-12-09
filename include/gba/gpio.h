@@ -36,6 +36,8 @@ enum rtc_registers {
 };
 
 struct rtc {
+    bool enabled;
+
     enum rtc_states state;
 
     uint64_t data;
@@ -69,11 +71,9 @@ struct gpio {
 struct gba;
 
 /* gpio/gpio.c */
-void gpio_init(struct gba *);
 uint8_t gpio_read_u8(struct gba *gba, uint32_t);
 void gpio_write_u8(struct gba *gba, uint32_t, uint8_t);
 
 /* gpio/rtc.c */
-void gpio_rtc_init(struct gba *);
 uint8_t gpio_rtc_read(struct gba *gba);
 void gpio_rtc_write(struct gba *gba, uint8_t);

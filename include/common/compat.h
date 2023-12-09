@@ -153,7 +153,7 @@ hs_usleep(
 
 static inline
 uint64_t
-hs_tick_count(void)
+hs_time(void)
 {
     FILETIME ts;
     uint64_t time;
@@ -196,7 +196,7 @@ hs_basename(
 
 static inline
 uint64_t
-hs_tick_count(void)
+hs_time(void)
 {
     struct timespec ts;
 

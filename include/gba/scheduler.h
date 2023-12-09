@@ -52,19 +52,19 @@ struct scheduler_event {
 };
 
 struct scheduler {
+    uint64_t cycles;                // Amount of cycles spent by the system since initialization
+
     uint64_t next_event;            // The next event should occure when cycles == next_event
 
     struct scheduler_event *events;
     size_t events_size;
-};
 
-/* gba/scheduler.c */
-void sched_init(struct gba *gba);
-void sched_cleanup(struct gba *gba);
-event_handler_t sched_add_event(struct gba *gba, struct scheduler_event event);
-void sched_cancel_event(struct gba *gba, event_handler_t handler);
-void sched_process_events(struct gba *gba);
-void sched_run_for(struct gba *gba, uint64_t cycles);
+    uint32_t speed;                 // Speed. 0 = unlimited, 1 = 60fps, 2 = 120fps, etc.
+
+    uint64_t time_per_frame;
+    uint64_t time_last_frame;
+    uint64_t accumulated_time;
+};
 
 #define NEW_FIX_EVENT(_at, _callback)       \
     (struct scheduler_event){               \
@@ -113,3 +113,11 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
 #define EVENT_ARGS(...)                 CONCAT(EVENT_ARGS_, NARG(__VA_ARGS__))(__VA_ARGS__)
 #define EVENT_ARG(kind, _value)         ((union event_arg) { .kind = (_value) })
 #define EVENT_ARG_EMPTY                 ((union event_arg) { 0 })
+
+/* gba/scheduler.c */
+event_handler_t sched_add_event(struct gba *gba, struct scheduler_event event);
+void sched_cancel_event(struct gba *gba, event_handler_t handler);
+void sched_process_events(struct gba *gba);
+void sched_run_for(struct gba *gba, uint64_t cycles);
+void sched_frame_limiter(struct gba *gba,struct event_args args);
+void sched_update_speed(struct gba *gba, uint32_t speed);

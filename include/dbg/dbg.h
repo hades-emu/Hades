@@ -13,6 +13,7 @@
 
 #include <stdbool.h>
 #include "hades.h"
+#include "common/channel/event.h"
 #include "gba/gba.h"
 
 struct app;
@@ -169,7 +170,8 @@ extern size_t g_io_registers_len;
 void debugger_cmd_break(struct app *, size_t, struct arg const *);
 
 /* dbg/cmd/context.c */
-void debugger_dump_context(struct app *, bool);
+void debugger_dump_context(struct app *);
+void debugger_dump_context_auto(struct app *);
 void debugger_dump_context_compact(struct app *);
 void debugger_dump_context_compact_header(void);
 void debugger_cmd_context(struct app *, size_t, struct arg const *);
@@ -223,7 +225,9 @@ void debugger_cmd_watch(struct app *, size_t, struct arg const *);
 void debugger_run(struct app *app);
 void debugger_reset_terminal(void);
 bool debugger_check_arg_type(enum commands_list command, struct arg const *arg, enum args_type expected);
-void debugger_wait_for_emulator(struct app *, bool);
+void debugger_process_all_notifs(struct app *);
+void debugger_wait_for_emulator(struct app *);
+void debugger_wait_for_notif(struct app *, enum notification_kind kind);
 
 /* dbg/io.c */
 void debugger_io_init(struct gba *);
