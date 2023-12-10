@@ -7,6 +7,8 @@
 **
 \******************************************************************************/
 
+#define _GNU_SOURCE
+
 #include <string.h>
 #include "hades.h"
 #include "app.h"
@@ -29,7 +31,7 @@ debugger_lang_eval_node(
             variable = debugger_lang_variables_lookup(app, node->value.identifier);
             if (!variable) {
                 free(eval->error);
-                asprintf(&eval->error, "Undefined variable \"%s\"", node->value.identifier);
+                eval->error = hs_format("Undefined variable \"%s\"", node->value.identifier);
                 return (0);
             }
 
@@ -61,13 +63,13 @@ debugger_lang_eval_node(
                     variable = debugger_lang_variables_lookup(app, node->lhs->value.identifier);
                     if (!variable) {
                         free(eval->error);
-                        asprintf(&eval->error, "Undefined variable \"%s\"", node->value.identifier);
+                        eval->error = hs_format("Undefined variable \"%s\"", node->value.identifier);
                         return (0);
                     }
 
                     if (!variable->mutable) {
                         free(eval->error);
-                        asprintf(&eval->error, "Variable \"%s\" is not mutable.", node->value.identifier);
+                        eval->error = hs_format("Variable \"%s\" is not mutable.", node->value.identifier);
                         return (0);
                     }
 

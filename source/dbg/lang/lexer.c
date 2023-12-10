@@ -7,6 +7,8 @@
 **
 \******************************************************************************/
 
+#define _GNU_SOURCE
+
 #include <ctype.h>
 #include <string.h>
 #include "hades.h"
@@ -93,7 +95,7 @@ debugger_lang_lexe(
                 }
                 i += end - (input + i);
                 if (isalpha(input[i])) {
-                    asprintf(&lexer->error, "Invalid character \'%c\'", input[i]);
+                    lexer->error = hs_format("Invalid character \'%c\'", input[i]);
                     return ;
                 }
                 break;
@@ -161,7 +163,7 @@ debugger_lang_lexe(
                 break;
             };
             default: {
-                asprintf(&lexer->error, "Invalid character \'%c\'", input[i]);
+                lexer->error = hs_format("Invalid character \'%c\'", input[i]);
                 return ;
             };
         }

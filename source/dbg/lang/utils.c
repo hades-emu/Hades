@@ -11,6 +11,35 @@
 #include "hades.h"
 #include "dbg/lang.h"
 
+int operator_binary_prio[] = {
+    [OP_BINARY_ASSIGN]      = 10,
+    [OP_BINARY_ADDASSIGN]   = 10,
+    [OP_BINARY_SUBASSIGN]   = 10,
+    [OP_BINARY_MULASSIGN]   = 10,
+    [OP_BINARY_DIVASSIGN]   = 10,
+
+    [OP_BINARY_ADD]         = 20,
+    [OP_BINARY_SUB]         = 20,
+
+    [OP_BINARY_MUL]         = 30,
+    [OP_BINARY_DIV]         = 30,
+};
+
+char *operator_name[] = {
+    [OP_UNARY_PLUS]         = "+",
+    [OP_UNARY_MINUS]        = "-",
+
+    [OP_BINARY_ASSIGN]      = "=",
+    [OP_BINARY_ADDASSIGN]   = "+=",
+    [OP_BINARY_SUBASSIGN]   = "-=",
+    [OP_BINARY_MULASSIGN]   = "*=",
+    [OP_BINARY_DIVASSIGN]   = "/=",
+    [OP_BINARY_ADD]         = "+",
+    [OP_BINARY_SUB]         = "-",
+    [OP_BINARY_MUL]         = "*",
+    [OP_BINARY_DIV]         = "/",
+};
+
 void
 debugger_lang_dump_lexer(
     struct lexer const *lexer
@@ -22,7 +51,7 @@ debugger_lang_dump_lexer(
         printf("Token { ");
         switch (token->kind) {
             case TOKEN_LITTERAL: {
-                printf("Litteral (%lli)", token->value.litteral);
+                printf("Litteral (%lli)", (long long int)token->value.litteral);
                 break;
             };
             case TOKEN_IDENTIFIER: {
@@ -66,7 +95,7 @@ debugger_lang_dump_ast_raw(
 ) {
     switch (node->kind) {
         case NODE_LITTERAL: {
-            printf("Node { Litteral (%lli) }\n", node->value.litteral);
+            printf("Node { Litteral (%lli) }\n", (long long int)node->value.litteral);
             break;
         };
         case NODE_VARIABLE: {

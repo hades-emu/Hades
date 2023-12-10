@@ -7,6 +7,8 @@
 **
 \******************************************************************************/
 
+#define _GNU_SOURCE
+
 #include <string.h>
 #include "hades.h"
 #include "dbg/lang.h"
@@ -121,7 +123,7 @@ debugger_lang_try_parse_binary_op(
         ast->token = token->next; // Eat operator
         if (!ast->token) {
             free(ast->error);
-            asprintf(&ast->error, "Missing right-handside value for operator \"%s\"", operator_name[op->value.operator]);
+            ast->error = hs_format("Missing right-handside value for operator \"%s\"", operator_name[op->value.operator]);
             return (op);
         }
 

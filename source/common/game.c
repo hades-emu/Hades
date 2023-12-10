@@ -214,22 +214,20 @@ app_game_configure_bios(
     char *error_msg;
 
     if (!app->file.bios_path) {
-        hs_assert(-1 != asprintf(
-            &error_msg,
+        error_msg = hs_format(
             "no BIOS found.\n\nPlease download and select a valid Nintendo GBA Bios using \"File\" -> \"Open BIOS\"."
-        ));
+        );
         gui_new_error(app, error_msg);
         return (true);
     }
 
     file = hs_fopen(app->file.bios_path, "rb");
     if (!file) {
-        hs_assert(-1 != asprintf(
-            &error_msg,
+        error_msg = hs_format(
             "failed to open %s: %s.",
             app->file.bios_path,
             strerror(errno)
-        ));
+        );
         gui_new_error(app, error_msg);
         return (true);
     }
@@ -247,12 +245,11 @@ app_game_configure_bios(
     hs_assert(data);
 
     if (fread(data, 1, BIOS_SIZE, file) != BIOS_SIZE) {
-        hs_assert(-1 != asprintf(
-            &error_msg,
+        error_msg = hs_format(
             "failed to read %s: %s.",
             app->file.bios_path,
             strerror(errno)
-        ));
+        );
         gui_new_error(app, error_msg);
         free(data);
         return (true);
@@ -277,12 +274,11 @@ app_game_configure_rom(
 
     file = hs_fopen(rom_path, "rb");
     if (!file) {
-        hs_assert(-1 != asprintf(
-            &error_msg,
+        error_msg = hs_format(
             "failed to open %s: %s.",
             rom_path,
             strerror(errno)
-        ));
+        );
         gui_new_error(app, error_msg);
         return (true);
     }
@@ -301,12 +297,11 @@ app_game_configure_rom(
     hs_assert(data);
 
     if (fread(data, 1, file_len, file) != file_len) {
-        hs_assert(-1 != asprintf(
-            &error_msg,
+        error_msg = hs_format(
             "failed to read %s: %s.",
             rom_path,
             strerror(errno)
-        ));
+        );
         gui_new_error(app, error_msg);
         free(data);
         return (true);
@@ -356,12 +351,11 @@ app_game_configure_backup(
         app->emulation.backup_file = hs_fopen(backup_path, "wb+");
 
         if (!app->emulation.backup_file) {
-            hs_assert(-1 != asprintf(
-                &error_msg,
+            error_msg = hs_format(
                 "failed to create %s: %s.",
                 backup_path,
                 strerror(errno)
-            ));
+            );
             gui_new_error(app, error_msg);
             return (true);
         }
@@ -440,23 +434,21 @@ app_game_configure(
 
         app->file.qsaves[i].mtime = NULL;
 
-        hs_assert(-1 != asprintf(
-            &app->file.qsaves[i].path,
+        app->file.qsaves[i].path = hs_format(
             "%.*s.%zu.hds",
             (int)basename_len,
             rom_path,
             i + 1
-        ));
+        );
     }
 
     app->file.flush_qsaves_cache = true;
 
-    hs_assert(-1 != asprintf(
-        &backup_path,
+    backup_path = hs_format(
         "%.*s.sav",
         (int)basename_len,
         rom_path
-    ));
+    );
 
     if (app_game_configure_bios(app)
         || app_game_configure_rom(app, rom_path)
