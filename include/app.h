@@ -97,7 +97,7 @@ struct app {
     struct {
         struct gba *gba;
         struct launch_config *launch_config;
-        struct game_entry const *game_entry;
+        struct game_entry *game_entry;
 
         FILE *backup_file;
 

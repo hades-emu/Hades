@@ -156,4 +156,5 @@ uint32_t gba_shared_reset_frame_counter(struct gba *gba);
 void gba_delete_notification(struct notification const *notif);
 
 /* source/db.c */
-struct game_entry const *db_lookup_game(uint8_t const *code);
+struct game_entry *db_lookup_game(uint8_t const *code);
+struct game_entry *db_autodetect_game_features(uint8_t const *rom, size_t rom_size);

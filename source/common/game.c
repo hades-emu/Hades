@@ -197,6 +197,11 @@ app_game_unconfigure(
         fclose(app->emulation.backup_file);
         app->emulation.backup_file = NULL;
     }
+
+    if (app->emulation.game_entry) {
+        free(app->emulation.game_entry);
+        app->emulation.game_entry = NULL;
+    }
 }
 
 static
@@ -452,6 +457,8 @@ app_game_configure(
             code,
             g_reset
         );
+
+        app->emulation.game_entry = db_autodetect_game_features(app->emulation.launch_config->rom.data, app->emulation.launch_config->rom.size);
     }
 
     app->emulation.launch_config->skip_bios = app->emulation.skip_bios;

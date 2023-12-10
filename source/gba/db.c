@@ -1733,7 +1733,7 @@ static struct game_entry game_database[] = {
     (struct game_entry){.code = "BMZ", .storage = BACKUP_EEPROM_64K,.flags = GAME_ENTRY_FLAGS_NONE, .title = "Zooo"},
 };
 
-struct game_entry const *
+struct game_entry *
 db_lookup_game(
     uint8_t const *game_code
 ) {
@@ -1741,8 +1741,55 @@ db_lookup_game(
 
     for (i = 0; i < array_length(game_database); ++i) {
         if (!strncmp((char const *)game_code, game_database[i].code, 3)) {
-            return (game_database + i);
+            struct game_entry *entry;
+
+            entry = calloc(1, sizeof(*entry));
+            memcpy(entry, game_database + i, sizeof(*entry));
+            return (entry);
         }
     }
     return (NULL);
+}
+
+/*
+** Create and fill a `struct game_entry` by auto-detecting the available features based on the given rom.
+**
+** So far, the only thing we auto-detect is the backup storage.
+** Beside that, all other fields of the returned `struct game_entry` are set to their default value.
+**
+** The auto-detection algorithms for the backup storage are very simple: they look for a bunch of strings in the game's ROM.
+*/
+struct game_entry *
+db_autodetect_game_features(
+    uint8_t const *rom,
+    size_t rom_size
+) {
+    struct game_entry *entry;
+
+    entry = calloc(1, sizeof(*entry));
+
+    if (array_search(rom, rom_size, "EEPROM_V", 7)) {
+        logln(HS_INFO, "Detected EEPROM 64K memory.");
+        logln(HS_WARNING, "If you are having issues with corrupted saves, try EEPROM 8K instead.");
+        entry->storage = BACKUP_EEPROM_64K;
+    } else if (
+           array_search(rom, rom_size, "SRAM_V", 5)
+        || array_search(rom, rom_size, "SRAM_F_V", 5)
+    ) {
+        logln(HS_INFO, "Detected SRAM memory");
+        entry->storage = BACKUP_SRAM;
+    } else if (array_search(rom, rom_size, "FLASH1M_V", 8)) {
+        logln(HS_INFO, "Detected Flash 128 kilobytes / 1 megabit");
+        entry->storage = BACKUP_FLASH128;
+    } else if (
+           array_search(rom, rom_size, "FLASH_V", 6)
+        || array_search(rom, rom_size, "FLASH512_V", 9)
+    ) {
+        logln(HS_INFO, "Detected Flash 64 kilobytes / 512 kilobits");
+        entry->storage = BACKUP_FLASH64;
+    } else {
+        entry->storage = BACKUP_NONE;
+    }
+
+    return (entry);
 }
