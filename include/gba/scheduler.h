@@ -120,4 +120,5 @@ void sched_cancel_event(struct gba *gba, event_handler_t handler);
 void sched_process_events(struct gba *gba);
 void sched_run_for(struct gba *gba, uint64_t cycles);
 void sched_frame_limiter(struct gba *gba,struct event_args args);
+void sched_reset_frame_limiter(struct gba *gba);
 void sched_update_speed(struct gba *gba, uint32_t speed);

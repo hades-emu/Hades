@@ -139,6 +139,7 @@ gba_state_run(
     struct gba *gba
 ) {
     gba->state = GBA_STATE_RUN;
+    sched_reset_frame_limiter(gba);
     gba_send_notification(gba, NOTIFICATION_RUN);
 }
 
@@ -159,7 +160,6 @@ gba_state_reset(
         hs_assert(scheduler->events);
 
         sched_update_speed(gba, config->speed);
-        scheduler->time_last_frame = hs_time();
 
         // Frame limiter
         sched_add_event(
