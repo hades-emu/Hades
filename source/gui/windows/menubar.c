@@ -38,10 +38,10 @@ gui_win_menubar_file(
             );
 
             if (result == NFD_OKAY) {
-                app_game_configure(app, path);
+                if (!app_game_configure(app, path)) {
+                    app_game_run(app);
+                }
                 NFD_FreePath(path);
-                app_game_reset(app);
-                app_game_run(app);
             }
         }
 
@@ -56,9 +56,9 @@ gui_win_menubar_file(
                     // the path to a safe space first.
                     path = strdup(app->file.recent_roms[x]);
 
-                    app_game_configure(app, path);
-                    app_game_reset(app);
-                    app_game_run(app);
+                    if (!app_game_configure(app, path)) {
+                        app_game_run(app);
+                    }
 
                     free(path);
                 }

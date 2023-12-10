@@ -404,7 +404,7 @@ app_game_configure_settings(
 **   - Performing a database lookup to identify the features of the game
 **   - Update the gba's launch configuration
 */
-void
+bool
 app_game_configure(
     struct app *app,
     char const *rom_path
@@ -455,7 +455,7 @@ app_game_configure(
         || app_game_configure_backup(app, backup_path)
     ) {
         app_game_unconfigure(app);
-        return ;
+        return (true);
     }
 
     code = app->emulation.launch_config->rom.data + 0xAC;
@@ -487,6 +487,8 @@ app_game_configure(
     app_game_reset(app);
 
     gui_config_push_recent_rom(app, rom_path);
+
+    return (false);
 }
 
 /*

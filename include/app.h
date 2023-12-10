@@ -296,7 +296,7 @@ struct app {
 
 /* common/game.c */
 void app_game_process_all_notifs(struct app *app);
-void app_game_configure(struct app *app, char const *rom_path);
+bool app_game_configure(struct app *app, char const *rom_path);
 void app_game_stop(struct app *app);
 void app_game_run(struct app *app);
 void app_game_pause(struct app *app);
