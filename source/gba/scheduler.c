@@ -162,6 +162,14 @@ sched_run_for(
 }
 
 void
+sched_reset_frame_limiter(
+    struct gba *gba
+) {
+    gba->scheduler.accumulated_time = 0;
+    gba->scheduler.time_last_frame = hs_time();
+}
+
+void
 sched_frame_limiter(
     struct gba *gba,
     struct event_args args __unused
@@ -177,9 +185,6 @@ sched_frame_limiter(
             hs_usleep(gba->scheduler.time_per_frame - gba->scheduler.accumulated_time);
         }
         gba->scheduler.accumulated_time -= gba->scheduler.time_per_frame;
-    } else {
-        gba->scheduler.time_last_frame = hs_time();
-        gba->scheduler.accumulated_time = 0;
     }
 }
 
@@ -193,4 +198,5 @@ sched_update_speed(
     scheduler = &gba->scheduler;
     scheduler->speed = speed;
     scheduler->time_per_frame = speed ? (1.f / 59.737f * 1000.f * 1000.f / (float)speed) : 0;
+    sched_reset_frame_limiter(gba);
 }
