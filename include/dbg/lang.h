@@ -44,34 +44,8 @@ enum operator {
     _OP_BINARY_END_,
 };
 
-static int operator_binary_prio[] = {
-    [OP_BINARY_ASSIGN]      = 10,
-    [OP_BINARY_ADDASSIGN]   = 10,
-    [OP_BINARY_SUBASSIGN]   = 10,
-    [OP_BINARY_MULASSIGN]   = 10,
-    [OP_BINARY_DIVASSIGN]   = 10,
-
-    [OP_BINARY_ADD]         = 20,
-    [OP_BINARY_SUB]         = 20,
-
-    [OP_BINARY_MUL]         = 30,
-    [OP_BINARY_DIV]         = 30,
-};
-
-static char *operator_name[] = {
-    [OP_UNARY_PLUS]         = "+",
-    [OP_UNARY_MINUS]        = "-",
-
-    [OP_BINARY_ASSIGN]      = "=",
-    [OP_BINARY_ADDASSIGN]   = "+=",
-    [OP_BINARY_SUBASSIGN]   = "-=",
-    [OP_BINARY_MULASSIGN]   = "*=",
-    [OP_BINARY_DIVASSIGN]   = "/=",
-    [OP_BINARY_ADD]         = "+",
-    [OP_BINARY_SUB]         = "-",
-    [OP_BINARY_MUL]         = "*",
-    [OP_BINARY_DIV]         = "/",
-};
+extern int operator_binary_prio[];
+extern char *operator_name[];
 
 struct token {
     enum {

@@ -145,9 +145,9 @@ gui_win_menubar_emulation(
                 char *text;
 
                 if (app->file.qsaves[i].exist && app->file.qsaves[i].mtime) {
-                    hs_assert(asprintf(&text, "%zu: %s", i + 1, app->file.qsaves[i].mtime) != -1);
+                    text = hs_format("%zu: %s", i + 1, app->file.qsaves[i].mtime);
                 } else {
-                    hs_assert(asprintf(&text, "%zu: <empty>", i + 1) != -1);
+                    text = hs_format("%zu: <empty>", i + 1);
                 }
 
                 hs_assert(text);
@@ -169,9 +169,9 @@ gui_win_menubar_emulation(
                 char *text;
 
                 if (app->file.qsaves[i].exist && app->file.qsaves[i].mtime) {
-                    hs_assert(asprintf(&text, "%zu: %s", i + 1, app->file.qsaves[i].mtime) != -1);
+                    text = hs_format("%zu: %s", i + 1, app->file.qsaves[i].mtime);
                 } else {
-                    hs_assert(asprintf(&text, "%zu: <empty>", i + 1) != -1);
+                    text = hs_format("%zu: <empty>", i + 1);
                 }
 
                 hs_assert(text);

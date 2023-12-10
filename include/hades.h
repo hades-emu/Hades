@@ -9,6 +9,8 @@
 
 #pragma once
 
+#define _GNU_SOURCE
+
 #include <stdatomic.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -93,8 +95,15 @@ static char const * const modules_str[] = {
                 __LINE__                                    \
             );                                              \
         }                                                   \
-    }                                                       \
-    while (0)
+    } while (0)
+
+#define hs_format(fmt, ...)                                 \
+    ({                                                      \
+        char *__tmp;                                        \
+                                                            \
+        hs_assert(-1 != asprintf(&__tmp, fmt, ##__VA_ARGS__));\
+        __tmp;                                              \
+    })
 
 /* ✨ Variadic macro magic ✨ */
 #define XSTR(...)                #__VA_ARGS__
