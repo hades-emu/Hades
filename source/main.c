@@ -298,8 +298,6 @@ main(
     if (app.args.rom_path) {
         app_game_configure(&app, app.args.rom_path);
         if (app.emulation.launch_config) {
-            app_game_reset(&app);
-
 #ifdef WITH_DEBUGGER
             app_game_pause(&app);
 #else

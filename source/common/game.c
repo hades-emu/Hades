@@ -370,6 +370,38 @@ app_game_configure_backup(
 }
 
 /*
+** Update the launch configuration with the current settings and print the emulator's configuration.
+*/
+static
+void
+app_game_configure_settings(
+    struct app *app
+) {
+    app->emulation.launch_config->skip_bios = app->emulation.skip_bios;
+    app->emulation.launch_config->speed = app->emulation.speed;
+    app->emulation.launch_config->audio_frequency = GBA_CYCLES_PER_SECOND / app->audio.resample_frequency;
+
+    if (app->emulation.rtc.autodetect) {
+        app->emulation.launch_config->rtc = (bool)(app->emulation.game_entry->flags & GAME_ENTRY_FLAGS_RTC);
+    } else {
+        app->emulation.launch_config->rtc = app->emulation.rtc.enabled;
+    }
+
+    if (app->emulation.backup_storage.autodetect) {
+        app->emulation.launch_config->backup_storage.type = app->emulation.game_entry->storage;
+    } else {
+        app->emulation.launch_config->backup_storage.type = app->emulation.backup_storage.type;
+    }
+
+    logln(HS_INFO, "Emulator's configuration:");
+    logln(HS_INFO, "    Skip BIOS: %s", app->emulation.launch_config->skip_bios ? "true" : "false");
+    logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
+    logln(HS_INFO, "    Rtc: %s", app->emulation.launch_config->rtc ? "true" : "false");
+    logln(HS_INFO, "    Speed: %i", app->emulation.speed);
+    logln(HS_INFO, "    Audio Frequency: %iHz (%i cycles)", app->audio.resample_frequency, app->emulation.launch_config->audio_frequency);
+}
+
+/*
 ** Update the GBA's launch configuration to load a new game
 **
 ** This function abstracts all the different step needed to load a game:
@@ -383,7 +415,6 @@ app_game_configure(
     struct app *app,
     char const *rom_path
 ) {
-    struct message_reset event;
     char *backup_path;
     char *extension;
     size_t basename_len;
@@ -461,39 +492,7 @@ app_game_configure(
         app->emulation.game_entry = db_autodetect_game_features(app->emulation.launch_config->rom.data, app->emulation.launch_config->rom.size);
     }
 
-    app->emulation.launch_config->skip_bios = app->emulation.skip_bios;
-    app->emulation.launch_config->speed = app->emulation.speed;
-    app->emulation.launch_config->audio_frequency = GBA_CYCLES_PER_SECOND / app->audio.resample_frequency;
-
-    if (app->emulation.rtc.autodetect) {
-        app->emulation.launch_config->rtc = (bool)(app->emulation.game_entry->flags & GAME_ENTRY_FLAGS_RTC);
-    } else {
-        app->emulation.launch_config->rtc = app->emulation.rtc.enabled;
-    }
-
-    if (app->emulation.backup_storage.autodetect) {
-        app->emulation.launch_config->backup_storage.type = app->emulation.game_entry->storage;
-    } else {
-        app->emulation.launch_config->backup_storage.type = app->emulation.backup_storage.type;
-    }
-
-    logln(HS_INFO, "Emulator's configuration:");
-    logln(HS_INFO, "    Skip BIOS: %s", app->emulation.launch_config->skip_bios ? "true" : "false");
-    logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
-    logln(HS_INFO, "    Rtc: %s", app->emulation.launch_config->rtc ? "true" : "false");
-    logln(HS_INFO, "    Speed: %i", app->emulation.speed);
-    logln(HS_INFO, "    Audio Frequency: %iHz (%i cycles)", app->audio.resample_frequency, app->emulation.launch_config->audio_frequency);
-
-    // Send the RESET message.
-
-    event.header.kind = MESSAGE_RESET;
-    event.header.size = sizeof(event);
-
-    memcpy(&event.config, app->emulation.launch_config, sizeof(event.config));
-
-    channel_lock(&app->emulation.gba->channels.messages);
-    channel_push(&app->emulation.gba->channels.messages, &event.header);
-    channel_release(&app->emulation.gba->channels.messages);
+    app_game_reset(app);
 
     gui_config_push_recent_rom(app, rom_path);
 }
@@ -508,6 +507,9 @@ app_game_reset(
     struct message_reset event;
 
     hs_assert(app->emulation.launch_config);
+
+    app_game_configure_settings(app);
+
     event.header.kind = MESSAGE_RESET;
     event.header.size = sizeof(event);
 
