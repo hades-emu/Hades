@@ -112,24 +112,21 @@ gui_win_menubar_emulation(
                 "x2",
                 "x3",
                 "x4",
-                "x5"
+                "x5",
             };
 
             for (x = 0; x <= 5; ++x) {
-                if (!x) {
-                    char const *bind;
+                char const *bind;
 
-                    bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_MAX_TOGGLE]);
-                    if (igMenuItemBool(speed[x], bind ? bind : "", app->emulation.unbounded, true)) {
-                        app->emulation.unbounded ^= 1;
-                        app_game_speed(app, app->emulation.speed * !app->emulation.unbounded);
-                    }
+                bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_MAX + x]);
+                if (igMenuItemBool(speed[x], bind ?: "", app->emulation.speed == x, true)) {
+                    app->emulation.unbounded = false;
+                    app->emulation.speed = x;
+                    app_game_speed(app, app->emulation.speed);
+                }
+
+                if (!x) {
                     igSeparator();
-                } else {
-                    if (igMenuItemBool(speed[x], NULL, app->emulation.speed == x, !app->emulation.unbounded)) {
-                        app->emulation.speed = x;
-                        app_game_speed(app, app->emulation.speed * !app->emulation.unbounded);
-                    }
                 }
             }
 

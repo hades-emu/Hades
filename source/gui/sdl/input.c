@@ -46,7 +46,7 @@ gui_sdl_setup_default_binds(
     app->binds.keyboard[BIND_EMULATOR_SPEED_X3] = SDL_GetKeyFromName("3");
     app->binds.keyboard[BIND_EMULATOR_SPEED_X4] = SDL_GetKeyFromName("4");
     app->binds.keyboard[BIND_EMULATOR_SPEED_X5] = SDL_GetKeyFromName("5");
-    app->binds.keyboard[BIND_EMULATOR_SPEED_MAX_TOGGLE] = SDL_GetKeyFromName("F1");
+    app->binds.keyboard[BIND_EMULATOR_SPEED_MAX] = SDL_GetKeyFromName("0");
     app->binds.keyboard[BIND_EMULATOR_SPEED_MAX_HOLD] = SDL_GetKeyFromName("Space");
     app->binds.keyboard[BIND_EMULATOR_SCREENSHOT] = SDL_GetKeyFromName("F2");
     app->binds.keyboard[BIND_EMULATOR_QUICKSAVE] = SDL_GetKeyFromName("F5");
@@ -72,7 +72,7 @@ gui_sdl_setup_default_binds(
     app->binds.controller[BIND_EMULATOR_SPEED_X1] = SDL_CONTROLLER_BUTTON_LEFTSTICK;
     app->binds.controller[BIND_EMULATOR_SPEED_X2] = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
 #if SDL_VERSION_ATLEAST(2, 0, 14)
-    app->binds.controller[BIND_EMULATOR_SPEED_MAX_TOGGLE] = SDL_CONTROLLER_BUTTON_TOUCHPAD;
+    app->binds.controller[BIND_EMULATOR_SPEED_MAX_HOLD] = SDL_CONTROLLER_BUTTON_TOUCHPAD;
 #endif
 
     app->binds.controller_alt[BIND_GBA_A] = SDL_CONTROLLER_BUTTON_Y;
@@ -155,19 +155,15 @@ gui_sdl_handle_bind(
     }
 
     switch (bind) {
+        case BIND_EMULATOR_SPEED_MAX:
         case BIND_EMULATOR_SPEED_X1:
         case BIND_EMULATOR_SPEED_X2:
         case BIND_EMULATOR_SPEED_X3:
         case BIND_EMULATOR_SPEED_X4:
         case BIND_EMULATOR_SPEED_X5: {
             app->emulation.unbounded = false;
-            app->emulation.speed = 1 + (bind - BIND_EMULATOR_SPEED_X1);
-            app_game_speed(app, app->emulation.speed * !app->emulation.unbounded);
-            break;
-        };
-        case BIND_EMULATOR_SPEED_MAX_TOGGLE: {
-            app->emulation.unbounded ^= true;
-            app_game_speed(app, app->emulation.speed * !app->emulation.unbounded);
+            app->emulation.speed = bind - BIND_EMULATOR_SPEED_MAX;
+            app_game_speed(app, app->emulation.speed);
             break;
         };
         case BIND_EMULATOR_SCREENSHOT:          app_game_screenshot(app); break;
