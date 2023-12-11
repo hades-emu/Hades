@@ -15,6 +15,31 @@
 #include "app.h"
 #include "gui/gui.h"
 
+static
+void
+gui_win_game_pause_text(
+    struct app *app
+) {
+    igPushFont(app->ui.fonts.big);
+    {
+        char const *text;
+        ImVec2 text_size;
+        ImVec2 text_pos;
+        ImVec2 win_size;
+
+        text = "- GAME PAUSED -";
+
+        igGetWindowSize(&win_size);
+        igCalcTextSize(&text_size, text, NULL, false, -1.0f);
+
+        text_pos.x = (win_size.x - text_size.x) / 2.f;
+        text_pos.y = (win_size.y - text_size.y) / 2.f;
+        igSetCursorPos(text_pos);
+        igText(text);
+    }
+    igPopFont();
+}
+
 void
 gui_win_game(
     struct app *app
@@ -23,6 +48,10 @@ gui_win_game(
     float game_pos_y;
     float game_size_x;
     float game_size_y;
+    float tint;
+
+    // Adjust the tint if the game is paused
+    tint = app->emulation.is_running ? 1.0 : 0.1;
 
     if (!app->gfx.active_programs_length) {
         // If there's no shaders loaded, we shortcut the pipeline and simply load the game's framebuffer in the corresponding texture
@@ -111,9 +140,13 @@ gui_win_game(
         (ImVec2){.x = game_size_x, .y = game_size_y},
         (ImVec2){.x = 0, .y = 0},
         (ImVec2){.x = 1, .y = 1},
-        (ImVec4){.x = 1, .y = 1, .z = 1, .w = 1},
+        (ImVec4){.x = tint, .y = tint, .z = tint, .w = 1},
         (ImVec4){.x = 0, .y = 0, .z = 0, .w = 0}
     );
+
+    if (!app->emulation.is_running) {
+        gui_win_game_pause_text(app);
+    }
 
     igEnd();
 

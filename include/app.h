@@ -73,6 +73,8 @@ enum bind_actions {
     BIND_EMULATOR_SCREENSHOT,
     BIND_EMULATOR_QUICKSAVE,
     BIND_EMULATOR_QUICKLOAD,
+    BIND_EMULATOR_PAUSE,
+    BIND_EMULATOR_RESET,
 
     BIND_MAX,
     BIND_MIN = BIND_GBA_A,
@@ -80,7 +82,7 @@ enum bind_actions {
     BIND_GBA_MIN = BIND_GBA_A,
     BIND_GBA_MAX = BIND_GBA_SELECT,
     BIND_EMULATOR_MIN = BIND_EMULATOR_SPEED_X1,
-    BIND_EMULATOR_MAX = BIND_EMULATOR_QUICKLOAD,
+    BIND_EMULATOR_MAX = BIND_EMULATOR_RESET,
 };
 
 extern char const * const binds_pretty_name[];
@@ -204,6 +206,11 @@ struct app {
     struct {
         /* ImGui internal stuff */
         struct ImGuiIO *ioptr;
+
+        struct {
+            struct ImFont *normal;
+            struct ImFont *big;
+        } fonts;
 
         /* High resolution */
         float dpi;

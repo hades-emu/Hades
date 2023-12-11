@@ -35,6 +35,8 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_SCREENSHOT] = "Screenshot",
     [BIND_EMULATOR_QUICKSAVE] = "Quicksave",
     [BIND_EMULATOR_QUICKLOAD] = "Quickload",
+    [BIND_EMULATOR_PAUSE] = "Pause",
+    [BIND_EMULATOR_RESET] = "Reset",
 };
 
 char const * const binds_slug[] = {
@@ -59,6 +61,8 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_SCREENSHOT] = "screenshot",
     [BIND_EMULATOR_QUICKSAVE] = "quicksave",
     [BIND_EMULATOR_QUICKLOAD] = "quickload",
+    [BIND_EMULATOR_PAUSE] = "pause",
+    [BIND_EMULATOR_RESET] = "reset",
 };
 
 void

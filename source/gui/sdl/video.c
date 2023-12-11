@@ -26,9 +26,10 @@ void
 gui_sdl_video_init(
     struct app *app
 ) {
-    int err;
-    SDL_DisplayMode mode;
     char const *glsl_version;
+    SDL_DisplayMode mode;
+    ImFontConfig *cfg;
+    int err;
 
     memset(&mode, 0, sizeof(mode));
 
@@ -133,13 +134,16 @@ gui_sdl_video_init(
     app->ui.ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     app->ui.ioptr->IniFilename = NULL;
 
-    /* Setup ImGui font size */
-    ImFontConfig *cfg;
-
     cfg = ImFontConfig_ImFontConfig();
     cfg->SizePixels = 13.f * app->ui.scale;
     cfg->GlyphOffset.y = 13.f * app->ui.scale;
-    ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
+    app->ui.fonts.normal = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
+
+    cfg = ImFontConfig_ImFontConfig();
+    cfg->SizePixels = 13.f * app->ui.scale * 3.;
+    cfg->GlyphOffset.y = 13.f * app->ui.scale * 3.;
+    app->ui.fonts.big = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
+
     ImGuiStyle_ScaleAllSizes(igGetStyle(), app->ui.scale);
 
     ImGui_ImplSDL2_InitForOpenGL(app->sdl.window, app->gfx.gl_context);

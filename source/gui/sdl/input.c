@@ -51,6 +51,7 @@ gui_sdl_setup_default_binds(
     app->binds.keyboard[BIND_EMULATOR_SCREENSHOT] = SDL_GetKeyFromName("F2");
     app->binds.keyboard[BIND_EMULATOR_QUICKSAVE] = SDL_GetKeyFromName("F5");
     app->binds.keyboard[BIND_EMULATOR_QUICKLOAD] = SDL_GetKeyFromName("F8");
+    app->binds.keyboard[BIND_EMULATOR_PAUSE] = SDL_GetKeyFromName("F3");
 
     app->binds.keyboard_alt[BIND_GBA_UP] = SDL_GetKeyFromName("Up");
     app->binds.keyboard_alt[BIND_GBA_DOWN] = SDL_GetKeyFromName("Down");
@@ -172,6 +173,8 @@ gui_sdl_handle_bind(
         case BIND_EMULATOR_SCREENSHOT:          app_game_screenshot(app); break;
         case BIND_EMULATOR_QUICKSAVE:           app_game_quicksave(app, 0); break;
         case BIND_EMULATOR_QUICKLOAD:           app_game_quickload(app, 0); break;
+        case BIND_EMULATOR_PAUSE:               app->emulation.is_running ? app_game_pause(app) : app_game_run(app); break;
+        case BIND_EMULATOR_RESET:               app_game_reset(app); app_game_run(app); break;
         default: break;
     }
 }
