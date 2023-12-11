@@ -10,7 +10,7 @@ jobs:
         shell: msys2 {0}
     steps:
       - name: 'Sync source code'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Install Dependencies
@@ -26,7 +26,7 @@ jobs:
         run: |
           ./build/Hades.exe --help
       - name: Collect Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: hades-win64
           path: build/Hades.exe
@@ -36,7 +36,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: 'Sync source code'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Install Dependencies
@@ -121,7 +121,7 @@ jobs:
           MACOS_APPLE_TEAMID: ${{ secrets.MACOS_APPLE_TEAMID }}
 
       - name: Collect Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: hades-macos
           path: Hades-Installer.dmg
@@ -131,7 +131,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Sync source code'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
       - name: Install Dependencies
@@ -147,7 +147,7 @@ jobs:
         run: |
           ./build/hades --help
       - name: Collect Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: hades-linux
           path: build/hades
