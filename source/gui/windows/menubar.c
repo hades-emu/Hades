@@ -427,7 +427,16 @@ gui_win_menubar_help(
         (ImVec2){.x = 0.5f, .y = 0.5f}
     );
 
-    if (igBeginPopupModal("About", NULL, ImGuiWindowFlags_Popup | ImGuiWindowFlags_Modal | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+    if (
+        igBeginPopupModal(
+            "About",
+            NULL,
+            ImGuiWindowFlags_Popup
+              | ImGuiWindowFlags_Modal
+              | ImGuiWindowFlags_NoResize
+              | ImGuiWindowFlags_NoMove
+        )
+    ) {
         igText("Hades");
         igSpacing();
         igSeparator();

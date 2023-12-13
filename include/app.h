@@ -88,6 +88,20 @@ enum bind_actions {
 extern char const * const binds_pretty_name[];
 extern char const * const binds_slug[];
 
+enum ui_notification_kind {
+    UI_NOTIFICATION_INFO,
+    UI_NOTIFICATION_SUCCESS,
+    UI_NOTIFICATION_ERROR,
+};
+
+struct ui_notification {
+    enum ui_notification_kind kind;
+    char *msg;
+    uint64_t timeout;
+    uint64_t fade_time_start;
+    struct ui_notification *next;
+};
+
 struct app {
     atomic_bool run;
 
@@ -272,6 +286,8 @@ struct app {
             SDL_Keycode *keyboard_target;
             SDL_GameControllerButton *controller_target;
         } keybindings_editor;
+
+        struct ui_notification *notifications;
     } ui;
 
     struct {

@@ -71,24 +71,20 @@ app_game_process_notif(
                 goto qsave_err;
             }
 
-            logln(
-                HS_INFO,
-                "State saved to %s%s%s",
-                g_light_magenta,
-                path,
-                g_reset
+            gui_new_notification(
+                app,
+                UI_NOTIFICATION_SUCCESS,
+                "Game state saved."
             );
 
             goto qsave_finally;
 
 qsave_err:
-            logln(
-                HS_INFO,
-                "%sError: failed to save state to %s: %s%s",
-                g_light_red,
-                path,
-                strerror(errno),
-                g_reset
+            gui_new_notification(
+                app,
+                UI_NOTIFICATION_ERROR,
+                "Failed to save game state: %s.",
+                strerror(errno)
             );
 
 qsave_finally:
@@ -103,18 +99,12 @@ qsave_finally:
             break;
         };
         case NOTIFICATION_QUICKLOAD: {
-            char const *path;
-
             hs_assert(app->emulation.quickload_request.enabled);
 
-            path = app->file.qsaves[app->emulation.quicksave_request.idx].path;
-
-            logln(
-                HS_INFO,
-                "State loaded from %s%s%s",
-                g_light_magenta,
-                path,
-                g_reset
+            gui_new_notification(
+                app,
+                UI_NOTIFICATION_SUCCESS,
+                "Game state loaded."
             );
 
             free(app->emulation.quickload_request.data);
@@ -211,31 +201,35 @@ app_game_configure_bios(
 ) {
     FILE *file;
     void *data;
-    char *error_msg;
 
     if (!app->file.bios_path) {
-        error_msg = hs_format(
-            "no BIOS found.\n\nPlease download and select a valid Nintendo GBA Bios using \"File\" -> \"Open BIOS\"."
+        gui_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "No BIOS found.\nPlease download and select a valid Nintendo GBA Bios using \"File\" -> \"Open BIOS\"."
         );
-        gui_new_error(app, error_msg);
         return (true);
     }
 
     file = hs_fopen(app->file.bios_path, "rb");
     if (!file) {
-        error_msg = hs_format(
-            "failed to open %s: %s.",
+        gui_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "Failed to open %s: %s.",
             app->file.bios_path,
             strerror(errno)
         );
-        gui_new_error(app, error_msg);
         return (true);
     }
 
     fseek(file, 0, SEEK_END);
     if (ftell(file) != 0x4000) {
-        error_msg = strdup("the BIOS is invalid.");
-        gui_new_error(app, error_msg);
+        gui_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "The BIOS is invalid."
+        );
         return (true);
     }
 
@@ -245,12 +239,13 @@ app_game_configure_bios(
     hs_assert(data);
 
     if (fread(data, 1, BIOS_SIZE, file) != BIOS_SIZE) {
-        error_msg = hs_format(
-            "failed to read %s: %s.",
+        gui_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "Failed to read %s: %s.",
             app->file.bios_path,
             strerror(errno)
         );
-        gui_new_error(app, error_msg);
         free(data);
         return (true);
     }
@@ -270,24 +265,27 @@ app_game_configure_rom(
     FILE *file;
     size_t file_len;
     void *data;
-    char *error_msg;
 
     file = hs_fopen(rom_path, "rb");
     if (!file) {
-        error_msg = hs_format(
-            "failed to open %s: %s.",
+        gui_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "Failed to open %s: %s.",
             rom_path,
             strerror(errno)
         );
-        gui_new_error(app, error_msg);
         return (true);
     }
 
     fseek(file, 0, SEEK_END);
     file_len = ftell(file);
     if (file_len > CART_SIZE || file_len < 192) {
-        error_msg = strdup("the ROM is invalid.");
-        gui_new_error(app, error_msg);
+        gui_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "The ROM is invalid."
+        );
         return (true);
     }
 
@@ -297,12 +295,13 @@ app_game_configure_rom(
     hs_assert(data);
 
     if (fread(data, 1, file_len, file) != file_len) {
-        error_msg = hs_format(
-            "failed to read %s: %s.",
+        gui_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "Failed to read %s: %s.",
             rom_path,
             strerror(errno)
         );
-        gui_new_error(app, error_msg);
         free(data);
         return (true);
     }
@@ -320,7 +319,6 @@ app_game_configure_backup(
     char const *backup_path
 ) {
     size_t file_len;
-    char *error_msg;
 
     app->emulation.backup_file = hs_fopen(backup_path, "rb+");
 
@@ -351,12 +349,13 @@ app_game_configure_backup(
         app->emulation.backup_file = hs_fopen(backup_path, "wb+");
 
         if (!app->emulation.backup_file) {
-            error_msg = hs_format(
-                "failed to create %s: %s.",
+            gui_new_notification(
+                app,
+                UI_NOTIFICATION_ERROR,
+                "Failed to create %s: %s.",
                 backup_path,
                 strerror(errno)
             );
-            gui_new_error(app, error_msg);
             return (true);
         }
     }
@@ -687,21 +686,18 @@ app_game_screenshot(
     pthread_mutex_unlock(&app->emulation.gba->shared_data.framebuffer.lock);
 
     if (out) {
-        logln(
-            HS_INFO,
-            "Screenshot saved in %s%s%s.",
-            g_light_green,
-            filename,
-            g_reset
+        gui_new_notification(
+            app,
+            UI_NOTIFICATION_SUCCESS,
+            "Screenshot saved in %s.",
+            filename
         );
     } else {
-        logln(
-            HS_ERROR,
-            "Failed to save screenshot in %s%s%s.%s",
-            g_light_green,
-            filename,
-            g_light_red,
-            g_reset
+        gui_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "Failed to save screenshot in %s.",
+            filename
         );
     }
 }
@@ -775,13 +771,12 @@ app_game_quickload(
     goto finally;
 
 err:
-    logln(
-        HS_INFO,
-        "%sError: failed to load state from %s: %s%s",
-        g_light_red,
+    gui_new_notification(
+        app,
+        UI_NOTIFICATION_ERROR,
+        "Failed to load state from %s: %s",
         path,
-        strerror(errno),
-        g_reset
+        strerror(errno)
     );
 
     free(data);

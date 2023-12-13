@@ -10,8 +10,7 @@
 #pragma once
 
 #include "hades.h"
-
-struct app;
+#include "app.h"
 
 #define GLSL(src)           "#version 330 core\n" #src
 
@@ -42,15 +41,15 @@ extern char const *SHADER_VERTEX_COMMON;
 /* gui/windows/keybinds.c */
 void gui_win_keybinds_editor(struct app *app);
 
-/* gui/windows/error.c */
-void gui_new_error(struct app *app, char *msg);
-void gui_win_error(struct app *app);
-
-/* gui/windows.c */
+/* gui/windows/game.c */
 void gui_win_game(struct app *app);
 
 /* gui/windows/menubar.c */
 void gui_win_menubar(struct app *app);
+
+/* gui/windows/notif.c */
+void gui_new_notification(struct app *app, enum ui_notification_kind, char const *msg, ...);
+void gui_win_notifications(struct app *app);
 
 /* config.c */
 void gui_config_load(struct app *app);

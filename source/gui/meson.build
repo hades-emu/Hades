@@ -16,10 +16,10 @@ libgui = static_library(
     'sdl/video.c',
     'shaders/frag-color-correction.c',
     'shaders/vertex-common.c',
-    'windows/error.c',
     'windows/game.c',
     'windows/keybinds.c',
     'windows/menubar.c',
+    'windows/notif.c',
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
     ],

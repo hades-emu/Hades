@@ -407,7 +407,7 @@ gui_sdl_video_render_frame(
 
     gui_win_keybinds_editor(app);
 
-    gui_win_error(app);
+    gui_win_notifications(app);
 
     /* Render the imGui frame */
     igRender();

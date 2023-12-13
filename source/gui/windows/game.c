@@ -130,9 +130,12 @@ gui_win_game(
     igBegin(
         "Game",
         NULL,
-        ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize |
-        ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration |
-        ImGuiWindowFlags_NoBackground
+        ImGuiWindowFlags_NoScrollWithMouse
+          | ImGuiWindowFlags_AlwaysAutoResize
+          | ImGuiWindowFlags_NoDocking
+          | ImGuiWindowFlags_NoDecoration
+          | ImGuiWindowFlags_NoBackground
+          | ImGuiWindowFlags_NoBringToFrontOnFocus
     );
 
     igImage(
