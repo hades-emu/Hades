@@ -44,7 +44,7 @@ apu_wave_reset(
     gba->apu.wave.step_handler = sched_add_event(
         gba,
         NEW_REPEAT_EVENT(
-            gba->core.cycles, // TODO: Is there a delay before the sound is started?
+            gba->scheduler.cycles, // TODO: Is there a delay before the sound is started?
             period,
             apu_wave_step
         )

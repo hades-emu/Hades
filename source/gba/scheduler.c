@@ -17,10 +17,8 @@ void
 sched_process_events(
     struct gba *gba
 ) {
-    struct core *core;
     struct scheduler *scheduler;
 
-    core = &gba->core;
     scheduler = &gba->scheduler;
     while (true) {
         struct scheduler_event *event;
@@ -38,7 +36,7 @@ sched_process_events(
 
             // Keep only the event that are active and should occure now
             if (scheduler->events[i].active) {
-                if (scheduler->events[i].at <= core->cycles) {
+                if (scheduler->events[i].at <= scheduler->cycles) {
                     if (!event || scheduler->events[i].at < event->at) {
                         event = scheduler->events + i;
                     }
@@ -55,8 +53,8 @@ sched_process_events(
         }
 
         // We 'rollback' the cycle counter for the duration of the callback
-        delay = core->cycles - event->at;
-        core->cycles -= delay;
+        delay = scheduler->cycles - event->at;
+        scheduler->cycles -= delay;
 
         if (event->repeat) {
             event->at += event->period;
@@ -70,7 +68,7 @@ sched_process_events(
         }
 
         event->callback(gba, event->args);
-        core->cycles += delay;
+        scheduler->cycles += delay;
     }
 }
 
@@ -132,28 +130,28 @@ sched_run_for(
     struct gba *gba,
     uint64_t cycles
 ) {
-    struct core *core;
+    struct scheduler *scheduler;
     uint64_t target;
 
-    core = &gba->core;
-    target = core->cycles + cycles;
+    scheduler = &gba->scheduler;
+    target = scheduler->cycles + cycles;
 
 #ifdef WITH_DEBUGGER
     gba->debugger.interrupted = false;
 
-    while (core->cycles < target && !gba->debugger.interrupted) {
+    while (scheduler->cycles < target && !gba->debugger.interrupted) {
 #else
-    while (core->cycles < target) {
+    while (scheduler->cycles < target) {
 #endif
         uint64_t elapsed;
         uint64_t old_cycles;
 
-        old_cycles = core->cycles;
+        old_cycles = scheduler->cycles;
         core_next(gba);
-        elapsed = core->cycles - old_cycles;
+        elapsed = scheduler->cycles - old_cycles;
 
         if (!elapsed) {
-            if (core->state != CORE_STOP) {
+            if (gba->core.state != CORE_STOP) {
                 logln(HS_WARNING, "No cycles elapsed during `core_next()`.");
             }
             break;

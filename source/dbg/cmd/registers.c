@@ -85,7 +85,7 @@ debugger_cmd_registers(
         g_light_green,
         g_reset,
         g_light_magenta,
-        core->cycles,
+        app->emulation.gba->scheduler.cycles,
         g_reset,
         g_light_green,
         g_reset,

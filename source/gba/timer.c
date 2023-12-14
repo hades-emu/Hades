@@ -49,7 +49,7 @@ timer_schedule_start(
         timer->handler = sched_add_event(
             gba,
             NEW_REPEAT_EVENT_ARGS(
-                gba->core.cycles + ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]) + 2, // Timer starts with a 2 cycles delay
+                gba->scheduler.cycles + ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]) + 2, // Timer starts with a 2 cycles delay
                 ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]),
                 timer_overflow,
                 EVENT_ARG(u32, timer_idx)
@@ -68,7 +68,7 @@ timer_schedule_stop(
     sched_add_event(
         gba,
         NEW_FIX_EVENT_ARGS(
-            gba->core.cycles + 1, // One cycle delay when stopping a timer
+            gba->scheduler.cycles + 1, // One cycle delay when stopping a timer
             timer_stop,
             EVENT_ARG(u32, timer_idx)
         )
@@ -126,7 +126,7 @@ timer_update_counter(
     uint64_t elapsed;
 
     timer = &gba->io.timers[timer_idx];
-    elapsed = gba->core.cycles - gba->scheduler.events[timer->handler].at;
+    elapsed = gba->scheduler.cycles - gba->scheduler.events[timer->handler].at;
     return (elapsed >> scalers[timer->control.prescaler]);
 }
 

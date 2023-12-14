@@ -109,7 +109,11 @@ core_next(
             arm_lut[idx](gba, op);
         }
     } else if (core->state == CORE_HALT) {
-        core_idle(gba);
+        if (gba->scheduler.next_event > gba->scheduler.cycles) {
+            core_idle_for(gba, gba->scheduler.next_event - gba->scheduler.cycles);
+        } else {
+            core_idle(gba);
+        }
     }
 
 end:
@@ -139,7 +143,7 @@ core_idle_for(
         mem_dma_do_all_pending_transfers(gba);
     }
 
-    gba->core.cycles += cycles;
+    gba->scheduler.cycles += cycles;
 
     /*
     ** Disable prefetchng during DMA.
@@ -151,7 +155,7 @@ core_idle_for(
         mem_prefetch_buffer_step(gba, cycles);
     }
 
-    if (unlikely(gba->core.cycles >= gba->scheduler.next_event)) {
+    if (unlikely(gba->scheduler.cycles >= gba->scheduler.next_event)) {
         sched_process_events(gba);
     }
 }

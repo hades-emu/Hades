@@ -95,7 +95,7 @@ debugger_dump_context_compact(
 
     printf(
         "%016" PRIu64 " ",
-        core->cycles
+        app->emulation.gba->scheduler.cycles
     );
 
     for (i = 0; i < 16; ++i) {

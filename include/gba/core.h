@@ -116,8 +116,6 @@ struct core {
 
     enum core_states state;                 // 0=Run, 1=Halt, 2=Stop
 
-    uint64_t cycles;                        // Amount of cycles spent by the CPU since initialization
-
     bool is_dma_running;                    // Set to `true` when waiting for a DMA to complete.
     struct dma_channel *current_dma;        // The DMA the core is currently waiting for. Can be NULL.
 

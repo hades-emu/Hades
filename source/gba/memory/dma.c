@@ -261,7 +261,7 @@ mem_schedule_dma_transfers_for(
         channel->enable_event_handle = sched_add_event(
             gba,
             NEW_FIX_EVENT_ARGS(
-                gba->core.cycles + 2,
+                gba->scheduler.cycles + 2,
                 mem_dma_add_to_pending,
                 EVENT_ARG(u32, channel_idx)
             )

@@ -432,7 +432,6 @@ app_game_configure(
         free(app->file.qsaves[i].mtime);
 
         app->file.qsaves[i].mtime = NULL;
-
         app->file.qsaves[i].path = hs_format(
             "%.*s.%zu.hds",
             (int)basename_len,

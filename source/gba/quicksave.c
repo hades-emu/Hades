@@ -89,6 +89,7 @@ quicksave(
     quicksave_write(&buffer, (uint8_t *)&gba->apu.fifos, sizeof(gba->apu.fifos));
     quicksave_write(&buffer, (uint8_t *)&gba->apu.wave, sizeof(gba->apu.wave));
     quicksave_write(&buffer, (uint8_t *)&gba->apu.latch, sizeof(gba->apu.latch));
+    quicksave_write(&buffer, (uint8_t *)&gba->scheduler.cycles, sizeof(uint64_t));
     quicksave_write(&buffer, (uint8_t *)&gba->scheduler.next_event, sizeof(uint64_t));
 
     // Serialize the scheduler's event list
@@ -140,6 +141,7 @@ quickload(
         || quicksave_read(&buffer, (uint8_t *)&gba->apu.fifos, sizeof(gba->apu.fifos))
         || quicksave_read(&buffer, (uint8_t *)&gba->apu.wave, sizeof(gba->apu.wave))
         || quicksave_read(&buffer, (uint8_t *)&gba->apu.latch, sizeof(gba->apu.latch))
+        || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.cycles, sizeof(uint64_t))
         || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.next_event, sizeof(uint64_t))
     ) {
         return (true);
