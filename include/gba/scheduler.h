@@ -14,9 +14,15 @@
 typedef size_t event_handler_t;
 
 enum sched_event_kind {
-    EVENT_HBLANK,
-    EVENT_HDRAW,
-    EVENT_APU,
+    SCHED_EVENT_FRAME_LIMITER,
+    SCHED_EVENT_PPU_HDRAW,
+    SCHED_EVENT_PPU_HBLANK,
+    SCHED_EVENT_TIMER_OVERFLOW,
+    SCHED_EVENT_TIMER_STOP,
+    SCHED_EVENT_APU_SEQUENCER,
+    SCHED_EVENT_APU_RESAMPLE,
+    SCHED_EVENT_APU_WAVE_STEP,
+    SCHED_EVENT_DMA_ADD_PENDING,
 };
 
 enum sched_event_type {
@@ -39,6 +45,8 @@ struct event_args {
 };
 
 struct scheduler_event {
+    enum sched_event_kind kind;
+
     bool active;
     bool repeat;
 
@@ -47,8 +55,6 @@ struct scheduler_event {
 
     // The "argument" given to the event callback.
     struct event_args args;
-
-    void (*callback)(struct gba *gba, struct event_args args);
 };
 
 struct scheduler {
@@ -66,44 +72,44 @@ struct scheduler {
     uint64_t accumulated_time;
 };
 
-#define NEW_FIX_EVENT(_at, _callback)       \
+#define NEW_FIX_EVENT(_kind, _at)           \
     (struct scheduler_event){               \
+        .kind = (_kind),                    \
         .active = true,                     \
         .repeat = false,                    \
         .at = (_at),                        \
         .period = 0,                        \
         .args = (struct event_args){{ 0 }}, \
-        .callback = (_callback),            \
     }
 
-#define NEW_FIX_EVENT_ARGS(_at, _callback, ...)     \
+#define NEW_FIX_EVENT_ARGS(_kind, _at, ...)         \
     (struct scheduler_event){                       \
+        .kind = (_kind),                            \
         .active = true,                             \
         .repeat = false,                            \
         .at = (_at),                                \
         .period = 0,                                \
         .args = EVENT_ARGS(__VA_ARGS__),            \
-        .callback = (_callback),                    \
     }
 
-#define NEW_REPEAT_EVENT(_at, _period, _callback)   \
+#define NEW_REPEAT_EVENT(_kind, _at, _period)       \
     (struct scheduler_event){                       \
+        .kind = (_kind),                            \
         .active = true,                             \
         .repeat = true,                             \
         .at = (_at),                                \
         .period = (_period),                        \
         .args = (struct event_args){{ 0 }},         \
-        .callback = (_callback),                    \
     }
 
-#define NEW_REPEAT_EVENT_ARGS(_at, _period, _callback, ...)     \
+#define NEW_REPEAT_EVENT_ARGS(_kind, _at, _period, ...)         \
     (struct scheduler_event){                                   \
+        .kind = (_kind),                                        \
         .active = true,                                         \
         .repeat = true,                                         \
         .at = (_at),                                            \
         .period = (_period),                                    \
         .args = EVENT_ARGS(__VA_ARGS__),                        \
-        .callback = (_callback),                                \
     }
 
 #define EVENT_ARGS_1(_1)                ((struct event_args) { .a1 = (_1), .a2 = EVENT_ARG_EMPTY })
@@ -113,6 +119,8 @@ struct scheduler {
 #define EVENT_ARGS(...)                 CONCAT(EVENT_ARGS_, NARG(__VA_ARGS__))(__VA_ARGS__)
 #define EVENT_ARG(kind, _value)         ((union event_arg) { .kind = (_value) })
 #define EVENT_ARG_EMPTY                 ((union event_arg) { 0 })
+
+struct gba;
 
 /* gba/scheduler.c */
 event_handler_t sched_add_event(struct gba *gba, struct scheduler_event event);

@@ -11,9 +11,6 @@
 
 static uint64_t scalers[4] = { 0, 6, 8, 10 };
 
-static void timer_overflow(struct gba *gba, struct event_args args);
-
-static
 void
 timer_stop(
     struct gba *gba,
@@ -49,9 +46,9 @@ timer_schedule_start(
         timer->handler = sched_add_event(
             gba,
             NEW_REPEAT_EVENT_ARGS(
+                SCHED_EVENT_TIMER_OVERFLOW,
                 gba->scheduler.cycles + ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]) + 2, // Timer starts with a 2 cycles delay
                 ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]),
-                timer_overflow,
                 EVENT_ARG(u32, timer_idx)
             )
         );
@@ -68,14 +65,13 @@ timer_schedule_stop(
     sched_add_event(
         gba,
         NEW_FIX_EVENT_ARGS(
+            SCHED_EVENT_TIMER_STOP,
             gba->scheduler.cycles + 1, // One cycle delay when stopping a timer
-            timer_stop,
             EVENT_ARG(u32, timer_idx)
         )
     );
 }
 
-static
 void
 timer_overflow(
     struct gba *gba,

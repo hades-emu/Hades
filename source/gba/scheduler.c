@@ -13,6 +13,18 @@
 #include "gba/memory.h"
 #include "common/compat.h"
 
+void (*sched_event_callbacks[])(struct gba *gba, struct event_args args) = {
+    [SCHED_EVENT_FRAME_LIMITER] = sched_frame_limiter,
+    [SCHED_EVENT_PPU_HDRAW] = ppu_hdraw,
+    [SCHED_EVENT_PPU_HBLANK] = ppu_hblank,
+    [SCHED_EVENT_TIMER_OVERFLOW] = timer_overflow,
+    [SCHED_EVENT_TIMER_STOP] = timer_stop,
+    [SCHED_EVENT_APU_SEQUENCER] = apu_sequencer,
+    [SCHED_EVENT_APU_RESAMPLE] = apu_resample,
+    [SCHED_EVENT_APU_WAVE_STEP] = apu_wave_step,
+    [SCHED_EVENT_DMA_ADD_PENDING] = mem_dma_add_to_pending,
+};
+
 void
 sched_process_events(
     struct gba *gba
@@ -67,7 +79,7 @@ sched_process_events(
             event->active = false;
         }
 
-        event->callback(gba, event->args);
+        sched_event_callbacks[event->kind](gba, event->args);
         scheduler->cycles += delay;
     }
 }

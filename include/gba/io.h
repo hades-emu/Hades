@@ -771,6 +771,8 @@ void io_scan_keypad_irq(struct gba *gba);
 char const *mem_io_reg_name(uint32_t addr);
 
 /* gba/timer.c */
+void timer_stop(struct gba *gba, struct event_args args);
+void timer_overflow(struct gba *gba, struct event_args args);
 void timer_schedule_start(struct gba *gba, uint32_t timer_idx);
 void timer_schedule_stop(struct gba *gba, uint32_t timer_idx);
 uint16_t timer_update_counter(struct gba const *gba, uint32_t timer_idx);

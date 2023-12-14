@@ -221,9 +221,9 @@ mem_dma_do_all_pending_transfers(
                 continue;
             }
 
-            gba->core.current_dma = channel;
+            gba->core.current_dma_idx = i;
             dma_run_channel(gba, channel);
-            gba->core.current_dma = NULL;
+            gba->core.current_dma_idx = NO_CURRENT_DMA;
             break;
         }
     }
@@ -232,7 +232,6 @@ mem_dma_do_all_pending_transfers(
     gba->core.is_dma_running = false;
 }
 
-static
 void
 mem_dma_add_to_pending(
     struct gba *gba,
@@ -261,8 +260,8 @@ mem_schedule_dma_transfers_for(
         channel->enable_event_handle = sched_add_event(
             gba,
             NEW_FIX_EVENT_ARGS(
+                SCHED_EVENT_DMA_ADD_PENDING,
                 gba->scheduler.cycles + 2,
-                mem_dma_add_to_pending,
                 EVENT_ARG(u32, channel_idx)
             )
         );

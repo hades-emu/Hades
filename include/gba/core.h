@@ -20,6 +20,8 @@
 #include "hades.h"
 #include "gba/memory.h"
 
+#define NO_CURRENT_DMA      ((ssize_t)-1)
+
 struct gba;
 
 enum core_states {
@@ -117,7 +119,7 @@ struct core {
     enum core_states state;                 // 0=Run, 1=Halt, 2=Stop
 
     bool is_dma_running;                    // Set to `true` when waiting for a DMA to complete.
-    struct dma_channel *current_dma;        // The DMA the core is currently waiting for. Can be NULL.
+    ssize_t current_dma_idx;                // The DMA the core is currently waiting for. `NO_CURRENT_DMA` if no DMA is running.
 
     uint32_t pending_dma;                   // A mask of all DMA's index waiting for transfer
     bool reenter_dma_transfer_loop;

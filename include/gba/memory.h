@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include "hades.h"
+#include "gba/scheduler.h"
 
 /*
 ** Access to the memory bus can either be sequential (the requested address follows the previous one)
@@ -264,6 +265,7 @@ bool mem_dma_is_fifo(struct gba const *gba, uint32_t dma_channel_idx, uint32_t f
 void mem_schedule_dma_transfers_for(struct gba *gba, uint32_t channel_idx, enum dma_timings timing);
 void mem_schedule_dma_transfers(struct gba *gba, enum dma_timings timing);
 void mem_dma_do_all_pending_transfers(struct gba *gba);
+void mem_dma_add_to_pending(struct gba *gba, struct event_args args);
 
 /* gba/memory/io.c */
 uint8_t mem_io_read8(struct gba const *gba, uint32_t addr);

@@ -63,3 +63,4 @@ void apu_resample(struct gba *gba, struct event_args args);
 /* gba/apu/wave.c */
 void apu_wave_reset(struct gba *gba);
 void apu_wave_stop(struct gba *gba);
+void apu_wave_step(struct gba *gba, struct event_args args);

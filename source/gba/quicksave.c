@@ -74,29 +74,21 @@ quicksave(
     buffer.index = 0;
 
     quicksave_write(&buffer, (uint8_t *)&gba->core, sizeof(gba->core));
-    quicksave_write(&buffer, (uint8_t *)gba->memory.ewram, sizeof(gba->memory.ewram));
-    quicksave_write(&buffer, (uint8_t *)gba->memory.iwram, sizeof(gba->memory.iwram));
-    quicksave_write(&buffer, (uint8_t *)gba->memory.palram, sizeof(gba->memory.palram));
-    quicksave_write(&buffer, (uint8_t *)gba->memory.vram, sizeof(gba->memory.vram));
-    quicksave_write(&buffer, (uint8_t *)gba->memory.oam, sizeof(gba->memory.oam));
-    quicksave_write(&buffer, (uint8_t *)&gba->memory.backup_storage.chip, sizeof(gba->memory.backup_storage.chip));
-    quicksave_write(&buffer, (uint8_t *)&gba->memory.pbuffer, sizeof(gba->memory.pbuffer));
-    quicksave_write(&buffer, (uint8_t *)&gba->memory.bios_bus, sizeof(gba->memory.bios_bus));
-    quicksave_write(&buffer, (uint8_t *)&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use));
+    quicksave_write(&buffer, (uint8_t *)&gba->memory, sizeof(gba->memory));
     quicksave_write(&buffer, (uint8_t *)&gba->io, sizeof(gba->io));
     quicksave_write(&buffer, (uint8_t *)&gba->ppu, sizeof(gba->ppu));
     quicksave_write(&buffer, (uint8_t *)&gba->gpio, sizeof(gba->gpio));
-    quicksave_write(&buffer, (uint8_t *)&gba->apu.fifos, sizeof(gba->apu.fifos));
-    quicksave_write(&buffer, (uint8_t *)&gba->apu.wave, sizeof(gba->apu.wave));
-    quicksave_write(&buffer, (uint8_t *)&gba->apu.latch, sizeof(gba->apu.latch));
+    quicksave_write(&buffer, (uint8_t *)&gba->apu, sizeof(gba->apu));
     quicksave_write(&buffer, (uint8_t *)&gba->scheduler.cycles, sizeof(uint64_t));
     quicksave_write(&buffer, (uint8_t *)&gba->scheduler.next_event, sizeof(uint64_t));
+    quicksave_write(&buffer, (uint8_t *)&gba->scheduler.events_size, sizeof(size_t));
 
     // Serialize the scheduler's event list
     for (i = 0; i < gba->scheduler.events_size; ++i) {
         struct scheduler_event *event;
 
         event = gba->scheduler.events + i;
+        quicksave_write(&buffer, (uint8_t *)&event->kind, sizeof(enum sched_event_kind));
         quicksave_write(&buffer, (uint8_t *)&event->active, sizeof(bool));
         quicksave_write(&buffer, (uint8_t *)&event->repeat, sizeof(bool));
         quicksave_write(&buffer, (uint8_t *)&event->at, sizeof(uint64_t));
@@ -124,36 +116,35 @@ quickload(
     buffer.size = size;
     buffer.index = 0;
 
+    free(gba->scheduler.events);
+    gba->scheduler.events = NULL;
+    gba->scheduler.events_size = 0;
+
     if (
            quicksave_read(&buffer, (uint8_t *)&gba->core, sizeof(gba->core))
-        || quicksave_read(&buffer, (uint8_t *)gba->memory.ewram, sizeof(gba->memory.ewram))
-        || quicksave_read(&buffer, (uint8_t *)gba->memory.iwram, sizeof(gba->memory.iwram))
-        || quicksave_read(&buffer, (uint8_t *)gba->memory.palram, sizeof(gba->memory.palram))
-        || quicksave_read(&buffer, (uint8_t *)gba->memory.vram, sizeof(gba->memory.vram))
-        || quicksave_read(&buffer, (uint8_t *)gba->memory.oam, sizeof(gba->memory.oam))
-        || quicksave_read(&buffer, (uint8_t *)&gba->memory.backup_storage.chip, sizeof(gba->memory.backup_storage.chip))
-        || quicksave_read(&buffer, (uint8_t *)&gba->memory.pbuffer, sizeof(gba->memory.pbuffer))
-        || quicksave_read(&buffer, (uint8_t *)&gba->memory.bios_bus, sizeof(gba->memory.bios_bus))
-        || quicksave_read(&buffer, (uint8_t *)&gba->memory.gamepak_bus_in_use, sizeof(gba->memory.gamepak_bus_in_use))
+        || quicksave_read(&buffer, (uint8_t *)&gba->memory, sizeof(gba->memory))
         || quicksave_read(&buffer, (uint8_t *)&gba->io, sizeof(gba->io))
         || quicksave_read(&buffer, (uint8_t *)&gba->ppu, sizeof(gba->ppu))
         || quicksave_read(&buffer, (uint8_t *)&gba->gpio, sizeof(gba->gpio))
-        || quicksave_read(&buffer, (uint8_t *)&gba->apu.fifos, sizeof(gba->apu.fifos))
-        || quicksave_read(&buffer, (uint8_t *)&gba->apu.wave, sizeof(gba->apu.wave))
-        || quicksave_read(&buffer, (uint8_t *)&gba->apu.latch, sizeof(gba->apu.latch))
+        || quicksave_read(&buffer, (uint8_t *)&gba->apu, sizeof(gba->apu))
         || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.cycles, sizeof(uint64_t))
         || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.next_event, sizeof(uint64_t))
+        || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.events_size, sizeof(size_t))
     ) {
         return (true);
     }
+
+    gba->scheduler.events = calloc(gba->scheduler.events_size, sizeof(struct scheduler_event));
+    hs_assert(gba->scheduler.events);
 
     // Serialize the scheduler's event list
     for (i = 0; i < gba->scheduler.events_size; ++i) {
         struct scheduler_event *event;
 
-        event = gba->scheduler.events + i;
+        event = &gba->scheduler.events[i];
         if (
-               quicksave_read(&buffer, (uint8_t *)&event->active, sizeof(bool))
+               quicksave_read(&buffer, (uint8_t *)&event->kind, sizeof(enum sched_event_kind))
+            || quicksave_read(&buffer, (uint8_t *)&event->active, sizeof(bool))
             || quicksave_read(&buffer, (uint8_t *)&event->repeat, sizeof(bool))
             || quicksave_read(&buffer, (uint8_t *)&event->at, sizeof(uint64_t))
             || quicksave_read(&buffer, (uint8_t *)&event->period, sizeof(uint64_t))

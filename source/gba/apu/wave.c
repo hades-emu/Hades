@@ -12,8 +12,6 @@
 #include "gba/apu.h"
 #include "gba/scheduler.h"
 
-static void apu_wave_step(struct gba *, struct event_args args);
-
 static int16_t volume_lut[4] = { 0, 4, 2, 1};
 
 void
@@ -44,9 +42,9 @@ apu_wave_reset(
     gba->apu.wave.step_handler = sched_add_event(
         gba,
         NEW_REPEAT_EVENT(
+            SCHED_EVENT_APU_WAVE_STEP,
             gba->scheduler.cycles, // TODO: Is there a delay before the sound is started?
-            period,
-            apu_wave_step
+            period
         )
     );
 }
@@ -75,7 +73,6 @@ apu_wave_stop(
 ** Shift the wave bank and store the 4 least significant bits
 ** into `gba->apu.latch.wave`.
 */
-static
 void
 apu_wave_step(
     struct gba *gba,

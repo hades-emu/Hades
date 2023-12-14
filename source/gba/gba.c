@@ -165,9 +165,9 @@ gba_state_reset(
         sched_add_event(
             gba,
             NEW_REPEAT_EVENT(
+                SCHED_EVENT_FRAME_LIMITER,
                 GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT,  // Timing of first trigger
-                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT,  // Period
-                sched_frame_limiter
+                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT   // Period
             )
         );
     }
@@ -226,9 +226,9 @@ gba_state_reset(
         sched_add_event(
             gba,
             NEW_REPEAT_EVENT(
+                SCHED_EVENT_APU_SEQUENCER,
                 0,
-                GBA_CYCLES_PER_SECOND / 256,
-                apu_sequencer
+                GBA_CYCLES_PER_SECOND / 256
             )
         );
 
@@ -236,9 +236,9 @@ gba_state_reset(
             sched_add_event(
                 gba,
                 NEW_REPEAT_EVENT(
+                    SCHED_EVENT_APU_RESAMPLE,
                     0,
-                    config->audio_frequency,
-                    apu_resample
+                    config->audio_frequency
                 )
             );
         }
@@ -255,9 +255,9 @@ gba_state_reset(
         sched_add_event(
             gba,
             NEW_REPEAT_EVENT(
+                SCHED_EVENT_PPU_HDRAW,
                 GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Timing of first trigger
-                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Period
-                ppu_hdraw
+                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH        // Period
             )
         );
 
@@ -265,9 +265,9 @@ gba_state_reset(
         sched_add_event(
             gba,
             NEW_REPEAT_EVENT(
+                SCHED_EVENT_PPU_HBLANK,
                 GBA_CYCLES_PER_PIXEL * GBA_SCREEN_WIDTH + 46,       // Timing of first trigger
-                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH,       // Period
-                ppu_hblank
+                GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH        // Period
             )
         );
     }

@@ -201,8 +201,11 @@ mem_openbus_read(
 
     shift = addr & 0x3;
 
-    if (gba->core.current_dma) {
-        return (gba->core.current_dma->bus >> (8 * shift));
+    if (gba->core.current_dma_idx != NO_CURRENT_DMA) {
+        struct dma_channel const *channel;
+
+        channel = &gba->io.dma[gba->core.current_dma_idx];
+        return (channel->bus >> (8 * shift));
     }
 
     if (gba->core.cpsr.thumb) {
