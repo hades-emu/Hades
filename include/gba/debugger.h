@@ -70,6 +70,10 @@ struct debugger {
         uint32_t next_pc;
         size_t count;
     } step;
+
+    struct {
+        size_t count;
+    } frame;
 };
 
 /* gba/debugger.c */

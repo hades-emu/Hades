@@ -125,8 +125,8 @@ struct command g_commands[] = {
     [CMD_FRAME] = {
         .name = "frame",
         .alias = "f",
-        .usage = "frame",
-        .description = "Run until the end of the current frame.",
+        .usage = "frame [N=1]",
+        .description = "Run until N frames are completed.",
         .func = debugger_cmd_frame,
     },
     [CMD_IO] = {
@@ -135,6 +135,20 @@ struct command g_commands[] = {
         .usage = "io [REGISTER] [VALUE]",
         .description = "Print or set the value of an IO register.",
         .func = debugger_cmd_io,
+    },
+    [CMD_KEY] = {
+        .name = "key",
+        .alias = NULL,
+        .usage = "key KEY STATE",
+        .description = "Set the state of any input key.",
+        .func = debugger_cmd_key,
+    },
+    [CMD_SCREENSHOT] = {
+        .name = "screenshot",
+        .alias = "screen",
+        .usage = "screenshot [FILE]",
+        .description = "Store a screenshot of the screen in FILE.",
+        .func = debugger_cmd_screenshot
     },
     {
         .name = NULL,

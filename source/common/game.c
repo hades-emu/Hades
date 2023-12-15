@@ -659,23 +659,15 @@ app_game_update_backup(
 ** Take a screenshot of the game and writes it to the disk.
 */
 void
-app_game_screenshot(
-    struct app *app
+app_game_screenshot_path(
+    struct app *app,
+    char const *path
 ) {
-    time_t now;
-    struct tm *now_info;
-    char filename[256];
     int out;
-
-    time(&now);
-    now_info = localtime(&now);
-
-    hs_mkdir("screenshots");
-    strftime(filename, sizeof(filename), "screenshots/%Y-%m-%d_%Hh%Mm%Ss.png", now_info);
 
     pthread_mutex_lock(&app->emulation.gba->shared_data.framebuffer.lock);
     out = stbi_write_png(
-        filename,
+        path,
         GBA_SCREEN_WIDTH,
         GBA_SCREEN_HEIGHT,
         4,
@@ -688,17 +680,39 @@ app_game_screenshot(
         gui_new_notification(
             app,
             UI_NOTIFICATION_SUCCESS,
-            "Screenshot saved in %s.",
-            filename
+            "Screenshot saved in \"%s\".",
+            path
         );
     } else {
         gui_new_notification(
             app,
             UI_NOTIFICATION_ERROR,
-            "Failed to save screenshot in %s.",
-            filename
+            "Failed to save screenshot in \"%s\".",
+            path
         );
     }
+}
+
+/*
+** Take a screenshot of the game and writes it to the disk.
+**
+** The file's name depends on the current time.
+*/
+void
+app_game_screenshot(
+    struct app *app
+) {
+    time_t now;
+    struct tm *now_info;
+    char path[256];
+
+    time(&now);
+    now_info = localtime(&now);
+
+    hs_mkdir("screenshots");
+    strftime(path, sizeof(path), "screenshots/%Y-%m-%d_%Hh%Mm%Ss.png", now_info);
+
+    app_game_screenshot_path(app, path);
 }
 
 void
@@ -795,12 +809,14 @@ finally:
 */
 void
 app_game_frame(
-    struct app *app
+    struct app *app,
+    size_t count
 ) {
-    struct message event;
+    struct message_frame event;
 
     event.header.kind = MESSAGE_FRAME;
     event.header.size = sizeof(event);
+    event.count = count;
 
     channel_lock(&app->emulation.gba->channels.messages);
     channel_push(&app->emulation.gba->channels.messages, &event.header);

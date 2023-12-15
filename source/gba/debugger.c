@@ -121,8 +121,12 @@ debugger_execute_run_mode(
             break;
         };
         case GBA_RUN_MODE_FRAME: {
-            sched_run_for(gba, GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_HEIGHT);
-            gba_state_pause(gba);
+            if (gba->debugger.frame.count) {
+                --gba->debugger.frame.count;
+                sched_run_for(gba, GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_HEIGHT);
+            } else {
+                gba_state_pause(gba);
+            }
             break;
         };
         case GBA_RUN_MODE_TRACE: {

@@ -93,6 +93,11 @@ struct message_set_watchpoints_list {
     size_t len;
 };
 
+struct message_frame {
+    struct event_header header;
+    size_t count;
+};
+
 #endif
 
 /*

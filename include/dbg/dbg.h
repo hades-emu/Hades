@@ -134,6 +134,8 @@ enum commands_list {
     CMD_RESET,
     CMD_FRAME,
     CMD_IO,
+    CMD_KEY,
+    CMD_SCREENSHOT,
 };
 
 struct io_bitfield {
@@ -196,6 +198,9 @@ void debugger_cmd_help(struct app *, size_t, struct arg const *);
 /* dbg/cmd/io.c */
 void debugger_cmd_io(struct app *, size_t, struct arg const *);
 
+/* dbg/cmd/key.c */
+void debugger_cmd_key(struct app *, size_t, struct arg const *);
+
 /* dbg/cmd/print.c */
 void debugger_cmd_print(struct app *, size_t, struct arg const *);
 void debugger_cmd_print_u8(struct app const *, uint32_t, size_t, size_t);
@@ -207,6 +212,9 @@ void debugger_cmd_registers(struct app *, size_t, struct arg const *);
 
 /* dbg/cmd/reset.c */
 void debugger_cmd_reset(struct app *, size_t, struct arg const *);
+
+/* dbg/cmd/screenshot.c */
+void debugger_cmd_screenshot(struct app *, size_t, struct arg const *);
 
 /* dbg/cmd/step.c */
 void debugger_cmd_step_in(struct app *, size_t, struct arg const *);

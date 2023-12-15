@@ -12,10 +12,10 @@
 #include "dbg/dbg.h"
 
 void
-debugger_cmd_frame(
+debugger_cmd_screenshot(
     struct app *app,
-    size_t argc __unused,
-    struct arg const *argv __unused
+    size_t argc,
+    struct arg const *argv
 ) {
     if (!app->debugger.is_started) {
         logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
@@ -23,19 +23,15 @@ debugger_cmd_frame(
     }
 
     if (argc == 0) {
-        app_game_frame(app, 1);
-        debugger_wait_for_emulator(app);
-        debugger_dump_context_auto(app);
+        app_game_screenshot(app);
     } else if (argc == 1) {
-        if (debugger_check_arg_type(CMD_FRAME, &argv[0], ARGS_INTEGER)) {
+        if (debugger_check_arg_type(CMD_SCREENSHOT, &argv[0], ARGS_STRING)) {
             return ;
         }
 
-        app_game_frame(app, argv[0].value.i64);
-        debugger_wait_for_emulator(app);
-        debugger_dump_context_auto(app);
+        app_game_screenshot_path(app, argv[0].value.s);
     } else {
-        printf("Usage: %s\n", g_commands[CMD_FRAME].usage);
+        printf("Usage: %s\n", g_commands[CMD_SCREENSHOT].usage);
         return ;
     }
 }

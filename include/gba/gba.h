@@ -45,6 +45,9 @@ enum keys {
     KEY_RIGHT,
     KEY_START,
     KEY_SELECT,
+
+    KEY_MAX,
+    KEY_MIN = KEY_A,
 };
 
 struct shared_data {

@@ -65,6 +65,7 @@ debugger_lang_lexe(
     i = 0;
     while (input[i]) {
         switch (input[i]) {
+            case '.':
             case 'a' ... 'z':
             case 'A' ... 'Z': {
                 /* Lexe the whole identifier */
@@ -72,12 +73,20 @@ debugger_lang_lexe(
                 size_t j;
 
                 j = 0;
-                while (isalnum(input[i + j])) {
+                while (isalnum(input[i + j]) || input[i + j] == '.' || input[i + j] == '/') {
                     ++j;
                 }
 
-                t = token_new(lexer, TOKEN_IDENTIFIER);
-                t->value.identifier = strndup(input + i, j);
+                if (j >= strlen("true") && !strncmp(input + i, "true", j)) {
+                    t = token_new(lexer, TOKEN_LITTERAL);
+                    t->value.litteral = 1;
+                } else if (j >= strlen("false") && !strncmp(input + i, "false", j)) {
+                    t = token_new(lexer, TOKEN_LITTERAL);
+                    t->value.litteral = 0;
+                } else {
+                    t = token_new(lexer, TOKEN_IDENTIFIER);
+                    t->value.identifier = strndup(input + i, j);
+                }
 
                 i += j;
                 break;

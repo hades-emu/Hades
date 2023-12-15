@@ -403,6 +403,7 @@ gba_process_message(
                 case KEY_LEFT:      gba->io.keyinput.left = !msg_key->pressed; break;
                 case KEY_START:     gba->io.keyinput.start = !msg_key->pressed; break;
                 case KEY_SELECT:    gba->io.keyinput.select = !msg_key->pressed; break;
+                default:            break;
             };
 
             io_scan_keypad_irq(gba);
@@ -434,6 +435,11 @@ gba_process_message(
         };
 #ifdef WITH_DEBUGGER
         case MESSAGE_FRAME: {
+            struct message_frame const *msg_frame;
+
+            msg_frame = (struct message_frame const *)message;
+
+            gba->debugger.frame.count = msg_frame->count;
             gba->debugger.run_mode = GBA_RUN_MODE_FRAME;
 
             gba_state_run(gba);

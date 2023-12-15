@@ -329,12 +329,13 @@ void app_game_key(struct app *app, enum keys key, bool pressed);
 void app_game_speed(struct app *app, uint32_t);
 void app_game_update_backup(struct app *app);
 void app_game_screenshot(struct app *app);
+void app_game_screenshot_path(struct app *app, char const *);
 void app_game_quicksave(struct app *app, size_t idx);
 void app_game_quickload(struct app *app, size_t idx);
 
 #ifdef WITH_DEBUGGER
 
-void app_game_frame(struct app *app);
+void app_game_frame(struct app *app, size_t);
 void app_game_trace(struct app *app, size_t, void (*)(struct app *));
 void app_game_step_in(struct app *app, size_t cnt);
 void app_game_step_over(struct app *app, size_t cnt);
