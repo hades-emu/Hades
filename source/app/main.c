@@ -93,6 +93,7 @@ main(
     app.video.aspect_ratio = ASPECT_RATIO_RESIZE;
     app.audio.mute = false;
     app.audio.level = 1.0f;
+    app.audio.resample_frequency = 48000;
     app.gfx.texture_filter = TEXTURE_FILTER_NEAREST;
     app.ui.win.resize = true;
     app.ui.win.resize_with_ratio = false;
@@ -158,7 +159,7 @@ main(
         uint64_t sdl_counters[2];
         float elapsed_ms;
 
-        sdl_counters[0] = SDL_GetPerformanceCounter();
+        sdl_counters[0] = 0; //SDL_GetPerformanceCounter();
 
         app_emulator_process_all_notifs(&app);
 

@@ -1,0 +1,70 @@
+name: Accuracy
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Source Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y meson ninja-build libsdl2-dev libglew-dev libgtk-3-dev libreadline-dev libedit-dev libcapstone-dev
+      - name: Build Hades w/ Debugger
+        run: |
+          meson build --werror -Dwith_debugger=true
+          cd build
+          ninja
+      - name: Download Test Roms
+        run: |
+          # Download BIOS
+          echo "$BIOS_DATA" | base64 -d | gpg --pinentry-mode loopback --passphrase "$BIOS_KEY" -d -o ./bios.bin
+
+          # Create ROMs directory
+          mkdir roms
+          cd roms
+
+          # Download AGS
+          declare ags_url="$(echo "$AGS_URL" | base64 -d | gpg --pinentry-mode loopback --passphrase "$AGS_KEY" -d)"
+          wget "$ags_url" -O ags.zip
+          unzip ags.zip
+          shred -u ags.zip
+          mv AGB_*.gba ags.gba
+
+          # Download the remaining testing ROMs
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/arm/arm.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/thumb/thumb.gba
+          wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/dma-start-delay.gba
+          wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/openbus-bios.gba
+          wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/timer-basic.gba
+        env:
+          BIOS_DATA: ${{ secrets.BIOS_DATA }}
+          BIOS_KEY: ${{ secrets.BIOS_KEY }}
+          AGS_URL: ${{ secrets.AGS_URL }}
+          AGS_KEY: ${{ secrets.AGS_KEY }}
+      - name: Check Accuracy
+        run: |
+          python3 ./accuracy/check.py --binary ./build/hades --roms ./roms/
+      - name: Collect Screenshots
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: tests-screenshots
+          path: './.tests_screenshots/'
+          if-no-files-found: error
+      - name: Cleanup
+        if: always()
+        run: |
+          if [[ -f ./bios.bin ]]; then
+            shred -u ./bios.bin
+            echo "BIOS deleted"
+          fi
+
+          if [[ -f ./roms/ags.gba ]]; then
+            shred -u ./roms/ags.gba
+            echo "AGS deleted"
+          fi

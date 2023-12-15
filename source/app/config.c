@@ -72,7 +72,7 @@ app_config_load(
 
         if (mjson_get_number(data, data_len, "$.emulation.speed", &d)) {
             app->emulation.speed = (int)d;
-            app->emulation.speed = max(1, min(app->emulation.speed, 5));
+            app->emulation.speed = max(0, min(app->emulation.speed, 5));
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.backup_storage.autodetect", &b)) {
