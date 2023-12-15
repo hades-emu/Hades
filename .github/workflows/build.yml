@@ -9,10 +9,10 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - name: 'Sync source code'
+      - name: Fetch Source Code
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: Install Dependencies
         uses: msys2/setup-msys2@v2
         with:
@@ -35,10 +35,10 @@ jobs:
   mac-os:
     runs-on: macos-latest
     steps:
-      - name: 'Sync source code'
+      - name: Fetch Source Code
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: Install Dependencies
         run: |
           brew install meson ninja sdl2 glew create-dmg
@@ -130,10 +130,10 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Sync source code'
+      - name: Fetch Source Code
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: Install Dependencies
         run: |
           sudo apt-get update

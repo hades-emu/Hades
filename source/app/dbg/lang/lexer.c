@@ -66,6 +66,7 @@ debugger_lang_lexe(
     while (input[i]) {
         switch (input[i]) {
             case '.':
+            case '_':
             case 'a' ... 'z':
             case 'A' ... 'Z': {
                 /* Lexe the whole identifier */
@@ -73,7 +74,7 @@ debugger_lang_lexe(
                 size_t j;
 
                 j = 0;
-                while (isalnum(input[i + j]) || input[i + j] == '.' || input[i + j] == '/') {
+                while (isalnum(input[i + j]) || input[i + j] == '.' || input[i + j] == '_' || input[i + j] == '/') {
                     ++j;
                 }
 

@@ -1,7 +1,12 @@
 /screenshots
 /build
 /build.*
+/build-*
 /games
 /demos
 *.gba
 *.bin
+config.json
+.hades-dbg.history
+__pycache__
+

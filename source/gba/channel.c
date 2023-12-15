@@ -119,7 +119,7 @@ channel_next(
         new_event = channel->events;
     }
 
-    if ((uint8_t *)new_event < (uint8_t *)channel->events + channel->size) {
+    if (channel->events && (uint8_t *)new_event < (uint8_t *)channel->events + channel->size) {
         return (new_event);
     }
     return (NULL);
