@@ -1,7 +1,6 @@
 # 🔥 Hades
 
 ![license](https://img.shields.io/github/license/arignir/hades)
-[![CodeFactor](https://www.codefactor.io/repository/github/arignir/hades/badge/master)](https://www.codefactor.io/repository/github/arignir/hades/overview/master)
 [![Build](https://github.com/Arignir/Hades/actions/workflows/main.yml/badge.svg)](https://github.com/Arignir/Hades/actions/workflows/main.yml)
 
 <p align="center"><img src="https://i.imgur.com/4OrVpX2.png"></p>
@@ -30,7 +29,7 @@ Currently, Hades features:
   - Keys and buttons remapping
   - Quick Saves (also known as Save State)
   - Real Time Clock (RTC) support
-  - Color correction
+  - Color correction & LCD effects
 
 It is the third 🥉 software emulator to pass the AGS Aging Cartridge used to test Game Boy Advance systems.
 
