@@ -178,12 +178,14 @@ struct app {
 
         enum texture_filter_kind texture_filter;
         GLuint game_texture_in;
-        GLuint game_texture_out;
+        GLuint game_texture_a;
+        GLuint game_texture_b;
         GLuint fbo;
         GLuint vao;
         GLuint vbo;
 
         GLuint program_color_correction;
+        GLuint program_lcd;
 
         GLuint active_programs[MAX_GFX_PROGRAMS];
         size_t active_programs_length;
@@ -209,6 +211,7 @@ struct app {
         enum aspect_ratio aspect_ratio;
         bool vsync;
         bool color_correction;
+        bool lcd;
     } video;
 
     struct {

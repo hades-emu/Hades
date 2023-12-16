@@ -149,10 +149,14 @@ gui_sdl_video_init(
     ImGui_ImplSDL2_InitForOpenGL(app->sdl.window, app->gfx.gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    /* Build all the available shaders */
+    app->gfx.program_color_correction = build_shader_program("color_correction", SHADER_FRAG_COLOR_CORRECTION, SHADER_VERTEX_COMMON);
+    app->gfx.program_lcd = build_shader_program("lcd", SHADER_FRAG_LCD, SHADER_VERTEX_COMMON);
+
     /* Create the OpenGL objects required to build the pipeline */
     glGenTextures(1, &app->gfx.game_texture_in);
-    glGenTextures(1, &app->gfx.game_texture_out);
-    app->gfx.program_color_correction = build_shader_program("color_correction", SHADER_FRAG_COLOR_CORRECTION, SHADER_VERTEX_COMMON);
+    glGenTextures(1, &app->gfx.game_texture_a);
+    glGenTextures(1, &app->gfx.game_texture_b);
     glGenFramebuffers(1, &app->gfx.fbo);
     glGenVertexArrays(1, &app->gfx.vao);
     glGenBuffers(1, &app->gfx.vbo);
@@ -200,27 +204,9 @@ gui_sdl_video_rebuild_pipeline(
         default: texture_filter = GL_NEAREST; break;
     }
 
-    // Setup the input texture (RGBA)
+    // Setup the input texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_in);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGBA,
-        GBA_SCREEN_WIDTH,
-        GBA_SCREEN_HEIGHT,
-        0,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        NULL
-    );
-
-    // Setup the output texture (RGBA)
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_out);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_filter);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -236,6 +222,42 @@ gui_sdl_video_rebuild_pipeline(
         NULL
     );
 
+    // Setup the A texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_a);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_filter);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        GBA_SCREEN_WIDTH * 3,
+        GBA_SCREEN_HEIGHT * 3,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL
+    );
+
+    // Setup the B texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_b);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_filter);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        GBA_SCREEN_WIDTH * 3,
+        GBA_SCREEN_HEIGHT * 3,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL
+    );
+
     app->gfx.active_programs_length = 0;
 
     if (app->video.color_correction) {
@@ -243,8 +265,13 @@ gui_sdl_video_rebuild_pipeline(
         ++app->gfx.active_programs_length;
     }
 
+    if (app->video.lcd) {
+        app->gfx.active_programs[app->gfx.active_programs_length] = app->gfx.program_lcd;
+        ++app->gfx.active_programs_length;
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, app->gfx.fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, app->gfx.game_texture_out, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, app->gfx.game_texture_a, 0); // TODO FIXME
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -381,7 +408,8 @@ gui_sdl_video_cleanup(
     glDeleteVertexArrays(1, &app->gfx.vbo);
     glDeleteFramebuffers(1, &app->gfx.fbo);
     glDeleteTextures(1, &app->gfx.game_texture_in);
-    glDeleteTextures(1, &app->gfx.game_texture_out);
+    glDeleteTextures(1, &app->gfx.game_texture_a);
+    glDeleteTextures(1, &app->gfx.game_texture_b);
     SDL_GL_DeleteContext(app->gfx.gl_context);
 
     // Close the Wingowd

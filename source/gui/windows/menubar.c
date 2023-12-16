@@ -342,6 +342,12 @@ gui_win_menubar_video(
             gui_sdl_video_rebuild_pipeline(app);
         }
 
+        /* LCD Effect */
+        if (igMenuItemBool("LCD Effect", NULL, app->video.lcd, true)) {
+            app->video.lcd ^= 1;
+            gui_sdl_video_rebuild_pipeline(app);
+        }
+
         /* VSync */
         if (igMenuItemBool("VSync", NULL, app->video.vsync, true)) {
             app->video.vsync ^= 1;

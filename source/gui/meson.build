@@ -15,6 +15,7 @@ libgui = static_library(
     'sdl/input.c',
     'sdl/video.c',
     'shaders/frag-color-correction.c',
+    'shaders/frag-lcd.c',
     'shaders/vertex-common.c',
     'windows/game.c',
     'windows/keybinds.c',

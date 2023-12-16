@@ -35,6 +35,9 @@ void gui_sdl_video_rebuild_pipeline(struct app *app);
 /* gui/shaders/frag-color-correction.c */
 extern char const *SHADER_FRAG_COLOR_CORRECTION;
 
+/* gui/shaders/frag-lcd.c */
+extern char const *SHADER_FRAG_LCD;
+
 /* gui/shaders/vertex-common.c */
 extern char const *SHADER_VERTEX_COMMON;
 

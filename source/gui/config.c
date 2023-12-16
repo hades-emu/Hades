@@ -118,6 +118,10 @@ gui_config_load(
             app->video.color_correction = b;
         }
 
+        if (mjson_get_bool(data, data_len, "$.video.lcd", &b)) {
+            app->video.lcd = b;
+        }
+
         if (mjson_get_number(data, data_len, "$.video.texture_filter", &d)) {
             app->gfx.texture_filter = (int)d;
             app->gfx.texture_filter = max(TEXTURE_FILTER_MIN, min(app->gfx.texture_filter, TEXTURE_FILTER_MAX));
@@ -227,6 +231,7 @@ gui_config_save(
                 "aspect_ratio": %d,
                 "vsync": %B,
                 "color_correction": %B,
+                "lcd": %B,
                 "texture_filter": %d
             },
 
@@ -253,6 +258,7 @@ gui_config_save(
         (int)app->video.aspect_ratio,
         (int)app->video.vsync,
         (int)app->video.color_correction,
+        (int)app->video.lcd,
         (int)app->gfx.texture_filter,
         (int)app->audio.mute,
         app->audio.level

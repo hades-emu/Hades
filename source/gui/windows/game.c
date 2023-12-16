@@ -48,57 +48,63 @@ gui_win_game(
     float game_pos_y;
     float game_size_x;
     float game_size_y;
+    GLuint in_texture;
+    GLuint out_texture;
     float tint;
+    size_t i;
 
     // Adjust the tint if the game is paused
     tint = app->emulation.is_running ? 1.0 : 0.1;
 
-    if (!app->gfx.active_programs_length) {
-        // If there's no shaders loaded, we shortcut the pipeline and simply load the game's framebuffer in the corresponding texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_in);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_out);
+    pthread_mutex_lock(&app->emulation.gba->shared_data.framebuffer.lock);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, (uint8_t *)app->emulation.gba->shared_data.framebuffer.data);
+    pthread_mutex_unlock(&app->emulation.gba->shared_data.framebuffer.lock);
 
-        pthread_mutex_lock(&app->emulation.gba->shared_data.framebuffer.lock);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, (uint8_t *)app->emulation.gba->shared_data.framebuffer.data);
-        pthread_mutex_unlock(&app->emulation.gba->shared_data.framebuffer.lock);
+    glViewport(0, 0, GBA_SCREEN_WIDTH * 3.f, GBA_SCREEN_HEIGHT * 3.f);
 
-        glBindTexture(GL_TEXTURE_2D, 0);
-    } else {
-        size_t i;
+    in_texture = app->gfx.game_texture_in;
+    out_texture = app->gfx.game_texture_in;
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_in);
+    glBindVertexArray(app->gfx.vao);
+    glBindFramebuffer(GL_FRAMEBUFFER, app->gfx.fbo);
 
-        pthread_mutex_lock(&app->emulation.gba->shared_data.framebuffer.lock);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, (uint8_t *)app->emulation.gba->shared_data.framebuffer.data);
-        pthread_mutex_unlock(&app->emulation.gba->shared_data.framebuffer.lock);
+    for (i = 0; i < app->gfx.active_programs_length; ++i) {
 
-        glViewport(0, 0, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT);
-        glBindVertexArray(app->gfx.vao);
-        glBindFramebuffer(GL_FRAMEBUFFER, app->gfx.fbo);
+        // We swap the input and output texture with each shader pass
+        if (i == 0) {
+            in_texture = app->gfx.game_texture_in;
+            out_texture = app->gfx.game_texture_a;
+        } else if (i == 1) {
+            in_texture = app->gfx.game_texture_a;
+            out_texture = app->gfx.game_texture_b;
+        } else {
+            GLuint tmp;
 
-        for (i = 0; i < app->gfx.active_programs_length; ++i) {
-            GLuint target_texture;
-
-            glUseProgram(app->gfx.active_programs[i]);
-            if (i == app->gfx.active_programs_length - 1) {
-                target_texture = app->gfx.game_texture_out;
-            } else {
-                target_texture = app->gfx.game_texture_in;
-            }
-
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target_texture, 0);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+            tmp = in_texture;
+            in_texture = out_texture;
+            out_texture = tmp;
         }
 
-        glUseProgram(0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        // Set the input and output texture
+        glBindTexture(GL_TEXTURE_2D, in_texture);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out_texture, 0);
+
+        // Set the shader to use
+        glUseProgram(app->gfx.active_programs[i]);
+
+        // Draw
+        glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
-    /* Resize the game to keep the correct aspect ratio */
+    glUseProgram(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Calculate the game size depending on the aspect ratio
     switch (app->video.aspect_ratio) {
         case ASPECT_RATIO_RESIZE:
         case ASPECT_RATIO_BORDERS: {
@@ -139,7 +145,7 @@ gui_win_game(
     );
 
     igImage(
-        (void *)(uintptr_t)app->gfx.game_texture_out,
+        (void *)(uintptr_t)out_texture,
         (ImVec2){.x = game_size_x, .y = game_size_y},
         (ImVec2){.x = 0, .y = 0},
         (ImVec2){.x = 1, .y = 1},
