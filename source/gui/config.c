@@ -118,8 +118,8 @@ gui_config_load(
             app->video.color_correction = b;
         }
 
-        if (mjson_get_bool(data, data_len, "$.video.lcd", &b)) {
-            app->video.lcd = b;
+        if (mjson_get_bool(data, data_len, "$.video.lcd_grid", &b)) {
+            app->video.lcd_grid = b;
         }
 
         if (mjson_get_number(data, data_len, "$.video.texture_filter", &d)) {
@@ -231,7 +231,7 @@ gui_config_save(
                 "aspect_ratio": %d,
                 "vsync": %B,
                 "color_correction": %B,
-                "lcd": %B,
+                "lcd_grid": %B,
                 "texture_filter": %d
             },
 
@@ -258,7 +258,7 @@ gui_config_save(
         (int)app->video.aspect_ratio,
         (int)app->video.vsync,
         (int)app->video.color_correction,
-        (int)app->video.lcd,
+        (int)app->video.lcd_grid,
         (int)app->gfx.texture_filter,
         (int)app->audio.mute,
         app->audio.level

@@ -3,7 +3,7 @@
 /*
 ** LCD effect that shows the red/green/blue stripes for each pixel.
 */
-char const *SHADER_FRAG_LCD = GLSL(
+char const *SHADER_FRAG_LCD_GRID = GLSL(
     layout(location = 0) out vec4 frag_color;
 
     in vec2 v_uv;

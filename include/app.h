@@ -185,7 +185,7 @@ struct app {
         GLuint vbo;
 
         GLuint program_color_correction;
-        GLuint program_lcd;
+        GLuint program_lcd_grid;
 
         GLuint active_programs[MAX_GFX_PROGRAMS];
         size_t active_programs_length;
@@ -211,7 +211,7 @@ struct app {
         enum aspect_ratio aspect_ratio;
         bool vsync;
         bool color_correction;
-        bool lcd;
+        bool lcd_grid;
     } video;
 
     struct {

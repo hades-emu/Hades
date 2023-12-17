@@ -343,8 +343,8 @@ gui_win_menubar_video(
         }
 
         /* LCD Effect */
-        if (igMenuItemBool("LCD Effect", NULL, app->video.lcd, true)) {
-            app->video.lcd ^= 1;
+        if (igMenuItemBool("LCD Grid Effect", NULL, app->video.lcd_grid, true)) {
+            app->video.lcd_grid ^= 1;
             gui_sdl_video_rebuild_pipeline(app);
         }
 

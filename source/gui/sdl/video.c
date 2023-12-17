@@ -151,7 +151,7 @@ gui_sdl_video_init(
 
     /* Build all the available shaders */
     app->gfx.program_color_correction = build_shader_program("color_correction", SHADER_FRAG_COLOR_CORRECTION, SHADER_VERTEX_COMMON);
-    app->gfx.program_lcd = build_shader_program("lcd", SHADER_FRAG_LCD, SHADER_VERTEX_COMMON);
+    app->gfx.program_lcd_grid = build_shader_program("lcd-grid", SHADER_FRAG_LCD_GRID, SHADER_VERTEX_COMMON);
 
     /* Create the OpenGL objects required to build the pipeline */
     glGenTextures(1, &app->gfx.game_texture_in);
@@ -265,8 +265,8 @@ gui_sdl_video_rebuild_pipeline(
         ++app->gfx.active_programs_length;
     }
 
-    if (app->video.lcd) {
-        app->gfx.active_programs[app->gfx.active_programs_length] = app->gfx.program_lcd;
+    if (app->video.lcd_grid) {
+        app->gfx.active_programs[app->gfx.active_programs_length] = app->gfx.program_lcd_grid;
         ++app->gfx.active_programs_length;
     }
 
