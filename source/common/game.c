@@ -199,10 +199,12 @@ bool
 app_game_configure_bios(
     struct app *app
 ) {
+    char const *bios_path;
     FILE *file;
     void *data;
 
-    if (!app->file.bios_path) {
+    bios_path = app->args.bios_path ?: app->file.bios_path;
+    if (!bios_path) {
         gui_new_notification(
             app,
             UI_NOTIFICATION_ERROR,
@@ -211,13 +213,13 @@ app_game_configure_bios(
         return (true);
     }
 
-    file = hs_fopen(app->file.bios_path, "rb");
+    file = hs_fopen(bios_path, "rb");
     if (!file) {
         gui_new_notification(
             app,
             UI_NOTIFICATION_ERROR,
             "Failed to open %s: %s.",
-            app->file.bios_path,
+            bios_path,
             strerror(errno)
         );
         return (true);
@@ -243,7 +245,7 @@ app_game_configure_bios(
             app,
             UI_NOTIFICATION_ERROR,
             "Failed to read %s: %s.",
-            app->file.bios_path,
+            bios_path,
             strerror(errno)
         );
         free(data);
