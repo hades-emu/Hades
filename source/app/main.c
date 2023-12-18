@@ -35,8 +35,6 @@
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <getopt.h>
 #include <string.h>
 #include "hades.h"
 #include "gba/gba.h"
@@ -62,174 +60,10 @@ sighandler(
 
 #endif
 
-
-/*
-** Print the program's usage.
-*/
-static
-void
-print_usage(
-    FILE *file,
-    char const *name
-) {
-    fprintf(
-        file,
-        "Usage: %s [OPTION]... ROM\n"
-        "\n"
-        "Options:\n"
-        "    -b, --bios=PATH                    Path pointing to the bios dump (default: \"bios.bin\")\n"
-        "        --color=[always|never|auto]    Adjust color settings (default: auto)\n"
-        "\n"
-        "    -h, --help                         Print this help and exit\n"
-        "    -v, --version                      Print the version information and exit\n"
-        "",
-        name
-    );
-}
-
-/*
-** Parse the given command line arguments.
-*/
-static
-void
-args_parse(
-    struct app *app,
-    int argc,
-    char *argv[]
-) {
-    char const *name;
-    uint32_t color;
-
-    color = 0;
-    name = argv[0];
-    while (true) {
-        int c;
-        int option_index;
-
-        enum cli_options {
-            CLI_HELP = 0,
-            CLI_VERSION,
-            CLI_BIOS,
-            CLI_COLOR,
-        };
-
-        static struct option long_options[] = {
-            [CLI_HELP]      = { "help",         no_argument,        0,  0 },
-            [CLI_VERSION]   = { "version",      no_argument,        0,  0 },
-            [CLI_BIOS]      = { "bios",         required_argument,  0,  0 },
-            [CLI_COLOR]     = { "color",        optional_argument,  0,  0 },
-                              { 0,              0,                  0,  0 }
-        };
-
-        c = getopt_long(
-            argc,
-            argv,
-            "hvb:",
-            long_options,
-            &option_index
-        );
-
-        if (c == -1) {
-            break;
-        }
-
-        switch (c) {
-            case 0: {
-                switch (option_index) {
-                    case CLI_HELP: { // --help
-                        print_usage(stdout, name);
-                        exit(EXIT_SUCCESS);
-                        break;
-                    };
-                    case CLI_VERSION: { // --version
-                        printf("Hades v" HADES_VERSION "\n");
-                        exit(EXIT_SUCCESS);
-                        break;
-                    };
-                    case CLI_BIOS: { // --bios
-                        app->args.bios_path = optarg;
-                        break;
-                    };
-                    case CLI_COLOR: { // --color
-                        if (optarg) {
-                            if (!strcmp(optarg, "auto")) {
-                                color = 0;
-                                break;
-                            } else if (!strcmp(optarg, "never")) {
-                                color = 1;
-                                break;
-                            } else if (!strcmp(optarg, "always")) {
-                                color = 2;
-                                break;
-                            } else {
-                                print_usage(stderr, name);
-                                exit(EXIT_FAILURE);
-                            }
-                        } else {
-                            color = 0;
-                        }
-                        break;
-                    };
-                    default: {
-                        print_usage(stderr, name);
-                        exit(EXIT_FAILURE);
-                        break;
-                    };
-                }
-                break;
-            };
-            case 'b': {
-                app->args.bios_path = optarg;
-                break;
-            };
-            case 'h': {
-                print_usage(stdout, name);
-                exit(EXIT_SUCCESS);
-                break;
-            };
-            case 'v': {
-                printf("Hades v" HADES_VERSION "\n");
-                exit(EXIT_SUCCESS);
-                break;
-            };
-            default: {
-                print_usage(stderr, name);
-                exit(EXIT_FAILURE);
-                break;
-            };
-        }
-    }
-
-    switch (argc - optind) {
-        case 0: {
-            break;
-        };
-        case 1: {
-            app->args.rom_path = argv[optind];
-            break;
-        };
-        default: {
-            print_usage(stderr, name);
-            exit(EXIT_FAILURE);
-        };
-    }
-
-    switch (color) {
-        case 0:
-            if (!hs_isatty(1)) {
-                disable_colors();
-            }
-            break;
-        case 1:
-            disable_colors();
-            break;
-    }
-}
-
 int
 main(
     int argc,
-    char *argv[]
+    char * const argv[]
 ) {
     struct app app;
     pthread_t gba_thread;
@@ -242,8 +76,7 @@ main(
 
     /* Default value for all options, before config and argument parsing. */
     app.run = true;
-    app.file.bios_path = strdup("./bios.bin");
-    app.file.config_path = strdup("./config.json");
+    app.args.with_gui = true;
     app.emulation.is_started = false;
     app.emulation.is_running = false;
     app.emulation.speed = 1;
@@ -252,6 +85,8 @@ main(
     app.emulation.backup_storage.type = BACKUP_NONE;
     app.emulation.rtc.autodetect = true;
     app.emulation.rtc.enabled = true;
+    app.file.bios_path = strdup("./bios.bin");
+    app.file.config_path = strdup("./config.json");
     app.video.color_correction = true;
     app.video.vsync = false;
     app.video.display_size = 3;
@@ -261,30 +96,32 @@ main(
     app.gfx.texture_filter = TEXTURE_FILTER_NEAREST;
     app.ui.win.resize = true;
     app.ui.win.resize_with_ratio = false;
+
+    app_args_parse(&app, argc, argv);
     app_bindings_setup_default(&app);
-
     app_config_load(&app);
-
-    args_parse(&app, argc, argv);
-
-    app_sdl_init(&app);
 
     logln(HS_INFO, "Welcome to Hades v" HADES_VERSION);
     logln(HS_INFO, "=========================");
-    logln(HS_INFO, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
-    logln(
-        HS_INFO,
-        "Dpi: %s%.1f%s, Scale factor: %s%u%s, Refresh Rate: %s%uHz%s.",
-        g_light_magenta,
-        app.ui.dpi,
-        g_reset,
-        g_light_magenta,
-        app.ui.scale,
-        g_reset,
-        g_light_magenta,
-        app.ui.refresh_rate,
-        g_reset
-    );
+
+    if (app.args.with_gui) {
+        app_sdl_init(&app);
+
+        logln(HS_INFO, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
+        logln(
+            HS_INFO,
+            "Dpi: %s%.1f%s, Scale factor: %s%u%s, Refresh Rate: %s%uHz%s.",
+            g_light_magenta,
+            app.ui.dpi,
+            g_reset,
+            g_light_magenta,
+            app.ui.scale,
+            g_reset,
+            g_light_magenta,
+            app.ui.refresh_rate,
+            g_reset
+        );
+    }
 
     /* Start the gba thread */
     pthread_create(
@@ -325,15 +162,23 @@ main(
 
         app_emulator_process_all_notifs(&app);
 
-        app_sdl_handle_events(&app);
-        app_sdl_video_render_frame(&app);
-
 #if WITH_DEBUGGER
         if (g_force_interrupt) {
             g_force_interrupt = false;
             app_emulator_pause(&app);
         }
 #endif
+
+        /*
+        ** When used with a debugger, Hades can run without a GUI.
+        ** This is mostly useful for the CI and automated testing.
+        */
+        if (!app.args.with_gui) {
+            continue;
+        }
+
+        app_sdl_handle_events(&app);
+        app_sdl_video_render_frame(&app);
 
         if (app.emulation.is_started && app.emulation.is_running) {
             uint32_t now;
@@ -430,7 +275,6 @@ main(
 
             app.file.flush_qsaves_cache = false;
         }
-
     }
 
     app_emulator_exit(&app);
@@ -440,7 +284,9 @@ main(
     debugger_reset_terminal();
 #endif
 
-    app_sdl_cleanup(&app);
+    if (app.args.with_gui) {
+        app_sdl_cleanup(&app);
+    }
 
     app_config_save(&app);
 

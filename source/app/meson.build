@@ -69,6 +69,7 @@ libapp = static_library(
     'windows/keybinds.c',
     'windows/menubar.c',
     'windows/notif.c',
+    'args.c',
     'config.c',
     'emulator.c',
     'bindings.c',

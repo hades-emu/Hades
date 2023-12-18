@@ -17,20 +17,22 @@ void
 app_config_load(
     struct app *app
 ) {
+    char const *path;
     char data[4096];
     FILE *config_file;
     size_t data_len;
 
-    config_file = hs_fopen(app->file.config_path, "r");
+    path = app->args.config_path ?: app->file.config_path;
+    config_file = hs_fopen(path, "r");
     if (!config_file) {
-        logln(HS_ERROR, "Failed to open \"%s\": %s", app->file.config_path, strerror(errno));
+        logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
         return ;
     }
 
     data_len = fread(data, 1, sizeof(data) - 1, config_file);
 
     if (data_len == 0 && ferror(config_file)) {
-        logln(HS_ERROR, "Failed to read \"%s\": %s", app->file.config_path, strerror(errno));
+        logln(HS_ERROR, "Failed to read \"%s\": %s", path, strerror(errno));
         goto end;
     }
 
@@ -179,6 +181,7 @@ void
 app_config_save(
     struct app *app
 ) {
+    char const *path;
     FILE *config_file;
     int out;
     char *data;
@@ -189,9 +192,10 @@ app_config_save(
     data = NULL;
     pretty_data = NULL;
 
-    config_file = hs_fopen(app->file.config_path, "w");
+    path = app->args.config_path ?: app->file.config_path;
+    config_file = hs_fopen(path, "w");
     if (!config_file) {
-        logln(HS_ERROR, "Failed to open \"%s\": %s", app->file.config_path, strerror(errno));
+        logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
         return ;
     }
 
@@ -264,7 +268,7 @@ app_config_save(
     );
 
     if (!data) {
-        logln(HS_ERROR, "Failed to write the configuration to \"%s\": the formatted JSON is invalid.", app->file.config_path);
+        logln(HS_ERROR, "Failed to write the configuration to \"%s\": the formatted JSON is invalid.", path);
         goto end;
     }
 
@@ -324,12 +328,12 @@ app_config_save(
     out = mjson_pretty(data, strlen(data), "  ", mjson_print_dynamic_buf, &pretty_data);
 
     if (out < 0) {
-        logln(HS_ERROR, "Failed to write the configuration to \"%s\": the formatted JSON is invalid.", app->file.config_path);
+        logln(HS_ERROR, "Failed to write the configuration to \"%s\": the formatted JSON is invalid.", path);
         goto end;
     }
 
     if (fwrite(pretty_data, strlen(pretty_data), 1, config_file) != 1) {
-        logln(HS_ERROR, "Failed to write the configuration to \"%s\": %s.", app->file.config_path, strerror(errno));
+        logln(HS_ERROR, "Failed to write the configuration to \"%s\": %s.", path, strerror(errno));
     }
 
 end:

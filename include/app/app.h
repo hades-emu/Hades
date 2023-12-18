@@ -110,6 +110,8 @@ struct app {
     struct args {
         char const *rom_path;
         char const *bios_path;
+        char const *config_path;
+        bool with_gui;
     } args;
 
     struct {
@@ -361,6 +363,15 @@ void app_win_menubar(struct app *app);
 void app_new_notification(struct app *app, enum ui_notification_kind, char const *msg, ...);
 void app_win_notifications(struct app *app);
 
+/* args.c */
+void app_args_parse(struct app *app, int argc, char * const argv[]);
+
+/* bindings.c */
+void app_bindings_setup_default(struct app *app);
+void app_bindings_keyboard_clear(struct app *app, SDL_KeyCode key);
+void app_bindings_controller_clear(struct app *app, SDL_GameControllerButton btn);
+void app_bindings_handle(struct app *app, enum bind_actions bind, bool pressed);
+
 /* config.c */
 void app_config_load(struct app *app);
 void app_config_save(struct app *app);
@@ -392,9 +403,3 @@ void app_emulator_set_breakpoints_list(struct app *app, struct breakpoint *break
 void app_emulator_set_watchpoints_list(struct app *app, struct watchpoint *watchpoints, size_t len);
 
 #endif
-
-/* bindings.c */
-void app_bindings_setup_default(struct app *app);
-void app_bindings_keyboard_clear(struct app *app, SDL_KeyCode key);
-void app_bindings_controller_clear(struct app *app, SDL_GameControllerButton btn);
-void app_bindings_handle(struct app *app, enum bind_actions bind, bool pressed);
