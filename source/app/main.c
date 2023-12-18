@@ -159,7 +159,7 @@ main(
         uint64_t sdl_counters[2];
         float elapsed_ms;
 
-        sdl_counters[0] = 0; //SDL_GetPerformanceCounter();
+        sdl_counters[0] = SDL_GetPerformanceCounter();
 
         app_emulator_process_all_notifs(&app);
 
