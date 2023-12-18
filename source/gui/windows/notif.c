@@ -115,7 +115,6 @@ gui_win_notifications(
             ImGuiCond_Always,
             (ImVec2){.x = 1., .y = 1.}
         );
-        igSetNextWindowFocus();
 
         igBegin(
             label,
