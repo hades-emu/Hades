@@ -11,6 +11,7 @@
 #include "hades.h"
 #include "gba/gba.h"
 #include "gba/core.h"
+#include "gba/core/helpers.h"
 #include "gba/memory.h"
 #include "gba/gpio.h"
 

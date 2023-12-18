@@ -46,46 +46,26 @@ cc = meson.get_compiler('c')
 subdir('external')
 
 ###############################
-##      Common Library       ##
-###############################
-
-subdir('source/common')
-
-###############################
-##         Debugger          ##
-###############################
-
-if get_option('with_debugger')
-    subdir('source/dbg')
-endif
-
-###############################
 ## GBA Emulator Core Library ##
 ###############################
 
 subdir('source/gba')
 
 ###############################
-## Graphical User Interface  ##
+##        Application        ##
 ###############################
 
-subdir('source/gui')
-
-hades_extra_deps = []
-
-if get_option('with_debugger')
-    hades_extra_deps += [libdbg]
-endif
+subdir('source/app')
 
 if host_machine.system() == 'windows'
     winrc = import('windows').compile_resources('./resource/windows/hades.rc')
 
     hades = executable(
         'Hades',
-        'source/main.c',
+        'source/log.c',
         winrc,
-        gui_app: true,
-        link_with: [libgui] + hades_extra_deps,
+        win_subsystem: 'windows',
+        link_with: [libapp],
         include_directories: [incdir, imgui_inc],
         c_args: cflags,
         link_args: ldflags,
@@ -94,8 +74,8 @@ if host_machine.system() == 'windows'
 elif host_machine.system() == 'darwin'
     hades = executable(
         'hades',
-        'source/main.c',
-        link_with: [libgui] + hades_extra_deps,
+        'source/log.c',
+        link_with: [libapp],
         include_directories: [incdir, imgui_inc],
         c_args: cflags,
         link_args: ldflags,
@@ -108,8 +88,8 @@ elif host_machine.system() == 'darwin'
 else  # Linux and all others (eventually)
     hades = executable(
         'hades',
-        'source/main.c',
-        link_with: [libgui] + hades_extra_deps,
+        'source/log.c',
+        link_with: [libapp],
         include_directories: [incdir, imgui_inc],
         c_args: cflags,
         link_args: ldflags,

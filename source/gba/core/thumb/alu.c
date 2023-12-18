@@ -9,6 +9,7 @@
 
 #include "hades.h"
 #include "gba/gba.h"
+#include "gba/core/helpers.h"
 
 static
 void

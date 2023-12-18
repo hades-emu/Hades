@@ -42,6 +42,7 @@ libgba = static_library(
     'ppu/oam.c',
     'ppu/ppu.c',
     'ppu/window.c',
+    'channel.c',
     'db.c',
     'debugger.c',
     'gba.c',
@@ -52,7 +53,6 @@ libgba = static_library(
     dependencies: [
         cc.find_library('m', required: true, static: get_option('static_executable')),
     ],
-    link_with: libcommon,
     c_args: cflags,
     link_args: ldflags,
 )

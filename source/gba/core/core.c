@@ -17,11 +17,12 @@
 
 #include <string.h>
 #include "hades.h"
+#include "gba/gba.h"
 #include "gba/memory.h"
 #include "gba/core.h"
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
-#include "gba/gba.h"
+#include "gba/core/helpers.h"
 
 /*
 ** Fetch, decode and execute the next instruction.

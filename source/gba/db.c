@@ -1751,6 +1751,27 @@ db_lookup_game(
     return (NULL);
 }
 
+static
+void const *
+array_search(
+    uint8_t const *haystack,
+    size_t haystack_len,
+    char const *needle,
+    size_t needle_len
+) {
+    uint8_t const *tmp;
+
+    tmp = haystack;
+    while (haystack_len >= needle_len) {
+        if (!memcmp(tmp, needle, needle_len)) {
+            return (tmp);
+        }
+        ++tmp;
+        --haystack_len;
+    }
+    return (NULL);
+}
+
 /*
 ** Create and fill a `struct game_entry` by auto-detecting the available features based on the given rom.
 **

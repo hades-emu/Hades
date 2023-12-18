@@ -10,6 +10,7 @@
 #include <string.h>
 #include "gba/gba.h"
 #include "gba/ppu.h"
+#include "gba/core/helpers.h"
 
 void
 ppu_reload_affine_internal_registers(

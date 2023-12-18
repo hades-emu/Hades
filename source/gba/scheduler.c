@@ -11,7 +11,7 @@
 #include "gba/gba.h"
 #include "gba/scheduler.h"
 #include "gba/memory.h"
-#include "common/compat.h"
+#include "compat.h"
 
 void (*sched_event_callbacks[])(struct gba *gba, struct event_args args) = {
     [SCHED_EVENT_FRAME_LIMITER] = sched_frame_limiter,

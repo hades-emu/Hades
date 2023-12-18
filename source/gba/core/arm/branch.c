@@ -9,6 +9,7 @@
 
 #include "hades.h"
 #include "gba/gba.h"
+#include "gba/core/helpers.h"
 
 /*
 ** Execute the Branch and Branch With Link instructions.

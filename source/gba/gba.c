@@ -12,9 +12,9 @@
 #include "gba/gba.h"
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
-#include "common/compat.h"
-#include "common/channel/channel.h"
-#include "common/channel/event.h"
+#include "compat.h"
+#include "gba/channel.h"
+#include "gba/event.h"
 
 /*
 ** Create a new GBA emulator.

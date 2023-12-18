@@ -18,7 +18,7 @@
 #define GBA_CYCLES_PER_SECOND           (16 * 1024 * 1024)
 
 #include "hades.h"
-#include "common/channel/channel.h"
+#include "gba/channel.h"
 #include "gba/core.h"
 #include "gba/scheduler.h"
 #include "gba/memory.h"

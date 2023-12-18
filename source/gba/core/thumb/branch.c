@@ -10,6 +10,7 @@
 #include "hades.h"
 #include "gba/gba.h"
 #include "gba/core/arm.h"
+#include "gba/core/helpers.h"
 
 /*
 ** Implement the unconditional branch instruction.

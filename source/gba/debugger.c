@@ -13,7 +13,7 @@
 #include "hades.h"
 #include "gba/gba.h"
 #include "gba/core.h"
-#include "common/channel/event.h"
+#include "gba/event.h"
 
 void gba_state_pause(struct gba *);
 void gba_send_notification_raw(struct gba *gba, struct event_header const *notif_header);
