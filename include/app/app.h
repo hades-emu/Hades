@@ -119,6 +119,8 @@ struct app {
         struct launch_config *launch_config;
         struct game_entry *game_entry;
 
+        char *game_path;
+
         FILE *backup_file;
 
         bool is_started;
@@ -380,10 +382,10 @@ void app_config_push_recent_rom(struct app *app, char const *path);
 /* emulator.c */
 void app_emulator_process_all_notifs(struct app *app);
 bool app_emulator_configure(struct app *app, char const *rom_path);
+void app_emulator_reset(struct app *app);
 void app_emulator_stop(struct app *app);
 void app_emulator_run(struct app *app);
 void app_emulator_pause(struct app *app);
-void app_emulator_reset(struct app *app);
 void app_emulator_exit(struct app *app);
 void app_emulator_key(struct app *app, enum keys key, bool pressed);
 void app_emulator_speed(struct app *app, uint32_t);
