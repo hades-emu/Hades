@@ -1,7 +1,7 @@
 # 🔥 Hades
 
 ![license](https://img.shields.io/github/license/arignir/hades)
-[![Build](https://github.com/Arignir/Hades/actions/workflows/main.yml/badge.svg)](https://github.com/Arignir/Hades/actions/workflows/main.yml)
+[![Build](https://github.com/Arignir/Hades/actions/workflows/build.yml/badge.svg)](https://github.com/Arignir/Hades/actions/workflows/build.yml)
 
 <p align="center"><img src="https://i.imgur.com/4OrVpX2.png"></p>
 <p align="center"><i>A Nintendo Game Boy Advance Emulator</i></p>
