@@ -36,11 +36,19 @@ jobs:
           mv AGB_*.gba ags.gba
 
           # Download the remaining testing ROMs
-          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/arm/arm.gba
-          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/thumb/thumb.gba
-          wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/dma-start-delay.gba
-          wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/openbus-bios.gba
-          wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/timer-basic.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/arm/arm.gba -O jsmolka-arm.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/bios/bios.gba -O jsmolka-bios.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/memory/memory.gba -O jsmolka-memory.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/nes/nes.gba -O jsmolka-nes.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/thumb/thumb.gba -O jsmolka-thumb.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/unsafe/unsafe.gba -O jsmolka-unsafe.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/save/flash64.gba -O jsmolka-flash64.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/save/flash128.gba -O jsmolka-flash128.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/save/none.gba -O jsmolka-none.gba
+          wget https://raw.githubusercontent.com/jsmolka/gba-tests/master/save/sram.gba -O jsmolka-sram.gba
+          wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/dma-start-delay.gba -O hades-dma-start-delay.gba
+          wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/openbus-bios.gba -O hades-openbus-bios.gba
+          wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/timer-basic.gba -O hades-timer-basic.gba
         env:
           BIOS_DATA: ${{ secrets.BIOS_DATA }}
           BIOS_KEY: ${{ secrets.BIOS_KEY }}

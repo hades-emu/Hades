@@ -32,7 +32,7 @@ mem_backup_storage_read8(
             return (gba->shared_data.backup_storage.data[addr & SRAM_MASK]);
             break;
         default:
-            return (0);
+            return (0xFF);
     }
 }
 

@@ -314,8 +314,10 @@ gba_state_reset(
         }
 
         if (gba->shared_data.backup_storage.size) {
-            gba->shared_data.backup_storage.data = calloc(1, gba->shared_data.backup_storage.size);
+            gba->shared_data.backup_storage.data = malloc(gba->shared_data.backup_storage.size);
             hs_assert(gba->shared_data.backup_storage.data);
+
+            memset(gba->shared_data.backup_storage.data, 0xFF, gba->shared_data.backup_storage.size);
 
             if (config->backup_storage.data && config->backup_storage.size) {
                 memcpy(gba->shared_data.backup_storage.data, config->backup_storage.data, min(gba->shared_data.backup_storage.size, config->backup_storage.size));

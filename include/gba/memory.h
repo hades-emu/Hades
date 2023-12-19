@@ -91,13 +91,13 @@ enum access_types {
 #define CART_REGION_END         (CART_2_END >> 24)
 
 #define SRAM_START              (0x0E000000)
-#define SRAM_END                (0x0E00FFFF)
+#define SRAM_END                (0x0E007FFF)
 #define SRAM_SIZE               (SRAM_END - SRAM_START + 1)
 #define SRAM_MASK               (SRAM_END - SRAM_START)
 #define SRAM_REGION             (SRAM_START >> 24)
 
 #define SRAM_MIRROR_START       (0x0F000000)
-#define SRAM_MIRROR_END         (0x0F00FFFF)
+#define SRAM_MIRROR_END         (0x0F007FFF)
 #define SRAM_MIRROR_REGION      (SRAM_MIRROR_START >> 24)
 
 #define FLASH_START             (0x0E000000)
