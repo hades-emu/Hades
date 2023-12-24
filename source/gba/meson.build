@@ -10,6 +10,10 @@
 libgba = static_library(
     'gba',
     'apu/apu.c',
+    'apu/fifo.c',
+    'apu/modules.c',
+    'apu/noise.c',
+    'apu/tone.c',
     'apu/wave.c',
     'core/arm/alu.c',
     'core/arm/bdt.c',

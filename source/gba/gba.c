@@ -219,16 +219,17 @@ gba_state_reset(
         apu = &gba->apu;
         memset(apu, 0, sizeof(*apu));
 
-        // Wave Channel
+        gba->apu.tone_and_sweep.step_handler = INVALID_EVENT_HANDLE;
+        gba->apu.tone.step_handler = INVALID_EVENT_HANDLE;
         gba->apu.wave.step_handler = INVALID_EVENT_HANDLE;
-        gba->apu.wave.counter_handler = INVALID_EVENT_HANDLE;
+        gba->apu.noise.step_handler = INVALID_EVENT_HANDLE;
 
         sched_add_event(
             gba,
             NEW_REPEAT_EVENT(
-                SCHED_EVENT_APU_SEQUENCER,
+                SCHED_EVENT_APU_MODULES_STEP,
                 0,
-                GBA_CYCLES_PER_SECOND / 256
+                GBA_CYCLES_PER_SECOND / 512
             )
         );
 

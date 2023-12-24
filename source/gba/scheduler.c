@@ -19,9 +19,12 @@ void (*sched_event_callbacks[])(struct gba *gba, struct event_args args) = {
     [SCHED_EVENT_PPU_HBLANK] = ppu_hblank,
     [SCHED_EVENT_TIMER_OVERFLOW] = timer_overflow,
     [SCHED_EVENT_TIMER_STOP] = timer_stop,
-    [SCHED_EVENT_APU_SEQUENCER] = apu_sequencer,
+    [SCHED_EVENT_APU_MODULES_STEP] = apu_modules_step,
     [SCHED_EVENT_APU_RESAMPLE] = apu_resample,
+    [SCHED_EVENT_APU_TONE_AND_SWEEP_STEP] = apu_tone_and_sweep_step,
+    [SCHED_EVENT_APU_TONE_STEP] = apu_tone_step,
     [SCHED_EVENT_APU_WAVE_STEP] = apu_wave_step,
+    [SCHED_EVENT_APU_NOISE_STEP] = apu_noise_step,
     [SCHED_EVENT_DMA_ADD_PENDING] = mem_dma_add_to_pending,
 };
 

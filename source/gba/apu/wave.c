@@ -14,30 +14,28 @@
 
 static int16_t volume_lut[4] = { 0, 4, 2, 1};
 
-void
-apu_wave_init(
-    struct gba *gba
-) {
-    gba->apu.wave.step_handler = INVALID_EVENT_HANDLE;
-    gba->apu.wave.counter_handler = INVALID_EVENT_HANDLE;
-}
+#define CHANNEL_FREQUENCY_AS_CYCLES(x)      ((GBA_CYCLES_PER_SECOND / 2097152) * (2048 - (x)))
 
 void
 apu_wave_reset(
     struct gba *gba
 ) {
-    size_t period;
+    uint64_t period;
 
     gba->io.sound3cnt_x.reset = false;
+
     apu_wave_stop(gba);
 
-    if (gba->io.sound3cnt_x.use_length) {
-        gba->apu.wave.length = 256 - gba->io.sound3cnt_h.length;
-    } else {
-        gba->apu.wave.length = 0;
-    }
+    gba->apu.wave.enabled = true;
+    gba->apu.wave.step = 0;
 
-    period = GBA_CYCLES_PER_SECOND / (2097152 / (2048 - gba->io.sound3cnt_x.sample_rate));
+    apu_modules_counter_reset(
+        &gba->apu.wave.counter,
+        gba->io.sound3cnt_x.use_length,
+        gba->io.sound3cnt_x.use_length ? 256 - gba->io.sound3cnt_h.length : 0
+    );
+
+    period = CHANNEL_FREQUENCY_AS_CYCLES(gba->io.sound3cnt_x.sample_rate);
 
     gba->apu.wave.step_handler = sched_add_event(
         gba,
@@ -53,20 +51,15 @@ void
 apu_wave_stop(
     struct gba *gba
 ) {
-    gba->apu.latch.wave = 0;
+    gba->io.soundcnt_x.sound_3_status = false;
+    gba->apu.latch.channel_3 = 0;
     gba->apu.wave.step = 0;
-    gba->apu.wave.length = 0;
-    gba->io.soundcnt_x.sound_1_status = false;
+    gba->apu.wave.enabled = false;
 
     if (gba->apu.wave.step_handler != INVALID_EVENT_HANDLE) {
         sched_cancel_event(gba, gba->apu.wave.step_handler);
+        gba->apu.wave.step_handler = INVALID_EVENT_HANDLE;
     }
-    gba->apu.wave.step_handler = INVALID_EVENT_HANDLE;
-
-    if (gba->apu.wave.counter_handler != INVALID_EVENT_HANDLE) {
-        sched_cancel_event(gba, gba->apu.wave.counter_handler);
-    }
-    gba->apu.wave.counter_handler = INVALID_EVENT_HANDLE;
 }
 
 /*
@@ -81,12 +74,12 @@ apu_wave_step(
     uint8_t byte;
     int16_t sample;
 
-    if (!gba->io.sound3cnt_l.enable) {
+    if (!gba->io.sound3cnt_l.enable || !gba->apu.wave.enabled) {
         apu_wave_stop(gba);
         return ;
     }
 
-    gba->io.soundcnt_x.sound_1_status = true;
+    gba->io.soundcnt_x.sound_3_status = true;
 
     byte = gba->io.waveram[gba->io.sound3cnt_l.bank_select][gba->apu.wave.step / 2];
 
@@ -96,13 +89,19 @@ apu_wave_step(
         byte >>= 4;
     }
 
-    // Recenter the sample around 0.
-    sample = byte - 8;
+    // Center the sample around 0.
+    sample = byte - 8; // [-8; 7]
+
+    // Apply counter
+    sample *= gba->io.sound3cnt_x.use_length ? (gba->apu.wave.counter.value > 0) : 1; // [-8; 7]
 
     // Apply volume
-    sample *= gba->io.sound3cnt_h.force_volume ? 3 : volume_lut[gba->io.sound3cnt_h.volume];
+    sample *= gba->io.sound3cnt_h.force_volume ? 3 : volume_lut[gba->io.sound3cnt_h.volume]; // [-32; 28], since volume is at most 4
 
-    gba->apu.latch.wave = sample;
+    // Adjust the volume to match the other PSG channels
+    sample *= 4; // [-128; 112]
+
+    gba->apu.latch.channel_3 = sample;
 
     // Swap bank if we reached the end of this one and `bank_mode` is 1.
     ++gba->apu.wave.step;

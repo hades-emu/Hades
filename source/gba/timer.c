@@ -92,7 +92,7 @@ timer_overflow(
     }
 
     if (timer_idx == 0 || timer_idx == 1) {
-        apu_on_timer_overflow(gba, timer_idx);
+        apu_fifo_timer_overflow(gba, timer_idx);
     }
 
     if (timer_idx < 3 && gba->io.timers[timer_idx + 1].control.enable && gba->io.timers[timer_idx + 1].control.count_up) {

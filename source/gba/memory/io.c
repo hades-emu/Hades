@@ -196,19 +196,43 @@ mem_io_read8(
         case IO_REG_BLDALPHA + 1:           return (io->bldalpha.bytes[1]);
 
         /* Sound */
-        case IO_REG_SOUND3CNT_L:            return (io->sound3cnt_l.bytes[0]);
-        case IO_REG_SOUND3CNT_L + 1:        return (io->sound3cnt_l.bytes[1]);
-        case IO_REG_SOUND3CNT_H:            return (io->sound3cnt_h.bytes[0]);
-        case IO_REG_SOUND3CNT_H + 1:        return (io->sound3cnt_h.bytes[1]);
-        case IO_REG_SOUND3CNT_X:            return (io->sound3cnt_x.bytes[0]);
-        case IO_REG_SOUND3CNT_X + 1:        return (io->sound3cnt_x.bytes[1]);
+        case IO_REG_SOUND1CNT_L:            return (io->sound1cnt_l.bytes[0]);
+        case IO_REG_SOUND1CNT_L + 1:        return (io->sound1cnt_l.bytes[1]);
+        case IO_REG_SOUND1CNT_H:            return (io->sound1cnt_h.bytes[0] & 0xC0);
+        case IO_REG_SOUND1CNT_H + 1:        return (io->sound1cnt_h.bytes[1]);
+        case IO_REG_SOUND1CNT_X:            return (0);
+        case IO_REG_SOUND1CNT_X + 1:        return (io->sound1cnt_x.bytes[1] & 0x40);
+        case IO_REG_SOUND1CNT_X + 2:        return (0);
+        case IO_REG_SOUND1CNT_X + 3:        return (0);
+        case IO_REG_SOUND2CNT_L:            return (io->sound2cnt_l.bytes[0] & 0xC0);
+        case IO_REG_SOUND2CNT_L + 1:        return (io->sound2cnt_l.bytes[1]);
+        case IO_REG_SOUND2CNT_L + 2:        return (0);
+        case IO_REG_SOUND2CNT_L + 3:        return (0);
+        case IO_REG_SOUND2CNT_H:            return (0);
+        case IO_REG_SOUND2CNT_H + 1:        return (io->sound2cnt_h.bytes[1] & 0x40);
+        case IO_REG_SOUND2CNT_H + 2:        return (0);
+        case IO_REG_SOUND2CNT_H + 3:        return (0);
+        case IO_REG_SOUND3CNT_L:            return (io->sound3cnt_l.bytes[0] & 0xE0);
+        case IO_REG_SOUND3CNT_L + 1:        return (0);
+        case IO_REG_SOUND3CNT_H:            return (0);
+        case IO_REG_SOUND3CNT_H + 1:        return (io->sound3cnt_h.bytes[1] & 0xE0);
+        case IO_REG_SOUND3CNT_X:            return (0);
+        case IO_REG_SOUND3CNT_X + 1:        return (io->sound3cnt_x.bytes[1] & 0x40);
         case IO_REG_SOUND3CNT_X + 2:
         case IO_REG_SOUND3CNT_X + 3:        return (0);
+        case IO_REG_SOUND4CNT_L:            return (0);
+        case IO_REG_SOUND4CNT_L + 1:        return (io->sound4cnt_l.bytes[1]);
+        case IO_REG_SOUND4CNT_L + 2:        return (0);
+        case IO_REG_SOUND4CNT_L + 3:        return (0);
+        case IO_REG_SOUND4CNT_H:            return (io->sound4cnt_h.bytes[0]);
+        case IO_REG_SOUND4CNT_H + 1:        return (io->sound4cnt_h.bytes[1] & 0x40);
+        case IO_REG_SOUND4CNT_H + 2:        return (0);
+        case IO_REG_SOUND4CNT_H + 3:        return (0);
         case IO_REG_SOUNDCNT_L:             return (io->soundcnt_l.bytes[0]);
         case IO_REG_SOUNDCNT_L + 1:         return (io->soundcnt_l.bytes[1]);
         case IO_REG_SOUNDCNT_H:             return (io->soundcnt_h.bytes[0]);
         case IO_REG_SOUNDCNT_H + 1:         return (io->soundcnt_h.bytes[1]);
-        case IO_REG_SOUNDCNT_X:             return (io->soundcnt_x.bytes[0]);
+        case IO_REG_SOUNDCNT_X:             return (io->soundcnt_x.bytes[0] & 0x8F);
         case IO_REG_SOUNDCNT_X + 1:
         case IO_REG_SOUNDCNT_X + 2:
         case IO_REG_SOUNDCNT_X + 3:         return (0);
@@ -306,6 +330,12 @@ mem_io_read8(
         case IO_REG_SIOCNT + 1:             return (io->siocnt.bytes[1]);
         case IO_REG_RCNT:                   return (io->rcnt.bytes[0]);
         case IO_REG_RCNT + 1:               return (io->rcnt.bytes[1]);
+        case IO_REG_IR:                     return (0);
+        case IO_REG_IR + 1:                 return (0);
+        case IO_REG_UNKNOWN_1:              return (0);
+        case IO_REG_UNKNOWN_1 + 1:          return (0);
+        case IO_REG_UNKNOWN_2:              return (0);
+        case IO_REG_UNKNOWN_2 + 1:          return (0);
 
         /* Interrupts */
         case IO_REG_IE:                     return (io->int_enabled.bytes[0]);
@@ -320,6 +350,8 @@ mem_io_read8(
         case IO_REG_IME + 1:
         case IO_REG_IME + 2:
         case IO_REG_IME + 3:                return (0);
+        case IO_REG_UNKNOWN_3:              return (0);
+        case IO_REG_UNKNOWN_3 + 1:          return (0);
 
         /* System */
         case IO_REG_POSTFLG:                return (io->postflg);
@@ -436,6 +468,47 @@ mem_io_write8(
         case IO_REG_BLDY + 1:               io->bldy.bytes[1] = val; break;
 
         /* Sound */
+        case IO_REG_SOUND1CNT_L:            io->sound1cnt_l.bytes[0] = val & 0x7F; break;
+        case IO_REG_SOUND1CNT_H:            io->sound1cnt_h.bytes[0] = val; break;
+        case IO_REG_SOUND1CNT_H + 1: {
+            io->sound1cnt_h.bytes[1] = val;
+
+            // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+            if (!gba->io.sound1cnt_h.envelope_direction && !gba->io.sound1cnt_h.envelope_initial_volume) {
+                apu_tone_and_sweep_stop(gba);
+            }
+
+            break;
+        };
+        case IO_REG_SOUND1CNT_X:            io->sound1cnt_x.bytes[0] = val; break;
+        case IO_REG_SOUND1CNT_X + 1: {
+            io->sound1cnt_x.bytes[1] = val;
+            if (io->sound1cnt_x.reset) {
+                apu_tone_and_sweep_reset(gba);
+            }
+            io->sound1cnt_x.reset = false;
+            break;
+        };
+        case IO_REG_SOUND2CNT_L:            io->sound2cnt_l.bytes[0] = val; break;
+        case IO_REG_SOUND2CNT_L + 1: {
+            io->sound2cnt_l.bytes[1] = val;
+
+            // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+            if (!gba->io.sound2cnt_l.envelope_direction && !gba->io.sound2cnt_l.envelope_initial_volume) {
+                apu_tone_stop(gba);
+            }
+
+            break;
+        };
+        case IO_REG_SOUND2CNT_H:            io->sound2cnt_h.bytes[0] = val; break;
+        case IO_REG_SOUND2CNT_H + 1: {
+            io->sound2cnt_h.bytes[1] = val;
+            if (io->sound2cnt_h.reset) {
+                apu_tone_reset(gba);
+            }
+            io->sound2cnt_h.reset = false;
+            break;
+        };
         case IO_REG_SOUND3CNT_L: {
             io->sound3cnt_l.bytes[0] = val;
             if (!io->sound3cnt_l.enable) {
@@ -454,7 +527,27 @@ mem_io_write8(
             io->sound3cnt_x.reset = false;
             break;
         };
-        case IO_REG_SOUNDCNT_L:             io->soundcnt_l.bytes[0] = val; break;
+        case IO_REG_SOUND4CNT_L:            io->sound4cnt_l.bytes[0] = val; break;
+        case IO_REG_SOUND4CNT_L + 1: {
+            io->sound4cnt_l.bytes[1] = val;
+
+            // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+            if (!gba->io.sound4cnt_l.envelope_direction && !gba->io.sound4cnt_l.envelope_initial_volume) {
+                apu_tone_and_sweep_stop(gba);
+            }
+
+            break;
+        };
+        case IO_REG_SOUND4CNT_H:            io->sound4cnt_h.bytes[0] = val; break;
+        case IO_REG_SOUND4CNT_H + 1: {
+            io->sound4cnt_h.bytes[1] = val;
+            if (io->sound4cnt_h.reset) {
+                apu_noise_reset(gba);
+            }
+            io->sound4cnt_h.reset = false;
+            break;
+        };
+        case IO_REG_SOUNDCNT_L:             io->soundcnt_l.bytes[0] = val & 0x77; break;
         case IO_REG_SOUNDCNT_L + 1:         io->soundcnt_l.bytes[1] = val; break;
         case IO_REG_SOUNDCNT_H:             io->soundcnt_h.bytes[0] = val & 0x0F; break;
         case IO_REG_SOUNDCNT_H + 1: {

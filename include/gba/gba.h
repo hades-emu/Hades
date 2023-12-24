@@ -15,7 +15,7 @@
 #define GBA_SCREEN_REAL_HEIGHT          228
 #define GBA_CYCLES_PER_PIXEL            4
 #define GBA_CYCLES_PER_FRAME            (CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH * GBA_SCREEN_REAL_HEIGHT)
-#define GBA_CYCLES_PER_SECOND           (16 * 1024 * 1024)
+#define GBA_CYCLES_PER_SECOND           ((uint64_t)(16 * 1024 * 1024))
 
 #include "hades.h"
 #include "gba/channel.h"

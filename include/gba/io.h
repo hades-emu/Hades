@@ -153,6 +153,9 @@ enum io_regs {
     /* Serial Communication (2) */
     IO_REG_SIOCNT       = 0x04000128,
     IO_REG_RCNT         = 0x04000134,
+    IO_REG_IR           = 0x04000136,
+    IO_REG_UNKNOWN_1    = 0x04000142,
+    IO_REG_UNKNOWN_2    = 0x0400015A,
 
     /* Interrupts */
 
@@ -160,6 +163,7 @@ enum io_regs {
     IO_REG_IF           = 0x04000202,
     IO_REG_WAITCNT      = 0x04000204,
     IO_REG_IME          = 0x04000208,
+    IO_REG_UNKNOWN_3    = 0x04000302,
 
     /* System */
 
@@ -487,6 +491,68 @@ struct io {
         uint8_t bytes[2];
     } bldy;
 
+    // REG_SOUND1CNT_L
+    union {
+        struct {
+            uint16_t sweep_shift_number: 3;
+            uint16_t sweep_direction: 1;
+            uint16_t sweep_step_time: 3;
+            uint16_t : 9;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound1cnt_l;
+
+    // REG_SOUND1CNT_H
+    union {
+        struct {
+            uint16_t length: 6;
+            uint16_t duty: 2;
+            uint16_t eveloppe_step_time: 3;
+            uint16_t envelope_direction: 1;
+            uint16_t envelope_initial_volume: 4;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound1cnt_h;
+
+    // REG_SOUND1CNT_X
+    union {
+        struct {
+            uint16_t sample_rate: 11;
+            uint16_t : 3;
+            uint16_t use_length: 1;
+            uint16_t reset: 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound1cnt_x;
+
+    // REG_SOUND2CNT_L
+    union {
+        struct {
+            uint16_t length: 6;
+            uint16_t duty: 2;
+            uint16_t eveloppe_step_time: 3;
+            uint16_t envelope_direction: 1;
+            uint16_t envelope_initial_volume: 4;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound2cnt_l;
+
+    // REG_SOUND2CNT_H
+    union {
+        struct {
+            uint16_t sample_rate: 11;
+            uint16_t : 3;
+            uint16_t use_length: 1;
+            uint16_t reset: 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound2cnt_h;
+
     // REG_SOUND3CNT_L
     union {
         struct {
@@ -524,12 +590,39 @@ struct io {
         uint8_t bytes[2];
     } sound3cnt_x;
 
+    // REG_SOUND4CNT_L
+    union {
+        struct {
+            uint16_t length: 6;
+            uint16_t : 2;
+            uint16_t eveloppe_step_time: 3;
+            uint16_t envelope_direction: 1;
+            uint16_t envelope_initial_volume: 4;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound4cnt_l;
+
+    // REG_SOUND4CNT_H
+    union {
+        struct {
+            uint16_t frequency_ratio: 3;
+            uint16_t width: 1;
+            uint16_t frequency_shift: 4;
+            uint16_t : 6;
+            uint16_t use_length: 1;
+            uint16_t reset: 1;
+        } __packed;
+        uint16_t raw;
+        uint8_t bytes[2];
+    } sound4cnt_h;
+
     // REG_SOUNDCNT_L
     union {
         struct {
-            uint16_t sound_right_volume: 3;
+            uint16_t channel_right_volume: 3;
             uint16_t : 1;
-            uint16_t sound_left_volume: 3;
+            uint16_t channel_left_volume: 3;
             uint16_t : 1;
             uint16_t enable_sound_1_right: 1;
             uint16_t enable_sound_2_right: 1;
@@ -547,7 +640,7 @@ struct io {
     // REG_SOUNDCNT_H
     union {
         struct {
-            uint16_t volume_sounds: 2;
+            uint16_t volume_channels: 2;
             uint16_t volume_fifo_a: 1;
             uint16_t volume_fifo_b: 1;
             uint16_t : 4;

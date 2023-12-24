@@ -118,7 +118,7 @@ debugger_cmd_io_dump_reg(
         bitfield = &reg->bitfield[i];
         value = bitfield_get_range(val, bitfield->start, bitfield->end + 1);
         printf(
-            "%s%3i%s | %-30s %s\n",
+            "%s%4i%s | %-30s %s\n",
             value ? g_light_magenta : g_dark_gray,
             value,
             g_reset,
@@ -144,9 +144,9 @@ debugger_cmd_io(
         size_t i;
 
         printf(
-            "|%.12s|%.10s|%.20s|%.20s|%.8s|\n"
-            "| %-10s | %-8s | %-18s | %-18s | %-6s |\n"
-            "|%.12s|%.10s|%.20s|%.20s|%.8s|\n",
+            "|%.12s|%.14s|%.30s|%.20s|%.8s|\n"
+            "| %-10s | %-12s | %-28s | %-18s | %-6s |\n"
+            "|%.12s|%.14s|%.30s|%.20s|%.8s|\n",
             "-------------------------------------",
             "-------------------------------------",
             "-------------------------------------",
@@ -171,7 +171,7 @@ debugger_cmd_io(
             val = debugger_cmd_io_read_register(app, reg);
 
             printf(
-                "| 0x%08x | %s%-8s%s | %-18s | ",
+                "| 0x%08x | %s%-12s%s | %-28s | ",
                 reg->address,
                 g_light_green,
                 mem_io_reg_name(reg->address),
@@ -185,7 +185,7 @@ debugger_cmd_io(
         }
 
         printf(
-            "|%.12s|%.10s|%.20s|%.20s|%.8s|\n",
+            "|%.12s|%.14s|%.30s|%.20s|%.8s|\n",
             "-------------------------------------",
             "-------------------------------------",
             "-------------------------------------",
