@@ -70,7 +70,7 @@ app_win_keybinds_editor(
 ) {
     if (app->ui.keybindings_editor.open) {
         app->ui.keybindings_editor.open = false;
-        igOpenPopup("Keybindings Editor", ImGuiPopupFlags_None);
+        igOpenPopup_Str("Keybindings Editor", ImGuiPopupFlags_None);
     }
 
     app->ui.keybindings_editor.visible = false;

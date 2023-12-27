@@ -126,8 +126,8 @@ app_win_game(
         };
     }
 
-    igPushStyleVarVec2(ImGuiStyleVar_WindowPadding, (ImVec2){.x = 0, .y = 0});
-    igPushStyleVarFloat(ImGuiStyleVar_WindowBorderSize, 0);
+    igPushStyleVar_Vec2(ImGuiStyleVar_WindowPadding, (ImVec2){.x = 0, .y = 0});
+    igPushStyleVar_Float(ImGuiStyleVar_WindowBorderSize, 0);
 
     igSetNextWindowPos((ImVec2){.x = game_pos_x, .y = (float)app->ui.menubar_size.y + game_pos_y}, ImGuiCond_Always, (ImVec2){.x = 0, .y = 0});
     igSetNextWindowSize((ImVec2){.x = game_size_x, .y = game_size_y}, ImGuiCond_Always);
@@ -137,7 +137,6 @@ app_win_game(
         NULL,
         ImGuiWindowFlags_NoScrollWithMouse
           | ImGuiWindowFlags_AlwaysAutoResize
-          | ImGuiWindowFlags_NoDocking
           | ImGuiWindowFlags_NoDecoration
           | ImGuiWindowFlags_NoBackground
           | ImGuiWindowFlags_NoBringToFrontOnFocus

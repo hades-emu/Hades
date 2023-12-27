@@ -13,6 +13,8 @@
 
 cflags += [
     '-DIMGUI_IMPL_API=extern "C"  ',
+    '-DCIMGUI_USE_OPENGL3',
+    '-DCIMGUI_USE_SDL2',
 ]
 
 imgui_inc = include_directories(
@@ -57,7 +59,7 @@ imgui = static_library(
     'cimgui/imgui/imgui_tables.cpp',
     'cimgui/imgui/imgui_widgets.cpp',
     'cimgui/imgui/backends/imgui_impl_opengl3.cpp',
-    'cimgui/imgui/backends/imgui_impl_sdl.cpp',
+    'cimgui/imgui/backends/imgui_impl_sdl2.cpp',
     include_directories: imgui_inc,
     dependencies: imgui_dep,
     c_args: cflags,

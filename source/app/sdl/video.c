@@ -421,7 +421,7 @@ app_sdl_video_render_frame(
 ) {
     /* Create the new frame */
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame(app->sdl.window);
+    ImGui_ImplSDL2_NewFrame();
     igNewFrame();
 
     /* Render the ImGui stuff */
@@ -451,17 +451,6 @@ app_sdl_video_render_frame(
 
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
-
-    if (app->ui.ioptr->ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        SDL_Window *backup_current_window;
-        SDL_GLContext backup_current_context;
-
-        backup_current_window = SDL_GL_GetCurrentWindow();
-        backup_current_context = SDL_GL_GetCurrentContext();
-        igUpdatePlatformWindows();
-        igRenderPlatformWindowsDefault(NULL,NULL);
-        SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
-    }
 
     SDL_GL_SwapWindow(app->sdl.window);
 }
