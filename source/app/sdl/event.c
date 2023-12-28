@@ -7,9 +7,6 @@
 **
 \******************************************************************************/
 
-#define SDL_MAIN_HANDLED
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-
 #include <SDL2/SDL.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>

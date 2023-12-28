@@ -9,9 +9,6 @@
 
 #pragma once
 
-#define SDL_MAIN_HANDLED
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-
 #if WITH_DEBUGGER
 #include <capstone/capstone.h>
 #endif

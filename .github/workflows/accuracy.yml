@@ -13,7 +13,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson ninja-build libsdl2-dev libglew-dev libgtk-3-dev libreadline-dev libedit-dev libcapstone-dev
+          sudo apt-get install -y meson ninja-build libsdl2-dev libglew-dev libgtk-3-dev libreadline-dev libedit-dev libcapstone-dev libarchive-dev
       - name: Build Hades w/ Debugger
         run: |
           meson build --werror -Dwith_debugger=true

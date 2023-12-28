@@ -16,10 +16,10 @@ jobs:
       - name: Install Dependencies
         uses: msys2/setup-msys2@v2
         with:
-          install: make mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-glew
+          install: make mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-glew mingw-w64-x86_64-libarchive
       - name: Build Hades
         run: |
-          meson build -Dstatic_executable=true
+          meson --buildtype=release build -Dstatic_executable=true
           cd build
           ninja
       - name: Test Hades
@@ -41,9 +41,11 @@ jobs:
           submodules: recursive
       - name: Install Dependencies
         run: |
-          brew install meson ninja sdl2 glew create-dmg
+          brew install meson ninja sdl2 glew libarchive create-dmg
       - name: Build Hades
         run: |
+          export PKG_CONFIG_PATH=/usr/local/opt/libarchive/lib/pkgconfig
+
           rm -rf /tmp/build/
           mkdir -p /tmp/build/Hades.app
 
@@ -52,13 +54,42 @@ jobs:
 
           chmod +x /tmp/build/Hades.app/Contents/MacOS/hades /tmp/build/Hades.app/Contents/MacOS/run.sh
 
+          echo "Hades dependencies, before fixing:"
           otool -L /tmp/build/Hades.app/Contents/MacOS/hades
+          echo "End of dependencies"
 
-          cp /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib /tmp/build/Hades.app/Contents/MacOS/
-          install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2-2.0.0.dylib /tmp/build/Hades.app/Contents/MacOS/hades
+          # Fix the dependencies of Hades
 
-          cp /usr/local/opt/glew/lib/libGLEW.2.2.dylib /tmp/build/Hades.app/Contents/MacOS/
-          install_name_tool -change /usr/local/opt/glew/lib/libGLEW.2.2.dylib @executable_path/libGLEW.2.2.dylib /tmp/build/Hades.app/Contents/MacOS/hades
+          declare libraries=(sdl2 glew libarchive)
+          declare dylibs=(libSDL2-2.0.0.dylib libGLEW.2.2.dylib libarchive.13.dylib)
+
+          for i in "${!libraries[@]}"; do
+            declare lib="${libraries[$i]}"
+            declare dylib="${dylibs[$i]}"
+
+            echo "Fixing ${lib} for hades"
+            cp /usr/local/opt/${lib}/lib/${dylib} /tmp/build/Hades.app/Contents/MacOS/
+            install_name_tool -change /usr/local/opt/${lib}/lib/${dylib} @executable_path/${dylib} /tmp/build/Hades.app/Contents/MacOS/hades
+          done
+
+          # Fix the dependencies of libarchive
+
+          declare libraries=(xz zstd lz4 libb2)
+          declare dylibs=(liblzma.5.dylib libzstd.1.dylib liblz4.1.dylib libb2.1.dylib)
+
+          for i in "${!libraries[@]}"; do
+            declare lib="${libraries[$i]}"
+            declare dylib="${dylibs[$i]}"
+
+            echo "Fixing ${lib} for libarchive.13.dylib"
+            cp /usr/local/opt/${lib}/lib/${dylib} /tmp/build/Hades.app/Contents/MacOS/
+            install_name_tool -change /usr/local/opt/${lib}/lib/${dylib} @executable_path/${dylib} /tmp/build/Hades.app/Contents/MacOS/libarchive.13.dylib
+          done
+
+          echo "All dependencies, after fixing:"
+          otool -L /tmp/build/Hades.app/Contents/MacOS/{hades,*.dylib}
+          echo "End of dependencies"
+
       - name: Test Hades
         run: |
           /tmp/build/Hades.app/Contents/MacOS/hades --help
@@ -137,10 +168,10 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson ninja-build libsdl2-dev libglew-dev libgtk-3-dev
+          sudo apt-get install -y meson ninja-build libsdl2-dev libglew-dev libgtk-3-dev libarchive-dev
       - name: Build Hades
         run: |
-          meson build --werror
+          meson --buildtype=release build --werror
           cd build
           ninja
       - name: Test Hades

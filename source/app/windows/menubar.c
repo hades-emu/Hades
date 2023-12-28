@@ -8,7 +8,6 @@
 \******************************************************************************/
 
 #define _GNU_SOURCE
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 
 #include <string.h>
 #include <cimgui.h>
@@ -31,7 +30,7 @@ app_win_menubar_file(
 
             result = NFD_OpenDialog(
                 &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Rom", .spec = "gba"}},
+                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Rom", .spec = "gba,zip,7z,rar"}},
                 1,
                 NULL
             );

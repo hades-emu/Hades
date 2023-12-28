@@ -1,7 +1,6 @@
 [submodule "external/cimgui"]
 	path = external/cimgui
 	url = https://github.com/cimgui/cimgui.git
-	branch = Lib_Only
 [submodule "external/stb"]
 	path = external/stb
 	url = https://github.com/nothings/stb.git

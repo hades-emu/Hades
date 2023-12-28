@@ -7,6 +7,9 @@
 ##
 ################################################################################
 
+libapp_extra_cflags = [
+    '-DCIMGUI_DEFINE_ENUMS_AND_STRUCTS',
+]
 libapp_extra_deps = []
 
 ###############################
@@ -45,7 +48,7 @@ if get_option('with_debugger')
             dependency('capstone', required: true, static: get_option('static_executable')),
         ],
         include_directories: [incdir, imgui_inc],
-        c_args: cflags,
+        c_args: cflags + libapp_extra_cflags,
         link_args: ldflags,
     )
 
@@ -76,9 +79,10 @@ libapp = static_library(
     'main.c',
     dependencies: [
         dependency('threads', required: true, static: get_option('static_executable')),
-    ],
+        dependency('libarchive', version: '>=3.0', required: true, static: get_option('static_executable')),
+    ] + imgui_dep,
     link_with: [libgba, imgui, nfde, mjson] + libapp_extra_deps,
     include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],
-    c_args: cflags,
+    c_args: cflags + libapp_extra_cflags,
     link_args: ldflags,
 )

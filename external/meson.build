@@ -79,7 +79,7 @@ mjson = static_library(
     'mjson',
     'mjson/src/mjson.c',
     include_directories: mjson_inc,
-    c_args: cflags,
+    c_args: cflags + ['-Wno-unused-but-set-variable'],
     link_args: ldflags,
 )
 

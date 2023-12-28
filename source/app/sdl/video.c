@@ -7,14 +7,11 @@
 **
 \******************************************************************************/
 
-#define SDL_MAIN_HANDLED
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-
-#include <errno.h>
 #include <GL/glew.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
 #include <nfd.h>
+#include <errno.h>
 #include "hades.h"
 #include "app/app.h"
 #include "gba/gba.h"
