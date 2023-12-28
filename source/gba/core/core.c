@@ -543,7 +543,7 @@ core_compute_shift(
             if (bits == 0) {
                 carry_out = value & 0b1;
                 value >>= 1;
-                value |= core->cpsr.carry << 31;
+                value |= (uint32_t)core->cpsr.carry << 31;
             } else {
                 carry_out = (value >> (bits - 1)) & 0b1;    // Save the carry
                 value = ror32(value, bits & 0x1F);

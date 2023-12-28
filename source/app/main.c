@@ -7,33 +7,15 @@
 **
 \******************************************************************************/
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include <SDL2/SDL.h>
 #include <GL/glew.h>
-
 #include <cimgui.h>
 #include <cimgui_impl.h>
-
-#define SDL_MAIN_HANDLED
-#include <SDL2/SDL.h>
-
-#ifdef _MSC_VER
-# include <windows.h>
-#endif
-
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <getopt.h>
-
-#ifdef IMGUI_HAS_IMSTR
-# define igBegin igBegin_Str
-# define igSliderFloat igSliderFloat_Str
-# define igCheckbox igCheckbox_Str
-# define igColorEdit3 igColorEdit3_Str
-# define igButton igButton_Str
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include "hades.h"
@@ -63,7 +45,7 @@ sighandler(
 int
 main(
     int argc,
-    char * const argv[]
+    char *argv[]
 ) {
     struct app app;
     pthread_t gba_thread;

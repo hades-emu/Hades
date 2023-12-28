@@ -7,7 +7,6 @@
 **
 \******************************************************************************/
 
-#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include "app/app.h"
@@ -16,8 +15,6 @@ void
 app_sdl_init(
     struct app *app
 ) {
-    SDL_SetMainReady();
-
     /* Initialize the SDL */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) < 0) {
         logln(HS_ERROR, "Failed to init the SDL: %s", SDL_GetError());

@@ -30,6 +30,7 @@ Currently, Hades features:
   - Quick Saves (also known as Save State)
   - Real Time Clock (RTC) support
   - Color correction & LCD effects
+  - Loading games from common archive formats (`.zip`, `.7z`, `.rar`, etc.)
 
 It is the third 🥉 software emulator to pass the AGS Aging Cartridge used to test Game Boy Advance systems.
 
@@ -56,17 +57,18 @@ The build dependencies are:
   - `OpenGL`
   - `glew`
   - `gtk3`
+  - `libarchive`
 
 On Ubuntu, you can install all those dependencies with:
 
 ```bash
-$ apt install meson ninja-build gcc libsdl2-dev libglew-dev libgtk-3-dev
+$ apt install meson ninja-build gcc libsdl2-dev libglew-dev libgtk-3-dev libarchive-dev
 ```
 
 On Fedora, you can install all those dependencies with:
 
 ```bash
-$ dnf install meson ninja-build gcc SDL2-devel glew-devel gtk3-devel
+$ dnf install meson ninja-build gcc SDL2-devel glew-devel gtk3-devel libarchive-devel
 ```
 
 To build Hades, run:
@@ -84,9 +86,9 @@ Special thanks to some invaluable resources while writing Hades:
 
   - [GBATEK](https://problemkaputt.de/gbatek.htm) by Martin Korth
   - [NanoBoyAdvance](https://github.com/fleroviux/NanoBoyAdvance/) by Fleroviux
+  - [mGBA](https://mgba.io/) and [mgba-emu/suite](https://github.com/mgba-emu/suite) by Endrift
   - [gba-tests](https://github.com/jsmolka/gba-tests) by Jsmolka
   - [Cowbite](https://www.cs.rit.edu/~tjh8300/CowBite/CowBiteSpec.htm) by Tom Happ
-  - [mGBA](https://mgba.io/) and [mgba-emu/suite](https://github.com/mgba-emu/suite) by Endrift
   - [gdkGBA](https://github.com/gdkchan/gdkGBA/) by gdkChan
   - [Tonc](https://www.coranac.com/tonc/text/toc.htm) by Cearn
   - [GBA Cartridge Backup Storage](https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html) by Dillon Beliveau

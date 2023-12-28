@@ -8,7 +8,6 @@
 \******************************************************************************/
 
 #define _GNU_SOURCE
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 
 #include <cimgui.h>
 #include "hades.h"

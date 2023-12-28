@@ -10,6 +10,8 @@
 #define _GNU_SOURCE
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#include <archive.h>
+#include <archive_entry.h>
 #include <stb_image_write.h>
 #include <errno.h>
 #include "app/app.h"
@@ -264,6 +266,94 @@ app_emulator_configure_bios(
 
 static
 bool
+app_emulator_configure_rom_archive(
+    struct app *app,
+    char const *archive_path
+) {
+    struct archive *archive;
+    struct archive_entry *entry;
+    int err;
+    bool game_found;
+
+    logln(HS_INFO, "Path given identified as an archived.");
+
+    game_found = false;
+    archive = archive_read_new();
+    hs_assert(archive);
+
+    archive_read_support_filter_all(archive);
+    archive_read_support_format_all(archive);
+
+    err = archive_read_open_filename(archive, archive_path, 1024 * 1024); // 1MiB
+    if (err != ARCHIVE_OK) {
+        app_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "Failed to open the path as an archive: %s.",
+            archive_path,
+            archive_error_string(archive)
+        );
+        return (true);
+    }
+
+    while (archive_read_next_header(archive, &entry) == ARCHIVE_OK) {
+        char const *entry_name;
+        char const *ext;
+
+        entry_name = archive_entry_pathname(entry);
+        ext = strrchr(entry_name, '.');
+        if (ext && !strcmp(ext, ".gba")) {
+            size_t file_len;
+            ssize_t read_len;
+            void *data;
+
+            file_len = 0;
+            data = NULL;
+            do {
+                data = realloc(data, file_len + 1024 * 1024); // 1MiB
+                hs_assert(data);
+
+                read_len = archive_read_data(archive, data + file_len, 1024 * 1024); // 1MiB
+                if (read_len < 0) {
+                    app_new_notification(
+                        app,
+                        UI_NOTIFICATION_ERROR,
+                        "Failed to archive's entry %s: %s.",
+                        entry_name,
+                        archive_error_string(archive)
+                    );
+                    free(data);
+                    goto cleanup;
+                }
+                file_len += read_len;
+            } while (read_len > 0);
+
+            game_found = true;
+
+            app->emulation.launch_config->rom.data = data;
+            app->emulation.launch_config->rom.size = file_len;
+
+            goto cleanup;
+        }
+
+        archive_read_data_skip(archive);
+    }
+
+    app_new_notification(
+        app,
+        UI_NOTIFICATION_ERROR,
+        "No valid GBA game found in the archive.",
+        archive_path,
+        archive_error_string(archive)
+    );
+
+cleanup:
+    archive_read_free(archive);
+    return (!game_found);
+}
+
+static
+bool
 app_emulator_configure_rom(
     struct app *app,
     char const *rom_path
@@ -387,21 +477,28 @@ app_emulator_configure(
     struct message_reset event;
     char *backup_path;
     char *extension;
+    bool is_archive;
     size_t basename_len;
     size_t i;
     uint8_t *code;
 
     app_emulator_unconfigure(app);
 
+    logln(HS_INFO, "Loading game at \"%s%s%s\".", g_light_green, rom_path, g_reset);
+
     app->emulation.launch_config = calloc(1, sizeof(struct launch_config));
     hs_assert(app->emulation.launch_config);
 
     extension = strrchr(rom_path, '.');
 
+    // We consider anything that isn't ending with `.gba` or `.bin` as an archive.
+    // XXX: Should we build a hard-coded list instead?
     if (extension) {
         basename_len = extension - rom_path;
+        is_archive = (bool)(strcmp(extension, ".gba") && strcmp(extension, ".bin"));
     } else {
         basename_len = strlen(rom_path);
+        is_archive = false;
     }
 
     for (i = 0; i < MAX_QUICKSAVES; ++i) {
@@ -426,7 +523,7 @@ app_emulator_configure(
     );
 
     if (app_emulator_configure_bios(app)
-        || app_emulator_configure_rom(app, rom_path)
+        || (is_archive ? app_emulator_configure_rom_archive(app, rom_path) : app_emulator_configure_rom(app, rom_path))
         || app_emulator_configure_backup(app, backup_path)
     ) {
         app_emulator_unconfigure(app);
@@ -501,6 +598,8 @@ app_emulator_configure(
     app_emulator_wait_for_notif(app, NOTIFICATION_RESET);
 
     app_config_push_recent_rom(app, rom_path);
+
+    logln(HS_INFO, "Game successfully loaded.");
 
     return (false);
 }
