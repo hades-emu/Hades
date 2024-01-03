@@ -451,7 +451,9 @@ app_win_menubar_help(
         igSeparator();
         igSpacing();
         igText("Software written by Arignir");
-        igText("Thank you for using it <3");
+        igText("Icon designed by Totushi");
+        igSpacing();
+        igText("Thank you for using Hades <3");
         igSpacing();
         if (igButton("Close", (ImVec2){.x = igGetFontSize() * 4.f, .y = igGetFontSize() * 1.5f})) {
             igCloseCurrentPopup();
