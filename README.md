@@ -1,9 +1,9 @@
 # 🔥 Hades
 
-![license](https://img.shields.io/github/license/arignir/hades)
-[![Build](https://github.com/Arignir/Hades/actions/workflows/build.yml/badge.svg)](https://github.com/Arignir/Hades/actions/workflows/build.yml)
+![license](https://img.shields.io/github/license/hades-emu/hades)
+[![Build](https://github.com/hades-emu/hades/actions/workflows/build.yml/badge.svg)](https://github.com/hades-emu/hades/actions/workflows/build.yml)
 
-<p align="center"><img src="https://i.imgur.com/4OrVpX2.png"></p>
+<p align="center"><a href="https://hades-emu.org/"><img src="https://i.imgur.com/4OrVpX2.png"></a></p>
 <p align="center"><i>A Nintendo Game Boy Advance Emulator</i></p>
 
 ## Screenshots
@@ -34,17 +34,9 @@ Currently, Hades features:
 
 It is the third 🥉 software emulator to pass the AGS Aging Cartridge used to test Game Boy Advance systems.
 
-## Run
+## Installation
 
-You can download the latest nightly build for your favorite operating system [here](https://nightly.link/Arignir/Hades/workflows/main/master).
-
-You need a game ROM and a legitimate GameBoy Advance BIOS or a [replacement BIOS](https://github.com/Cult-of-GBA/BIOS/blob/master/bios.bin).
-
-Start Hades, then click on `File` -> `Open BIOS` and select the BIOS (`bios.bin`) you downloaded above.
-
-You can now play all your favorite games! Click on `File` -> `Open` and select the ROM (`<game>.gba`) you want to run.
-
-Alternatively, you can also drag and drop your GBA rom over `hades.exe` (Windows only).
+Follow the instructions on our [officiel website](https://hades-emu.org/download) to download and install Hades.
 
 ## Build
 
@@ -82,7 +74,7 @@ ninja
 
 ## Thanks
 
-Special thanks to some invaluable resources while writing Hades:
+Special thanks to some invaluable individuals and resources while writing Hades:
 
   - [GBATEK](https://problemkaputt.de/gbatek.htm) by Martin Korth
   - [NanoBoyAdvance](https://github.com/fleroviux/NanoBoyAdvance/) by Fleroviux
