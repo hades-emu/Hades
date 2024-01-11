@@ -41,56 +41,120 @@ jobs:
           submodules: recursive
       - name: Install Dependencies
         run: |
-          brew install meson ninja sdl2 glew libarchive create-dmg
-      - name: Build Hades
+          export BREW_ARM64_ROOT="$HOME/arm-brew/"
+          mkdir -p "$BREW_ARM64_ROOT"
+
+          echo "Downloading arm64 brew"
+          curl -Ls https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C "$BREW_ARM64_ROOT"
+
+          echo "Installing x86_64 dependencies"
+          brew install meson ninja create-dmg sdl2 glew libarchive
+
+          echo "Installing arm64 dependencies"
+          for dependency in pkg-config libb2 lz4 xz zstd sdl2 glew libarchive; do
+            echo "Fetching $dependency"
+            "$BREW_ARM64_ROOT/bin/brew" fetch --deps --force --bottle-tag=arm64_monterey "$dependency"
+
+            echo "Installing $dependency"
+            "$BREW_ARM64_ROOT/bin/brew" install $(brew --cache --bottle-tag=arm64_monterey "$dependency")
+          done
+
+      - name: Build Hades for x86_64
         run: |
-          export PKG_CONFIG_PATH=/usr/local/opt/libarchive/lib/pkgconfig
+          export BREW_X86_64_ROOT="/usr/local/"
 
-          rm -rf /tmp/build/
-          mkdir -p /tmp/build/Hades.app
+          # Circumvent a bug with meson that fails to find static dependencies of dependencies by providing
+          # a directory containing only the static archives (.a), without the .dylib next to them.
+          mkdir libs-x86_64
+          cp $BREW_X86_64_ROOT/lib/*.a ./libs-x86_64/
 
-          meson --buildtype=release --prefix=/tmp/build/Hades.app --bindir=Contents/MacOS build --werror
-          ninja -C build install
+          export PKG_CONFIG_PATH="$BREW_X86_64_ROOT/opt/libarchive/lib/pkgconfig"
+          export PATH="$BREW_X86_64_ROOT/bin:$PATH"
+          export LDFLAGS="-L$(pwd)/libs-x86_64/"
 
-          chmod +x /tmp/build/Hades.app/Contents/MacOS/hades /tmp/build/Hades.app/Contents/MacOS/run.sh
+          rm -rf /tmp/build-x86_64/
+          mkdir -p /tmp/build-x86_64/Hades.app
 
-          echo "Hades dependencies, before fixing:"
+          meson --buildtype=release --prefix=/tmp/build-x86_64/Hades.app --bindir=Contents/MacOS build-x64 --werror -Dstatic_dependencies=true
+          ninja -C build-x64 install
+
+      - name: Build Hades for arm64
+        run: |
+          export BREW_ARM64_ROOT="$HOME/arm-brew/"
+
+          # Circumvent a bug with meson that fails to find static dependencies of dependencies by providing
+          # a directory containing only the static archives (.a), without the .dylib next to them.
+          mkdir libs-arm64
+          cp -v $BREW_ARM64_ROOT/lib/*.a ./libs-arm64/
+
+          export PKG_CONFIG_PATH="$BREW_ARM64_ROOT/opt/libarchive/lib/pkgconfig"
+          export PATH="$BREW_ARM64_ROOT/bin:$PATH"
+
+          cat > arm64-apple-macos << EOF
+          [host_machine]
+          system = 'darwin'
+          cpu_family = 'aarch64'
+          cpu = 'arm64'
+          endian = 'little'
+
+          [binaries]
+          c = ['clang']
+          cpp = ['clang++']
+          objc = ['clang']
+          objcpp = ['clang++']
+          ar = ['ar']
+          strip = ['strip']
+          pkg-config = ['$BREW_ARM64_ROOT/bin/pkg-config']
+
+          [constants]
+          target_flags = ['-target', 'arm64-apple-macos12']
+          include_flags = ['-I$BREW_ARM64_ROOT/include']
+          link_flags = ['-L$PWD/libs-arm64', '-L$BREW_ARM64_ROOT/lib']
+
+          [built-in options]
+          c_args = target_flags + include_flags
+          cpp_args = target_flags + include_flags
+          objc_args = target_flags + include_flags
+          objcpp_args = target_flags + include_flags
+          c_link_args = target_flags + link_flags
+          cpp_link_args = target_flags + link_flags
+          objc_link_args = target_flags + link_flags
+          objcpp_link_args = target_flags + link_flags
+          EOF
+
+          rm -rf /tmp/build-arm64/
+          mkdir -p /tmp/build-arm64/Hades.app
+
+          meson --cross-file ./arm64-apple-macos --buildtype=release --prefix=/tmp/build-arm64/Hades.app --bindir=Contents/MacOS build-arm64 --werror -Dstatic_dependencies=true
+          ninja -C build-arm64 install
+
+      - name: Build Hades Universal App
+        run: |
+          export BREW_X86_64_ROOT="/usr/local/"
+          export BREW_ARM64_ROOT="$HOME/arm-brew/"
+
+          echo "Hades x86_64 Dependencies"
+          otool -L /tmp/build-x86_64/Hades.app/Contents/MacOS/hades | grep /usr/local && false
+
+          echo "Hades arm64 Dependencies"
+          otool -L /tmp/build-arm64/Hades.app/Contents/MacOS/hades | grep /arm-brew/ && false
+
+          # Copy the application & remove all binaries
+          cp -r /tmp/build-arm64/ /tmp/build
+          rm -rf /tmp/build/Hades.app/Contents/MacOS/hades
+          rm -rf /tmp/build/Hades.app/Contents/MacOS/*.dylib
+
+          # Create the universal Hades binary
+          lipo -create -output /tmp/build/Hades.app/Contents/MacOS/hades /tmp/build-x86_64/Hades.app/Contents/MacOS/hades /tmp/build-arm64/Hades.app/Contents/MacOS/hades
+
+          echo "Hades (Universal) Dependencies:"
           otool -L /tmp/build/Hades.app/Contents/MacOS/hades
           echo "End of dependencies"
 
-          # Fix the dependencies of Hades
+          # Set permissions
+          chmod +x /tmp/build/Hades.app/Contents/MacOS/hades /tmp/build/Hades.app/Contents/MacOS/run.sh
 
-          declare libraries=(sdl2 glew libarchive)
-          declare dylibs=(libSDL2-2.0.0.dylib libGLEW.2.2.dylib libarchive.13.dylib)
-
-          for i in "${!libraries[@]}"; do
-            declare lib="${libraries[$i]}"
-            declare dylib="${dylibs[$i]}"
-
-            echo "Fixing ${lib} for hades"
-            cp /usr/local/opt/${lib}/lib/${dylib} /tmp/build/Hades.app/Contents/MacOS/
-            install_name_tool -change /usr/local/opt/${lib}/lib/${dylib} @executable_path/${dylib} /tmp/build/Hades.app/Contents/MacOS/hades
-          done
-
-          # Fix the dependencies of libarchive
-
-          declare libraries=(xz zstd lz4 libb2)
-          declare dylibs=(liblzma.5.dylib libzstd.1.dylib liblz4.1.dylib libb2.1.dylib)
-
-          for i in "${!libraries[@]}"; do
-            declare lib="${libraries[$i]}"
-            declare dylib="${dylibs[$i]}"
-
-            echo "Fixing ${lib} for libarchive.13.dylib"
-            cp /usr/local/opt/${lib}/lib/${dylib} /tmp/build/Hades.app/Contents/MacOS/
-            install_name_tool -change /usr/local/opt/${lib}/lib/${dylib} @executable_path/${dylib} /tmp/build/Hades.app/Contents/MacOS/libarchive.13.dylib
-          done
-
-          echo "All dependencies, after fixing:"
-          otool -L /tmp/build/Hades.app/Contents/MacOS/{hades,*.dylib}
-          echo "End of dependencies"
-
-      - name: Test Hades
+      - name: Test Hades App
         run: |
           /tmp/build/Hades.app/Contents/MacOS/hades --help
 
@@ -104,6 +168,7 @@ jobs:
           security default-keychain -s build.keychain
           security unlock-keychain -p test123 build.keychain
           security import certificate.p12 -k build.keychain -P "$MACOS_CODESIGN_CRT_PWD" -T /usr/bin/codesign
+
           # Delete certificate to avoid leaking it to next steps
           rm certificate.p12
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k test123 build.keychain
@@ -121,7 +186,7 @@ jobs:
           MACOS_CODESIGN_CRT_PWD: ${{ secrets.MACOS_CODESIGN_CRT_PWD }}
           MACOS_CODESIGN_CRT_IDENTITY: ${{ secrets.MACOS_CODESIGN_CRT_IDENTITY }}
 
-      - name: Pack Hades
+      - name: Create Hades DMG
         run: |
           rm -rf Hades.dmg
 

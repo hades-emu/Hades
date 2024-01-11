@@ -27,6 +27,8 @@ ldflags = [
     # '-fsanitize=undefined',
 ]
 
+static_dependencies = get_option('static_executable') or get_option('static_dependencies')
+
 if get_option('static_executable')
     cflags += ['-static']
     ldflags += ['-static']

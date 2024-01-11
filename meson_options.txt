@@ -1,2 +1,3 @@
 option('static_executable', type: 'boolean', value: false, description: 'Build hades as a static executable.')
+option('static_dependencies', type: 'boolean', value: false, description: 'Similar to `static_executable\' but only link the external dependencies and not the system ones.')
 option('with_debugger', type: 'boolean', value: false, description: 'Build hades with its builtin debugger.')

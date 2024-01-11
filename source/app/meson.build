@@ -44,8 +44,8 @@ if get_option('with_debugger')
         'dbg/dbg.c',
         'dbg/io.c',
         dependencies: [
-            dependency('libedit', required: true, static: get_option('static_executable')),
-            dependency('capstone', required: true, static: get_option('static_executable')),
+            dependency('libedit', required: true, static: static_dependencies),
+            dependency('capstone', required: true, static: static_dependencies),
         ],
         include_directories: [incdir, imgui_inc],
         c_args: cflags + libapp_extra_cflags,
@@ -78,8 +78,8 @@ libapp = static_library(
     'bindings.c',
     'main.c',
     dependencies: [
-        dependency('threads', required: true, static: get_option('static_executable')),
-        dependency('libarchive', version: '>=3.0', required: true, static: get_option('static_executable')),
+        dependency('threads', required: true, static: static_dependencies),
+        dependency('libarchive', version: '>=3.0', required: true, static: static_dependencies),
     ] + imgui_dep,
     link_with: [libgba, imgui, nfde, mjson] + libapp_extra_deps,
     include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],

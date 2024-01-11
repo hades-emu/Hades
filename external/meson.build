@@ -24,8 +24,8 @@ imgui_inc = include_directories(
 )
 
 imgui_dep = [
-    dependency('sdl2', version: '>=2', required: true, static: get_option('static_executable')),
-    dependency('glew', required: true, static: get_option('static_executable')),
+    dependency('sdl2', version: '>=2', required: true, static: static_dependencies),
+    dependency('glew', required: true, static: static_dependencies),
 ]
 
 if host_machine.system() == 'darwin'
@@ -34,11 +34,11 @@ if host_machine.system() == 'darwin'
     ]
 else
     imgui_dep += [
-        dependency('gl', required: true, static: get_option('static_executable')),
+        dependency('gl', required: true, static: static_dependencies),
     ]
 endif
 
-if get_option('static_executable')
+if static_dependencies
     cflags += [
         '-DGLEW_STATIC',
     ]
@@ -113,7 +113,7 @@ elif host_machine.system() == 'darwin'
 else
     nfde_src += ['nfde/src/nfd_gtk.cpp']
     nfde_dep += [
-        dependency('gtk+-3.0', required: true, static: get_option('static_executable')),
+        dependency('gtk+-3.0', required: true, static: static_dependencies),
     ]
 endif
 
