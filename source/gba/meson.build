@@ -55,7 +55,7 @@ libgba = static_library(
     'timer.c',
     include_directories: incdir,
     dependencies: [
-        cc.find_library('m', required: true, static: get_option('static_executable')),
+        cc.find_library('m', required: true, static: static_dependencies),
     ],
     c_args: cflags,
     link_args: ldflags,
