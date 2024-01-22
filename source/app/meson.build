@@ -79,7 +79,7 @@ libapp = static_library(
     'main.c',
     dependencies: [
         dependency('threads', required: true, static: static_dependencies),
-        dependency('libarchive', version: '>=3.0', required: true, static: static_dependencies),
+        dependency('libarchive', version: '>=3.0', required: true, static: static_dependencies or get_option('static_libarchive')),
     ] + imgui_dep,
     link_with: [libgba, imgui, nfde, mjson] + libapp_extra_deps,
     include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],
