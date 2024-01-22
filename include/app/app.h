@@ -367,7 +367,7 @@ void app_args_parse(struct app *app, int argc, char * const argv[]);
 
 /* bindings.c */
 void app_bindings_setup_default(struct app *app);
-void app_bindings_keyboard_clear(struct app *app, SDL_KeyCode key);
+void app_bindings_keyboard_clear(struct app *app, SDL_Keycode key);
 void app_bindings_controller_clear(struct app *app, SDL_GameControllerButton btn);
 void app_bindings_handle(struct app *app, enum bind_actions bind, bool pressed);
 

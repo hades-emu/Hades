@@ -87,7 +87,20 @@ elif host_machine.system() == 'darwin'
     install_data('./resource/macos/Info.plist', install_dir: 'Contents')
     install_data('./resource/macos/hades.icns', install_dir: 'Contents/Resources')
     install_data('./resource/macos/run.sh',     install_dir: 'Contents/MacOS')
-else  # Linux and all others (eventually)
+elif host_machine.system() == 'linux'  # Linux
+    hades = executable(
+        'hades',
+        'source/log.c',
+        link_with: [libapp],
+        include_directories: [incdir, imgui_inc],
+        c_args: cflags,
+        link_args: ldflags,
+        install: true,
+    )
+
+    install_data('./resource/linux/hades.desktop', install_dir: 'share/applications')
+    install_data('./resource/linux/hades.png', install_dir: 'share/icons/hicolor/256x256/apps')
+else # Not supported officially, but there's no reason not to try and build them anyway
     hades = executable(
         'hades',
         'source/log.c',

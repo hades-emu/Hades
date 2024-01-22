@@ -24,8 +24,8 @@ imgui_inc = include_directories(
 )
 
 imgui_dep = [
-    dependency('sdl2', version: '>=2', required: true, static: static_dependencies),
-    dependency('glew', required: true, static: static_dependencies),
+    dependency('sdl2', version: '>=2', required: true, static: static_dependencies or get_option('static_sdl2')),
+    dependency('glew', required: true, static: static_dependencies or get_option('static_glew')),
 ]
 
 if host_machine.system() == 'darwin'

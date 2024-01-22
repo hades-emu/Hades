@@ -81,7 +81,7 @@ app_bindings_setup_default(
 void
 app_bindings_keyboard_clear(
     struct app *app,
-    SDL_KeyCode key
+    SDL_Keycode key
 ) {
     size_t i;
 
