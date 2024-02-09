@@ -173,6 +173,7 @@ hs_open_url(
 }
 
 #else
+
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
@@ -246,5 +247,56 @@ hs_open_url(
     );
     _out = system(command);
 }
-
 #endif
+
+/*
+** Return the platform-dependent configuration directory or NULL
+** if the system doesn't have one.
+**
+** The returned value must be freed.
+*/
+static inline
+char *
+hs_system_config_dir(void)
+{
+#if __APPLE__
+    char *sys_config_dir;
+    char *home_dir;
+
+    home_dir = getenv("HOME");
+    if (!home_dir || !hs_fexists(home_dir)) {
+        return (NULL);
+    }
+
+    asprintf(&sys_config_dir, "%s/Library/Application Support", home_dir);
+    return (sys_config_dir);
+#else
+    return (NULL);
+#endif
+}
+
+/*
+** Return the platform-dependent pictures directory or NULL
+** if the system doesn't have one.
+**
+** The returned value must be freed.
+*/
+static inline
+char *
+hs_system_pictures_dir(void)
+{
+#if __APPLE__
+    char *sys_pictures_dir;
+    char *home_dir;
+
+    home_dir = getenv("HOME");
+    if (!home_dir || !hs_fexists(home_dir)) {
+        return (NULL);
+    }
+
+    asprintf(&sys_pictures_dir, "%s/Pictures", home_dir);
+    return (sys_pictures_dir);
+#else
+    return (NULL);
+#endif
+}

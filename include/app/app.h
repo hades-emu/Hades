@@ -195,7 +195,8 @@ struct app {
     } gfx;
 
     struct {
-        char *config_path;
+        char *sys_pictures_dir_path;
+        char *sys_config_path;
 
         char *bios_path;
         char *recent_roms[MAX_RECENT_ROMS];
@@ -402,3 +403,8 @@ void app_emulator_set_breakpoints_list(struct app *app, struct breakpoint *break
 void app_emulator_set_watchpoints_list(struct app *app, struct watchpoint *watchpoints, size_t len);
 
 #endif
+
+/* path.c */
+void app_paths_update(struct app *app);
+char const *app_path_config(struct app *app);
+char const *app_path_screenshots(struct app *app);

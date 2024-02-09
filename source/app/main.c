@@ -68,7 +68,6 @@ main(
     app.emulation.rtc.autodetect = true;
     app.emulation.rtc.enabled = true;
     app.file.bios_path = strdup("./bios.bin");
-    app.file.config_path = strdup("./config.json");
     app.video.color_correction = true;
     app.video.vsync = false;
     app.video.display_size = 3;
@@ -80,6 +79,7 @@ main(
     app.ui.win.resize = true;
     app.ui.win.resize_with_ratio = false;
 
+    app_paths_update(&app);
     app_args_parse(&app, argc, argv);
     app_bindings_setup_default(&app);
     app_config_load(&app);

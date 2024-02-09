@@ -778,14 +778,14 @@ app_emulator_screenshot_path(
         app_new_notification(
             app,
             UI_NOTIFICATION_SUCCESS,
-            "Screenshot saved in \"%s\".",
+            "Screenshot saved as \"%s\".",
             path
         );
     } else {
         app_new_notification(
             app,
             UI_NOTIFICATION_ERROR,
-            "Failed to save screenshot in \"%s\".",
+            "Failed to save screenshot as \"%s\".",
             path
         );
     }
@@ -802,15 +802,26 @@ app_emulator_screenshot(
 ) {
     time_t now;
     struct tm *now_info;
-    char path[256];
+    char filename[256];
+    char const *directory;
+    char *path;
 
     time(&now);
     now_info = localtime(&now);
 
-    hs_mkdir("screenshots");
-    strftime(path, sizeof(path), "screenshots/%Y-%m-%d_%Hh%Mm%Ss.png", now_info);
+    directory = app_path_screenshots(app);
+    if (!hs_fexists(directory)) {
+        hs_mkdir(directory);
+    }
+
+    strftime(filename, sizeof(filename), "%Y-%m-%d_%Hh%Mm%Ss.png", now_info);
+
+    asprintf(&path, "%s/%s", directory, filename);
+    hs_assert(path);
 
     app_emulator_screenshot_path(app, path);
+
+    free(path);
 }
 
 void

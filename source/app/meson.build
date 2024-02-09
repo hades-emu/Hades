@@ -77,6 +77,7 @@ libapp = static_library(
     'emulator.c',
     'bindings.c',
     'main.c',
+    'path.c',
     dependencies: [
         dependency('threads', required: true, static: static_dependencies),
         dependency('libarchive', version: '>=3.0', required: true, static: static_dependencies or get_option('static_libarchive')),
