@@ -4,7 +4,7 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
   linux:
-    name: Accuracy - Linux x64
+    name: Linux x64
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Source Code
@@ -14,12 +14,20 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson ninja-build libsdl2-dev libglew-dev libgtk-3-dev libreadline-dev libedit-dev libcapstone-dev libarchive-dev
+          sudo apt-get install -y \
+            meson \
+            ninja-build \
+            libsdl2-dev \
+            libglew-dev \
+            libgtk-3-dev \
+            libreadline-dev \
+            libedit-dev \
+            libcapstone-dev \
+            libarchive-dev
       - name: Build Hades w/ Debugger
         run: |
           meson build --werror -Dwith_debugger=true
-          cd build
-          ninja
+          ninja -C build
       - name: Download Test Roms
         run: |
           # Download BIOS
@@ -59,7 +67,7 @@ jobs:
         run: |
           python3 ./accuracy/check.py --binary ./build/hades --roms ./roms/
       - name: Collect Screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: tests-screenshots
