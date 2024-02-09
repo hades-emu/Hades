@@ -86,7 +86,6 @@ elif host_machine.system() == 'darwin'
 
     install_data('./resource/macos/Info.plist', install_dir: 'Contents')
     install_data('./resource/macos/hades.icns', install_dir: 'Contents/Resources')
-    install_data('./resource/macos/run.sh',     install_dir: 'Contents/MacOS')
 elif host_machine.system() == 'linux'  # Linux
     hades = executable(
         'hades',

@@ -154,7 +154,7 @@ jobs:
           echo "End of dependencies"
 
           # Set permissions
-          chmod +x /tmp/build/Hades.app/Contents/MacOS/hades /tmp/build/Hades.app/Contents/MacOS/run.sh
+          chmod +x /tmp/build/Hades.app/Contents/MacOS/hades
 
       - name: Test Hades App
         run: |
