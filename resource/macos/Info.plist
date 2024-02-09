@@ -2,25 +2,29 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleGetInfoString</key>
-    <string>Hades</string>
-    <key>CFBundleExecutable</key>
-    <string>run.sh</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.hades-gba.www</string>
     <key>CFBundleName</key>
     <string>hades</string>
+    <key>CFBundleDisplayName</key>
+    <string>Hades</string>
+    <key>CFBundleIdentifier</key>
+    <string>org.hades-emu.www</string>
     <key>CFBundleIconFile</key>
     <string>hades.icns</string>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en-US</string>
+    <key>CFBundleExecutable</key>
+    <string>run.sh</string>
+    <key>CFBundleVersion</key>
+    <string>0.0.1</string>
     <key>CFBundleShortVersionString</key>
     <string>0.0.1</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
-    <key>IFMajorVersion</key>
-    <integer>0</integer>
-    <key>IFMinorVersion</key>
-    <integer>1</integer>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.games</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright (C) 2021-2024 - The Hades Authors</string>
 </dict>
 </plist>
