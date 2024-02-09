@@ -260,7 +260,6 @@ char *
 hs_system_config_dir(void)
 {
 #if __APPLE__
-    char *sys_config_dir;
     char *home_dir;
 
     home_dir = getenv("HOME");
@@ -268,8 +267,7 @@ hs_system_config_dir(void)
         return (NULL);
     }
 
-    asprintf(&sys_config_dir, "%s/Library/Application Support", home_dir);
-    return (sys_config_dir);
+    return (hs_format("%s/Library/Application Support", home_dir));
 #else
     return (NULL);
 #endif
@@ -286,7 +284,6 @@ char *
 hs_system_pictures_dir(void)
 {
 #if __APPLE__
-    char *sys_pictures_dir;
     char *home_dir;
 
     home_dir = getenv("HOME");
@@ -294,8 +291,7 @@ hs_system_pictures_dir(void)
         return (NULL);
     }
 
-    asprintf(&sys_pictures_dir, "%s/Pictures", home_dir);
-    return (sys_pictures_dir);
+    return (hs_format("%s/Pictures", home_dir));
 #else
     return (NULL);
 #endif

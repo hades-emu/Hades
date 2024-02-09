@@ -816,11 +816,8 @@ app_emulator_screenshot(
 
     strftime(filename, sizeof(filename), "%Y-%m-%d_%Hh%Mm%Ss.png", now_info);
 
-    asprintf(&path, "%s/%s", directory, filename);
-    hs_assert(path);
-
+    path = hs_format("%s/%s", directory, filename);
     app_emulator_screenshot_path(app, path);
-
     free(path);
 }
 

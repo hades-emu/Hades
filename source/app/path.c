@@ -24,23 +24,20 @@ app_paths_update(
     if (sys_config_dir && hs_fexists(sys_config_dir)) {
         char *hades_config_dir;
 
-        asprintf(&hades_config_dir, "%s/Hades", sys_config_dir);
-        hs_assert(hades_config_dir);
+        hades_config_dir = hs_format("%s/Hades", sys_config_dir);
 
         if (!hs_fexists(hades_config_dir)) {
             hs_mkdir(hades_config_dir);
         }
 
-        asprintf(&app->file.sys_config_path, "%s/config.json", hades_config_dir);
+        app->file.sys_config_path = hs_format("%s/config.json", hades_config_dir);
 
         free(hades_config_dir);
         free(sys_config_dir);
     }
 
     if (sys_pictures_dir && hs_fexists(sys_pictures_dir)) {
-        asprintf(&app->file.sys_pictures_dir_path, "%s/Hades", sys_pictures_dir);
-        hs_assert(app->file.sys_pictures_dir_path);
-
+        app->file.sys_pictures_dir_path = hs_format("%s/Hades", sys_pictures_dir);
         free(sys_pictures_dir);
     }
 }
