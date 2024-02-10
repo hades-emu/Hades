@@ -296,7 +296,7 @@ jobs:
           package: hades
           package_root: pkg-root
           maintainer: The Hades Authors
-          version: 0.0.1
+          version: 1.0.0
           arch: 'amd64'
           depends: 'libsdl2-2.0-0, libarchive13, libgtk-3-0, ${{ matrix.dependency-glew }}'
           desc: 'A Nintendo Game Boy Advance Emulator.'
