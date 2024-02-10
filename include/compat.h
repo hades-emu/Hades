@@ -9,6 +9,7 @@
 
 #pragma once
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include "hades.h"
@@ -247,52 +248,5 @@ hs_open_url(
     );
     _out = system(command);
 }
+
 #endif
-
-/*
-** Return the platform-dependent configuration directory or NULL
-** if the system doesn't have one.
-**
-** The returned value must be freed.
-*/
-static inline
-char *
-hs_system_config_dir(void)
-{
-#if __APPLE__
-    char *home_dir;
-
-    home_dir = getenv("HOME");
-    if (!home_dir || !hs_fexists(home_dir)) {
-        return (NULL);
-    }
-
-    return (hs_format("%s/Library/Application Support", home_dir));
-#else
-    return (NULL);
-#endif
-}
-
-/*
-** Return the platform-dependent pictures directory or NULL
-** if the system doesn't have one.
-**
-** The returned value must be freed.
-*/
-static inline
-char *
-hs_system_pictures_dir(void)
-{
-#if __APPLE__
-    char *home_dir;
-
-    home_dir = getenv("HOME");
-    if (!home_dir || !hs_fexists(home_dir)) {
-        return (NULL);
-    }
-
-    return (hs_format("%s/Pictures", home_dir));
-#else
-    return (NULL);
-#endif
-}

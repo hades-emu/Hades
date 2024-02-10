@@ -86,6 +86,7 @@ main(
 
     logln(HS_INFO, "Welcome to Hades v" HADES_VERSION);
     logln(HS_INFO, "=========================");
+    logln(HS_INFO, "Using configuration file \"%s%s%s\".", g_light_green, app_path_config(&app), g_reset);
 
     if (app.args.with_gui) {
         app_sdl_init(&app);
