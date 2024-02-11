@@ -7,28 +7,7 @@ jobs:
     name: Linux x64
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch Source Code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            meson \
-            ninja-build \
-            libsdl2-dev \
-            libglew-dev \
-            libgtk-3-dev \
-            libreadline-dev \
-            libedit-dev \
-            libcapstone-dev \
-            libarchive-dev
-      - name: Build Hades w/ Debugger
-        run: |
-          meson build --werror -Dwith_debugger=true
-          ninja -C build
-      - name: Download Test Roms
+       name: Download Test Roms
         run: |
           # Download BIOS
           echo "$BIOS_DATA" | base64 -d | gpg --pinentry-mode loopback --passphrase "$BIOS_KEY" -d -o ./bios.bin
@@ -58,11 +37,35 @@ jobs:
           wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/dma-start-delay.gba -O hades-dma-start-delay.gba
           wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/openbus-bios.gba -O hades-openbus-bios.gba
           wget https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/timer-basic.gba -O hades-timer-basic.gba
+
+          # Clear-out all secrets to not leak them to the later steps
+          unset BIOS_DATA BIOS_KEY AGS_URL AGS_KEY
         env:
           BIOS_DATA: ${{ secrets.BIOS_DATA }}
           BIOS_KEY: ${{ secrets.BIOS_KEY }}
           AGS_URL: ${{ secrets.AGS_URL }}
           AGS_KEY: ${{ secrets.AGS_KEY }}
+      - name: Fetch Source Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            meson \
+            ninja-build \
+            libsdl2-dev \
+            libglew-dev \
+            libgtk-3-dev \
+            libreadline-dev \
+            libedit-dev \
+            libcapstone-dev \
+            libarchive-dev
+      - name: Build Hades w/ Debugger
+        run: |
+          meson build --werror -Dwith_debugger=true
+          ninja -C build
       - name: Check Accuracy
         run: |
           python3 ./accuracy/check.py --binary ./build/hades --roms ./roms/
