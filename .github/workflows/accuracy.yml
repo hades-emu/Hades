@@ -12,7 +12,7 @@ jobs:
     name: Linux x64
     runs-on: ubuntu-latest
     steps:
-       name: Download Test Roms
+      - name: Download Test Roms
         run: |
           # Download BIOS
           echo "$BIOS_DATA" | base64 -d | gpg --pinentry-mode loopback --passphrase "$BIOS_KEY" -d -o ./bios.bin
