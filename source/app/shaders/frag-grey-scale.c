@@ -10,9 +10,9 @@
 #include "app/app.h"
 
 /*
-** LCD Grid effect.
+** Grey-Scale effect.
 */
-char const *SHADER_FRAG_LCD_GRID = GLSL(
+char const *SHADER_FRAG_GREY_SCALE = GLSL(
     layout(location = 0) out vec4 frag_color;
 
     in vec2 v_uv;
@@ -21,16 +21,7 @@ char const *SHADER_FRAG_LCD_GRID = GLSL(
 
     void main() {
         vec4 color = texture(u_screen_map, v_uv);
-        vec4 lcd = vec4(1.0);
-
-        int offset_x = int(mod(gl_FragCoord.x, 3.0));
-        int offset_y = int(mod(gl_FragCoord.y, 3.0));
-
-        if (offset_x == 0 || offset_y == 0) {
-            lcd = vec4(0.8);
-        }
-
-        frag_color = color * lcd;
-        frag_color.a = 1.0f;
+        float avg = (color.r + color.g + color.b) / 3.0;
+        frag_color = vec4(avg, avg, avg, 1.0);
     }
 );

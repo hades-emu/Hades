@@ -68,14 +68,14 @@ main(
     app.emulation.rtc.autodetect = true;
     app.emulation.rtc.enabled = true;
     app.file.bios_path = strdup("./bios.bin");
-    app.video.color_correction = true;
+    app.video.pixel_color_effect = PIXEL_COLOR_EFFECT_COLOR_CORRECTION;
     app.video.vsync = false;
     app.video.display_size = 3;
     app.video.aspect_ratio = ASPECT_RATIO_RESIZE;
     app.audio.mute = false;
     app.audio.level = 1.0f;
     app.audio.resample_frequency = 48000;
-    app.gfx.texture_filter = TEXTURE_FILTER_NEAREST;
+    app.video.texture_filter = TEXTURE_FILTER_NEAREST;
     app.ui.win.resize = true;
     app.ui.win.resize_with_ratio = false;
 

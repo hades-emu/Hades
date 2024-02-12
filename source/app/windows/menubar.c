@@ -321,29 +321,61 @@ app_win_menubar_video(
 
         /* Texture Filter */
         if (igBeginMenu("Texture Filter", true)) {
-            if (igMenuItem_Bool("Nearest", NULL, app->gfx.texture_filter == TEXTURE_FILTER_NEAREST, true)) {
-                app->gfx.texture_filter = TEXTURE_FILTER_NEAREST;
+            if (igMenuItem_Bool("Nearest", NULL, app->video.texture_filter == TEXTURE_FILTER_NEAREST, true)) {
+                app->video.texture_filter = TEXTURE_FILTER_NEAREST;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
-            if (igMenuItem_Bool("Linear", NULL, app->gfx.texture_filter == TEXTURE_FILTER_LINEAR, true)) {
-                app->gfx.texture_filter = TEXTURE_FILTER_LINEAR;
+            if (igMenuItem_Bool("Linear", NULL, app->video.texture_filter == TEXTURE_FILTER_LINEAR, true)) {
+                app->video.texture_filter = TEXTURE_FILTER_LINEAR;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
             igEndMenu();
         }
 
-        /* Color Correction */
-        if (igMenuItem_Bool("Color correction", NULL, app->video.color_correction, true)) {
-            app->video.color_correction ^= 1;
-            app_sdl_video_rebuild_pipeline(app);
+        /* Pixel Color Effect */
+        if (igBeginMenu("Color Effect", true)) {
+            if (igMenuItem_Bool("None", NULL, app->video.pixel_color_effect == PIXEL_COLOR_EFFECT_NONE, true)) {
+                app->video.pixel_color_effect = PIXEL_COLOR_EFFECT_NONE;
+                app_sdl_video_rebuild_pipeline(app);
+            }
+
+            igSeparator();
+
+            if (igMenuItem_Bool("Color Correction", NULL, app->video.pixel_color_effect == PIXEL_COLOR_EFFECT_COLOR_CORRECTION, true)) {
+                app->video.pixel_color_effect = PIXEL_COLOR_EFFECT_COLOR_CORRECTION;
+                app_sdl_video_rebuild_pipeline(app);
+            }
+
+            if (igMenuItem_Bool("Grey Scale", NULL, app->video.pixel_color_effect == PIXEL_COLOR_EFFECT_GREY_SCALE, true)) {
+                app->video.pixel_color_effect = PIXEL_COLOR_EFFECT_GREY_SCALE;
+                app_sdl_video_rebuild_pipeline(app);
+            }
+
+            igEndMenu();
         }
 
-        /* LCD Effect */
-        if (igMenuItem_Bool("LCD Grid Effect", NULL, app->video.lcd_grid, true)) {
-            app->video.lcd_grid ^= 1;
-            app_sdl_video_rebuild_pipeline(app);
+        /* Pixel Scaler Effect */
+        if (igBeginMenu("Scaler Effect", true)) {
+            if (igMenuItem_Bool("None", NULL, app->video.pixel_scaler_effect == PIXEL_SCALER_EFFECT_NONE, true)) {
+                app->video.pixel_scaler_effect = PIXEL_SCALER_EFFECT_NONE;
+                app_sdl_video_rebuild_pipeline(app);
+            }
+
+            igSeparator();
+
+            if (igMenuItem_Bool("LCD Grid /w RGB Stripes", NULL, app->video.pixel_scaler_effect == PIXEL_SCALER_EFFECT_LCD_GRID_WITH_RGB_STRIPES, true)) {
+                app->video.pixel_scaler_effect = PIXEL_SCALER_EFFECT_LCD_GRID_WITH_RGB_STRIPES;
+                app_sdl_video_rebuild_pipeline(app);
+            }
+
+            if (igMenuItem_Bool("LCD Grid", NULL, app->video.pixel_scaler_effect == PIXEL_SCALER_EFFECT_LCD_GRID, true)) {
+                app->video.pixel_scaler_effect = PIXEL_SCALER_EFFECT_LCD_GRID;
+                app_sdl_video_rebuild_pipeline(app);
+            }
+
+            igEndMenu();
         }
 
         /* VSync */
