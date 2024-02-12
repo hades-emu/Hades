@@ -484,8 +484,12 @@ mem_io_write8(
         case IO_REG_SOUND1CNT_X + 1: {
             io->sound1cnt_x.bytes[1] = val;
 
+            /*
+            ** Only the frequency (and not the shadow frequency) is updated on register writes.
+            ** Reference:
+            **   - https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware#Frequency_Sweep
+            */
             gba->apu.tone_and_sweep.sweep.frequency = io->sound1cnt_x.sample_rate;
-            gba->apu.tone_and_sweep.sweep.shadow_frequency = io->sound1cnt_x.sample_rate;
 
             if (io->sound1cnt_x.reset) {
                 apu_tone_and_sweep_reset(gba);
