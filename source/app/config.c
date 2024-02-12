@@ -115,17 +115,19 @@ app_config_load(
             app->video.vsync = b;
         }
 
-        if (mjson_get_bool(data, data_len, "$.video.color_correction", &b)) {
-            app->video.color_correction = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.video.lcd_grid", &b)) {
-            app->video.lcd_grid = b;
-        }
-
         if (mjson_get_number(data, data_len, "$.video.texture_filter", &d)) {
-            app->gfx.texture_filter = (int)d;
-            app->gfx.texture_filter = max(TEXTURE_FILTER_MIN, min(app->gfx.texture_filter, TEXTURE_FILTER_MAX));
+            app->video.texture_filter = (int)d;
+            app->video.texture_filter = max(TEXTURE_FILTER_MIN, min(app->video.texture_filter, TEXTURE_FILTER_MAX));
+        }
+
+        if (mjson_get_number(data, data_len, "$.video.pixel_color_effect", &d)) {
+            app->video.pixel_color_effect = (int)d;
+            app->video.pixel_color_effect = max(PIXEL_COLOR_EFFECT_MIN, min(app->video.pixel_color_effect, PIXEL_COLOR_EFFECT_MAX));
+        }
+
+        if (mjson_get_number(data, data_len, "$.video.pixel_scaler_effect", &d)) {
+            app->video.pixel_scaler_effect = (int)d;
+            app->video.pixel_scaler_effect = max(PIXEL_SCALER_EFFECT_MIN, min(app->video.pixel_scaler_effect, PIXEL_SCALER_EFFECT_MAX));
         }
     }
 
@@ -233,9 +235,9 @@ app_config_save(
                 "display_size": %d,
                 "aspect_ratio": %d,
                 "vsync": %B,
-                "color_correction": %B,
-                "lcd_grid": %B,
-                "texture_filter": %d
+                "texture_filter": %d,
+                "pixel_color_effect": %d,
+                "pixel_scaler_effect": %d
             },
 
             // Audio
@@ -260,9 +262,9 @@ app_config_save(
         (int)app->video.display_size,
         (int)app->video.aspect_ratio,
         (int)app->video.vsync,
-        (int)app->video.color_correction,
-        (int)app->video.lcd_grid,
-        (int)app->gfx.texture_filter,
+        (int)app->video.texture_filter,
+        (int)app->video.pixel_color_effect,
+        (int)app->video.pixel_scaler_effect,
         (int)app->audio.mute,
         app->audio.level
     );

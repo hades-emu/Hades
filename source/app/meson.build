@@ -66,6 +66,8 @@ libapp = static_library(
     'sdl/init.c',
     'sdl/video.c',
     'shaders/frag-color-correction.c',
+    'shaders/frag-grey-scale.c',
+    'shaders/frag-lcd-grid-with-rgb-stripes.c',
     'shaders/frag-lcd-grid.c',
     'shaders/vertex-common.c',
     'windows/game.c',

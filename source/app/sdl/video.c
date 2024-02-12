@@ -147,12 +147,14 @@ app_sdl_video_init(
 
     /* Build all the available shaders */
     app->gfx.program_color_correction = build_shader_program("color_correction", SHADER_FRAG_COLOR_CORRECTION, SHADER_VERTEX_COMMON);
-    app->gfx.program_lcd_grid = build_shader_program("lcd-grid", SHADER_FRAG_LCD_GRID, SHADER_VERTEX_COMMON);
+    app->gfx.program_grey_scale = build_shader_program("grey_scale", SHADER_FRAG_GREY_SCALE, SHADER_VERTEX_COMMON);
+    app->gfx.program_lcd_grid_with_rgb_stripes = build_shader_program("lcd_grid_with_rgb_stripes", SHADER_FRAG_LCD_GRID_WITH_RGB_STRIPES, SHADER_VERTEX_COMMON);
+    app->gfx.program_lcd_grid = build_shader_program("lcd_grid", SHADER_FRAG_LCD_GRID, SHADER_VERTEX_COMMON);
 
     /* Create the OpenGL objects required to build the pipeline */
-    glGenTextures(1, &app->gfx.game_texture_in);
-    glGenTextures(1, &app->gfx.game_texture_a);
-    glGenTextures(1, &app->gfx.game_texture_b);
+    glGenTextures(1, &app->gfx.game_texture);
+    glGenTextures(1, &app->gfx.pixel_color_texture);
+    glGenTextures(1, &app->gfx.pixel_scaler_texture);
     glGenFramebuffers(1, &app->gfx.fbo);
     glGenVertexArrays(1, &app->gfx.vao);
     glGenBuffers(1, &app->gfx.vbo);
@@ -194,7 +196,7 @@ app_sdl_video_rebuild_pipeline(
 ) {
     GLint texture_filter;
 
-    switch (app->gfx.texture_filter) {
+    switch (app->video.texture_filter) {
         case TEXTURE_FILTER_LINEAR: texture_filter = GL_LINEAR; break;
         case TEXTURE_FILTER_NEAREST: texture_filter = GL_NEAREST; break;
         default: texture_filter = GL_NEAREST; break;
@@ -202,7 +204,7 @@ app_sdl_video_rebuild_pipeline(
 
     // Setup the input texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_in);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_filter);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -218,9 +220,27 @@ app_sdl_video_rebuild_pipeline(
         NULL
     );
 
-    // Setup the A texture
+    switch (app->video.pixel_color_effect) {
+        case PIXEL_COLOR_EFFECT_COLOR_CORRECTION: {
+            app->gfx.pixel_color_program = app->gfx.program_color_correction;
+            app->gfx.use_pixel_color_program = true;
+            break;
+        };
+        case PIXEL_COLOR_EFFECT_GREY_SCALE: {
+            app->gfx.pixel_color_program = app->gfx.program_grey_scale;
+            app->gfx.use_pixel_color_program = true;
+            break;
+        };
+        default: {
+            app->gfx.pixel_color_program = 0;
+            app->gfx.use_pixel_color_program = false;
+            break;
+        };
+    }
+
+    // Setup the pixel color texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_a);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.pixel_color_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_filter);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -228,17 +248,38 @@ app_sdl_video_rebuild_pipeline(
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        GBA_SCREEN_WIDTH * 3,
-        GBA_SCREEN_HEIGHT * 3,
+        GBA_SCREEN_WIDTH,
+        GBA_SCREEN_HEIGHT,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
         NULL
     );
 
-    // Setup the B texture
+    switch (app->video.pixel_scaler_effect) {
+        case PIXEL_SCALER_EFFECT_LCD_GRID: {
+            app->gfx.pixel_scaler_program = app->gfx.program_lcd_grid;
+            app->gfx.pixel_scaler_size = 3;
+            app->gfx.use_pixel_scaler_program = true;
+            break;
+        };
+        case PIXEL_SCALER_EFFECT_LCD_GRID_WITH_RGB_STRIPES: {
+            app->gfx.pixel_scaler_program = app->gfx.program_lcd_grid_with_rgb_stripes;
+            app->gfx.pixel_scaler_size = 3;
+            app->gfx.use_pixel_scaler_program = true;
+            break;
+        };
+        default: {
+            app->gfx.pixel_scaler_program = 0;
+            app->gfx.pixel_scaler_size = 1;
+            app->gfx.use_pixel_scaler_program = false;
+            break;
+        };
+    }
+
+    // Setup the pixel scaler texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture_b);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.pixel_scaler_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_filter);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -246,28 +287,13 @@ app_sdl_video_rebuild_pipeline(
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        GBA_SCREEN_WIDTH * 3,
-        GBA_SCREEN_HEIGHT * 3,
+        GBA_SCREEN_WIDTH * app->gfx.pixel_scaler_size,
+        GBA_SCREEN_HEIGHT * app->gfx.pixel_scaler_size,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
         NULL
     );
-
-    app->gfx.active_programs_length = 0;
-
-    if (app->video.color_correction) {
-        app->gfx.active_programs[app->gfx.active_programs_length] = app->gfx.program_color_correction;
-        ++app->gfx.active_programs_length;
-    }
-
-    if (app->video.lcd_grid) {
-        app->gfx.active_programs[app->gfx.active_programs_length] = app->gfx.program_lcd_grid;
-        ++app->gfx.active_programs_length;
-    }
-
-    glBindFramebuffer(GL_FRAMEBUFFER, app->gfx.fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, app->gfx.game_texture_a, 0); // TODO FIXME
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -400,12 +426,15 @@ app_sdl_video_cleanup(
 
     // Cleanup OpenGL
     glDeleteProgram(app->gfx.program_color_correction);
+    glDeleteProgram(app->gfx.program_grey_scale);
+    glDeleteProgram(app->gfx.program_lcd_grid);
+    glDeleteProgram(app->gfx.program_lcd_grid_with_rgb_stripes);
     glDeleteBuffers(1, &app->gfx.vbo);
     glDeleteVertexArrays(1, &app->gfx.vbo);
     glDeleteFramebuffers(1, &app->gfx.fbo);
-    glDeleteTextures(1, &app->gfx.game_texture_in);
-    glDeleteTextures(1, &app->gfx.game_texture_a);
-    glDeleteTextures(1, &app->gfx.game_texture_b);
+    glDeleteTextures(1, &app->gfx.game_texture);
+    glDeleteTextures(1, &app->gfx.pixel_color_texture);
+    glDeleteTextures(1, &app->gfx.pixel_scaler_texture);
     SDL_GL_DeleteContext(app->gfx.gl_context);
 
     // Close the Wingowd

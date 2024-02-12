@@ -38,6 +38,26 @@ enum texture_filter_kind {
     TEXTURE_FILTER_MAX = 1,
 };
 
+enum pixel_color_effect_kind {
+    PIXEL_COLOR_EFFECT_MIN = 0,
+
+    PIXEL_COLOR_EFFECT_NONE = 0,
+    PIXEL_COLOR_EFFECT_COLOR_CORRECTION = 1,
+    PIXEL_COLOR_EFFECT_GREY_SCALE = 2,
+
+    PIXEL_COLOR_EFFECT_MAX = 2,
+};
+
+enum pixel_scaler_effect_kind {
+    PIXEL_SCALER_EFFECT_MIN = 0,
+
+    PIXEL_SCALER_EFFECT_NONE = 0,
+    PIXEL_SCALER_EFFECT_LCD_GRID = 1,
+    PIXEL_SCALER_EFFECT_LCD_GRID_WITH_RGB_STRIPES = 2,
+
+    PIXEL_SCALER_EFFECT_MAX = 2,
+};
+
 enum aspect_ratio {
     ASPECT_RATIO_MIN = 0,
 
@@ -179,19 +199,24 @@ struct app {
     struct {
         SDL_GLContext gl_context;
 
-        enum texture_filter_kind texture_filter;
-        GLuint game_texture_in;
-        GLuint game_texture_a;
-        GLuint game_texture_b;
+        GLuint game_texture;
+        GLuint pixel_color_texture;
+        GLuint pixel_scaler_texture;
         GLuint fbo;
         GLuint vao;
         GLuint vbo;
 
         GLuint program_color_correction;
+        GLuint program_grey_scale;
         GLuint program_lcd_grid;
+        GLuint program_lcd_grid_with_rgb_stripes;
 
-        GLuint active_programs[MAX_GFX_PROGRAMS];
-        size_t active_programs_length;
+        GLuint pixel_color_program;
+        bool use_pixel_color_program;
+
+        GLuint pixel_scaler_program;
+        size_t pixel_scaler_size;
+        bool use_pixel_scaler_program;
     } gfx;
 
     struct {
@@ -214,8 +239,9 @@ struct app {
         uint32_t display_size;
         enum aspect_ratio aspect_ratio;
         bool vsync;
-        bool color_correction;
-        bool lcd_grid;
+        enum texture_filter_kind texture_filter;
+        enum pixel_color_effect_kind pixel_color_effect;
+        enum pixel_scaler_effect_kind pixel_scaler_effect;
     } video;
 
     struct {
@@ -343,6 +369,15 @@ void app_sdl_video_rebuild_pipeline(struct app *app);
 
 /* app/shaders/frag-color-correction.c */
 extern char const *SHADER_FRAG_COLOR_CORRECTION;
+
+/* app/shaders/frag-gameboy.c */
+extern char const *SHADER_FRAG_GAMEBOY;
+
+/* app/shaders/frag-grey-scale.c */
+extern char const *SHADER_FRAG_GREY_SCALE;
+
+/* app/shaders/frag-lcd-grid-with-rgb-stripes.c */
+extern char const *SHADER_FRAG_LCD_GRID_WITH_RGB_STRIPES;
 
 /* app/shaders/frag-lcd-grid.c */
 extern char const *SHADER_FRAG_LCD_GRID;
