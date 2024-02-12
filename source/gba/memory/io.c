@@ -483,6 +483,10 @@ mem_io_write8(
         case IO_REG_SOUND1CNT_X:            io->sound1cnt_x.bytes[0] = val; break;
         case IO_REG_SOUND1CNT_X + 1: {
             io->sound1cnt_x.bytes[1] = val;
+
+            gba->apu.tone_and_sweep.sweep.frequency = io->sound1cnt_x.sample_rate;
+            gba->apu.tone_and_sweep.sweep.shadow_frequency = io->sound1cnt_x.sample_rate;
+
             if (io->sound1cnt_x.reset) {
                 apu_tone_and_sweep_reset(gba);
             }
