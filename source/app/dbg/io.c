@@ -196,7 +196,7 @@ debugger_io_init(
         debugger_io_new_bitfield(reg,  0,  2,  "Number of sweep shift",                 "(n=0-7)");
         debugger_io_new_bitfield(reg,  3,  3,  "Sweep Frequency Direction",             "(0=Increase, 1=Decrease)");
         debugger_io_new_bitfield(reg,  4,  6,  "Sweep Time; units of 7.8ms",            "(0-7, min=7.8ms, max=54.7ms)");
-        debugger_io_new_bitfield(reg,  7,  15, "Not used",                              NULL);
+        debugger_io_new_bitfield(reg,  7, 15,  "Not used",                              NULL);
 
         reg = debugger_io_new_register16(IO_REG_SOUND1CNT_H, "Channel 1 Duty/Len/Envelope", NULL);
         debugger_io_new_bitfield(reg,  0,  5,  "Sound length; units of (64-n)/256s",    "(0-63)");
@@ -205,11 +205,12 @@ debugger_io_init(
         debugger_io_new_bitfield(reg, 11, 11,  "Envelope Direction",                    "(0=Decrease, 1=Increase)");
         debugger_io_new_bitfield(reg, 12, 15,  "Initial Volume of envelope",            "(1-15, 0=No Sound)");
 
-        reg = debugger_io_new_register16(IO_REG_SOUND1CNT_X, "Channel 1 Frequency/Control", NULL);
+        reg = debugger_io_new_register16(IO_REG_SOUND1CNT_X, "Channel 1 Frequency/Control", &gba->io.sound1cnt_x.raw);
         debugger_io_new_bitfield(reg,  0, 10,  "Frequency; 131072/(2048-n)Hz",          "(0-2047)");
         debugger_io_new_bitfield(reg, 11, 13,  "Not used",                              NULL);
         debugger_io_new_bitfield(reg, 14, 14,  "Length Flag",                           "(1=Stop output when length in NR11 expires)");
-        debugger_io_new_bitfield(reg, 15, 16,  "Not used",                              NULL);
+        debugger_io_new_bitfield(reg, 15, 15,  "Initial",                               "(1=Restart Sound)");
+        debugger_io_new_bitfield(reg, 16, 16,  "Not used",                              NULL);
 
         reg = debugger_io_new_register16(IO_REG_SOUND2CNT_L, "Channel 2 Duty/Len/Envelope", NULL);
         debugger_io_new_bitfield(reg,  0,  5,  "Sound length; units of (64-n)/256s",    "(0-63)");
@@ -218,15 +219,32 @@ debugger_io_init(
         debugger_io_new_bitfield(reg, 11, 11,  "Envelope Direction",                    "(0=Decrease, 1=Increase)");
         debugger_io_new_bitfield(reg, 12, 15,  "Initial Volume of envelope",            "(1-15, 0=No Sound)");
 
-        reg = debugger_io_new_register16(IO_REG_SOUND2CNT_H, "Channel 2 Frequency/Control", NULL);
+        reg = debugger_io_new_register16(IO_REG_SOUND2CNT_H, "Channel 2 Frequency/Control", &gba->io.sound2cnt_h.raw);
         debugger_io_new_bitfield(reg,  0, 10,  "Frequency; 131072/(2048-n)Hz",          "(0-2047)");
         debugger_io_new_bitfield(reg, 11, 13,  "Not used",                              NULL);
         debugger_io_new_bitfield(reg, 14, 14,  "Length Flag",                           "(1=Stop output when length in NR11 expires)");
         debugger_io_new_bitfield(reg, 15, 16,  "Not used",                              NULL);
 
-        // TODO Channel 3
+        reg = debugger_io_new_register16(IO_REG_SOUND3CNT_L, "Channel 3 Stop/Wave RAM select", NULL);
+        debugger_io_new_bitfield(reg,  0,  4,  "Not used",                              NULL);
+        debugger_io_new_bitfield(reg,  5,  5,  "Wave RAM Dimension",                    "(0=One bank/32 digits, 1=Two banks/64 digits)");
+        debugger_io_new_bitfield(reg,  6,  6,  "Wave RAM Bank Number",                  "(0-1, see below)");
+        debugger_io_new_bitfield(reg,  7,  7,  "Sound Channel 3 Off",                   "(0=Stop, 1=Playback)");
+        debugger_io_new_bitfield(reg,  8, 15,  "Not used",                              NULL);
 
-        reg = debugger_io_new_register16(IO_REG_SOUND4CNT_L, "Channel 4 Len/Envelope", NULL);
+        reg = debugger_io_new_register16(IO_REG_SOUND3CNT_H, "Channel 3 Length/Volume", &gba->io.sound3cnt_h.raw);
+        debugger_io_new_bitfield(reg,  0,  7,  "Sound length; units of (256-n)/256s",   "(0-255)");
+        debugger_io_new_bitfield(reg,  8, 12,  "Not used",                              NULL);
+        debugger_io_new_bitfield(reg, 13, 14,  "Sound Volume",                          "(0=Mute/Zero, 1=100%, 2=50%, 3=25%)");
+        debugger_io_new_bitfield(reg, 15, 15,  "Force Volume",                          "(0=Use above, 1=Force 75% regardless of above)");
+
+        reg = debugger_io_new_register16(IO_REG_SOUND3CNT_X, "Channel 3 Frequency/Control", &gba->io.sound3cnt_x.raw);
+        debugger_io_new_bitfield(reg,  0, 10,  "Sample Rate; 2097152/(2048-n) Hz",      "(0-2047)");
+        debugger_io_new_bitfield(reg, 11, 13,  "Not used",                              NULL);
+        debugger_io_new_bitfield(reg, 14, 14,  "Length Flag",                           NULL);
+        debugger_io_new_bitfield(reg, 15, 15,  "Initial",                               "(1=Stop output when length in NR31 expires)");
+
+        reg = debugger_io_new_register16(IO_REG_SOUND4CNT_L, "Channel 4 Len/Envelope", &gba->io.sound4cnt_l.raw);
         debugger_io_new_bitfield(reg,  0,  5,  "Sound length; units of (64-n)/256s",    "(0-63)");
         debugger_io_new_bitfield(reg,  6,  7,  "Not used",                              NULL);
         debugger_io_new_bitfield(reg,  8, 10,  "Envelope Step-Time; units of n/64s",    "(1-7, 0=No Envelope)");
