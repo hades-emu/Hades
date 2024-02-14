@@ -32,6 +32,11 @@ jobs:
           shred -u ags.zip
           mv AGB_*.gba ags.gba
 
+          # Download mGBA Suite
+          wget -q https://s3.amazonaws.com/mgba/suite-latest.zip -O suite.zip
+          unzip suite.zip
+          mv suite*.gba mgba-suite.gba
+
           # Download the remaining testing ROMs
           wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/arm/arm.gba -O jsmolka-arm.gba
           wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/bios/bios.gba -O jsmolka-bios.gba
@@ -48,7 +53,7 @@ jobs:
           wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/timer-basic.gba -O hades-timer-basic.gba
 
           # Clear-out all secrets to not leak them to the later steps
-          unset BIOS_DATA BIOS_KEY AGS_URL AGS_KEY
+          unset BIOS_DATA BIOS_KEY AGS_URL AGS_KEY ags_url
         env:
           BIOS_DATA: ${{ secrets.BIOS_DATA }}
           BIOS_KEY: ${{ secrets.BIOS_KEY }}

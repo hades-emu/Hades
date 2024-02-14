@@ -100,6 +100,161 @@ TESTS_SUITE: List[Test] = [
         skip=True,
     ),
 
+    # mGBA suite
+    # https://github.com/mgba-emu/suite
+    Test(
+        name="mGBA Suite - Memory",
+        rom='mgba-suite.gba',
+        code='''
+            key a true
+            frame 20
+            key a false
+            frame 100
+
+            screenshot ./.tests_screenshots/mgba_suite_memory.png
+        ''',
+        screenshot='mgba_suite_memory.png',
+    ),
+    Test(
+        name="mGBA Suite - IO",
+        rom='mgba-suite.gba',
+        code='''
+            key down true
+            frame 20
+            key down false
+            key a true
+            frame 20
+            key a false
+            frame 100
+
+            screenshot ./.tests_screenshots/mgba_suite_io.png
+        ''',
+        screenshot='mgba_suite_io.png',
+    ),
+    Test(
+        name="mGBA Suite - Timing",  # NOTE: Only passing 1918/2020 tests for now.
+        rom='mgba-suite.gba',
+        code='''
+            key down true
+            frame 40
+            key down false
+            key a true
+            frame 20
+            key a false
+            frame 200
+
+            screenshot ./.tests_screenshots/mgba_suite_timing.png
+        ''',
+        screenshot='mgba_suite_timing.png',
+    ),
+    Test(
+        name="mGBA Suite - Timer Count-Up",  # NOTE: Only passing 211/936 tests for now.
+        rom='mgba-suite.gba',
+        code='''
+            key down true
+            frame 50
+            key down false
+            key a true
+            frame 20
+            key a false
+            frame 150
+
+            screenshot ./.tests_screenshots/mgba_suite_timer_count_up.png
+        ''',
+        screenshot='mgba_suite_timer_count_up.png',
+    ),
+    Test(
+        name="mGBA Suite - Timer IRQ",  # NOTE: Only passing 28/90 tests for now.
+        rom='mgba-suite.gba',
+        code='''
+            key down true
+            frame 60
+            key down false
+            key a true
+            frame 20
+            key a false
+
+            screenshot ./.tests_screenshots/mgba_suite_timer_irq.png
+        ''',
+        screenshot='mgba_suite_timer_irq.png',
+    ),
+    Test(
+        name="mGBA Suite - Shifter",
+        rom='mgba-suite.gba',
+        code='''
+            key down true
+            frame 70
+            key down false
+            key a true
+            frame 20
+            key a false
+
+            screenshot ./.tests_screenshots/mgba_suite_shifter.png
+        ''',
+        screenshot='mgba_suite_shifter.png',
+    ),
+    Test(
+        name="mGBA Suite - Carry",
+        rom='mgba-suite.gba',
+        code='''
+            key down true
+            frame 80
+            key down false
+            key a true
+            frame 20
+            key a false
+
+            screenshot ./.tests_screenshots/mgba_suite_carry.png
+        ''',
+        screenshot='mgba_suite_carry.png',
+    ),
+    Test(
+        name="mGBA Suite - Multiply Long",  # NOTE: Only passing 52/72 tests for now.
+        rom='mgba-suite.gba',
+        code='''
+            key down true
+            frame 85
+            key down false
+            key a true
+            frame 20
+            key a false
+
+            screenshot ./.tests_screenshots/mgba_suite_multiply_long.png
+        ''',
+        screenshot='mgba_suite_multiply_long.png',
+    ),
+    Test(
+        name="mGBA Suite - BIOS",
+        rom='mgba-suite.gba',
+        code='''
+            key down true
+            frame 90
+            key down false
+            key a true
+            frame 20
+            key a false
+
+            screenshot ./.tests_screenshots/mgba_suite_bios.png
+        ''',
+        screenshot='mgba_suite_bios.png',
+    ),
+    Test(
+        name="mGBA Suite - DMA",  # NOTE: Only passing 1156/1256 tests for now.
+        rom='mgba-suite.gba',
+        code='''
+            key down true
+            frame 100
+            key down false
+            key a true
+            frame 20
+            key a false
+            frame 130
+
+            screenshot ./.tests_screenshots/mgba_suite_dma.png
+        ''',
+        screenshot='mgba_suite_dma.png',
+    ),
+
     # Hades Tests
     # https://github.com/Arignir/Hades-Tests
     Test(

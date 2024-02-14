@@ -68,6 +68,13 @@ def main():
     )
 
     parser.add_argument(
+        '--bios',
+        nargs='?',
+        default='./bios.bin',
+        help="Path to the BIOS",
+    )
+
+    parser.add_argument(
         '--roms',
         nargs='?',
         default='./roms',
@@ -83,29 +90,58 @@ def main():
 
     args = parser.parse_args()
 
-    hades_binary = Path(os.getcwd()) / args.binary
-    rom_directory = Path(os.getcwd()) / args.roms
+    hades_binary: Path = Path(os.getcwd()) / args.binary
+    bios: Path = Path(os.getcwd()) / args.bios
+    rom_directory: Path = Path(os.getcwd()) / args.roms
+
+    if not hades_binary.exists():
+        print(f"Error: {hades_binary}: no such file or directory.")
+        exit(1)
+
+    if not bios.exists():
+        print(f"Error: {bios}: no such file or directory.")
+        exit(1)
+
+    for test in TESTS_SUITE:
+        if not test.skip and not (rom_directory / test.rom).exists():
+            print(f"Error: ROM {test.rom} is missing from the ROM directory.")
+            exit(1)
+
+    # Ensure Hades is built with the debugger
+    try:
+        subprocess.run(
+            [hades_binary, '--without-gui', '--help'],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            encoding='utf-8',
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        print("Error: Hades wasn't build with its debugger.")
+        exit(1)
 
     config = tempfile.NamedTemporaryFile()
-    config.write(textwrap.dedent('''
-        {
-          "file": {
-            "bios": "./bios.bin"
-          },
-          "emulation": {
+    config.write(textwrap.dedent(f'''
+        {{
+          "file": {{
+            "bios": "{bios}"
+          }},
+          "emulation": {{
             "skip_bios": true,
             "speed": 0,
             "unbounded": false,
-            "backup_storage": {
+            "backup_storage": {{
               "autodetect": true,
               "type": 0
-            },
-            "rtc": {
+            }},
+            "rtc": {{
               "autodetect": true,
               "enabled": true
-            }
-          }
-        }
+            }}
+          }}
+        }}
     ''').encode('utf-8'))
     config.flush()
 
