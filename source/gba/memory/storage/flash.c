@@ -53,13 +53,6 @@ mem_flash_write8(
             case FLASH_CMD_ENTER_IDENTITY:      flash->identity_mode = true; break;
             case FLASH_CMD_EXIT_IDENTITY:       flash->identity_mode = false; break;
             case FLASH_CMD_PREP_ERASE:          flash->state = FLASH_STATE_ERASE; break;
-            case FLASH_CMD_ERASE_CHIP: {
-                if (flash->state == FLASH_STATE_ERASE) {
-                    memset(gba->shared_data.backup_storage.data, 0xFF, gba->shared_data.backup_storage.size);
-                    gba->shared_data.backup_storage.dirty = true;
-                }
-                break;
-            };
             case FLASH_CMD_WRITE:               flash->state = FLASH_STATE_WRITE; break;
             case FLASH_CMD_SET_BANK: {
                 if (gba->memory.backup_storage.type == BACKUP_FLASH128) {
@@ -68,9 +61,12 @@ mem_flash_write8(
                 break;
             };
         }
+    } else if (flash->state == FLASH_STATE_ERASE && addr == 0x5555 && val == FLASH_CMD_ERASE_CHIP) {
+        memset(gba->shared_data.backup_storage.data, 0xFF, gba->shared_data.backup_storage.size);
+        gba->shared_data.backup_storage.dirty = true;
+        flash->state = FLASH_STATE_READY;
     } else if (flash->state == FLASH_STATE_ERASE && !(addr & ~0xF000) && val == FLASH_CMD_ERASE_SECTOR) {
         // Erase the desired sector
-
         addr &= 0xF000;
         memset(gba->shared_data.backup_storage.data + addr + flash->bank * FLASH64_SIZE, 0xFF, 0x1000);
         gba->shared_data.backup_storage.dirty = true;

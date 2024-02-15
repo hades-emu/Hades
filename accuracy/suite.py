@@ -67,7 +67,6 @@ TESTS_SUITE: List[Test] = [
             screenshot ./.tests_screenshots/jsmolka_sram.png
         ''',
         screenshot='jsmolka_sram.png',
-        skip=True,
     ),
     Test(
         name="Jsmolka - save/none.gba",
@@ -82,21 +81,19 @@ TESTS_SUITE: List[Test] = [
         name="Jsmolka - save/flash64.gba",
         rom='jsmolka-flash64.gba',
         code='''
-            frame 10
+            frame 110
             screenshot ./.tests_screenshots/jsmolka_flash64.png
         ''',
         screenshot='jsmolka_flash64.png',
-        skip=True,
     ),
     Test(
         name="Jsmolka - save/flash128.gba",
         rom='jsmolka-flash128.gba',
         code='''
-            frame 10
+            frame 110
             screenshot ./.tests_screenshots/jsmolka_flash128.png
         ''',
         screenshot='jsmolka_flash128.png',
-        skip=True,
     ),
 
     # mGBA suite

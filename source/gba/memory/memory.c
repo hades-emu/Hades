@@ -360,7 +360,7 @@ mem_openbus_read(
     })
 
 /*
-** Wriote a data of type T to memory at the given address.
+** Write a data of type T to memory at the given address.
 **
 ** T must be either uint32_t, uint16_t or uint8_t.
 */
@@ -468,20 +468,14 @@ mem_openbus_read(
             };                                                                                  \
             case SRAM_REGION:                                                                   \
             case SRAM_MIRROR_REGION:                                                            \
-                _Generic(val,                                                                   \
-                    uint32_t: ({                                                                \
-                        mem_backup_storage_write8((gba), (unaligned_addr) + 0, (uint8_t)((val) >>  0));     \
-                        mem_backup_storage_write8((gba), (unaligned_addr) + 1, (uint8_t)((val) >>  8));     \
-                        mem_backup_storage_write8((gba), (unaligned_addr) + 2, (uint8_t)((val) >> 16));     \
-                        mem_backup_storage_write8((gba), (unaligned_addr) + 3, (uint8_t)((val) >> 24));     \
-                    }),                                                                         \
-                    uint16_t: ({                                                                \
-                        mem_backup_storage_write8((gba), (unaligned_addr) + 0, (uint8_t)((val) >>  0));     \
-                        mem_backup_storage_write8((gba), (unaligned_addr) + 1, (uint8_t)((val) >>  8));     \
-                    }),                                                                         \
-                    default: ({                                                                 \
-                        mem_backup_storage_write8((gba), (unaligned_addr), (val));              \
-                    })                                                                          \
+                /*
+                ** All writes to the backup storage are u8 writes, eventually rotated if the
+                ** address isn't aligned on T.
+                */                                                                              \
+                mem_backup_storage_write8(                                                      \
+                    (gba),                                                                      \
+                    (unaligned_addr),                                                           \
+                    ((val) >> (8 * ((unaligned_addr) % sizeof(T))))                             \
                 );                                                                              \
                 break;                                                                          \
             default: {                                                                          \
