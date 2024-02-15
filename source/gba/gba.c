@@ -347,6 +347,7 @@ gba_state_reset(
             core->sp = 0x03007F00;
             core->pc = 0x08000000;
             gba->io.postflg = 1;
+            gba->memory.bios_bus = 0xe129f000;
             core_reload_pipeline(gba);
         } else {
             core_interrupt(gba, VEC_RESET, MODE_SVC);

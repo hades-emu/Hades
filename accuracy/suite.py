@@ -22,7 +22,6 @@ TESTS_SUITE: List[Test] = [
             screenshot ./.tests_screenshots/jsmolka_bios.png
         ''',
         screenshot='jsmolka_bios.png',
-        skip=True,
     ),
     Test(
         name="Jsmolka - memory.gba",
