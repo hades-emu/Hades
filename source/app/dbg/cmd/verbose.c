@@ -61,6 +61,32 @@ debugger_cmd_verbose(
             return ;
         }
 
+        // Easily toggle all verbosities on or off
+        if (!strcmp("all", argv[0].value.s)) {
+            bool all;
+
+            all = true;
+
+            for (i = 0; verbosities[i].name; ++i) {
+                all &= *verbosities[i].flag;
+            }
+
+            all = !all;
+
+            for (i = 0; verbosities[i].name; ++i) {
+                *verbosities[i].flag = all;
+            }
+
+            printf(
+                "All verbosities set to %s%s%s\n",
+                g_light_magenta,
+                all ? "true" : "false",
+                g_reset
+            );
+
+            return ;
+        }
+
         for (i = 0; verbosities[i].name; ++i) {
             if (!strcmp(verbosities[i].name, argv[0].value.s)) {
                 *verbosities[i].flag ^= 1;
