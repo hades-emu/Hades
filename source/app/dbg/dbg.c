@@ -111,7 +111,7 @@ struct command g_commands[] = {
     [CMD_VERBOSE] = {
         .name = "verbose",
         .alias = "v",
-        .usage = "verbose [NAME]",
+        .usage = "verbose [NAME|all]",
         .description = "Inverse the verbosity of module NAME.",
         .func = debugger_cmd_verbose,
     },
