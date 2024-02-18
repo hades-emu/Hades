@@ -335,7 +335,7 @@ ppu_hdraw(
     /* Trigger the VBlank IRQ & DMA transfer */
     if (io->vcount.raw == GBA_SCREEN_HEIGHT) {
         if (io->dispstat.vblank_irq) {
-            gba->io.int_flag.vblank = true;
+            core_schedule_irq(gba, IRQ_VBLANK);
         }
         mem_schedule_dma_transfers(gba, DMA_TIMING_VBLANK);
         gba->ppu.reload_internal_affine_regs = true;
@@ -350,7 +350,7 @@ ppu_hdraw(
 
     /* Trigger the VCOUNT IRQ */
     if (io->dispstat.vcount_eq && io->dispstat.vcount_irq) {
-        gba->io.int_flag.vcounter = true;
+        core_schedule_irq(gba, IRQ_VCOUNTER);
     }
 }
 
@@ -390,7 +390,7 @@ ppu_hblank(
     */
 
     if (io->dispstat.hblank_irq) {
-        gba->io.int_flag.hblank = true;
+        core_schedule_irq(gba, IRQ_HBLANK);
     }
 
     if (io->vcount.raw < GBA_SCREEN_HEIGHT) {

@@ -150,9 +150,9 @@ def main():
         shutil.rmtree(tests_screenshots_directory)
     os.mkdir(tests_screenshots_directory)
 
-    print(f"┏━{'━' * 30}━┳━━━━━━┓")
-    print(f"┃ {'Name':30s} ┃ Res. ┃")
-    print(f"┣━{'━' * 30}━╋━━━━━━┫")
+    print(f"┏━{'━' * 34}━┳━━━━━━┓")
+    print(f"┃ {'Name':34s} ┃ Res. ┃")
+    print(f"┣━{'━' * 34}━╋━━━━━━┫")
 
     for test in TESTS_SUITE:
         result = TestResult.FAIL
@@ -177,9 +177,9 @@ def main():
                 pretty_result = f'{BOLD}{RED}FAIL{RESET}'
                 exit_code = 1
 
-            print(f"┃ {test.name:30s} ┃ {pretty_result} ┃")
+            print(f"┃ {test.name:34s} ┃ {pretty_result} ┃")
 
-    print(f"┗━{'━' * 30}━┻━━━━━━┛")
+    print(f"┗━{'━' * 34}━┻━━━━━━┛")
 
     exit(exit_code)
 

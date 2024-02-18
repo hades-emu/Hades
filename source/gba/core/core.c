@@ -35,37 +35,10 @@ core_next(
 
     core = &gba->core;
 
-    /*
-    ** Ensure all the conditions to trigger any IRQ are met, and if they are, fire that interrupt.
-    **
-    ** To trigger any interrupt, we need:
-    **   * The CPSR.I flag set to 0
-    **   * The bit 0 of the IME IO register set to 1
-    **   * That interrupt enabled in both REG_IE and REG_IF
-    */
-    if (gba->io.int_enabled.raw & gba->io.int_flag.raw) {
-        switch (gba->core.state) {
-            case CORE_RUN: {
-                if (
-                       !gba->core.cpsr.irq_disable
-                    && (gba->io.ime.raw & 0b1)
-                ) {
-                    logln(HS_IRQ, "Received new IRQ: 0x%04x.", gba->io.int_enabled.raw & gba->io.int_flag.raw);
-                    core_interrupt(gba, VEC_IRQ, MODE_IRQ);
-                }
-                break;
-            };
-            case CORE_HALT: {
-                gba->core.state = CORE_RUN;
-                break;
-            };
-            case CORE_STOP: {
-                if (gba->io.int_flag.keypad) {
-                    gba->core.state = CORE_RUN;
-                }
-                break;
-            };
-        }
+    /* Fire an interrupt if the IRQ line is set. */
+    if (core->irq_line && !gba->core.cpsr.irq_disable) {
+        logln(HS_IRQ, "Received new IRQ: 0x%04x.", gba->io.int_enabled.raw & gba->io.int_flag.raw);
+        core_interrupt(gba, VEC_IRQ, MODE_IRQ, true);
     }
 
     if (likely(core->state == CORE_RUN)) {
@@ -413,12 +386,29 @@ void
 core_interrupt(
     struct gba *gba,
     enum arm_vectors vector,
-    enum arm_modes mode
+    enum arm_modes mode,
+    bool do_aborted_prefetch
 ) {
     struct core *core;
     struct psr cpsr;
 
     core = &gba->core;
+
+    /*
+    ** According to the ARM7TDMI manual, the prefetch of the aborted instructions
+    ** happens regardless, even if it is discarded shortly after when the pipeline is
+    ** reloaded.
+    **
+    ** This is necessary for timing reasons, like the `irq-delay` test rom of NBA.
+    ** NOTE: There's no prefetch with the SWI instruction.
+    */
+    if (do_aborted_prefetch) {
+        if (core->cpsr.thumb) {
+            mem_read16(gba, core->pc, core->prefetch_access_type);
+        } else {
+            mem_read32(gba, core->pc, core->prefetch_access_type);
+        }
+    }
 
     cpsr = core->cpsr;
     core_switch_mode(core, mode);
@@ -435,6 +425,38 @@ core_interrupt(
     core->cpsr.thumb = false;
 
     core_reload_pipeline(gba);
+}
+
+void
+core_schedule_irq(
+    struct gba *gba,
+    enum arm_irq irq
+) {
+    gba->io.pending.int_flag.raw |= (1 << irq);
+    io_schedule_register_delayed_write(gba, IO_REG_IF);
+}
+
+void
+core_update_irq_line(
+    struct gba *gba,
+    struct event_args args
+) {
+    gba->core.irq_line = (bool)args.a1.u32;
+}
+
+void
+core_schedule_update_irq_line(
+    struct gba *gba,
+    bool irq_line
+) {
+    sched_add_event(
+        gba,
+        NEW_FIX_EVENT_ARGS(
+            SCHED_EVENT_CORE_UPDATE_IRQ_LINE,
+            gba->scheduler.cycles + 2, // Two cycles delay for the CPU to register the new IRQ line
+            EVENT_ARG(u32, irq_line)
+        )
+    );
 }
 
 /*

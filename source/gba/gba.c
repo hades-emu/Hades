@@ -350,7 +350,7 @@ gba_state_reset(
             gba->memory.bios_bus = 0xe129f000;
             core_reload_pipeline(gba);
         } else {
-            core_interrupt(gba, VEC_RESET, MODE_SVC);
+            core_interrupt(gba, VEC_RESET, MODE_SVC, false);
         }
     }
 
@@ -409,6 +409,11 @@ gba_process_message(
                 case KEY_SELECT:    gba->io.keyinput.select = !msg_key->pressed; break;
                 default:            break;
             };
+
+            if (gba->core.state == CORE_STOP && io_evaluate_keypad_cond(gba)) {
+                gba->core.state = CORE_RUN;
+                sched_reset_frame_limiter(gba);
+            }
 
             io_scan_keypad_irq(gba);
             break;

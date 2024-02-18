@@ -251,6 +251,59 @@ TESTS_SUITE: List[Test] = [
         screenshot='mgba_suite_dma.png',
     ),
 
+    # NBA Hardware Tests
+    # https://github.com/nba-emu/hw-test
+    Test(
+        name="NBA HW-Tests - Timer Reload",
+        rom='nba-timer-reload.gba',
+        code='''
+            frame 15
+
+            screenshot ./.tests_screenshots/nba_timer_reload.png
+        ''',
+        screenshot='nba_timer_reload.png',
+    ),
+    Test(
+        name="NBA HW-Tests - Timer Start/Stop",
+        rom='nba-timer-start-stop.gba',
+        code='''
+            frame 15
+
+            screenshot ./.tests_screenshots/nba_timer_start_stop.png
+        ''',
+        screenshot='nba_timer_start_stop.png',
+    ),
+    Test(
+        name="NBA HW-Tests - DMA Latch",
+        rom='nba-dma-latch.gba',
+        code='''
+            frame 15
+
+            screenshot ./.tests_screenshots/nba_dma_latch.png
+        ''',
+        screenshot='nba_dma_latch.png',
+    ),
+    Test(
+        name="NBA HW-Tests - DMA Start Delay",
+        rom='nba-dma-start-delay.gba',
+        code='''
+            frame 15
+
+            screenshot ./.tests_screenshots/nba_dma_start_delay.png
+        ''',
+        screenshot='nba_dma_start_delay.png',
+    ),
+    Test(
+        name="NBA HW-Tests - IRQ Delay",
+        rom='nba-irq-delay.gba',
+        code='''
+            frame 15
+
+            screenshot ./.tests_screenshots/nba_irq_delay.png
+        ''',
+        screenshot='nba_irq_delay.png',
+    ),
+
     # Hades Tests
     # https://github.com/Arignir/Hades-Tests
     Test(

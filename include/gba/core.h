@@ -120,9 +120,10 @@ struct core {
 
     bool is_dma_running;                    // Set to `true` when waiting for a DMA to complete.
     ssize_t current_dma_idx;                // The DMA the core is currently waiting for. `NO_CURRENT_DMA` if no DMA is running.
-
     uint32_t pending_dma;                   // A mask of all DMA's index waiting for transfer
     bool reenter_dma_transfer_loop;
+
+    bool irq_line;                          // Set when there's an IRQ available
 };
 
 /*
@@ -216,6 +217,7 @@ struct psr core_spsr_get(struct core const *core, enum arm_modes mode);
 void core_spsr_set(struct core *core, enum arm_modes mode, struct psr psr);
 void core_switch_mode(struct core *core, enum arm_modes mode);
 uint32_t core_compute_shift(struct core *core, uint32_t encoded_shift, uint32_t value, bool *update_carry);
-
-/* gba/core/interrupt.c */
-void core_interrupt(struct gba *gba, enum arm_vectors vector, enum arm_modes mode);
+void core_schedule_irq(struct gba *, enum arm_irq irq);
+void core_update_irq_line(struct gba *gba, struct event_args args);
+void core_schedule_update_irq_line(struct gba *gba, bool irq_line);
+void core_interrupt(struct gba *gba, enum arm_vectors vector, enum arm_modes mode, bool do_aborted_prefetch);

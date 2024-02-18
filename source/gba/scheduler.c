@@ -18,7 +18,6 @@ void (*sched_event_callbacks[])(struct gba *gba, struct event_args args) = {
     [SCHED_EVENT_PPU_HDRAW] = ppu_hdraw,
     [SCHED_EVENT_PPU_HBLANK] = ppu_hblank,
     [SCHED_EVENT_TIMER_OVERFLOW] = timer_overflow,
-    [SCHED_EVENT_TIMER_STOP] = timer_stop,
     [SCHED_EVENT_APU_MODULES_STEP] = apu_modules_step,
     [SCHED_EVENT_APU_RESAMPLE] = apu_resample,
     [SCHED_EVENT_APU_TONE_AND_SWEEP_STEP] = apu_tone_and_sweep_step,
@@ -26,6 +25,8 @@ void (*sched_event_callbacks[])(struct gba *gba, struct event_args args) = {
     [SCHED_EVENT_APU_WAVE_STEP] = apu_wave_step,
     [SCHED_EVENT_APU_NOISE_STEP] = apu_noise_step,
     [SCHED_EVENT_DMA_ADD_PENDING] = mem_dma_add_to_pending,
+    [SCHED_EVENT_IO_WRITE] = io_register_delayed_write,
+    [SCHED_EVENT_CORE_UPDATE_IRQ_LINE] = core_update_irq_line,
 };
 
 void
@@ -77,7 +78,6 @@ sched_process_events(
             if (event->at < scheduler->next_event) {
                 scheduler->next_event = event->at;
             }
-
         } else {
             event->active = false;
         }
