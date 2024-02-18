@@ -821,6 +821,41 @@ struct io {
 
     // REG_POSTFLG
     uint8_t postflg;
+
+    /*
+    ** Pending registers
+    **
+    ** Some registers have a delay before they are actually written.
+    ** The intermediary result is stored here.
+    */
+    struct {
+        struct {
+            union {
+                uint16_t raw;
+                uint8_t bytes[2];
+            } reload;
+
+            union {
+                uint16_t raw;
+                uint8_t bytes[2];
+            } control;
+        } timers[4];
+
+        union {
+            uint16_t raw;
+            uint8_t bytes[2];
+        } int_enabled;
+
+        union {
+            uint16_t raw;
+            uint8_t bytes[2];
+        } int_flag;
+
+        union {
+            uint16_t raw;
+            uint8_t bytes[2];
+        } ime;
+    } pending;
 };
 
 static_assert(sizeof(((struct io *)NULL)->dispcnt) == sizeof(uint16_t));
@@ -862,11 +897,12 @@ void io_init(struct io *io);
 bool io_evaluate_keypad_cond(struct gba *gba);
 void io_scan_keypad_irq(struct gba *gba);
 char const *mem_io_reg_name(uint32_t addr);
+void io_schedule_register_delayed_write(struct gba *gba, uint32_t reg);
+void io_register_delayed_write(struct gba *gba, struct event_args args);
 
 /* gba/timer.c */
-void timer_stop(struct gba *gba, struct event_args args);
 void timer_overflow(struct gba *gba, struct event_args args);
+void timer_stop(struct gba *gba, uint32_t timer_idx);
 void timer_schedule_start(struct gba *gba, uint32_t timer_idx);
-void timer_schedule_stop(struct gba *gba, uint32_t timer_idx);
 uint16_t timer_update_counter(struct gba const *gba, uint32_t timer_idx);
 uint16_t timer_read_value(struct gba const *gba, uint32_t timer_idx);

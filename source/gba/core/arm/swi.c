@@ -15,5 +15,5 @@ core_arm_swi(
     struct gba *gba,
     uint32_t op
 ) {
-    core_interrupt(gba, VEC_SVC, MODE_SVC);
+    core_interrupt(gba, VEC_SVC, MODE_SVC, false);
 }

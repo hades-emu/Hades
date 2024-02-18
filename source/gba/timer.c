@@ -11,23 +11,30 @@
 
 static uint64_t scalers[4] = { 0, 6, 8, 10 };
 
+static
 void
-timer_stop(
+timer_reschedule_overflow_event(
     struct gba *gba,
-    struct event_args args
+    uint32_t timer_idx,
+    uint32_t delay
 ) {
-    uint32_t timer_idx;
     struct timer *timer;
 
-    timer_idx = args.a1.u32;
     timer = &gba->io.timers[timer_idx];
-    timer->control.enable = false;
-    timer->counter.raw = timer_update_counter(gba, timer_idx);
 
     if (timer->handler != INVALID_EVENT_HANDLE) {
         sched_cancel_event(gba, timer->handler);
-        timer->handler = INVALID_EVENT_HANDLE;
     }
+
+    timer->handler = sched_add_event(
+        gba,
+        NEW_REPEAT_EVENT_ARGS(
+            SCHED_EVENT_TIMER_OVERFLOW,
+            gba->scheduler.cycles + ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]) + delay,
+            ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]),
+            EVENT_ARG(u32, timer_idx)
+        )
+    );
 }
 
 void
@@ -38,38 +45,36 @@ timer_schedule_start(
     struct timer *timer;
 
     timer = &gba->io.timers[timer_idx];
-    timer->counter.raw = timer->reload.raw;
 
     logln(HS_TIMER, "Timer %u started with initial value %#04x", timer_idx, timer->reload.raw);
 
-    if (!timer->control.count_up) {
-        timer->handler = sched_add_event(
-            gba,
-            NEW_REPEAT_EVENT_ARGS(
-                SCHED_EVENT_TIMER_OVERFLOW,
-                gba->scheduler.cycles + ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]) + 2, // Timer starts with a 2 cycles delay
-                ((0x10000 - timer->counter.raw) << scalers[timer->control.prescaler]),
-                EVENT_ARG(u32, timer_idx)
-            )
-        );
-    } else {
+    if (timer->handler != INVALID_EVENT_HANDLE) {
+        sched_cancel_event(gba, timer->handler);
         timer->handler = INVALID_EVENT_HANDLE;
+    }
+
+    timer->counter.raw = timer->reload.raw;
+
+    if (!timer->control.count_up) {
+        timer_reschedule_overflow_event(gba, timer_idx, 1);  // Timer starts with a 1 cycles delay
     }
 }
 
 void
-timer_schedule_stop(
+timer_stop(
     struct gba *gba,
     uint32_t timer_idx
 ) {
-    sched_add_event(
-        gba,
-        NEW_FIX_EVENT_ARGS(
-            SCHED_EVENT_TIMER_STOP,
-            gba->scheduler.cycles + 1, // One cycle delay when stopping a timer
-            EVENT_ARG(u32, timer_idx)
-        )
-    );
+    struct timer *timer;
+
+    timer = &gba->io.timers[timer_idx];
+    timer->control.enable = false;
+    timer->counter.raw = timer_update_counter(gba, timer_idx);
+
+    if (timer->handler != INVALID_EVENT_HANDLE) {
+        sched_cancel_event(gba, timer->handler);
+        timer->handler = INVALID_EVENT_HANDLE;
+    }
 }
 
 void
@@ -87,8 +92,15 @@ timer_overflow(
 
     timer->counter.raw = timer->reload.raw;
 
+    if (!timer->control.count_up) {
+        timer_reschedule_overflow_event(gba, timer_idx, 0);  // Timer restarts without any delay
+    } else if (timer->handler != INVALID_EVENT_HANDLE) {
+        sched_cancel_event(gba, timer->handler);
+        timer->handler = INVALID_EVENT_HANDLE;
+    }
+
     if (timer->control.irq) {
-        gba->io.int_flag.raw |= 1 << (IRQ_TIMER0 + timer_idx);
+        core_schedule_irq(gba, IRQ_TIMER0 + timer_idx);
     }
 
     if (timer_idx == 0 || timer_idx == 1) {
@@ -136,6 +148,7 @@ timer_read_value(
     timer = &gba->io.timers[timer_idx];
     if (timer->control.enable && !timer->control.count_up) {
         return (timer_update_counter(gba, timer_idx));
+    } else {
+        return (timer->counter.raw);
     }
-    return (timer->counter.raw);
 }

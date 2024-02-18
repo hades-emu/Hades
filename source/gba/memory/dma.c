@@ -10,6 +10,7 @@
 #include "hades.h"
 #include "gba/gba.h"
 #include "gba/scheduler.h"
+#include "gba/core/helpers.h"
 
 static uint32_t src_mask[4]   = {0x07FFFFFF, 0x0FFFFFFF, 0x0FFFFFFF, 0x0FFFFFFF};
 static uint32_t dst_mask[4]   = {0x07FFFFFF, 0x07FFFFFF, 0x07FFFFFF, 0x0FFFFFFF};
@@ -84,10 +85,12 @@ dma_run_channel(
     struct gba *gba,
     struct dma_channel *channel
 ) {
-    enum access_types access;
+    enum access_types access_src;
+    enum access_types access_dst;
     int32_t src_step;
     int32_t dst_step;
     int32_t unit_size;
+    bool rom_accessed;
 
     unit_size = channel->control.unit_size ? sizeof(uint32_t) : sizeof(uint16_t); // In  bytes
 
@@ -121,39 +124,58 @@ dma_run_channel(
         channel->index
     );
 
-    access = NON_SEQUENTIAL;
-    if (unit_size == 4) {
-        while (channel->internal_count > 0 && !gba->core.reenter_dma_transfer_loop) {
-            if (likely(channel->internal_src >= EWRAM_START)) {
-                channel->bus = mem_read32(gba, channel->internal_src, access);
-            } else {
-                core_idle(gba);
-            }
-            mem_write32(gba, channel->internal_dst, channel->bus, access);
-            channel->internal_src += src_step;
-            channel->internal_dst += dst_step;
-            channel->internal_count -= 1;
-            access = SEQUENTIAL;
-        }
-    } else { // unit_size == 2
-        while (channel->internal_count > 0 && !gba->core.reenter_dma_transfer_loop) {
-            if (likely(channel->internal_src >= EWRAM_START)) {
+    rom_accessed = false;
+    access_src = SEQUENTIAL;
+    access_dst = SEQUENTIAL;
 
+    while (channel->internal_count > 0 && !gba->core.reenter_dma_transfer_loop) {
+
+        /*
+        ** Trial and error have led me to believe that the only the first ROM access
+        ** will be non-sequential, no matter if it is the source or destination address.
+        ** It looks like it can't be both, even if they access the ROM at the same time (in which case
+        ** src has the priority).
+        */
+        if (!rom_accessed) {
+            bool src_in_rom;
+            bool dst_in_rom;
+
+            src_in_rom = (channel->internal_src >= CART_0_START);
+            dst_in_rom = (channel->internal_dst >= CART_0_START);
+            rom_accessed = src_in_rom | dst_in_rom;
+            if (src_in_rom) {
+                access_src = NON_SEQUENTIAL;
+            } else if (dst_in_rom) {
+                access_dst = NON_SEQUENTIAL;
+            }
+        }
+
+        if (unit_size == 4) {
+            if (likely(channel->internal_src >= EWRAM_START)) {
+                channel->bus = mem_read32(gba, channel->internal_src, access_src);
+            } else {
+                mem_read32(gba, channel->internal_src, access_src);
+            }
+            mem_write32(gba, channel->internal_dst, channel->bus, access_dst);
+        } else { // unit_size == 2
+            if (likely(channel->internal_src >= EWRAM_START)) {
                 /*
                 ** Not sure what's the expected behaviour regarding the DMA's open bus behaviour/latch management,
                 ** this is more or less random.
                 */
-                channel->bus <<= 16;
-                channel->bus |= mem_read16(gba, channel->internal_src, access);
+                channel->bus = mem_read16(gba, channel->internal_src, access_src);
+                channel->bus = ((channel->bus << 16) | channel->bus);
             } else {
-                core_idle(gba);
+                mem_read16(gba, channel->internal_src, access_src);
+                channel->bus = ror32(channel->bus, 8 * (channel->internal_dst & 3));
             }
-            mem_write16(gba, channel->internal_dst, channel->bus, access);
-            channel->internal_src += src_step;
-            channel->internal_dst += dst_step;
-            channel->internal_count -= 1;
-            access = SEQUENTIAL;
+            mem_write16(gba, channel->internal_dst, channel->bus, access_dst);
         }
+        channel->internal_src += src_step;
+        channel->internal_dst += dst_step;
+        channel->internal_count -= 1;
+        access_src = SEQUENTIAL;
+        access_dst = SEQUENTIAL;
     }
 
     if (gba->core.reenter_dma_transfer_loop) {
@@ -161,7 +183,9 @@ dma_run_channel(
     }
 
     gba->core.pending_dma &= ~(1 << channel->index);
-    gba->io.int_flag.raw |= (channel->control.irq_end << (IRQ_DMA0 + channel->index));
+    if (channel->control.irq_end) {
+        core_schedule_irq(gba, IRQ_DMA0 + channel->index);
+    }
 
     if (channel->control.repeat) {
         if (channel->is_fifo) {

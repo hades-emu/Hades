@@ -689,79 +689,54 @@ mem_io_write8(
         case IO_REG_DMA3CTL + 1:            mem_io_dma_ctl_write8(gba, &io->dma[3], val); break;
 
         /* Timer 0 */
-        case IO_REG_TM0CNT_LO:              io->timers[0].reload.bytes[0] = val; break;
-        case IO_REG_TM0CNT_LO + 1:          io->timers[0].reload.bytes[1] = val; break;
+        case IO_REG_TM0CNT_LO:
+        case IO_REG_TM0CNT_LO + 1: {
+            io->pending.timers[0].reload.bytes[addr - IO_REG_TM0CNT_LO] = val;
+            io_schedule_register_delayed_write(gba, IO_REG_TM0CNT_LO);
+            break;
+        };
         case IO_REG_TM0CNT_HI: {
-            bool old_enable;
-            bool new_enable;
-
-            old_enable = io->timers[0].control.enable;
-            io->timers[0].control.bytes[0] = val;
-            io->timers[0].control.count_up = false;  // Timer 0 cannot use the count_up bit.
-            new_enable = io->timers[0].control.enable;
-
-            if (old_enable && !new_enable) {
-                timer_schedule_stop(gba, 0);
-            } else if (!old_enable && new_enable) {
-                timer_schedule_start(gba, 0);
-            }
+            io->pending.timers[0].control.bytes[0] = val;
+            io_schedule_register_delayed_write(gba, IO_REG_TM0CNT_HI);
             break;
         };
 
         /* Timer 1 */
-        case IO_REG_TM1CNT_LO:              io->timers[1].reload.bytes[0] = val; break;
-        case IO_REG_TM1CNT_LO + 1:          io->timers[1].reload.bytes[1] = val; break;
+        case IO_REG_TM1CNT_LO:
+        case IO_REG_TM1CNT_LO + 1: {
+            io->pending.timers[1].reload.bytes[addr - IO_REG_TM1CNT_LO] = val;
+            io_schedule_register_delayed_write(gba, IO_REG_TM1CNT_LO);
+            break;
+        };
         case IO_REG_TM1CNT_HI: {
-            bool old_enable;
-            bool new_enable;
-
-            old_enable = io->timers[1].control.enable;
-            io->timers[1].control.bytes[0] = val;
-            new_enable = io->timers[1].control.enable;
-
-            if (old_enable && !new_enable) {
-                timer_schedule_stop(gba, 1);
-            } else if (!old_enable && new_enable) {
-                timer_schedule_start(gba, 1);
-            }
+            io->pending.timers[1].control.bytes[0] = val;
+            io_schedule_register_delayed_write(gba, IO_REG_TM1CNT_HI);
             break;
         };
 
         /* Timer 2 */
-        case IO_REG_TM2CNT_LO:              io->timers[2].reload.bytes[0] = val; break;
-        case IO_REG_TM2CNT_LO + 1:          io->timers[2].reload.bytes[1] = val; break;
+        case IO_REG_TM2CNT_LO:
+        case IO_REG_TM2CNT_LO + 1: {
+            io->pending.timers[2].reload.bytes[addr - IO_REG_TM2CNT_LO] = val;
+            io_schedule_register_delayed_write(gba, IO_REG_TM2CNT_LO);
+            break;
+        };
         case IO_REG_TM2CNT_HI: {
-            bool old_enable;
-            bool new_enable;
-
-            old_enable = io->timers[2].control.enable;
-            io->timers[2].control.bytes[0] = val;
-            new_enable = io->timers[2].control.enable;
-
-            if (old_enable && !new_enable) {
-                timer_schedule_stop(gba, 2);
-            } else if (!old_enable && new_enable) {
-                timer_schedule_start(gba, 2);
-            }
+            io->pending.timers[2].control.bytes[0] = val;
+            io_schedule_register_delayed_write(gba, IO_REG_TM2CNT_HI);
             break;
         };
 
         /* Timer 3 */
-        case IO_REG_TM3CNT_LO:              io->timers[3].reload.bytes[0] = val; break;
-        case IO_REG_TM3CNT_LO + 1:          io->timers[3].reload.bytes[1] = val; break;
+        case IO_REG_TM3CNT_LO:
+        case IO_REG_TM3CNT_LO + 1: {
+            io->pending.timers[3].reload.bytes[addr - IO_REG_TM3CNT_LO] = val;
+            io_schedule_register_delayed_write(gba, IO_REG_TM3CNT_LO);
+            break;
+        };
         case IO_REG_TM3CNT_HI: {
-            bool old_enable;
-            bool new_enable;
-
-            old_enable = io->timers[3].control.enable;
-            io->timers[3].control.bytes[0] = val;
-            new_enable = io->timers[3].control.enable;
-
-            if (old_enable && !new_enable) {
-                timer_schedule_stop(gba, 3);
-            } else if (!old_enable && new_enable) {
-                timer_schedule_start(gba, 3);
-            }
+            io->pending.timers[3].control.bytes[0] = val;
+            io_schedule_register_delayed_write(gba, IO_REG_TM3CNT_HI);
             break;
         };
 
@@ -772,8 +747,9 @@ mem_io_write8(
 
             /* Stub */
             if (io->siocnt.start && io->siocnt.irq) {
-                gba->io.int_flag.serial = true;
+                core_schedule_irq(gba, IRQ_SERIAL);
             }
+
             io->siocnt.start = false;
             break;
         };
@@ -800,10 +776,19 @@ mem_io_write8(
         };
 
         /* Interrupt */
-        case IO_REG_IE:                     io->int_enabled.bytes[addr - IO_REG_IE] = val; break;
-        case IO_REG_IE + 1:                 io->int_enabled.bytes[addr - IO_REG_IE] = (val & 0x3F); break;
+        case IO_REG_IE:
+        case IO_REG_IE + 1: {
+            io->pending.int_enabled.bytes[addr - IO_REG_IE] = val;
+            io->pending.int_enabled.raw &= 0x3FFF;
+            io_schedule_register_delayed_write(gba, IO_REG_IE);
+            break;
+        };
         case IO_REG_IF:
-        case IO_REG_IF + 1:                 io->int_flag.bytes[addr - IO_REG_IF] &= ~val; break;
+        case IO_REG_IF + 1: {
+            io->pending.int_flag.bytes[addr - IO_REG_IF] &= ~val;
+            io_schedule_register_delayed_write(gba, IO_REG_IF);
+            break;
+        };
         case IO_REG_WAITCNT:
         case IO_REG_WAITCNT + 1: {
             io->waitcnt.bytes[addr - IO_REG_WAITCNT] = val;
@@ -812,7 +797,11 @@ mem_io_write8(
             break;
         };
         case IO_REG_IME:
-        case IO_REG_IME + 1:                io->ime.bytes[addr - IO_REG_IME] = val; break;
+        case IO_REG_IME + 1: {
+            io->pending.ime.bytes[addr - IO_REG_IME] = val;
+            io_schedule_register_delayed_write(gba, IO_REG_IME);
+            break;
+        };
 
         /* System */
         case IO_REG_POSTFLG:                io->postflg = val; break;
@@ -843,7 +832,106 @@ void
 io_scan_keypad_irq(
     struct gba *gba
 ) {
-    if (io_evaluate_keypad_cond(gba)) {
-        gba->io.int_flag.keypad = true;
+    if (io_evaluate_keypad_cond(gba) && gba->io.keycnt.irq_enable) {
+        core_schedule_irq(gba, IRQ_KEYPAD);
     }
+}
+
+void
+io_register_delayed_write(
+    struct gba *gba,
+    struct event_args args
+) {
+    struct io *io;
+    uint32_t addr;
+
+    io = &gba->io;
+    addr = args.a1.u32;
+
+    switch (addr) {
+        /* Time reload */
+        case IO_REG_TM0CNT_LO:
+        case IO_REG_TM1CNT_LO:
+        case IO_REG_TM2CNT_LO:
+        case IO_REG_TM3CNT_LO: {
+            uint16_t idx;
+
+            idx = (addr - IO_REG_TM0CNT_LO) / sizeof(uint32_t);
+            io->timers[idx].reload.raw = io->pending.timers[idx].reload.raw;
+            break;
+        };
+
+        /* Time Control */
+        case IO_REG_TM0CNT_HI:
+        case IO_REG_TM1CNT_HI:
+        case IO_REG_TM2CNT_HI:
+        case IO_REG_TM3CNT_HI: {
+            uint16_t idx;
+            bool old_enable;
+            bool new_enable;
+
+            idx = (addr - IO_REG_TM0CNT_HI) / sizeof(uint32_t);
+
+            old_enable = io->timers[idx].control.enable;
+            io->timers[idx].control.raw = io->pending.timers[idx].control.raw;
+            new_enable = io->timers[idx].control.enable;
+
+            /* Timer 0 cannot use the count_up bit. */
+            if (!idx) {
+                io->timers[idx].control.count_up = false;
+            }
+
+            if (old_enable ^ new_enable) {
+                if (new_enable) {
+                    timer_schedule_start(gba, idx);
+                } else {
+                    timer_stop(gba, idx);
+                }
+            }
+            break;
+        };
+
+        /* Interrupt-Related Registers */
+        case IO_REG_IE:
+        case IO_REG_IF:
+        case IO_REG_IME: {
+            bool int_available;
+            bool new_irq_line;
+
+            io->int_enabled.raw = io->pending.int_enabled.raw;
+            io->int_flag.raw = io->pending.int_flag.raw;
+            io->ime.raw = io->pending.ime.raw;
+
+            int_available = (bool)(gba->io.int_enabled.raw & gba->io.int_flag.raw);
+
+            // TODO FIXME This most likely has delay
+            if (int_available && gba->core.state == CORE_HALT) {
+                gba->core.state = CORE_RUN;
+            }
+
+            new_irq_line = int_available && gba->io.ime.raw;
+            if (new_irq_line != gba->core.irq_line) {
+                /* There's a two-cycle delay for the CPU to register the new IRQ line */
+                core_schedule_update_irq_line(gba, new_irq_line);
+            }
+            break;
+        };
+
+        default: panic(HS_ERROR, "Delayed write to unsupported register %08x", addr);
+    }
+}
+
+void
+io_schedule_register_delayed_write(
+    struct gba *gba,
+    uint32_t reg
+) {
+    sched_add_event(
+        gba,
+        NEW_FIX_EVENT_ARGS(
+            SCHED_EVENT_IO_WRITE,
+            gba->scheduler.cycles + 1, // One cycle delay when writing to delayed IO registers
+            EVENT_ARG(u32, reg)
+        )
+    );
 }
