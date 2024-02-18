@@ -181,7 +181,7 @@ main(
                 /*
                 ** We also update the Window's name with the game title
                 */
-                if (app.emulation.game_entry) {
+                if (app.emulation.game_entry && app.emulation.game_entry->title) {
                     SDL_SetWindowTitle(app.sdl.window, app.emulation.game_entry->title);
                 } else {
                     SDL_SetWindowTitle(app.sdl.window, "Hades");
