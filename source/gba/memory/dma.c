@@ -278,9 +278,14 @@ mem_schedule_dma_transfers_for(
     enum dma_timings timing
 ) {
     struct dma_channel *channel;
+    bool enabled;
 
     channel = &gba->io.dma[channel_idx];
-    if (channel->control.enable && channel->control.timing == timing) {
+
+    /* Bypass the usual enable check for DMA3's video mode */
+    enabled = (channel_idx == 3 && timing == DMA_TIMING_SPECIAL) ? gba->ppu.video_capture_enabled : channel->control.enable;
+
+    if (enabled && channel->control.timing == timing) {
         channel->enable_event_handle = sched_add_event(
             gba,
             NEW_FIX_EVENT_ARGS(

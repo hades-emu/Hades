@@ -397,8 +397,19 @@ ppu_hblank(
         mem_schedule_dma_transfers(gba, DMA_TIMING_HBLANK);
     }
 
-    if (io->vcount.raw >= 2 && io->vcount.raw < GBA_SCREEN_HEIGHT + 2) {
+    if (gba->ppu.video_capture_enabled && io->vcount.raw >= 2 && io->vcount.raw < GBA_SCREEN_HEIGHT + 2) {
         mem_schedule_dma_transfers_for(gba, 3, DMA_TIMING_SPECIAL);  // Video DMA
+    }
+
+    /*
+    ** Video mode is evaluated once at the beginning of the frame and can't be enabled/disabled mid-frame.
+    **
+    ** Reference:
+    **   - https://github.com/mgba-emu/mgba/issues/2017
+    **   - https://github.com/skylersaleh/SkyEmu/issues/104
+    */
+    if (io->vcount.raw == GBA_SCREEN_HEIGHT + 2) {
+        gba->ppu.video_capture_enabled = gba->io.dma[3].control.enable && gba->io.dma[3].control.timing == DMA_TIMING_SPECIAL;
     }
 }
 
