@@ -643,6 +643,7 @@ static struct game_entry game_database[] = {
     (struct game_entry){.code = "BGG", .storage = BACKUP_NONE,      .flags = GAME_ENTRY_FLAGS_NONE, .title = "Golden Nugget Casino"},
     (struct game_entry){.code = "AGS", .storage = BACKUP_FLASH64,   .flags = GAME_ENTRY_FLAGS_NONE, .title = "Golden Sun"},
     (struct game_entry){.code = "AGF", .storage = BACKUP_FLASH64,   .flags = GAME_ENTRY_FLAGS_NONE, .title = "Golden Sun - The Lost Age"},
+    (struct game_entry){.code = "2G0", .storage = BACKUP_SRAM,      .flags = GAME_ENTRY_FLAGS_NONE, .title = "Goodboy Galaxy - Chapter Zero"},
     (struct game_entry){.code = "AGA", .storage = BACKUP_EEPROM_4K, .flags = GAME_ENTRY_FLAGS_NONE, .title = "Gradius Galaxies"},
     (struct game_entry){.code = "BGT", .storage = BACKUP_EEPROM_4K, .flags = GAME_ENTRY_FLAGS_NONE, .title = "Grand Theft Auto Advance"},
     (struct game_entry){.code = "AG9", .storage = BACKUP_SRAM,      .flags = GAME_ENTRY_FLAGS_NONE, .title = "Greatest Nine"},
