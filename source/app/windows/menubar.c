@@ -84,8 +84,9 @@ app_win_menubar_file(
 
         igSeparator();
 
-        if (igMenuItem_Bool("Keybindings", NULL, false, true)) {
-            app->ui.keybindings_editor.open = true;
+        if (igMenuItem_Bool("Settings", NULL, false, true)) {
+            app->ui.settings.open = true;
+            app->ui.settings.menu = 0;
         }
 
         igEndMenu();
@@ -98,9 +99,6 @@ app_win_menubar_emulation(
     struct app *app
 ) {
     if (igBeginMenu("Emulation", true)) {
-        if (igMenuItem_Bool("Skip BIOS", NULL, app->emulation.skip_bios, true)) {
-            app->emulation.skip_bios ^= 1;
-        }
 
         if (igBeginMenu("Speed", app->emulation.is_started)) {
             uint32_t x;
@@ -183,42 +181,6 @@ app_win_menubar_emulation(
 
         igSeparator();
 
-        if (igBeginMenu("Backup Storage", !app->emulation.is_started)) {
-            uint32_t x;
-
-            if (igMenuItem_Bool("Auto-detect", NULL, app->emulation.backup_storage.autodetect, true)) {
-                app->emulation.backup_storage.autodetect ^= 1;
-            }
-
-            igSeparator();
-
-            for (x = BACKUP_MIN; x < BACKUP_LEN; ++x) {
-                if (igMenuItem_Bool(backup_storage_names[x], NULL, !app->emulation.backup_storage.autodetect && app->emulation.backup_storage.type == x, true)) {
-                    app->emulation.backup_storage.type = x;
-                    app->emulation.backup_storage.autodetect = false;
-                }
-            }
-
-            igEndMenu();
-        }
-
-        /* Backup storage & GPIO */
-        if (igBeginMenu("Devices", !app->emulation.is_started)) {
-
-            igText("RTC");
-            igSeparator();
-
-            if (igMenuItem_Bool("Auto-detect", NULL, app->emulation.rtc.autodetect, true)) {
-                app->emulation.rtc.autodetect ^= 1;
-            }
-            if (igMenuItem_Bool("Enable", NULL, app->emulation.rtc.enabled, !app->emulation.rtc.autodetect)) {
-                app->emulation.rtc.enabled ^= 1;
-            }
-            igEndMenu();
-        }
-
-        igSeparator();
-
         if (igMenuItem_Bool("Pause", NULL, !app->emulation.is_running, app->emulation.is_started)) {
             if (app->emulation.is_running) {
                 app_emulator_pause(app);
@@ -234,6 +196,13 @@ app_win_menubar_emulation(
         if (igMenuItem_Bool("Reset", NULL, false, app->emulation.is_started)) {
             app_emulator_reset(app);
             app_emulator_run(app);
+        }
+
+        igSeparator();
+
+        if (igMenuItem_Bool("Emulation Settings", NULL, false, true)) {
+            app->ui.settings.open = true;
+            app->ui.settings.menu = MENU_EMULATION;
         }
 
         igEndMenu();
@@ -282,106 +251,50 @@ app_win_menubar_video(
             igEndMenu();
         }
 
-        /* Aspect Ratio */
-        if (igBeginMenu("Aspect Ratio", true)) {
-            if (igMenuItem_Bool(
-                "Auto resize",
-                NULL,
-                app->video.aspect_ratio == ASPECT_RATIO_RESIZE,
-                true
-            )) {
-                app->video.aspect_ratio = ASPECT_RATIO_RESIZE;
-                app->ui.win.resize = true;
-                app->ui.win.resize_with_ratio = true;
-                app->ui.win.resize_ratio = min(app->ui.game.width / ((float)GBA_SCREEN_WIDTH * app->ui.scale), app->ui.game.height / ((float)GBA_SCREEN_HEIGHT * app->ui.scale));
-            }
-
-            if (igMenuItem_Bool(
-                "Black borders",
-                NULL,
-                app->video.aspect_ratio == ASPECT_RATIO_BORDERS,
-                true
-            )) {
-                app->video.aspect_ratio = ASPECT_RATIO_BORDERS;
-            }
-
-            if (igMenuItem_Bool(
-                "Stretch",
-                NULL,
-                app->video.aspect_ratio == ASPECT_RATIO_STRETCH,
-                true
-            )) {
-                app->video.aspect_ratio = ASPECT_RATIO_STRETCH;
-            }
-
-            igEndMenu();
-        }
-
         igSeparator();
-
-        /* Texture Filter */
-        if (igBeginMenu("Texture Filter", true)) {
-            if (igMenuItem_Bool("Nearest", NULL, app->video.texture_filter == TEXTURE_FILTER_NEAREST, true)) {
-                app->video.texture_filter = TEXTURE_FILTER_NEAREST;
-                app_sdl_video_rebuild_pipeline(app);
-            }
-
-            if (igMenuItem_Bool("Linear", NULL, app->video.texture_filter == TEXTURE_FILTER_LINEAR, true)) {
-                app->video.texture_filter = TEXTURE_FILTER_LINEAR;
-                app_sdl_video_rebuild_pipeline(app);
-            }
-
-            igEndMenu();
-        }
 
         /* Pixel Color Effect */
         if (igBeginMenu("Color Effect", true)) {
-            if (igMenuItem_Bool("None", NULL, app->video.pixel_color_effect == PIXEL_COLOR_EFFECT_NONE, true)) {
-                app->video.pixel_color_effect = PIXEL_COLOR_EFFECT_NONE;
+            if (igMenuItem_Bool("None", NULL, app->video.pixel_color_filter == PIXEL_COLOR_FILTER_NONE, true)) {
+                app->video.pixel_color_filter = PIXEL_COLOR_FILTER_NONE;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
             igSeparator();
 
-            if (igMenuItem_Bool("Color Correction", NULL, app->video.pixel_color_effect == PIXEL_COLOR_EFFECT_COLOR_CORRECTION, true)) {
-                app->video.pixel_color_effect = PIXEL_COLOR_EFFECT_COLOR_CORRECTION;
+            if (igMenuItem_Bool("Color Correction", NULL, app->video.pixel_color_filter == PIXEL_COLOR_FILTER_COLOR_CORRECTION, true)) {
+                app->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
-            if (igMenuItem_Bool("Grey Scale", NULL, app->video.pixel_color_effect == PIXEL_COLOR_EFFECT_GREY_SCALE, true)) {
-                app->video.pixel_color_effect = PIXEL_COLOR_EFFECT_GREY_SCALE;
+            if (igMenuItem_Bool("Grey Scale", NULL, app->video.pixel_color_filter == PIXEL_COLOR_FILTER_GREY_SCALE, true)) {
+                app->video.pixel_color_filter = PIXEL_COLOR_FILTER_GREY_SCALE;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
             igEndMenu();
         }
 
-        /* Pixel Scaler Effect */
-        if (igBeginMenu("Scaler Effect", true)) {
-            if (igMenuItem_Bool("None", NULL, app->video.pixel_scaler_effect == PIXEL_SCALER_EFFECT_NONE, true)) {
-                app->video.pixel_scaler_effect = PIXEL_SCALER_EFFECT_NONE;
+        /* Pixel Scaling Effect */
+        if (igBeginMenu("Scaling Effect", true)) {
+            if (igMenuItem_Bool("None", NULL, app->video.pixel_scaling_filter == PIXEL_SCALING_FILTER_NONE, true)) {
+                app->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_NONE;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
             igSeparator();
 
-            if (igMenuItem_Bool("LCD Grid /w RGB Stripes", NULL, app->video.pixel_scaler_effect == PIXEL_SCALER_EFFECT_LCD_GRID_WITH_RGB_STRIPES, true)) {
-                app->video.pixel_scaler_effect = PIXEL_SCALER_EFFECT_LCD_GRID_WITH_RGB_STRIPES;
+            if (igMenuItem_Bool("LCD Grid /w RGB Stripes", NULL, app->video.pixel_scaling_filter == PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES, true)) {
+                app->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
-            if (igMenuItem_Bool("LCD Grid", NULL, app->video.pixel_scaler_effect == PIXEL_SCALER_EFFECT_LCD_GRID, true)) {
-                app->video.pixel_scaler_effect = PIXEL_SCALER_EFFECT_LCD_GRID;
+            if (igMenuItem_Bool("LCD Grid", NULL, app->video.pixel_scaling_filter == PIXEL_SCALING_FILTER_LCD_GRID, true)) {
+                app->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
             igEndMenu();
-        }
-
-        /* VSync */
-        if (igMenuItem_Bool("VSync", NULL, app->video.vsync, true)) {
-            app->video.vsync ^= 1;
-            SDL_GL_SetSwapInterval(app->video.vsync);
         }
 
         igSeparator();
@@ -390,6 +303,13 @@ app_win_menubar_video(
         bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SCREENSHOT]);
         if (igMenuItem_Bool("Screenshot", bind ? bind : "", false, app->emulation.is_started)) {
             app_emulator_screenshot(app);
+        }
+
+        igSeparator();
+
+        if (igMenuItem_Bool("Video Settings", NULL, false, true)) {
+            app->ui.settings.open = true;
+            app->ui.settings.menu = MENU_VIDEO;
         }
 
         igEndMenu();
@@ -402,8 +322,6 @@ app_win_menubar_audio(
     struct app *app
 ) {
     if (igBeginMenu("Audio", true)) {
-        float percent;
-
         /* VSync */
         if (igMenuItem_Bool("Mute", NULL, app->audio.mute, true)) {
             app->audio.mute ^= 1;
@@ -411,17 +329,10 @@ app_win_menubar_audio(
 
         igSeparator();
 
-        igText("Sound Level:");
-
-        igSpacing();
-
-        igSetNextItemWidth(100.f * app->ui.scale);
-
-        percent = app->audio.level * 100.f;
-        igSliderFloat("##slider_sound_level", &percent, 0.0f, 100.0f, "%.0f%%", ImGuiSliderFlags_None);
-        app->audio.level = max(0.0f, min(percent / 100.f, 1.f));
-
-        igSpacing();
+        if (igMenuItem_Bool("Audio Settings", NULL, false, true)) {
+            app->ui.settings.open = true;
+            app->ui.settings.menu = MENU_AUDIO;
+        }
 
         igEndMenu();
     }

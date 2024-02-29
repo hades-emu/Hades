@@ -68,7 +68,8 @@ main(
     app.emulation.rtc.autodetect = true;
     app.emulation.rtc.enabled = true;
     app.file.bios_path = strdup("./bios.bin");
-    app.video.pixel_color_effect = PIXEL_COLOR_EFFECT_COLOR_CORRECTION;
+    app.video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
+    app.video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
     app.video.vsync = false;
     app.video.display_size = 3;
     app.video.aspect_ratio = ASPECT_RATIO_RESIZE;
