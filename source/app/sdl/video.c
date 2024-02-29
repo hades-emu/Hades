@@ -154,7 +154,7 @@ app_sdl_video_init(
     /* Create the OpenGL objects required to build the pipeline */
     glGenTextures(1, &app->gfx.game_texture);
     glGenTextures(1, &app->gfx.pixel_color_texture);
-    glGenTextures(1, &app->gfx.pixel_scaler_texture);
+    glGenTextures(1, &app->gfx.pixel_scaling_texture);
     glGenFramebuffers(1, &app->gfx.fbo);
     glGenVertexArrays(1, &app->gfx.vao);
     glGenBuffers(1, &app->gfx.vbo);
@@ -220,20 +220,17 @@ app_sdl_video_rebuild_pipeline(
         NULL
     );
 
-    switch (app->video.pixel_color_effect) {
-        case PIXEL_COLOR_EFFECT_COLOR_CORRECTION: {
+    switch (app->video.pixel_color_filter) {
+        case PIXEL_COLOR_FILTER_COLOR_CORRECTION: {
             app->gfx.pixel_color_program = app->gfx.program_color_correction;
-            app->gfx.use_pixel_color_program = true;
             break;
         };
-        case PIXEL_COLOR_EFFECT_GREY_SCALE: {
+        case PIXEL_COLOR_FILTER_GREY_SCALE: {
             app->gfx.pixel_color_program = app->gfx.program_grey_scale;
-            app->gfx.use_pixel_color_program = true;
             break;
         };
         default: {
             app->gfx.pixel_color_program = 0;
-            app->gfx.use_pixel_color_program = false;
             break;
         };
     }
@@ -256,30 +253,27 @@ app_sdl_video_rebuild_pipeline(
         NULL
     );
 
-    switch (app->video.pixel_scaler_effect) {
-        case PIXEL_SCALER_EFFECT_LCD_GRID: {
-            app->gfx.pixel_scaler_program = app->gfx.program_lcd_grid;
-            app->gfx.pixel_scaler_size = 3;
-            app->gfx.use_pixel_scaler_program = true;
+    switch (app->video.pixel_scaling_filter) {
+        case PIXEL_SCALING_FILTER_LCD_GRID: {
+            app->gfx.pixel_scaling_program = app->gfx.program_lcd_grid;
+            app->gfx.pixel_scaling_size = 3;
             break;
         };
-        case PIXEL_SCALER_EFFECT_LCD_GRID_WITH_RGB_STRIPES: {
-            app->gfx.pixel_scaler_program = app->gfx.program_lcd_grid_with_rgb_stripes;
-            app->gfx.pixel_scaler_size = 3;
-            app->gfx.use_pixel_scaler_program = true;
+        case PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES: {
+            app->gfx.pixel_scaling_program = app->gfx.program_lcd_grid_with_rgb_stripes;
+            app->gfx.pixel_scaling_size = 3;
             break;
         };
         default: {
-            app->gfx.pixel_scaler_program = 0;
-            app->gfx.pixel_scaler_size = 1;
-            app->gfx.use_pixel_scaler_program = false;
+            app->gfx.pixel_scaling_program = 0;
+            app->gfx.pixel_scaling_size = 1;
             break;
         };
     }
 
-    // Setup the pixel scaler texture
+    // Setup the pixel scaling texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, app->gfx.pixel_scaler_texture);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.pixel_scaling_texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_filter);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
@@ -287,8 +281,8 @@ app_sdl_video_rebuild_pipeline(
         GL_TEXTURE_2D,
         0,
         GL_RGBA,
-        GBA_SCREEN_WIDTH * app->gfx.pixel_scaler_size,
-        GBA_SCREEN_HEIGHT * app->gfx.pixel_scaler_size,
+        GBA_SCREEN_WIDTH * app->gfx.pixel_scaling_size,
+        GBA_SCREEN_HEIGHT * app->gfx.pixel_scaling_size,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
@@ -434,7 +428,7 @@ app_sdl_video_cleanup(
     glDeleteFramebuffers(1, &app->gfx.fbo);
     glDeleteTextures(1, &app->gfx.game_texture);
     glDeleteTextures(1, &app->gfx.pixel_color_texture);
-    glDeleteTextures(1, &app->gfx.pixel_scaler_texture);
+    glDeleteTextures(1, &app->gfx.pixel_scaling_texture);
     SDL_GL_DeleteContext(app->gfx.gl_context);
 
     // Close the Wingowd
@@ -458,7 +452,9 @@ app_sdl_video_render_frame(
         app_win_game(app);
     }
 
-    app_win_keybinds_editor(app);
+    if (app->ui.settings.open) {
+        app_win_settings(app);
+    }
 
     app_win_notifications(app);
 

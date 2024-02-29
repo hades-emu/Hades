@@ -67,7 +67,7 @@ app_win_game(
     glBindFramebuffer(GL_FRAMEBUFFER, app->gfx.fbo);
 
     // Apply the Pixel Color Effect
-    if (app->gfx.use_pixel_color_program) {
+    if (app->gfx.pixel_color_program != 0) {
         in_texture = out_texture;
         out_texture = app->gfx.pixel_color_texture;
 
@@ -85,20 +85,20 @@ app_win_game(
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
-    // Apply the Pixel Scaler Effect
-    if (app->gfx.use_pixel_scaler_program) {
+    // Apply the Pixel Scaling Effect
+    if (app->gfx.pixel_scaling_program != 0) {
         in_texture = out_texture;
-        out_texture = app->gfx.pixel_scaler_texture;
+        out_texture = app->gfx.pixel_scaling_texture;
 
         // Set the viewport
-        glViewport(0, 0, GBA_SCREEN_WIDTH * app->gfx.pixel_scaler_size, GBA_SCREEN_HEIGHT * app->gfx.pixel_scaler_size);
+        glViewport(0, 0, GBA_SCREEN_WIDTH * app->gfx.pixel_scaling_size, GBA_SCREEN_HEIGHT * app->gfx.pixel_scaling_size);
 
         // Set the input and output texture
         glBindTexture(GL_TEXTURE_2D, in_texture);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out_texture, 0);
 
         // Set the shader to use
-        glUseProgram(app->gfx.pixel_scaler_program);
+        glUseProgram(app->gfx.pixel_scaling_program);
 
         // Draw
         glDrawArrays(GL_TRIANGLES, 0, 6);

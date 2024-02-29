@@ -30,41 +30,41 @@
 struct ImGuiIO;
 
 enum texture_filter_kind {
-    TEXTURE_FILTER_MIN = 0,
-
     TEXTURE_FILTER_NEAREST = 0,
     TEXTURE_FILTER_LINEAR = 1,
 
+    TEXTURE_FILTER_LEN,
+    TEXTURE_FILTER_MIN = 0,
     TEXTURE_FILTER_MAX = 1,
 };
 
-enum pixel_color_effect_kind {
-    PIXEL_COLOR_EFFECT_MIN = 0,
+enum pixel_color_filter_kind {
+    PIXEL_COLOR_FILTER_NONE = 0,
+    PIXEL_COLOR_FILTER_COLOR_CORRECTION = 1,
+    PIXEL_COLOR_FILTER_GREY_SCALE = 2,
 
-    PIXEL_COLOR_EFFECT_NONE = 0,
-    PIXEL_COLOR_EFFECT_COLOR_CORRECTION = 1,
-    PIXEL_COLOR_EFFECT_GREY_SCALE = 2,
-
-    PIXEL_COLOR_EFFECT_MAX = 2,
+    PIXEL_COLOR_FILTER_LEN,
+    PIXEL_COLOR_FILTER_MIN = 0,
+    PIXEL_COLOR_FILTER_MAX = 2,
 };
 
-enum pixel_scaler_effect_kind {
-    PIXEL_SCALER_EFFECT_MIN = 0,
+enum pixel_scaling_filter_kind {
+    PIXEL_SCALING_FILTER_NONE = 0,
+    PIXEL_SCALING_FILTER_LCD_GRID = 1,
+    PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES = 2,
 
-    PIXEL_SCALER_EFFECT_NONE = 0,
-    PIXEL_SCALER_EFFECT_LCD_GRID = 1,
-    PIXEL_SCALER_EFFECT_LCD_GRID_WITH_RGB_STRIPES = 2,
-
-    PIXEL_SCALER_EFFECT_MAX = 2,
+    PIXEL_SCALING_FILTER_LEN,
+    PIXEL_SCALING_FILTER_MIN = 0,
+    PIXEL_SCALING_FILTER_MAX = 2,
 };
 
 enum aspect_ratio {
-    ASPECT_RATIO_MIN = 0,
-
     ASPECT_RATIO_RESIZE = 0,
     ASPECT_RATIO_BORDERS = 1,
     ASPECT_RATIO_STRETCH = 2,
 
+    ASPECT_RATIO_LEN,
+    ASPECT_RATIO_MIN = 0,
     ASPECT_RATIO_MAX = 2,
 };
 
@@ -111,6 +111,15 @@ enum ui_notification_kind {
     UI_NOTIFICATION_INFO,
     UI_NOTIFICATION_SUCCESS,
     UI_NOTIFICATION_ERROR,
+};
+
+enum menu_kind {
+    MENU_EMULATION,
+    MENU_VIDEO,
+    MENU_AUDIO,
+    MENU_BINDINGS,
+
+    MENU_MAX,
 };
 
 struct ui_notification {
@@ -201,7 +210,7 @@ struct app {
 
         GLuint game_texture;
         GLuint pixel_color_texture;
-        GLuint pixel_scaler_texture;
+        GLuint pixel_scaling_texture;
         GLuint fbo;
         GLuint vao;
         GLuint vbo;
@@ -212,11 +221,9 @@ struct app {
         GLuint program_lcd_grid_with_rgb_stripes;
 
         GLuint pixel_color_program;
-        bool use_pixel_color_program;
 
-        GLuint pixel_scaler_program;
-        size_t pixel_scaler_size;
-        bool use_pixel_scaler_program;
+        GLuint pixel_scaling_program;
+        size_t pixel_scaling_size;
     } gfx;
 
     struct {
@@ -240,8 +247,8 @@ struct app {
         enum aspect_ratio aspect_ratio;
         bool vsync;
         enum texture_filter_kind texture_filter;
-        enum pixel_color_effect_kind pixel_color_effect;
-        enum pixel_scaler_effect_kind pixel_scaler_effect;
+        enum pixel_color_filter_kind pixel_color_filter;
+        enum pixel_scaling_filter_kind pixel_scaling_filter;
     } video;
 
     struct {
@@ -314,11 +321,14 @@ struct app {
 
         struct {
             bool open;
-            bool visible;
 
-            SDL_Keycode *keyboard_target;
-            SDL_GameControllerButton *controller_target;
-        } keybindings_editor;
+            uint32_t menu;
+
+            struct {
+                SDL_Keycode *keyboard_target;
+                SDL_GameControllerButton *controller_target;
+            } keybindings_editor;
+        } settings;
 
         struct ui_notification *notifications;
     } ui;
@@ -388,15 +398,15 @@ extern char const *SHADER_VERTEX_COMMON;
 /* app/windows/game.c */
 void app_win_game(struct app *app);
 
-/* app/windows/keybinds.c */
-void app_win_keybinds_editor(struct app *app);
-
 /* app/windows/menubar.c */
 void app_win_menubar(struct app *app);
 
 /* app/windows/notif.c */
 void app_new_notification(struct app *app, enum ui_notification_kind, char const *msg, ...);
 void app_win_notifications(struct app *app);
+
+/* app/windows/settings.c */
+void app_win_settings(struct app *app);
 
 /* args.c */
 void app_args_parse(struct app *app, int argc, char * const argv[]);

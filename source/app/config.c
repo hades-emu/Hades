@@ -120,14 +120,14 @@ app_config_load(
             app->video.texture_filter = max(TEXTURE_FILTER_MIN, min(app->video.texture_filter, TEXTURE_FILTER_MAX));
         }
 
-        if (mjson_get_number(data, data_len, "$.video.pixel_color_effect", &d)) {
-            app->video.pixel_color_effect = (int)d;
-            app->video.pixel_color_effect = max(PIXEL_COLOR_EFFECT_MIN, min(app->video.pixel_color_effect, PIXEL_COLOR_EFFECT_MAX));
+        if (mjson_get_number(data, data_len, "$.video.pixel_color_filter", &d)) {
+            app->video.pixel_color_filter = (int)d;
+            app->video.pixel_color_filter = max(PIXEL_COLOR_FILTER_MIN, min(app->video.pixel_color_filter, PIXEL_COLOR_FILTER_MAX));
         }
 
-        if (mjson_get_number(data, data_len, "$.video.pixel_scaler_effect", &d)) {
-            app->video.pixel_scaler_effect = (int)d;
-            app->video.pixel_scaler_effect = max(PIXEL_SCALER_EFFECT_MIN, min(app->video.pixel_scaler_effect, PIXEL_SCALER_EFFECT_MAX));
+        if (mjson_get_number(data, data_len, "$.video.pixel_scaling_filter", &d)) {
+            app->video.pixel_scaling_filter = (int)d;
+            app->video.pixel_scaling_filter = max(PIXEL_SCALING_FILTER_MIN, min(app->video.pixel_scaling_filter, PIXEL_SCALING_FILTER_MAX));
         }
     }
 
@@ -236,8 +236,8 @@ app_config_save(
                 "aspect_ratio": %d,
                 "vsync": %B,
                 "texture_filter": %d,
-                "pixel_color_effect": %d,
-                "pixel_scaler_effect": %d
+                "pixel_color_filter": %d,
+                "pixel_scaling_filter": %d
             },
 
             // Audio
@@ -263,8 +263,8 @@ app_config_save(
         (int)app->video.aspect_ratio,
         (int)app->video.vsync,
         (int)app->video.texture_filter,
-        (int)app->video.pixel_color_effect,
-        (int)app->video.pixel_scaler_effect,
+        (int)app->video.pixel_color_filter,
+        (int)app->video.pixel_scaling_filter,
         (int)app->audio.mute,
         app->audio.level
     );

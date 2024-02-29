@@ -122,23 +122,25 @@ app_sdl_handle_events(
                     break;
                 }
 
-                /* Handle the special case where we are creating new keybindings. */
-                if (app->ui.keybindings_editor.visible) {
+                /*
+                ** Ignore keys if the settings are open except the special case where we are creating new bindings.
+                */
+                if (app->ui.settings.open) {
                     if (event.type == SDL_KEYDOWN) {
                         // The `Escape` key is used to clear a bind.
                         if (event.key.keysym.sym == SDLK_ESCAPE) {
-                            if (app->ui.keybindings_editor.keyboard_target) {
-                                *app->ui.keybindings_editor.keyboard_target = SDLK_UNKNOWN;
-                                app->ui.keybindings_editor.keyboard_target = NULL;
+                            if (app->ui.settings.keybindings_editor.keyboard_target) {
+                                *app->ui.settings.keybindings_editor.keyboard_target = SDLK_UNKNOWN;
+                                app->ui.settings.keybindings_editor.keyboard_target = NULL;
                             }
-                            if (app->ui.keybindings_editor.controller_target) {
-                                *app->ui.keybindings_editor.controller_target = SDL_CONTROLLER_BUTTON_INVALID;
-                                app->ui.keybindings_editor.controller_target = NULL;
+                            if (app->ui.settings.keybindings_editor.controller_target) {
+                                *app->ui.settings.keybindings_editor.controller_target = SDL_CONTROLLER_BUTTON_INVALID;
+                                app->ui.settings.keybindings_editor.controller_target = NULL;
                             }
-                        } else if (app->ui.keybindings_editor.keyboard_target) {
+                        } else if (app->ui.settings.keybindings_editor.keyboard_target) {
                             app_bindings_keyboard_clear(app, event.key.keysym.sym);
-                            *app->ui.keybindings_editor.keyboard_target = event.key.keysym.sym;
-                            app->ui.keybindings_editor.keyboard_target = NULL;
+                            *app->ui.settings.keybindings_editor.keyboard_target = event.key.keysym.sym;
+                            app->ui.settings.keybindings_editor.keyboard_target = NULL;
                         }
                     }
                     break ;
@@ -162,12 +164,14 @@ app_sdl_handle_events(
             case SDL_CONTROLLERBUTTONDOWN: {
                 size_t i;
 
-                /* Handle the special case where we are creating new keybindings. */
-                if (app->ui.keybindings_editor.visible) {
-                    if (event.type == SDL_CONTROLLERBUTTONDOWN && app->ui.keybindings_editor.controller_target) {
+                /*
+                ** Ignore buttons if the settings are open except the special case where we are creating new bindings.
+                */
+                if (app->ui.settings.open) {
+                    if (event.type == SDL_CONTROLLERBUTTONDOWN && app->ui.settings.keybindings_editor.controller_target) {
                         app_bindings_controller_clear(app, event.cbutton.button);
-                        *app->ui.keybindings_editor.controller_target = event.cbutton.button;
-                        app->ui.keybindings_editor.controller_target = NULL;
+                        *app->ui.settings.keybindings_editor.controller_target = event.cbutton.button;
+                        app->ui.settings.keybindings_editor.controller_target = NULL;
                     }
                     break ;
                 }
@@ -189,8 +193,8 @@ app_sdl_handle_events(
                 bool state_a;
                 bool state_b;
 
-                /* Disable the joysticks if the keybindings editor is visible */
-                if (app->ui.keybindings_editor.visible) {
+                /* Disable the joysticks if the settings are visible */
+                if (app->ui.settings.open) {
                     break;
                 }
 

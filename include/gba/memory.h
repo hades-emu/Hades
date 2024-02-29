@@ -129,7 +129,6 @@ enum backup_storage_types {
     BACKUP_LEN = BACKUP_MAX + 1,
 };
 
-
 static char const * const backup_storage_names[] = {
     "None",
     "EEPROM 4k",
