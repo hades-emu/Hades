@@ -413,7 +413,7 @@ app_win_menubar_fps_counter(
     struct app *app
 ) {
     /* FPS Counter */
-    if (app->emulation.is_started && app->emulation.is_running) {
+    if (app->emulation.is_started && app->emulation.is_running && igGetWindowWidth() >= GBA_SCREEN_WIDTH * 2 * app->ui.scale) {
         float spacing;
         ImVec2 out;
 
