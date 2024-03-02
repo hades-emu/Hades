@@ -170,11 +170,30 @@ app_config_load(
                     continue;
                 }
 
-                switch (layer) {
-                    case 0: app->binds.keyboard[bind] = len ? SDL_GetKeyFromName(str) : 0; break;
-                    case 1: app->binds.keyboard_alt[bind] = len ? SDL_GetKeyFromName(str) : 0; break;
-                    case 2: app->binds.controller[bind] = len ? SDL_GameControllerGetButtonFromString(str) : 0; break;
-                    case 3: app->binds.controller_alt[bind] = len ? SDL_GameControllerGetButtonFromString(str) : 0; break;
+                if (layer <= 1) { // Keyboard
+                    SDL_Keycode *target;
+                    SDL_Keycode key;
+
+                    target = (layer == 0) ? &app->binds.keyboard[bind] : &app->binds.keyboard_alt[bind];
+                    key = SDL_GetKeyFromName(str);
+
+                    // Clear any binding with that key and then set the binding
+                    if (key != SDLK_UNKNOWN) {
+                        app_bindings_keyboard_clear(app, key);
+                    }
+                    *target = key;
+                } else { // Controller
+                    SDL_GameControllerButton *target;
+                    SDL_GameControllerButton button;
+
+                    target = (layer == 2) ? &app->binds.controller[bind] : &app->binds.controller_alt[bind];
+                    button = SDL_GameControllerGetButtonFromString(str);
+
+                    // Clear any binding with that button and then set the binding
+                    if (button != SDL_CONTROLLER_BUTTON_INVALID) {
+                        app_bindings_controller_clear(app, button);
+                    }
+                    *target = button;
                 }
             }
         }
