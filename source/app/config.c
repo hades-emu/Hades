@@ -152,6 +152,7 @@ app_config_load(
         char str[256];
         size_t layer;
         size_t bind;
+        int len;
 
         static char const *layers_name[] = {
             "keyboard",
@@ -163,13 +164,17 @@ app_config_load(
         for (layer = 0; layer < 4; ++layer) {
             for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
                 snprintf(path, sizeof(path), "$.binds.%s.%s", layers_name[layer], binds_slug[bind]);
-                if (mjson_get_string(data, data_len, path, str, sizeof(str)) > 0) {
-                    switch (layer) {
-                        case 0: app->binds.keyboard[bind] = SDL_GetKeyFromName(str); break;
-                        case 1: app->binds.keyboard_alt[bind] = SDL_GetKeyFromName(str); break;
-                        case 2: app->binds.controller[bind] = SDL_GameControllerGetButtonFromString(str); break;
-                        case 3: app->binds.controller_alt[bind] = SDL_GameControllerGetButtonFromString(str); break;
-                    }
+
+                len = mjson_get_string(data, data_len, path, str, sizeof(str));
+                if (len < 0) {
+                    continue;
+                }
+
+                switch (layer) {
+                    case 0: app->binds.keyboard[bind] = len ? SDL_GetKeyFromName(str) : 0; break;
+                    case 1: app->binds.keyboard_alt[bind] = len ? SDL_GetKeyFromName(str) : 0; break;
+                    case 2: app->binds.controller[bind] = len ? SDL_GameControllerGetButtonFromString(str) : 0; break;
+                    case 3: app->binds.controller_alt[bind] = len ? SDL_GameControllerGetButtonFromString(str) : 0; break;
                 }
             }
         }
