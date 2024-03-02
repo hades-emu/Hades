@@ -253,6 +253,12 @@ app_win_menubar_video(
 
         igSeparator();
 
+        /* Take a screenshot */
+        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SCREENSHOT]);
+        if (igMenuItem_Bool("Take Screenshot", bind ?: "", false, app->emulation.is_started)) {
+            app_emulator_screenshot(app);
+        }
+
         /* Pixel Color Effect */
         if (igBeginMenu("Color Effect", true)) {
             if (igMenuItem_Bool("None", NULL, app->video.pixel_color_filter == PIXEL_COLOR_FILTER_NONE, true)) {
@@ -295,14 +301,6 @@ app_win_menubar_video(
             }
 
             igEndMenu();
-        }
-
-        igSeparator();
-
-        /* Take a screenshot */
-        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SCREENSHOT]);
-        if (igMenuItem_Bool("Screenshot", bind ? bind : "", false, app->emulation.is_started)) {
-            app_emulator_screenshot(app);
         }
 
         igSeparator();
