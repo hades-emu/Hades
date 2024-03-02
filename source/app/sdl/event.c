@@ -132,10 +132,11 @@ app_sdl_handle_events(
                             if (app->ui.settings.keybindings_editor.keyboard_target) {
                                 *app->ui.settings.keybindings_editor.keyboard_target = SDLK_UNKNOWN;
                                 app->ui.settings.keybindings_editor.keyboard_target = NULL;
-                            }
-                            if (app->ui.settings.keybindings_editor.controller_target) {
+                            } else if (app->ui.settings.keybindings_editor.controller_target) {
                                 *app->ui.settings.keybindings_editor.controller_target = SDL_CONTROLLER_BUTTON_INVALID;
                                 app->ui.settings.keybindings_editor.controller_target = NULL;
+                            } else {
+                                app->ui.settings.open = false;
                             }
                         } else if (app->ui.settings.keybindings_editor.keyboard_target) {
                             app_bindings_keyboard_clear(app, event.key.keysym.sym);
