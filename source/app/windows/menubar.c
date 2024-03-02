@@ -98,6 +98,8 @@ void
 app_win_menubar_emulation(
     struct app *app
 ) {
+    char const *bind;
+
     if (igBeginMenu("Emulation", true)) {
 
         if (igBeginMenu("Speed", app->emulation.is_started)) {
@@ -181,7 +183,8 @@ app_win_menubar_emulation(
 
         igSeparator();
 
-        if (igMenuItem_Bool("Pause", NULL, !app->emulation.is_running, app->emulation.is_started)) {
+        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_PAUSE]);
+        if (igMenuItem_Bool("Pause", bind ?: "", !app->emulation.is_running, app->emulation.is_started)) {
             if (app->emulation.is_running) {
                 app_emulator_pause(app);
             } else {
@@ -193,7 +196,8 @@ app_win_menubar_emulation(
             app_emulator_stop(app);
         }
 
-        if (igMenuItem_Bool("Reset", NULL, false, app->emulation.is_started)) {
+        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_RESET]);
+        if (igMenuItem_Bool("Reset", bind ?: "", false, app->emulation.is_started)) {
             app_emulator_reset(app);
             app_emulator_run(app);
         }
