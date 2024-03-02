@@ -317,7 +317,7 @@ app_config_save(
                     }),
                     layers_name[layer],
                     binds_slug[bind],
-                    key_name ? key_name : ""
+                    key_name ?: ""
                 );
 
                 tmp_data = NULL;

@@ -471,9 +471,9 @@ app_win_settings_bindings(
                         name = SDL_GetKeyName(*keycode);
 
                         if (keycode == app->ui.settings.keybindings_editor.keyboard_target) {
-                            snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsKeyboard%zu", name ? name : " ", bind * 10 + j);
+                            snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsKeyboard%zu", name ?: " ", bind * 10 + j);
                         } else {
-                            snprintf(label, sizeof(label), "%s##BindingsSettingsKeyboard%zu", name ? name : "", bind * 10 + j);
+                            snprintf(label, sizeof(label), "%s##BindingsSettingsKeyboard%zu", name ?: "", bind * 10 + j);
                         }
 
                         igTableNextColumn();
@@ -510,9 +510,9 @@ app_win_settings_bindings(
                         name = SDL_GameControllerGetStringForButton(*button);
 
                         if (button == app->ui.settings.keybindings_editor.controller_target) {
-                            snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsController%zu", name ? name : " ", bind * 10 + j);
+                            snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsController%zu", name ?: " ", bind * 10 + j);
                         } else {
-                            snprintf(label, sizeof(label), "%s##BindingsSettingsController%zu", name ? name : "", bind * 10 + j);
+                            snprintf(label, sizeof(label), "%s##BindingsSettingsController%zu", name ?: "", bind * 10 + j);
                         }
 
                         igTableNextColumn();
