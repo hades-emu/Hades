@@ -126,141 +126,163 @@ app_win_settings_emulation(
     igSeparator();
     igSpacing();
 
-    if (igBeginTabBar("##EmulationSettings", ImGuiTabBarFlags_None)) {
-        if (igBeginTabItem("BIOS", NULL, ImGuiTabItemFlags_None)) {
-            if (igBeginTable("##EmulationSettingsBIOS", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-                igTableSetupColumn("##EmulationSettingsBIOSLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-                igTableSetupColumn("##EmulationSettingsBIOSValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+    igSeparatorText("BIOS");
 
-                // BIOS Path
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("BIOS");
+    if (igBeginTable("##EmulationSettingsBIOS", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##EmulationSettingsBIOSLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##EmulationSettingsBIOSValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-                igTableNextColumn();
-                igBeginDisabled(true);
-                igInputText("##BiosPath", app->file.bios_path, strlen(app->file.bios_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
-                igEndDisabled();
-                igSameLine(0.0f, -1.0f);
-                if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
-                    nfdresult_t result;
-                    nfdchar_t *path;
+        // BIOS Path
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("BIOS Path");
 
-                    result = NFD_OpenDialog(
-                        &path,
-                        (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "BIOS file", .spec = "bin,bios,raw"}},
-                        1,
-                        NULL
-                    );
+        igTableNextColumn();
+        igBeginDisabled(true);
+        igInputText("##BiosPath", app->file.bios_path, strlen(app->file.bios_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
+        igEndDisabled();
+        igSameLine(0.0f, -1.0f);
+        if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
+            nfdresult_t result;
+            nfdchar_t *path;
 
-                    if (result == NFD_OKAY) {
-                        free(app->file.bios_path);
-                        app->file.bios_path = strdup(path);
-                        NFD_FreePath(path);
-                    }
-                }
+            result = NFD_OpenDialog(
+                &path,
+                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "BIOS file", .spec = "bin,bios,raw"}},
+                1,
+                NULL
+            );
 
-                // Skip BIOS
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Skip BIOS Intro");
-
-                igTableNextColumn();
-                igCheckbox("##SkipBIOS", &app->emulation.skip_bios);
-
-                igEndTable();
+            if (result == NFD_OKAY) {
+                free(app->file.bios_path);
+                app->file.bios_path = strdup(path);
+                NFD_FreePath(path);
             }
-            igEndTabItem();
         }
-        if (igBeginTabItem("Speed", NULL, ImGuiTabItemFlags_None)) {
-            if (igBeginTable("##EmulationSettingsSpeed", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-                igTableSetupColumn("##EmulationSettingsSpeedLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-                igTableSetupColumn("##EmulationSettingsSpeedValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-                // Unbounded Speed
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Unbounded Speed");
+        // Skip BIOS
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Skip BIOS Intro");
 
-                igTableNextColumn();
-                if (igCheckbox("##UnboundedSpeed", &app->emulation.unbounded)) {
-                    app_emulator_speed(app, app->emulation.unbounded ? 0 : app->emulation.speed);
-                }
+        igTableNextColumn();
+        igCheckbox("##SkipBIOS", &app->emulation.skip_bios);
 
-                // Speed
-                igBeginDisabled(app->emulation.unbounded);
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Speed");
+        igEndTable();
+    }
 
-                igTableNextColumn();
-                if (igCombo_Str_arr("##Speed", &speed, speed_names, array_length(speed_names), 0)) {
-                    app->emulation.speed = speed + 1;
-                    app->emulation.unbounded = false;
-                    app_emulator_speed(app, app->emulation.speed);
-                }
+    igSeparatorText("Speed");
 
-                igEndDisabled();
+    if (igBeginTable("##EmulationSettingsSpeed", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##EmulationSettingsSpeedLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##EmulationSettingsSpeedValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-                igEndTable();
-            }
-            igEndTabItem();
+        // Unbounded Speed
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Unbounded Speed");
+
+        igTableNextColumn();
+        if (igCheckbox("##UnboundedSpeed", &app->emulation.unbounded)) {
+            app_emulator_speed(app, app->emulation.unbounded ? 0 : app->emulation.speed);
         }
-        if (igBeginTabItem("Save", NULL, ImGuiTabItemFlags_None)) {
-            if (igBeginTable("##EmulationSettingsSave", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-                igTableSetupColumn("##EmulationSettingsSaveLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-                igTableSetupColumn("##EmulationSettingsSaveValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-                // Unbounded Speed
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Backup Storage Type Auto-Detect");
+        // Speed
+        igBeginDisabled(app->emulation.unbounded);
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Speed");
 
-                igTableNextColumn();
-                igCheckbox("##BackupStorageTypeAutoDetect", &app->emulation.backup_storage.autodetect);
-
-                // Backup Storage Type
-                igBeginDisabled(app->emulation.backup_storage.autodetect);
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Backup Storage Type");
-
-                igTableNextColumn();
-                igCombo_Str_arr("##BackupStorageType", (int *)&app->emulation.backup_storage.type, backup_storage_names, array_length(backup_storage_names), 0);
-                igEndDisabled();
-
-                igEndTable();
-            }
-            igEndTabItem();
+        igTableNextColumn();
+        if (igCombo_Str_arr("##Speed", &speed, speed_names, array_length(speed_names), 0)) {
+            app->emulation.speed = speed + 1;
+            app->emulation.unbounded = false;
+            app_emulator_speed(app, app->emulation.speed);
         }
-        if (igBeginTabItem("Devices", NULL, ImGuiTabItemFlags_None)) {
-            if (igBeginTable("##EmulationSettingsDevice", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-                igTableSetupColumn("##EmulationSettingsDeviceLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-                igTableSetupColumn("##EmulationSettingsDeviceValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igEndDisabled();
 
-                // RTC Auto-Detect
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("RTC Auto-Detect");
+        igEndTable();
+    }
 
-                igTableNextColumn();
-                igCheckbox("##RTCAutoDetect", &app->emulation.rtc.autodetect);
+    igSeparatorText("Backup Storage");
 
-                // RTC Enable
-                igBeginDisabled(app->emulation.rtc.autodetect);
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("RTC Enable");
+    if (igBeginTable("##EmulationSettingsBackupStorage", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##EmulationSettingsBackupStorageLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##EmulationSettingsBackupStorageValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-                igTableNextColumn();
-                igCheckbox("##RTCEnable", &app->emulation.rtc.enabled);
-                igEndDisabled();
+        // Backup Storage Auto-Detect
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Auto-Detect");
 
-                igEndTable();
-            }
-            igEndTabItem();
-        }
-        igEndTabBar();
+        igTableNextColumn();
+        igCheckbox("##BackupStorageTypeAutoDetect", &app->emulation.backup_storage.autodetect);
+
+        // Backup Storage Type
+        igBeginDisabled(app->emulation.backup_storage.autodetect);
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Type");
+
+        igTableNextColumn();
+        igCombo_Str_arr("##BackupStorageType", (int *)&app->emulation.backup_storage.type, backup_storage_names, array_length(backup_storage_names), 0);
+        igEndDisabled();
+
+        igEndTable();
+    }
+
+    igSeparatorText("GPIO Devices");
+
+    if (igBeginTable("##EmulationSettingsGPIODevices", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##EmulationSettingsGPIODevicesLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##EmulationSettingsGPIODevicesValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // RTC Auto-Detect
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("RTC Auto-Detect");
+
+        igTableNextColumn();
+        igCheckbox("##RTCAutoDetect", &app->emulation.rtc.autodetect);
+
+        // RTC Enable
+        igBeginDisabled(app->emulation.rtc.autodetect);
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("RTC Enable");
+
+        igTableNextColumn();
+        igCheckbox("##RTCEnable", &app->emulation.rtc.enabled);
+        igEndDisabled();
+
+        igEndTable();
+    }
+
+    igSeparatorText("Misc");
+
+    if (igBeginTable("##EmulationSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##EmulationSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##EmulationSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Pause game when the window loses focus
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Auto-Pause");
+
+        igTableNextColumn();
+        igCheckbox("##AutoPause", &app->emulation.auto_pause);
+
+#ifdef WITH_DEBUGGER
+        // Pause game after a reset
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Pause Game After Reset");
+
+        igTableNextColumn();
+        igCheckbox("##PauseGameAfterReset", &app->emulation.pause_on_reset);
+#endif
+
+        igEndTable();
     }
 }
 
@@ -280,114 +302,110 @@ app_win_settings_video(
     igSeparator();
     igSpacing();
 
-    if (igBeginTabBar("##VideoSettings", ImGuiTabBarFlags_None)) {
-        if (igBeginTabItem("Display", NULL, ImGuiTabItemFlags_None)) {
-            if (igBeginTable("##VideoSettingsDisplay", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-                igTableSetupColumn("##VideoSettingsDisplayLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-                igTableSetupColumn("##VideoSettingsDisplayValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+    igSeparatorText("Display");
 
-                // VSync
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("VSync");
+    if (igBeginTable("##VideoSettingsDisplay", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##VideoSettingsDisplayLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##VideoSettingsDisplayValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-                igTableNextColumn();
-                if (igCheckbox("##VSync", &app->video.vsync)) {
-                    SDL_GL_SetSwapInterval(app->video.vsync);
-                }
+        // VSync
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("VSync");
 
-                // Display Size
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Display Size");
-
-                igTableNextColumn();
-
-                display_size = -1;
-                for (i = 1; i < array_length(display_size_names) + 1; ++i) {
-                    if (vp->WorkSize.x == GBA_SCREEN_WIDTH * i * app->ui.scale && vp->WorkSize.y == GBA_SCREEN_HEIGHT * i * app->ui.scale) {
-                        display_size = i;
-                        break;
-                    }
-                }
-
-                if (igBeginCombo("##DisplaySize", display_size > 0 ? display_size_names[display_size - 1] : "<Other>", ImGuiComboFlags_None)) {
-                    for (i = 1; i < array_length(display_size_names) + 1; ++i) {
-                        bool is_selected;
-
-                        is_selected = (display_size == i);
-                        if (igSelectable_Bool(display_size_names[i - 1], is_selected, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
-                            app->video.display_size = i;
-                            app->ui.win.resize = true;
-                            app->ui.win.resize_with_ratio = false;
-                        }
-
-                        if (is_selected) {
-                            igSetItemDefaultFocus();
-                        }
-                    }
-                    igEndCombo();
-                }
-
-                // Aspect Ratio
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Aspect Ratio");
-
-                igTableNextColumn();
-                if (igCombo_Str_arr("##AspectRatio", (int *)&app->video.aspect_ratio, aspect_ratio_names, ASPECT_RATIO_LEN, 0)) {
-                    // Force a resize of the window if the "auto-resize" option is selected
-                    if (app->video.aspect_ratio == ASPECT_RATIO_RESIZE) {
-                        app->ui.win.resize = true;
-                        app->ui.win.resize_with_ratio = true;
-                        app->ui.win.resize_ratio = min(app->ui.game.width / ((float)GBA_SCREEN_WIDTH * app->ui.scale), app->ui.game.height / ((float)GBA_SCREEN_HEIGHT * app->ui.scale));
-                    }
-                }
-
-                igEndTable();
-            }
-            igEndTabItem();
+        igTableNextColumn();
+        if (igCheckbox("##VSync", &app->video.vsync)) {
+            SDL_GL_SetSwapInterval(app->video.vsync);
         }
-        if (igBeginTabItem("Filters", NULL, ImGuiTabItemFlags_None)) {
-            if (igBeginTable("##VideoSettingsFilters", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-                igTableSetupColumn("##VideoSettingsFiltersLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-                igTableSetupColumn("##VideoSettingsFiltersValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-                // Texture Filter
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Texture Filter");
+        // Display Size
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Display Size");
 
-                igTableNextColumn();
-                if (igCombo_Str_arr("##TextureFilters", (int *)&app->video.texture_filter, texture_filters_names, TEXTURE_FILTER_LEN, 0)) {
-                    app_sdl_video_rebuild_pipeline(app);
-                }
+        igTableNextColumn();
 
-                // Color Filter
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Color Filter");
-
-                igTableNextColumn();
-                if (igCombo_Str_arr("##ColorFilter", (int *)&app->video.pixel_color_filter, pixel_color_filters_names, PIXEL_COLOR_FILTER_LEN, 0)) {
-                    app_sdl_video_rebuild_pipeline(app);
-                }
-
-                // Scaling Filter
-                igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-                igTableNextColumn();
-                igTextWrapped("Scaling Filter");
-
-                igTableNextColumn();
-                if (igCombo_Str_arr("##ScalingFilter", (int *)&app->video.pixel_scaling_filter, pixel_scaling_filters_names, PIXEL_SCALING_FILTER_LEN, 0)) {
-                    app_sdl_video_rebuild_pipeline(app);
-                }
-
-                igEndTable();
+        display_size = -1;
+        for (i = 1; i < array_length(display_size_names) + 1; ++i) {
+            if (vp->WorkSize.x == GBA_SCREEN_WIDTH * i * app->ui.scale && vp->WorkSize.y == GBA_SCREEN_HEIGHT * i * app->ui.scale) {
+                display_size = i;
+                break;
             }
-            igEndTabItem();
         }
-        igEndTabBar();
+
+        if (igBeginCombo("##DisplaySize", display_size > 0 ? display_size_names[display_size - 1] : "<Other>", ImGuiComboFlags_None)) {
+            for (i = 1; i < array_length(display_size_names) + 1; ++i) {
+                bool is_selected;
+
+                is_selected = (display_size == i);
+                if (igSelectable_Bool(display_size_names[i - 1], is_selected, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
+                    app->video.display_size = i;
+                    app->ui.win.resize = true;
+                    app->ui.win.resize_with_ratio = false;
+                }
+
+                if (is_selected) {
+                    igSetItemDefaultFocus();
+                }
+            }
+            igEndCombo();
+        }
+
+        // Aspect Ratio
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Aspect Ratio");
+
+        igTableNextColumn();
+        if (igCombo_Str_arr("##AspectRatio", (int *)&app->video.aspect_ratio, aspect_ratio_names, ASPECT_RATIO_LEN, 0)) {
+            // Force a resize of the window if the "auto-resize" option is selected
+            if (app->video.aspect_ratio == ASPECT_RATIO_RESIZE) {
+                app->ui.win.resize = true;
+                app->ui.win.resize_with_ratio = true;
+                app->ui.win.resize_ratio = min(app->ui.game.width / ((float)GBA_SCREEN_WIDTH * app->ui.scale), app->ui.game.height / ((float)GBA_SCREEN_HEIGHT * app->ui.scale));
+            }
+        }
+
+        igEndTable();
+    }
+
+    igSeparatorText("Filters");
+
+    if (igBeginTable("##VideoSettingsFilters", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##VideoSettingsFiltersLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##VideoSettingsFiltersValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Texture Filter
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Texture Filter");
+
+        igTableNextColumn();
+        if (igCombo_Str_arr("##TextureFilters", (int *)&app->video.texture_filter, texture_filters_names, TEXTURE_FILTER_LEN, 0)) {
+            app_sdl_video_rebuild_pipeline(app);
+        }
+
+        // Color Filter
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Color Filter");
+
+        igTableNextColumn();
+        if (igCombo_Str_arr("##ColorFilter", (int *)&app->video.pixel_color_filter, pixel_color_filters_names, PIXEL_COLOR_FILTER_LEN, 0)) {
+            app_sdl_video_rebuild_pipeline(app);
+        }
+
+        // Scaling Filter
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Scaling Filter");
+
+        igTableNextColumn();
+        if (igCombo_Str_arr("##ScalingFilter", (int *)&app->video.pixel_scaling_filter, pixel_scaling_filters_names, PIXEL_SCALING_FILTER_LEN, 0)) {
+            app_sdl_video_rebuild_pipeline(app);
+        }
+
+        igEndTable();
     }
 }
 
@@ -437,6 +455,74 @@ app_win_settings_audio(
 
 static
 void
+app_win_settings_bindings_bind_keyboard(
+    struct app *app,
+    size_t bind
+) {
+    SDL_Keycode *keycode;
+    char const *name;
+    char label[128];
+    size_t j;
+
+    igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+
+    igTableNextColumn();
+    igTextWrapped(binds_pretty_name[bind]);
+
+    for (j = 0; j < 2; ++j) {
+        keycode = (j == 0) ? &app->binds.keyboard[bind] : &app->binds.keyboard_alt[bind];
+        name = SDL_GetKeyName(*keycode);
+
+        if (keycode == app->ui.settings.keybindings_editor.keyboard_target) {
+            snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsKeyboard%zu", name ?: " ", bind * 10 + j);
+        } else {
+            snprintf(label, sizeof(label), "%s##BindingsSettingsKeyboard%zu", name ?: "", bind * 10 + j);
+        }
+
+        igTableNextColumn();
+        if (igButton(label, (ImVec2){ -1.f, 0.f })) {
+            app->ui.settings.keybindings_editor.keyboard_target = keycode;
+            app->ui.settings.keybindings_editor.controller_target = NULL;
+        }
+    }
+}
+
+static
+void
+app_win_settings_bindings_bind_controller(
+    struct app *app,
+    size_t bind
+) {
+    SDL_GameControllerButton *button;
+    char const *name;
+    char label[128];
+    size_t j;
+
+    igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+
+    igTableNextColumn();
+    igTextWrapped(binds_pretty_name[bind]);
+
+    for (j = 0; j < 2; ++j) {
+        button = (j == 0) ? &app->binds.controller[bind] : &app->binds.controller_alt[bind];
+        name = SDL_GameControllerGetStringForButton(*button);
+
+        if (button == app->ui.settings.keybindings_editor.controller_target) {
+            snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsController%zu", name ?: " ", bind * 10 + j);
+        } else {
+            snprintf(label, sizeof(label), "%s##BindingsSettingsController%zu", name ?: "", bind * 10 + j);
+        }
+
+        igTableNextColumn();
+        if (igButton(label, (ImVec2){ -1.f, 0.f })) {
+            app->ui.settings.keybindings_editor.controller_target = button;
+            app->ui.settings.keybindings_editor.keyboard_target = NULL;
+        }
+    }
+}
+
+static
+void
 app_win_settings_bindings(
     struct app *app
 ) {
@@ -449,81 +535,65 @@ app_win_settings_bindings(
 
     if (igBeginTabBar("##BindingsSettings", ImGuiTabBarFlags_None)) {
         if (igBeginTabItem("Keyboard", NULL, ImGuiTabItemFlags_None)) {
-            if (igBeginTable("##BindingsSettingsKeyboard", 3, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-                igTableSetupColumn("##BindingsSettingsKeyboardLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
-                igTableSetupColumn("##BindingsSettingsKeyboardBindMain", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
-                igTableSetupColumn("##BindingsSettingsKeyboardBindAlt", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
-                for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
-                    size_t j;
+            igSeparatorText("GBA");
 
-                    igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+            if (igBeginTable("##BindingsSettingsKeyboardGBA", 3, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+                igTableSetupColumn("##BindingsSettingsKeyboardGBALabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+                igTableSetupColumn("##BindingsSettingsKeyboardGBABindMain", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+                igTableSetupColumn("##BindingsSettingsKeyboardGBABindAlt", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
-                    igTableNextColumn();
-                    igTextWrapped(binds_pretty_name[bind]);
+                for (bind = BIND_GBA_MIN; bind <= BIND_GBA_MAX; ++bind) {
+                    app_win_settings_bindings_bind_keyboard(app, bind);
+                }
 
-                    for (j = 0; j < 2; ++j) {
-                        SDL_Keycode *keycode;
-                        char const *name;
-                        char label[128];
+                igEndTable();
+            }
 
-                        keycode = (j == 0) ? &app->binds.keyboard[bind] : &app->binds.keyboard_alt[bind];
-                        name = SDL_GetKeyName(*keycode);
+            igSeparatorText("Emulator");
 
-                        if (keycode == app->ui.settings.keybindings_editor.keyboard_target) {
-                            snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsKeyboard%zu", name ?: " ", bind * 10 + j);
-                        } else {
-                            snprintf(label, sizeof(label), "%s##BindingsSettingsKeyboard%zu", name ?: "", bind * 10 + j);
-                        }
+            if (igBeginTable("##BindingsSettingsKeyboardEmulator", 3, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+                igTableSetupColumn("##BindingsSettingsKeyboardEmulatorLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+                igTableSetupColumn("##BindingsSettingsKeyboardEmulatorBindMain", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+                igTableSetupColumn("##BindingsSettingsKeyboardEmulatorBindAlt", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
-                        igTableNextColumn();
-                        if (igButton(label, (ImVec2){ -1.f, 0.f })) {
-                            app->ui.settings.keybindings_editor.keyboard_target = keycode;
-                            app->ui.settings.keybindings_editor.controller_target = NULL;
-                        }
-                    }
+                for (bind = BIND_EMULATOR_MIN; bind <= BIND_EMULATOR_MAX; ++bind) {
+                    app_win_settings_bindings_bind_keyboard(app, bind);
                 }
                 igEndTable();
             }
+
             igEndTabItem();
         }
         if (igBeginTabItem("Controller", NULL, ImGuiTabItemFlags_None)) {
-            if (igBeginTable("##BindingsSettingsController", 3, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-                igTableSetupColumn("##BindingsSettingsControllerLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
-                igTableSetupColumn("##BindingsSettingsControllerBindMain", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
-                igTableSetupColumn("##BindingsSettingsControllerBindAlt", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
-                for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
-                    size_t j;
+            igSeparatorText("GBA");
 
-                    igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+            if (igBeginTable("##BindingsSettingsControllerGBA", 3, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+                igTableSetupColumn("##BindingsSettingsControllerGBALabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+                igTableSetupColumn("##BindingsSettingsControllerGBABindMain", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+                igTableSetupColumn("##BindingsSettingsControllerGBABindAlt", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
-                    igTableNextColumn();
-                    igTextWrapped(binds_pretty_name[bind]);
+                for (bind = BIND_GBA_MIN; bind <= BIND_GBA_MAX; ++bind) {
+                    app_win_settings_bindings_bind_controller(app, bind);
+                }
 
-                    for (j = 0; j < 2; ++j) {
-                        SDL_GameControllerButton *button;
-                        char const *name;
-                        char label[128];
+                igEndTable();
+            }
 
-                        button = (j == 0) ? &app->binds.controller[bind] : &app->binds.controller_alt[bind];
-                        name = SDL_GameControllerGetStringForButton(*button);
+            igSeparatorText("Emulator");
 
-                        if (button == app->ui.settings.keybindings_editor.controller_target) {
-                            snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsController%zu", name ?: " ", bind * 10 + j);
-                        } else {
-                            snprintf(label, sizeof(label), "%s##BindingsSettingsController%zu", name ?: "", bind * 10 + j);
-                        }
+            if (igBeginTable("##BindingsSettingsControllerEmulator", 3, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+                igTableSetupColumn("##BindingsSettingsControllerEmulatorLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+                igTableSetupColumn("##BindingsSettingsControllerEmulatorBindMain", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+                igTableSetupColumn("##BindingsSettingsControllerEmulatorBindAlt", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
-                        igTableNextColumn();
-                        if (igButton(label, (ImVec2){ -1.f, 0.f })) {
-                            app->ui.settings.keybindings_editor.controller_target = button;
-                            app->ui.settings.keybindings_editor.keyboard_target = NULL;
-                        }
-                    }
+                for (bind = BIND_EMULATOR_MIN; bind <= BIND_EMULATOR_MAX; ++bind) {
+                    app_win_settings_bindings_bind_controller(app, bind);
                 }
                 igEndTable();
             }
+
             igEndTabItem();
         }
         igEndTabBar();

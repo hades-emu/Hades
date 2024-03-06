@@ -76,6 +76,18 @@ app_sdl_handle_events(
                         }
                         break;
                     };
+                    case SDL_WINDOWEVENT_FOCUS_GAINED: {
+                        if (app->emulation.auto_pause && app->emulation.is_started && !app->emulation.is_running) {
+                            app_emulator_run(app);
+                        }
+                        break;
+                    };
+                    case SDL_WINDOWEVENT_FOCUS_LOST: {
+                        if (app->emulation.auto_pause && app->emulation.is_started && app->emulation.is_running) {
+                            app_emulator_pause(app);
+                        }
+                        break;
+                    };
                 }
                 break;
             };

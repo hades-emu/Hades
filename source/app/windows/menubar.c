@@ -36,9 +36,7 @@ app_win_menubar_file(
             );
 
             if (result == NFD_OKAY) {
-                if (!app_emulator_configure(app, path)) {
-                    app_emulator_run(app);
-                }
+                app_emulator_configure_and_run(app, path);
                 NFD_FreePath(path);
             }
         }
@@ -50,13 +48,11 @@ app_win_menubar_file(
                 if (igMenuItem_Bool(hs_basename(app->file.recent_roms[x]), NULL, false, true)) {
                     char *path;
 
-                    // app->file.recent_roms[] is modified by `app_emulator_configure()` so we need to copy
+                    // app->file.recent_roms[] is modified by `app_emulator_configure_and_run()` so we need to copy
                     // the path to a safe space first.
                     path = strdup(app->file.recent_roms[x]);
 
-                    if (!app_emulator_configure(app, path)) {
-                        app_emulator_run(app);
-                    }
+                    app_emulator_configure_and_run(app, path);
 
                     free(path);
                 }
@@ -199,7 +195,6 @@ app_win_menubar_emulation(
         bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_RESET]);
         if (igMenuItem_Bool("Reset", bind ?: "", false, app->emulation.is_started)) {
             app_emulator_reset(app);
-            app_emulator_run(app);
         }
 
         igSeparator();

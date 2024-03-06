@@ -117,14 +117,7 @@ main(
     );
 
     if (app.args.rom_path) {
-        app_emulator_configure(&app, app.args.rom_path);
-        if (app.emulation.launch_config) {
-#ifdef WITH_DEBUGGER
-            app_emulator_pause(&app);
-#else
-            app_emulator_run(&app);
-#endif
-        }
+        app_emulator_configure_and_run(&app, app.args.rom_path);
     }
 
 #ifdef WITH_DEBUGGER

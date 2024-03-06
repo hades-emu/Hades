@@ -162,6 +162,12 @@ struct app {
         // Skip BIOS
         bool skip_bios;
 
+        // Automatically pause the game when the window looses focus
+        bool auto_pause;
+
+        // Pause immediately after resetting the game
+        bool pause_on_reset;
+
         // Backup storage
         struct {
             bool autodetect;
@@ -424,7 +430,7 @@ void app_config_push_recent_rom(struct app *app, char const *path);
 
 /* emulator.c */
 void app_emulator_process_all_notifs(struct app *app);
-bool app_emulator_configure(struct app *app, char const *rom_path);
+bool app_emulator_configure_and_run(struct app *app, char const *rom_path);
 void app_emulator_reset(struct app *app);
 void app_emulator_stop(struct app *app);
 void app_emulator_run(struct app *app);

@@ -468,9 +468,10 @@ app_emulator_configure_backup(
 **   - Update the gba's launch configuration
 **   - Reset the emulator
 **   - Wait for the reset notification
+**   - Run/Pause the emulator, according to the configuration
 */
 bool
-app_emulator_configure(
+app_emulator_configure_and_run(
     struct app *app,
     char const *rom_path
 ) {
@@ -601,6 +602,12 @@ app_emulator_configure(
 
     logln(HS_INFO, "Game successfully loaded.");
 
+    if (app->emulation.pause_on_reset) {
+        app_emulator_pause(app);
+    } else {
+        app_emulator_run(app);
+    }
+
     return (false);
 }
 
@@ -614,7 +621,7 @@ app_emulator_reset(
     char *game_path;
 
     game_path = strdup(app->emulation.game_path);
-    app_emulator_configure(app, game_path);
+    app_emulator_configure_and_run(app, game_path);
     free(game_path);
 }
 

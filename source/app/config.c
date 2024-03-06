@@ -94,6 +94,14 @@ app_config_load(
         if (mjson_get_bool(data, data_len, "$.emulation.skip_bios", &b)) {
             app->emulation.skip_bios = b;
         }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.auto_pause", &b)) {
+            app->emulation.auto_pause = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.pause_on_reset", &b)) {
+            app->emulation.pause_on_reset = b;
+        }
     }
 
     // Video
@@ -251,7 +259,9 @@ app_config_save(
                 "rtc": {
                     "autodetect": %B,
                     "enabled": %B
-                }
+                },
+                "auto_pause": %B,
+                "pause_on_reset": %B
             },
 
             // Video
@@ -283,6 +293,8 @@ app_config_save(
         (int)app->emulation.backup_storage.type,
         (int)app->emulation.rtc.autodetect,
         (int)app->emulation.rtc.enabled,
+        (int)app->emulation.auto_pause,
+        (int)app->emulation.pause_on_reset,
         (int)app->video.display_size,
         (int)app->video.aspect_ratio,
         (int)app->video.vsync,
