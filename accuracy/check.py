@@ -130,6 +130,7 @@ def main():
           }},
           "emulation": {{
             "skip_bios": true,
+            "pause_on_reset": true,
             "speed": 0,
             "unbounded": false,
             "backup_storage": {{
