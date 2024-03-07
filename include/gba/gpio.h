@@ -9,7 +9,28 @@
 
 #pragma once
 
-#include <stdint.h>
+#include "hades.h"
+
+enum gpio_device_types {
+    GPIO_NONE = 0,
+
+    GPIO_RTC, // Pokémon games
+
+    // Unsupported devices:
+    // GPIO_GYRO_XY,
+    // GPIO_GYRO_Z_WITH_RUMBLE,
+    // etc.
+
+    GPIO_MIN = GPIO_NONE,
+    GPIO_MAX = GPIO_RTC,
+};
+
+static char const * const gpio_device_names[] = {
+    [GPIO_NONE] = "None",
+    [GPIO_RTC] = "RTC",
+    // [GPIO_GYRO_XY] = "Gyro X/Y",
+    // [GPIO_GYRO_Z_WITH_RUMBLE] = "Gyro Z w/ Rumble",
+};
 
 enum gpio_regs {
     GPIO_REG_START          = 0x80000C4,
@@ -63,6 +84,7 @@ struct rtc {
 };
 
 struct gpio {
+    enum gpio_device_types device;
     bool readable;
 
     struct rtc rtc;

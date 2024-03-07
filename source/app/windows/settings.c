@@ -237,22 +237,22 @@ app_win_settings_emulation(
         igTableSetupColumn("##EmulationSettingsGPIODevicesLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##EmulationSettingsGPIODevicesValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-        // RTC Auto-Detect
+        // GPIO Device Auto-Detect
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
-        igTextWrapped("RTC Auto-Detect");
+        igTextWrapped("Auto-Detect");
 
         igTableNextColumn();
-        igCheckbox("##RTCAutoDetect", &app->emulation.rtc.autodetect);
+        igCheckbox("##GPIODeviceTypeAutoDetect", &app->emulation.gpio_device.autodetect);
 
-        // RTC Enable
-        igBeginDisabled(app->emulation.rtc.autodetect);
+        // GPIO Device Type
+        igBeginDisabled(app->emulation.gpio_device.autodetect);
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
-        igTextWrapped("RTC Enable");
+        igTextWrapped("Type");
 
         igTableNextColumn();
-        igCheckbox("##RTCEnable", &app->emulation.rtc.enabled);
+        igCombo_Str_arr("##GPIODeviceType", (int *)&app->emulation.gpio_device.type, gpio_device_names, array_length(gpio_device_names), 0);
         igEndDisabled();
 
         igEndTable();

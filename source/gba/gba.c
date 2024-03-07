@@ -12,7 +12,6 @@
 #include "gba/gba.h"
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
-#include "compat.h"
 #include "gba/channel.h"
 #include "gba/event.h"
 
@@ -280,10 +279,15 @@ gba_state_reset(
         gpio = &gba->gpio;
         memset(gpio, 0, sizeof(*gpio));
 
-        if (config->rtc) {
-            gpio->rtc.enabled = true;
-            gpio->rtc.state = RTC_COMMAND;
-            gpio->rtc.data_len = 8;
+        gpio->device = config->gpio_device_type;
+        switch (config->gpio_device_type) {
+            case GPIO_RTC: {
+                gpio->rtc.enabled = true;
+                gpio->rtc.state = RTC_COMMAND;
+                gpio->rtc.data_len = 8;
+                break;
+            };
+            default: break;
         }
     }
 

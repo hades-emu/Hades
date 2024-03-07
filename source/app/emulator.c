@@ -562,22 +562,22 @@ app_emulator_configure_and_run(
     app->emulation.launch_config->speed = app->emulation.speed;
     app->emulation.launch_config->audio_frequency = GBA_CYCLES_PER_SECOND / app->audio.resample_frequency;
 
-    if (app->emulation.rtc.autodetect) {
-        app->emulation.launch_config->rtc = (bool)(app->emulation.game_entry->flags & GAME_ENTRY_FLAGS_RTC);
-    } else {
-        app->emulation.launch_config->rtc = app->emulation.rtc.enabled;
-    }
-
     if (app->emulation.backup_storage.autodetect) {
         app->emulation.launch_config->backup_storage.type = app->emulation.game_entry->storage;
     } else {
         app->emulation.launch_config->backup_storage.type = app->emulation.backup_storage.type;
     }
 
+    if (app->emulation.gpio_device.autodetect) {
+        app->emulation.launch_config->gpio_device_type = app->emulation.game_entry->gpio;
+    } else {
+        app->emulation.launch_config->gpio_device_type = app->emulation.gpio_device.type;
+    }
+
     logln(HS_INFO, "Emulator's configuration:");
     logln(HS_INFO, "    Skip BIOS: %s", app->emulation.launch_config->skip_bios ? "true" : "false");
     logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
-    logln(HS_INFO, "    Rtc: %s", app->emulation.launch_config->rtc ? "true" : "false");
+    logln(HS_INFO, "    GPIO: %s", gpio_device_names[app->emulation.launch_config->gpio_device_type]);
     logln(HS_INFO, "    Speed: %i", app->emulation.speed);
     logln(HS_INFO, "    Audio Frequency: %iHz (%i cycles)", app->audio.resample_frequency, app->emulation.launch_config->audio_frequency);
 

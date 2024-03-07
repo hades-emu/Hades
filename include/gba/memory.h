@@ -130,12 +130,12 @@ enum backup_storage_types {
 };
 
 static char const * const backup_storage_names[] = {
-    "None",
-    "EEPROM 4k",
-    "EEPROM 64k",
-    "SRAM",
-    "Flash 64k",
-    "Flash 128k",
+    [BACKUP_NONE] = "None",
+    [BACKUP_EEPROM_4K] = "EEPROM 4k",
+    [BACKUP_EEPROM_64K] = "EEPROM 64k",
+    [BACKUP_SRAM] = "SRAM",
+    [BACKUP_FLASH64] = "Flash 64k",
+    [BACKUP_FLASH128] = "Flash 128k",
 };
 
 enum flash_states {

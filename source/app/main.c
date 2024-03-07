@@ -65,8 +65,8 @@ main(
     app.emulation.unbounded = false;
     app.emulation.backup_storage.autodetect = true;
     app.emulation.backup_storage.type = BACKUP_NONE;
-    app.emulation.rtc.autodetect = true;
-    app.emulation.rtc.enabled = true;
+    app.emulation.gpio_device.autodetect = true;
+    app.emulation.gpio_device.type = GPIO_NONE;
     app.file.bios_path = strdup("./bios.bin");
     app.video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
     app.video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;

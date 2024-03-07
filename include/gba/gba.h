@@ -74,13 +74,10 @@ struct shared_data {
     pthread_mutex_t audio_rbuffer_mutex;
 };
 
-#define GAME_ENTRY_FLAGS_NONE      0x0
-#define GAME_ENTRY_FLAGS_RTC       0x1
-
 struct game_entry {
     char *code;
     enum backup_storage_types storage;
-    uint64_t flags;
+    enum gpio_device_types gpio;
     char *title;
 };
 
@@ -133,8 +130,8 @@ struct launch_config {
     // Can be 0 if the frontend has no audio.
     uint32_t audio_frequency;
 
-    // True if RTC is enabled, false otherwise.
-    bool rtc;
+    // GPIO device attached to the cartridge.
+    enum gpio_device_types gpio_device_type;
 
     // The kind of storage type to use.
     struct {

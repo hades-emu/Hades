@@ -174,11 +174,11 @@ struct app {
             enum backup_storage_types type;
         } backup_storage;
 
-        // RTC
+        // GPIO
         struct {
             bool autodetect;
-            bool enabled;
-        } rtc;
+            enum gpio_device_types type;
+        } gpio_device;
 
         // The current quicksave request
         struct {

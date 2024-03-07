@@ -137,9 +137,9 @@ def main():
               "autodetect": true,
               "type": 0
             }},
-            "rtc": {{
+            "gpio": {{
               "autodetect": true,
-              "enabled": true
+              "type": 0
             }}
           }}
         }}

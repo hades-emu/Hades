@@ -83,12 +83,12 @@ app_config_load(
             app->emulation.backup_storage.type = max(BACKUP_MIN, min((int)d, BACKUP_MAX));
         }
 
-        if (mjson_get_bool(data, data_len, "$.emulation.rtc.autodetect", &b)) {
-            app->emulation.rtc.autodetect = b;
+        if (mjson_get_bool(data, data_len, "$.emulation.gpio.autodetect", &b)) {
+            app->emulation.gpio_device.autodetect = b;
         }
 
-        if (mjson_get_bool(data, data_len, "$.emulation.rtc.enabled", &b)) {
-            app->emulation.rtc.enabled = b;
+        if (mjson_get_number(data, data_len, "$.emulation.gpio.type", &d)) {
+            app->emulation.gpio_device.type = max(GPIO_MIN, min((int)d, GPIO_MAX));
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.skip_bios", &b)) {
@@ -256,9 +256,9 @@ app_config_save(
                     "autodetect": %B,
                     "type": %d
                 },
-                "rtc": {
+                "gpio": {
                     "autodetect": %B,
-                    "enabled": %B
+                    "type": %d
                 },
                 "auto_pause": %B,
                 "pause_on_reset": %B
@@ -291,8 +291,8 @@ app_config_save(
         (int)app->emulation.unbounded,
         (int)app->emulation.backup_storage.autodetect,
         (int)app->emulation.backup_storage.type,
-        (int)app->emulation.rtc.autodetect,
-        (int)app->emulation.rtc.enabled,
+        (int)app->emulation.gpio_device.autodetect,
+        (int)app->emulation.gpio_device.type,
         (int)app->emulation.auto_pause,
         (int)app->emulation.pause_on_reset,
         (int)app->video.display_size,
