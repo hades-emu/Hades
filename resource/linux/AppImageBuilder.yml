@@ -15,6 +15,9 @@ AppDir:
     version: 1.0.0
     exec: usr/bin/hades
     exec_args: $@
+  runtime:
+    env:
+      GDK_BACKEND: 'x11'
   apt:
     arch:
     - amd64
