@@ -398,7 +398,12 @@ app_config_push_recent_rom(
     int32_t i;
     int32_t j;
 
+    // TODO FIXME: realpath() isn't defined on Windows
+#if defined(__APPLE__) || defined(__unix__)
     path = realpath(rom_path, abs_path) ?: rom_path;
+#else
+    path = rom_path;
+#endif
     new_recent_roms[0] = strdup(path);
 
     memset(new_recent_roms, 0, sizeof(new_recent_roms));
