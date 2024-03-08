@@ -169,6 +169,7 @@ app_bindings_handle(
         case BIND_EMULATOR_QUICKSAVE:           app_emulator_quicksave(app, 0); break;
         case BIND_EMULATOR_QUICKLOAD:           app_emulator_quickload(app, 0); break;
         case BIND_EMULATOR_PAUSE:               app->emulation.is_running ? app_emulator_pause(app) : app_emulator_run(app); break;
+        case BIND_EMULATOR_STOP:                app_emulator_stop(app); break;
         case BIND_EMULATOR_RESET:               app_emulator_reset(app); break;
         default: break;
     }

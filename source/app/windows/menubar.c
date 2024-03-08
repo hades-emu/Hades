@@ -13,7 +13,6 @@
 #include <cimgui.h>
 #include <nfd.h>
 #include <stdio.h>
-#include <float.h>
 #include "hades.h"
 #include "app/app.h"
 #include "compat.h"
@@ -194,7 +193,8 @@ app_win_menubar_emulation(
             }
         }
 
-        if (igMenuItem_Bool("Stop", NULL, false, app->emulation.is_started)) {
+        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_STOP]);
+        if (igMenuItem_Bool("Stop", bind ?: "", false, app->emulation.is_started)) {
             app_emulator_stop(app);
         }
 
