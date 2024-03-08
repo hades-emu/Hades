@@ -66,13 +66,13 @@ app_config_load(
         int b;
         double d;
 
-        if (mjson_get_bool(data, data_len, "$.emulation.unbounded", &b)) {
-            app->emulation.unbounded = b;
-        }
-
         if (mjson_get_number(data, data_len, "$.emulation.speed", &d)) {
             app->emulation.speed = (int)d;
             app->emulation.speed = max(0, min(app->emulation.speed, 5));
+        }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.fast_forward", &b)) {
+            app->emulation.fast_forward = b;
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.backup_storage.autodetect", &b)) {
@@ -251,7 +251,7 @@ app_config_save(
             "emulation": {
                 "skip_bios": %B,
                 "speed": %d,
-                "unbounded": %B,
+                "fast_forward": %B,
                 "backup_storage": {
                     "autodetect": %B,
                     "type": %d
@@ -288,7 +288,7 @@ app_config_save(
         app->file.recent_roms[4],
         (int)app->emulation.skip_bios,
         (int)app->emulation.speed,
-        (int)app->emulation.unbounded,
+        (int)app->emulation.fast_forward,
         (int)app->emulation.backup_storage.autodetect,
         (int)app->emulation.backup_storage.type,
         (int)app->emulation.gpio_device.autodetect,

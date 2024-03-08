@@ -103,9 +103,9 @@ def main():
         exit(1)
 
     for test in TESTS_SUITE:
-        if not test.skip and not (rom_directory / test.rom).exists():
-            print(f"Error: ROM {test.rom} is missing from the ROM directory.")
-            exit(1)
+        if not (rom_directory / test.rom).exists():
+            print(f"Skipping test \"{test.name}\" because ROM {test.rom} is missing from the ROM directory.")
+            test.skip = True
 
     # Ensure Hades is built with the debugger
     try:
@@ -131,8 +131,8 @@ def main():
           "emulation": {{
             "skip_bios": true,
             "pause_on_reset": true,
-            "speed": 0,
-            "unbounded": false,
+            "speed": 1,
+            "fast_forward": true,
             "backup_storage": {{
               "autodetect": true,
               "type": 0

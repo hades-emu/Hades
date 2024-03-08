@@ -559,7 +559,7 @@ app_emulator_configure_and_run(
 
     app->emulation.game_path = strdup(rom_path);
     app->emulation.launch_config->skip_bios = app->emulation.skip_bios;
-    app->emulation.launch_config->speed = app->emulation.speed;
+    app->emulation.launch_config->speed = app->emulation.fast_forward ? 0 : app->emulation.speed;
     app->emulation.launch_config->audio_frequency = GBA_CYCLES_PER_SECOND / app->audio.resample_frequency;
 
     if (app->emulation.backup_storage.autodetect) {

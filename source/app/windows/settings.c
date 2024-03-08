@@ -75,8 +75,8 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_SPEED_X3] = "Speed x3",
     [BIND_EMULATOR_SPEED_X4] = "Speed x4",
     [BIND_EMULATOR_SPEED_X5] = "Speed x5",
-    [BIND_EMULATOR_SPEED_MAX] = "Speed Max",
-    [BIND_EMULATOR_SPEED_MAX_HOLD] = "Speed Max (Hold)",
+    [BIND_EMULATOR_FAST_FORWARD_TOGGLE] = "Fast Forward (Toggle)",
+    [BIND_EMULATOR_FAST_FORWARD_HOLD] = "Fast Forward (Hold)",
     [BIND_EMULATOR_SCREENSHOT] = "Screenshot",
     [BIND_EMULATOR_QUICKSAVE] = "Quicksave",
     [BIND_EMULATOR_QUICKLOAD] = "Quickload",
@@ -101,8 +101,8 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_SPEED_X3] = "speed_x3",
     [BIND_EMULATOR_SPEED_X4] = "speed_x4",
     [BIND_EMULATOR_SPEED_X5] = "speed_x5",
-    [BIND_EMULATOR_SPEED_MAX] = "speed_max",
-    [BIND_EMULATOR_SPEED_MAX_HOLD] = "speed_max_hold",
+    [BIND_EMULATOR_FAST_FORWARD_TOGGLE] = "fast_forward_toggle",
+    [BIND_EMULATOR_FAST_FORWARD_HOLD] = "fast_forward_hold",
     [BIND_EMULATOR_SCREENSHOT] = "screenshot",
     [BIND_EMULATOR_QUICKSAVE] = "quicksave",
     [BIND_EMULATOR_QUICKLOAD] = "quickload",
@@ -177,18 +177,18 @@ app_win_settings_emulation(
         igTableSetupColumn("##EmulationSettingsSpeedLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##EmulationSettingsSpeedValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-        // Unbounded Speed
+        // Fast Forward
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
-        igTextWrapped("Unbounded Speed");
+        igTextWrapped("Fast Forward");
 
         igTableNextColumn();
-        if (igCheckbox("##UnboundedSpeed", &app->emulation.unbounded)) {
-            app_emulator_speed(app, app->emulation.unbounded ? 0 : app->emulation.speed);
+        if (igCheckbox("##FastForward", &app->emulation.fast_forward)) {
+            app_emulator_speed(app, app->emulation.fast_forward ? 0 : app->emulation.speed);
         }
 
         // Speed
-        igBeginDisabled(app->emulation.unbounded);
+        igBeginDisabled(app->emulation.fast_forward);
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
         igTextWrapped("Speed");
@@ -196,7 +196,7 @@ app_win_settings_emulation(
         igTableNextColumn();
         if (igCombo_Str_arr("##Speed", &speed, speed_names, array_length(speed_names), 0)) {
             app->emulation.speed = speed + 1;
-            app->emulation.unbounded = false;
+            app->emulation.fast_forward = false;
             app_emulator_speed(app, app->emulation.speed);
         }
         igEndDisabled();

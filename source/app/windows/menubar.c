@@ -100,8 +100,16 @@ app_win_menubar_emulation(
 
         if (igBeginMenu("Speed", app->emulation.is_started)) {
             uint32_t x;
+
+            bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE]);
+            if (igMenuItem_Bool("Fast Forward", bind ?: "", app->emulation.fast_forward, true)) {
+                app->emulation.fast_forward ^= true;
+                app_emulator_speed(app, app->emulation.fast_forward ? 0 : app->emulation.speed);
+            }
+
+            igSeparator();
+
             char const *speed[] = {
-                "Unbounded",
                 "x1",
                 "x2",
                 "x3",
@@ -109,20 +117,18 @@ app_win_menubar_emulation(
                 "x5",
             };
 
-            for (x = 0; x <= 5; ++x) {
+            igBeginDisabled(app->emulation.fast_forward);
+            for (x = 0; x < 5; ++x) {
                 char const *bind;
 
-                bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_MAX + x]);
-                if (igMenuItem_Bool(speed[x], bind ?: "", app->emulation.speed == x, true)) {
-                    app->emulation.unbounded = false;
-                    app->emulation.speed = x;
+                bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_X1 + x]);
+                if (igMenuItem_Bool(speed[x], bind ?: "", app->emulation.speed == x + 1, true)) {
+                    app->emulation.speed = x + 1;
+                    app->emulation.fast_forward = false;
                     app_emulator_speed(app, app->emulation.speed);
                 }
-
-                if (!x) {
-                    igSeparator();
-                }
             }
+            igEndDisabled();
 
             igEndMenu();
         }

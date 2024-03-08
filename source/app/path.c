@@ -89,7 +89,6 @@ system_pictures_dir(void)
 #endif
 }
 
-
 void
 app_paths_update(
     struct app *app

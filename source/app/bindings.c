@@ -11,7 +11,6 @@
 #include <cimgui.h>
 #include <cimgui_impl.h>
 #include "hades.h"
-#include "gba/event.h"
 #include "app/app.h"
 
 void
@@ -42,8 +41,8 @@ app_bindings_setup_default(
     app->binds.keyboard[BIND_EMULATOR_SPEED_X3] = SDL_GetKeyFromName("3");
     app->binds.keyboard[BIND_EMULATOR_SPEED_X4] = SDL_GetKeyFromName("4");
     app->binds.keyboard[BIND_EMULATOR_SPEED_X5] = SDL_GetKeyFromName("5");
-    app->binds.keyboard[BIND_EMULATOR_SPEED_MAX] = SDL_GetKeyFromName("0");
-    app->binds.keyboard[BIND_EMULATOR_SPEED_MAX_HOLD] = SDL_GetKeyFromName("Space");
+    app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE] = SDL_GetKeyFromName("0");
+    app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_HOLD] = SDL_GetKeyFromName("Space");
     app->binds.keyboard[BIND_EMULATOR_SCREENSHOT] = SDL_GetKeyFromName("F2");
     app->binds.keyboard[BIND_EMULATOR_QUICKSAVE] = SDL_GetKeyFromName("F5");
     app->binds.keyboard[BIND_EMULATOR_QUICKLOAD] = SDL_GetKeyFromName("F8");
@@ -68,7 +67,7 @@ app_bindings_setup_default(
     app->binds.controller[BIND_EMULATOR_SPEED_X1] = SDL_CONTROLLER_BUTTON_LEFTSTICK;
     app->binds.controller[BIND_EMULATOR_SPEED_X2] = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
 #if SDL_VERSION_ATLEAST(2, 0, 14)
-    app->binds.controller[BIND_EMULATOR_SPEED_MAX_HOLD] = SDL_CONTROLLER_BUTTON_TOUCHPAD;
+    app->binds.controller[BIND_EMULATOR_FAST_FORWARD_HOLD] = SDL_CONTROLLER_BUTTON_TOUCHPAD;
 #endif
 
     app->binds.controller_alt[BIND_GBA_A] = SDL_CONTROLLER_BUTTON_Y;
@@ -137,9 +136,9 @@ app_bindings_handle(
         case BIND_GBA_R:                        app_emulator_key(app, KEY_R, pressed); break;
         case BIND_GBA_SELECT:                   app_emulator_key(app, KEY_SELECT, pressed); break;
         case BIND_GBA_START:                    app_emulator_key(app, KEY_START, pressed); break;
-        case BIND_EMULATOR_SPEED_MAX_HOLD: {
-            app->emulation.unbounded = pressed;
-            app_emulator_speed(app, app->emulation.speed * !app->emulation.unbounded);
+        case BIND_EMULATOR_FAST_FORWARD_HOLD: {
+            app->emulation.fast_forward = pressed;
+            app_emulator_speed(app, app->emulation.fast_forward ? 0 : app->emulation.speed);
             break;
         };
         default: break;
@@ -151,17 +150,21 @@ app_bindings_handle(
     }
 
     switch (bind) {
-        case BIND_EMULATOR_SPEED_MAX:
         case BIND_EMULATOR_SPEED_X1:
         case BIND_EMULATOR_SPEED_X2:
         case BIND_EMULATOR_SPEED_X3:
         case BIND_EMULATOR_SPEED_X4:
         case BIND_EMULATOR_SPEED_X5: {
-            app->emulation.unbounded = false;
-            app->emulation.speed = bind - BIND_EMULATOR_SPEED_MAX;
+            app->emulation.fast_forward = false;
+            app->emulation.speed = 1 + (bind - BIND_EMULATOR_SPEED_X1);
             app_emulator_speed(app, app->emulation.speed);
             break;
         };
+        case BIND_EMULATOR_FAST_FORWARD_TOGGLE: {
+            app->emulation.fast_forward ^= true;
+            app_emulator_speed(app, app->emulation.fast_forward ? 0 : app->emulation.speed);
+            break;
+        }
         case BIND_EMULATOR_SCREENSHOT:          app_emulator_screenshot(app); break;
         case BIND_EMULATOR_QUICKSAVE:           app_emulator_quicksave(app, 0); break;
         case BIND_EMULATOR_QUICKLOAD:           app_emulator_quickload(app, 0); break;

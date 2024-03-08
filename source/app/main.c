@@ -62,7 +62,7 @@ main(
     app.emulation.is_started = false;
     app.emulation.is_running = false;
     app.emulation.speed = 1;
-    app.emulation.unbounded = false;
+    app.emulation.fast_forward = false;
     app.emulation.backup_storage.autodetect = true;
     app.emulation.backup_storage.type = BACKUP_NONE;
     app.emulation.gpio_device.autodetect = true;
