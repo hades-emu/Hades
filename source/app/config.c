@@ -393,15 +393,20 @@ app_config_push_recent_rom(
     char const *rom_path
 ) {
     char *new_recent_roms[MAX_RECENT_ROMS];
+    char abs_path[4096];
+    char const *path;
     int32_t i;
     int32_t j;
 
+    path = realpath(rom_path, abs_path) ?: rom_path;
+    new_recent_roms[0] = strdup(path);
+
     memset(new_recent_roms, 0, sizeof(new_recent_roms));
-    new_recent_roms[0] = strdup(rom_path);
+    new_recent_roms[0] = strdup(abs_path);
 
     j = 0;
     for (i = 1; i < MAX_RECENT_ROMS && j < MAX_RECENT_ROMS; ++j) {
-        if (!app->file.recent_roms[j] || strcmp(app->file.recent_roms[j], rom_path)) {
+        if (!app->file.recent_roms[j] || strcmp(app->file.recent_roms[j], path)) {
             new_recent_roms[i] = app->file.recent_roms[j];
             ++i;
         } else {
