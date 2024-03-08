@@ -12,6 +12,15 @@
 #include "compat.h"
 
 /*
+** Capitalize the name of the Hades folders on Windows and MacOS.
+*/
+#if (defined (_WIN32) && !defined (__CYGWIN__)) || defined(__APPLE__)
+#define HADES_FOLDER_NAME "Hades"
+#else
+#define HADES_FOLDER_NAME "hades"
+#endif
+
+/*
 ** Return the platform-dependent configuration directory or NULL
 ** if the system doesn't have one.
 **
@@ -102,7 +111,7 @@ app_paths_update(
     if (sys_config_dir && hs_fexists(sys_config_dir)) {
         char *hades_config_dir;
 
-        hades_config_dir = hs_format("%s/Hades", sys_config_dir);
+        hades_config_dir = hs_format("%s/%s", sys_config_dir, HADES_FOLDER_NAME);
 
         if (!hs_fexists(hades_config_dir)) {
             hs_mkdir(hades_config_dir);
@@ -115,7 +124,7 @@ app_paths_update(
     }
 
     if (sys_pictures_dir && hs_fexists(sys_pictures_dir)) {
-        app->file.sys_pictures_dir_path = hs_format("%s/Hades", sys_pictures_dir);
+        app->file.sys_pictures_dir_path = hs_format("%s/%s", sys_pictures_dir, HADES_FOLDER_NAME);
         free(sys_pictures_dir);
     }
 }
