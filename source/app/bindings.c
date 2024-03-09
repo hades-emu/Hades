@@ -44,8 +44,8 @@ app_bindings_setup_default(
     app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE] = SDL_GetKeyFromName("0");
     app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_HOLD] = SDL_GetKeyFromName("Space");
     app->binds.keyboard[BIND_EMULATOR_SCREENSHOT] = SDL_GetKeyFromName("F2");
-    app->binds.keyboard[BIND_EMULATOR_QUICKSAVE] = SDL_GetKeyFromName("F5");
-    app->binds.keyboard[BIND_EMULATOR_QUICKLOAD] = SDL_GetKeyFromName("F8");
+    app->binds.keyboard[BIND_EMULATOR_QUICKSAVE_1] = SDL_GetKeyFromName("F5");
+    app->binds.keyboard[BIND_EMULATOR_QUICKLOAD_1] = SDL_GetKeyFromName("F8");
     app->binds.keyboard[BIND_EMULATOR_PAUSE] = SDL_GetKeyFromName("F3");
 
     app->binds.keyboard_alt[BIND_GBA_UP] = SDL_GetKeyFromName("Up");
@@ -166,11 +166,35 @@ app_bindings_handle(
             break;
         }
         case BIND_EMULATOR_SCREENSHOT:          app_emulator_screenshot(app); break;
-        case BIND_EMULATOR_QUICKSAVE:           app_emulator_quicksave(app, 0); break;
-        case BIND_EMULATOR_QUICKLOAD:           app_emulator_quickload(app, 0); break;
         case BIND_EMULATOR_PAUSE:               app->emulation.is_running ? app_emulator_pause(app) : app_emulator_run(app); break;
         case BIND_EMULATOR_STOP:                app_emulator_stop(app); break;
         case BIND_EMULATOR_RESET:               app_emulator_reset(app); break;
+        case BIND_EMULATOR_QUICKSAVE_1:
+        case BIND_EMULATOR_QUICKSAVE_2:
+        case BIND_EMULATOR_QUICKSAVE_3:
+        case BIND_EMULATOR_QUICKSAVE_4:
+        case BIND_EMULATOR_QUICKSAVE_5:
+        case BIND_EMULATOR_QUICKSAVE_6:
+        case BIND_EMULATOR_QUICKSAVE_7:
+        case BIND_EMULATOR_QUICKSAVE_8:
+        case BIND_EMULATOR_QUICKSAVE_9:
+        case BIND_EMULATOR_QUICKSAVE_10: {
+            app_emulator_quicksave(app, bind - BIND_EMULATOR_QUICKSAVE_1);
+            break;
+        };
+        case BIND_EMULATOR_QUICKLOAD_1:
+        case BIND_EMULATOR_QUICKLOAD_2:
+        case BIND_EMULATOR_QUICKLOAD_3:
+        case BIND_EMULATOR_QUICKLOAD_4:
+        case BIND_EMULATOR_QUICKLOAD_5:
+        case BIND_EMULATOR_QUICKLOAD_6:
+        case BIND_EMULATOR_QUICKLOAD_7:
+        case BIND_EMULATOR_QUICKLOAD_8:
+        case BIND_EMULATOR_QUICKLOAD_9:
+        case BIND_EMULATOR_QUICKLOAD_10: {
+            app_emulator_quickload(app, bind - BIND_EMULATOR_QUICKLOAD_1);
+            break;
+        };
         default: break;
     }
 }
