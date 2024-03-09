@@ -70,6 +70,11 @@ char const * const binds_pretty_name[] = {
     [BIND_GBA_START] = "Start",
     [BIND_GBA_SELECT] = "Select",
 
+    [BIND_EMULATOR_MUTE] = "Mute",
+    [BIND_EMULATOR_SCREENSHOT] = "Screenshot",
+    [BIND_EMULATOR_PAUSE] = "Pause",
+    [BIND_EMULATOR_STOP] = "Stop",
+    [BIND_EMULATOR_RESET] = "Reset",
     [BIND_EMULATOR_SPEED_X1] = "Speed x1",
     [BIND_EMULATOR_SPEED_X2] = "Speed x2",
     [BIND_EMULATOR_SPEED_X3] = "Speed x3",
@@ -77,7 +82,6 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_SPEED_X5] = "Speed x5",
     [BIND_EMULATOR_FAST_FORWARD_TOGGLE] = "Fast Forward (Toggle)",
     [BIND_EMULATOR_FAST_FORWARD_HOLD] = "Fast Forward (Hold)",
-    [BIND_EMULATOR_SCREENSHOT] = "Screenshot",
     [BIND_EMULATOR_QUICKSAVE_1] = "Quicksave 1",
     [BIND_EMULATOR_QUICKSAVE_2] = "Quicksave 2",
     [BIND_EMULATOR_QUICKSAVE_3] = "Quicksave 3",
@@ -98,9 +102,6 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_QUICKLOAD_8] = "Quickload 8",
     [BIND_EMULATOR_QUICKLOAD_9] = "Quickload 9",
     [BIND_EMULATOR_QUICKLOAD_10] = "Quickload 10",
-    [BIND_EMULATOR_PAUSE] = "Pause",
-    [BIND_EMULATOR_STOP] = "Stop",
-    [BIND_EMULATOR_RESET] = "Reset",
 };
 
 char const * const binds_slug[] = {
@@ -115,6 +116,11 @@ char const * const binds_slug[] = {
     [BIND_GBA_START] = "start",
     [BIND_GBA_SELECT] = "select",
 
+    [BIND_EMULATOR_MUTE] = "mute",
+    [BIND_EMULATOR_SCREENSHOT] = "screenshot",
+    [BIND_EMULATOR_PAUSE] = "pause",
+    [BIND_EMULATOR_STOP] = "stop",
+    [BIND_EMULATOR_RESET] = "reset",
     [BIND_EMULATOR_SPEED_X1] = "speed_x1",
     [BIND_EMULATOR_SPEED_X2] = "speed_x2",
     [BIND_EMULATOR_SPEED_X3] = "speed_x3",
@@ -122,7 +128,6 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_SPEED_X5] = "speed_x5",
     [BIND_EMULATOR_FAST_FORWARD_TOGGLE] = "fast_forward_toggle",
     [BIND_EMULATOR_FAST_FORWARD_HOLD] = "fast_forward_hold",
-    [BIND_EMULATOR_SCREENSHOT] = "screenshot",
     [BIND_EMULATOR_QUICKSAVE_1] = "quicksave_1",
     [BIND_EMULATOR_QUICKSAVE_2] = "quicksave_2",
     [BIND_EMULATOR_QUICKSAVE_3] = "quicksave_3",
@@ -143,9 +148,6 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_QUICKLOAD_8] = "quickload_8",
     [BIND_EMULATOR_QUICKLOAD_9] = "quickload_9",
     [BIND_EMULATOR_QUICKLOAD_10] = "quickload_10",
-    [BIND_EMULATOR_PAUSE] = "pause",
-    [BIND_EMULATOR_STOP] = "stop",
-    [BIND_EMULATOR_RESET] = "reset",
 };
 
 static
