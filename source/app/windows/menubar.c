@@ -103,28 +103,40 @@ app_win_menubar_emulation(
             bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE]);
             if (igMenuItem_Bool("Fast Forward", bind ?: "", app->emulation.fast_forward, true)) {
                 app->emulation.fast_forward ^= true;
-                app_emulator_speed(app, app->emulation.fast_forward ? 0 : app->emulation.speed);
+                app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
             }
 
             igSeparator();
 
-            char const *speed[] = {
-                "x1",
-                "x2",
-                "x3",
-                "x4",
-                "x5",
+            char const *speeds_str[] = {
+                "25%  (15fps)",
+                "50%  (30fps)",
+                "100% (60fps)",
+                "200% (120fps)",
+                "300% (180fps)",
+                "400% (240fps)",
+                "500% (300fps)",
+            };
+
+            float speeds[] = {
+                0.25f,
+                0.50f,
+                1.00f,
+                2.00f,
+                3.00f,
+                4.00f,
+                5.00f,
             };
 
             igBeginDisabled(app->emulation.fast_forward);
-            for (x = 0; x < 5; ++x) {
+            for (x = 0; x < array_length(speeds); ++x) {
                 char const *bind;
 
-                bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_X1 + x]);
-                if (igMenuItem_Bool(speed[x], bind ?: "", app->emulation.speed == x + 1, true)) {
-                    app->emulation.speed = x + 1;
+                bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_X0_25 + x]);
+                if (igMenuItem_Bool(speeds_str[x], bind ?: "", app->emulation.speed >= speeds[x] - 0.01 && app->emulation.speed <= speeds[x] + 0.01, true)) {
+                    app->emulation.speed = speeds[x];
                     app->emulation.fast_forward = false;
-                    app_emulator_speed(app, app->emulation.speed);
+                    app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
                 }
             }
             igEndDisabled();

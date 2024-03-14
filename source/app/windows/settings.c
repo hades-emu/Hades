@@ -42,12 +42,24 @@ static char const *aspect_ratio_names[ASPECT_RATIO_LEN] = {
     [ASPECT_RATIO_STRETCH] = "Stretch",
 };
 
-static char const * const speed_names[] = {
-    "x1 (60 fps)",
-    "x2 (120 fps)",
-    "x3 (180 fps)",
-    "x4 (240 fps)",
-    "x5 (300 fps)",
+char const *speeds_str[] = {
+    "25% (15fps)",
+    "50% (30fps)",
+    "100% (60fps)",
+    "200% (120fps)",
+    "300% (180fps)",
+    "400% (240fps)",
+    "500% (300fps)",
+};
+
+float speeds[] = {
+    0.25f,
+    0.50f,
+    1.00f,
+    2.00f,
+    3.00f,
+    4.00f,
+    5.00f,
 };
 
 static char const * const display_size_names[] = {
@@ -75,11 +87,13 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_PAUSE] = "Pause",
     [BIND_EMULATOR_STOP] = "Stop",
     [BIND_EMULATOR_RESET] = "Reset",
-    [BIND_EMULATOR_SPEED_X1] = "Speed x1",
-    [BIND_EMULATOR_SPEED_X2] = "Speed x2",
-    [BIND_EMULATOR_SPEED_X3] = "Speed x3",
-    [BIND_EMULATOR_SPEED_X4] = "Speed x4",
-    [BIND_EMULATOR_SPEED_X5] = "Speed x5",
+    [BIND_EMULATOR_SPEED_X0_25] = "Speed 25% (15fps)",
+    [BIND_EMULATOR_SPEED_X0_50] = "Speed 50% (30fps)",
+    [BIND_EMULATOR_SPEED_X1] = "Speed 100% (60fps)",
+    [BIND_EMULATOR_SPEED_X2] = "Speed 200% (120fps)",
+    [BIND_EMULATOR_SPEED_X3] = "Speed 300% (180fps)",
+    [BIND_EMULATOR_SPEED_X4] = "Speed 400% (240fps)",
+    [BIND_EMULATOR_SPEED_X5] = "Speed 500% (300fps)",
     [BIND_EMULATOR_FAST_FORWARD_TOGGLE] = "Fast Forward (Toggle)",
     [BIND_EMULATOR_FAST_FORWARD_HOLD] = "Fast Forward (Hold)",
     [BIND_EMULATOR_QUICKSAVE_1] = "Quicksave 1",
@@ -121,6 +135,8 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_PAUSE] = "pause",
     [BIND_EMULATOR_STOP] = "stop",
     [BIND_EMULATOR_RESET] = "reset",
+    [BIND_EMULATOR_SPEED_X0_25] = "speed_x0_25",
+    [BIND_EMULATOR_SPEED_X0_50] = "speed_x0_50",
     [BIND_EMULATOR_SPEED_X1] = "speed_x1",
     [BIND_EMULATOR_SPEED_X2] = "speed_x2",
     [BIND_EMULATOR_SPEED_X3] = "speed_x3",
@@ -156,10 +172,11 @@ app_win_settings_emulation(
     struct app *app
 ) {
     ImGuiViewport *vp;
-    int32_t speed;
+    char buffer[16];
+    float speed;
+    uint32_t i;
 
     vp = igGetMainViewport();
-    speed = app->emulation.speed ? app->emulation.speed - 1 : 0;
 
     igTextWrapped("Emulation Settings");
     igSpacing();
@@ -224,7 +241,7 @@ app_win_settings_emulation(
 
         igTableNextColumn();
         if (igCheckbox("##FastForward", &app->emulation.fast_forward)) {
-            app_emulator_speed(app, app->emulation.fast_forward ? 0 : app->emulation.speed);
+            app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
         }
 
         // Speed
@@ -234,10 +251,26 @@ app_win_settings_emulation(
         igTextWrapped("Speed");
 
         igTableNextColumn();
-        if (igCombo_Str_arr("##Speed", &speed, speed_names, array_length(speed_names), 0)) {
-            app->emulation.speed = speed + 1;
-            app->emulation.fast_forward = false;
-            app_emulator_speed(app, app->emulation.speed);
+
+        speed = app->emulation.speed;
+        for (i = 0; i < array_length(speeds); ++i) {
+            if (app->emulation.speed >= speeds[i] - 0.01 && app->emulation.speed <= speeds[i] + 0.01) {
+                speed = speeds[i];
+                break;
+            }
+        }
+
+        snprintf(buffer, sizeof(buffer), "%.0f%%", speed * 100.f);
+
+        if (igBeginCombo("##Speed", buffer, ImGuiComboFlags_None)) {
+            for (i = 0; i < array_length(speeds_str); ++i) {
+                if (igSelectable_Bool(speeds_str[i], speed >= speeds[i] - 0.01 && speed <= speeds[i] + 0.01, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
+                    app->emulation.speed = speeds[i];
+                    app->emulation.fast_forward = false;
+                    app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
+                }
+            }
+            igEndCombo();
         }
         igEndDisabled();
 

@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "hades.h"
 #include "gba/gba.h"
 
 /*
@@ -52,7 +51,8 @@ struct message_reset {
 
 struct message_speed {
     struct event_header header;
-    uint32_t speed;
+    bool fast_forward;
+    float speed;
 };
 
 struct message_key {

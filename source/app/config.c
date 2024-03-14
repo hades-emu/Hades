@@ -67,8 +67,7 @@ app_config_load(
         double d;
 
         if (mjson_get_number(data, data_len, "$.emulation.speed", &d)) {
-            app->emulation.speed = (int)d;
-            app->emulation.speed = max(0, min(app->emulation.speed, 5));
+            app->emulation.speed = max(0.0, min(d, 5.0));
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.fast_forward", &b)) {
@@ -250,7 +249,7 @@ app_config_save(
             // Emulation
             "emulation": {
                 "skip_bios": %B,
-                "speed": %d,
+                "speed": %g,
                 "fast_forward": %B,
                 "backup_storage": {
                     "autodetect": %B,
@@ -287,7 +286,7 @@ app_config_save(
         app->file.recent_roms[3],
         app->file.recent_roms[4],
         (int)app->emulation.skip_bios,
-        (int)app->emulation.speed,
+        app->emulation.speed,
         (int)app->emulation.fast_forward,
         (int)app->emulation.backup_storage.autodetect,
         (int)app->emulation.backup_storage.type,

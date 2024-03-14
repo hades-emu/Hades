@@ -559,7 +559,8 @@ app_emulator_configure_and_run(
 
     app->emulation.game_path = strdup(rom_path);
     app->emulation.launch_config->skip_bios = app->emulation.skip_bios;
-    app->emulation.launch_config->speed = app->emulation.fast_forward ? 0 : app->emulation.speed;
+    app->emulation.launch_config->fast_forward = app->emulation.fast_forward;
+    app->emulation.launch_config->speed = app->emulation.speed;
     app->emulation.launch_config->audio_frequency = GBA_CYCLES_PER_SECOND / app->audio.resample_frequency;
 
     if (app->emulation.backup_storage.autodetect) {
@@ -578,7 +579,11 @@ app_emulator_configure_and_run(
     logln(HS_INFO, "    Skip BIOS: %s", app->emulation.launch_config->skip_bios ? "true" : "false");
     logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
     logln(HS_INFO, "    GPIO: %s", gpio_device_names[app->emulation.launch_config->gpio_device_type]);
-    logln(HS_INFO, "    Speed: %i", app->emulation.speed);
+    if (app->emulation.launch_config->fast_forward) {
+        logln(HS_INFO, "    Speed: Fast Forward");
+    } else {
+        logln(HS_INFO, "    Speed: %.0f%%", app->emulation.launch_config->speed * 100.f);
+    }
     logln(HS_INFO, "    Audio Frequency: %iHz (%i cycles)", app->audio.resample_frequency, app->emulation.launch_config->audio_frequency);
 
     event.header.kind = MESSAGE_RESET;
@@ -722,12 +727,14 @@ app_emulator_key(
 void
 app_emulator_speed(
     struct app *app,
-    uint32_t speed
+    bool fast_forward,
+    float speed
 ) {
     struct message_speed event;
 
     event.header.kind = MESSAGE_SPEED;
     event.header.size = sizeof(event);
+    event.fast_forward = fast_forward;
     event.speed = speed;
 
     channel_lock(&app->emulation.gba->channels.messages);

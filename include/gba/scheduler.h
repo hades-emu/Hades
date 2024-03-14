@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include "hades.h"
+
 #define INVALID_EVENT_HANDLE    ((size_t)(-1))
 
 typedef size_t event_handler_t;
@@ -69,10 +71,13 @@ struct scheduler {
     struct scheduler_event *events;
     size_t events_size;
 
-    uint32_t speed;                 // Speed. 0 = unlimited, 1 = 60fps, 2 = 120fps, etc.
+    bool fast_forward;              // Fast forward
 
-    uint64_t time_per_frame;
-    uint64_t time_last_frame;
+    float speed;                    // Speed. 0.5 = 30fps, 1 = 60fps, 2 = 120fps, etc.
+                                    // Can't be 0 unless `fast_forward` is true.
+
+    uint64_t time_per_frame;        // In usec
+    uint64_t time_last_frame;       // In usec
     uint64_t accumulated_time;
 };
 
@@ -133,4 +138,4 @@ void sched_process_events(struct gba *gba);
 void sched_run_for(struct gba *gba, uint64_t cycles);
 void sched_frame_limiter(struct gba *gba,struct event_args args);
 void sched_reset_frame_limiter(struct gba *gba);
-void sched_update_speed(struct gba *gba, uint32_t speed);
+void sched_update_speed(struct gba *gba, bool fast_forward, float speed);

@@ -17,7 +17,6 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <cimgui.h>
-#include "hades.h"
 #include "gba/gba.h"
 
 #define GLSL(src)                   "#version 330 core\n" #src
@@ -87,6 +86,8 @@ enum bind_actions {
     BIND_EMULATOR_PAUSE,
     BIND_EMULATOR_STOP,
     BIND_EMULATOR_RESET,
+    BIND_EMULATOR_SPEED_X0_25,
+    BIND_EMULATOR_SPEED_X0_50,
     BIND_EMULATOR_SPEED_X1,
     BIND_EMULATOR_SPEED_X2,
     BIND_EMULATOR_SPEED_X3,
@@ -175,9 +176,11 @@ struct app {
         // Current FPS
         uint32_t fps;
 
-        // Speed
-        uint32_t speed;
+        // Fast forward
         bool fast_forward;
+
+        // Speed
+        float speed;
 
         // Skip BIOS
         bool skip_bios;
@@ -457,7 +460,7 @@ void app_emulator_run(struct app *app);
 void app_emulator_pause(struct app *app);
 void app_emulator_exit(struct app *app);
 void app_emulator_key(struct app *app, enum keys key, bool pressed);
-void app_emulator_speed(struct app *app, uint32_t);
+void app_emulator_speed(struct app *app, bool, float);
 void app_emulator_update_backup(struct app *app);
 void app_emulator_screenshot(struct app *app);
 void app_emulator_screenshot_path(struct app *app, char const *);

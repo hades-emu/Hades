@@ -158,7 +158,7 @@ gba_state_reset(
         scheduler->events = calloc(scheduler->events_size, sizeof(struct scheduler_event));
         hs_assert(scheduler->events);
 
-        sched_update_speed(gba, config->speed);
+        sched_update_speed(gba, config->fast_forward, config->speed);
 
         // Frame limiter
         sched_add_event(
@@ -427,7 +427,7 @@ gba_process_message(
             struct message_speed const *msg_speed;
 
             msg_speed = (struct message_speed const *)message;
-            sched_update_speed(gba, msg_speed->speed);
+            sched_update_speed(gba, msg_speed->fast_forward, msg_speed->speed);
             break;
         };
         case MESSAGE_QUICKSAVE: {

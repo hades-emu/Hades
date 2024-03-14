@@ -10,7 +10,6 @@
 #include <SDL2/SDL.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
-#include "hades.h"
 #include "app/app.h"
 
 void
@@ -39,12 +38,6 @@ app_bindings_setup_default(
     app->binds.keyboard[BIND_EMULATOR_MUTE] = SDL_GetKeyFromName("M");
     app->binds.keyboard[BIND_EMULATOR_SCREENSHOT] = SDL_GetKeyFromName("F2");
     app->binds.keyboard[BIND_EMULATOR_PAUSE] = SDL_GetKeyFromName("F3");
-    app->binds.keyboard[BIND_EMULATOR_SPEED_X1] = SDL_GetKeyFromName("1");
-    app->binds.keyboard[BIND_EMULATOR_SPEED_X2] = SDL_GetKeyFromName("2");
-    app->binds.keyboard[BIND_EMULATOR_SPEED_X3] = SDL_GetKeyFromName("3");
-    app->binds.keyboard[BIND_EMULATOR_SPEED_X4] = SDL_GetKeyFromName("4");
-    app->binds.keyboard[BIND_EMULATOR_SPEED_X5] = SDL_GetKeyFromName("5");
-    app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE] = SDL_GetKeyFromName("0");
     app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_HOLD] = SDL_GetKeyFromName("Space");
     app->binds.keyboard[BIND_EMULATOR_QUICKSAVE_1] = SDL_GetKeyFromName("F5");
     app->binds.keyboard[BIND_EMULATOR_QUICKLOAD_1] = SDL_GetKeyFromName("F8");
@@ -139,7 +132,7 @@ app_bindings_handle(
         case BIND_GBA_START:                    app_emulator_key(app, KEY_START, pressed); break;
         case BIND_EMULATOR_FAST_FORWARD_HOLD: {
             app->emulation.fast_forward = pressed;
-            app_emulator_speed(app, app->emulation.fast_forward ? 0 : app->emulation.speed);
+            app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
             break;
         };
         default: break;
@@ -156,19 +149,30 @@ app_bindings_handle(
         case BIND_EMULATOR_PAUSE:               app->emulation.is_running ? app_emulator_pause(app) : app_emulator_run(app); break;
         case BIND_EMULATOR_STOP:                app_emulator_stop(app); break;
         case BIND_EMULATOR_RESET:               app_emulator_reset(app); break;
+        case BIND_EMULATOR_SPEED_X0_25:
+        case BIND_EMULATOR_SPEED_X0_50:
         case BIND_EMULATOR_SPEED_X1:
         case BIND_EMULATOR_SPEED_X2:
         case BIND_EMULATOR_SPEED_X3:
         case BIND_EMULATOR_SPEED_X4:
         case BIND_EMULATOR_SPEED_X5: {
+            float speeds[] = {
+                0.25f,
+                0.50f,
+                1.00f,
+                2.00f,
+                3.00f,
+                4.00f,
+                5.00f,
+            };
             app->emulation.fast_forward = false;
-            app->emulation.speed = 1 + (bind - BIND_EMULATOR_SPEED_X1);
-            app_emulator_speed(app, app->emulation.speed);
+            app->emulation.speed = speeds[bind - BIND_EMULATOR_SPEED_X0_25];
+            app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
             break;
         };
         case BIND_EMULATOR_FAST_FORWARD_TOGGLE: {
             app->emulation.fast_forward ^= true;
-            app_emulator_speed(app, app->emulation.fast_forward ? 0 : app->emulation.speed);
+            app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
             break;
         }
         case BIND_EMULATOR_QUICKSAVE_1:

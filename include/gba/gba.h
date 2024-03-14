@@ -123,8 +123,10 @@ struct launch_config {
     // True if the BIOS should be skipped
     bool skip_bios;
 
-    // Speed. 0 = unlimited, 1 = 60fps, 2 = 120fps, etc.
-    uint32_t speed;
+    bool fast_forward;              // Fast forward
+
+    float speed;                    // Speed. 0.5 = 30fps, 1 = 60fps, 2 = 120fps, etc.
+                                    // Can't be 0 unless `fast_forward` is true.
 
     // Set to the frontend's audio frequency.
     // Can be 0 if the frontend has no audio.
