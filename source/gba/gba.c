@@ -147,6 +147,9 @@ gba_state_reset(
     struct gba *gba,
     struct launch_config const *config
 ) {
+    // Settings
+    memcpy(&gba->settings, &config->settings, sizeof(struct emulation_settings));
+
     // Scheduler
     {
         struct scheduler *scheduler;
@@ -158,7 +161,7 @@ gba_state_reset(
         scheduler->events = calloc(scheduler->events_size, sizeof(struct scheduler_event));
         hs_assert(scheduler->events);
 
-        sched_update_speed(gba, config->fast_forward, config->speed);
+        sched_update_speed(gba);
 
         // Frame limiter
         sched_add_event(
@@ -423,11 +426,13 @@ gba_process_message(
             io_scan_keypad_irq(gba);
             break;
         };
-        case MESSAGE_SPEED: {
-            struct message_speed const *msg_speed;
+        case MESSAGE_SETTINGS: {
+            struct message_settings const *msg_settings;
 
-            msg_speed = (struct message_speed const *)message;
-            sched_update_speed(gba, msg_speed->fast_forward, msg_speed->speed);
+            msg_settings = (struct message_settings const *)message;
+            memcpy(&gba->settings, &msg_settings->settings, sizeof(struct emulation_settings));
+
+            sched_update_speed(gba);
             break;
         };
         case MESSAGE_QUICKSAVE: {

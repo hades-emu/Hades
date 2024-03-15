@@ -69,17 +69,17 @@ apu_resample(
     sample_l = 0;
     sample_r = 0;
 
-    sample_l += (gba->apu.latch.channel_1 * (bool)gba->io.soundcnt_l.enable_sound_1_left); // [-0x80; 0x80]
-    sample_r += (gba->apu.latch.channel_1 * (bool)gba->io.soundcnt_l.enable_sound_1_right);
+    sample_l += (gba->apu.latch.channel_1 * (bool)gba->io.soundcnt_l.enable_sound_1_left * gba->settings.apu.enable_psg_channels[0]); // [-0x80; 0x80]
+    sample_r += (gba->apu.latch.channel_1 * (bool)gba->io.soundcnt_l.enable_sound_1_right * gba->settings.apu.enable_psg_channels[0]);
 
-    sample_l += (gba->apu.latch.channel_2 * (bool)gba->io.soundcnt_l.enable_sound_2_left); // [-0x100; 0x100]
-    sample_r += (gba->apu.latch.channel_2 * (bool)gba->io.soundcnt_l.enable_sound_2_right);
+    sample_l += (gba->apu.latch.channel_2 * (bool)gba->io.soundcnt_l.enable_sound_2_left * gba->settings.apu.enable_psg_channels[1]); // [-0x100; 0x100]
+    sample_r += (gba->apu.latch.channel_2 * (bool)gba->io.soundcnt_l.enable_sound_2_right * gba->settings.apu.enable_psg_channels[1]);
 
-    sample_l += (gba->apu.latch.channel_3 * (bool)gba->io.soundcnt_l.enable_sound_3_left); // [-0x180; 0x180]
-    sample_r += (gba->apu.latch.channel_3 * (bool)gba->io.soundcnt_l.enable_sound_3_right);
+    sample_l += (gba->apu.latch.channel_3 * (bool)gba->io.soundcnt_l.enable_sound_3_left * gba->settings.apu.enable_psg_channels[2]); // [-0x180; 0x180]
+    sample_r += (gba->apu.latch.channel_3 * (bool)gba->io.soundcnt_l.enable_sound_3_right * gba->settings.apu.enable_psg_channels[2]);
 
-    sample_l += (gba->apu.latch.channel_4 * (bool)gba->io.soundcnt_l.enable_sound_4_left); // [-0x200; 0x200]
-    sample_r += (gba->apu.latch.channel_4 * (bool)gba->io.soundcnt_l.enable_sound_4_right);
+    sample_l += (gba->apu.latch.channel_4 * (bool)gba->io.soundcnt_l.enable_sound_4_left * gba->settings.apu.enable_psg_channels[3]); // [-0x200; 0x200]
+    sample_r += (gba->apu.latch.channel_4 * (bool)gba->io.soundcnt_l.enable_sound_4_right * gba->settings.apu.enable_psg_channels[3]);
 
     sample_l *= psg_volume[gba->io.soundcnt_h.volume_channels] * gba->io.soundcnt_l.channel_left_volume; // [-0x3800; 0x3800]
     sample_r *= psg_volume[gba->io.soundcnt_h.volume_channels] * gba->io.soundcnt_l.channel_right_volume; // [-0x3800; 0x3800]
@@ -93,11 +93,11 @@ apu_resample(
     sample_l /= 28; // [-0x200; 0x200]
     sample_r /= 28;
 
-    sample_l += (gba->apu.latch.fifo[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_left) * fifo_volume[gba->io.soundcnt_h.volume_fifo_a]; // [-0x400; 0x400]
-    sample_r += (gba->apu.latch.fifo[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_right)  * fifo_volume[gba->io.soundcnt_h.volume_fifo_a];
+    sample_l += (gba->apu.latch.fifo[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_left) * fifo_volume[gba->io.soundcnt_h.volume_fifo_a] * gba->settings.apu.enable_fifo_channels[0]; // [-0x400; 0x400]
+    sample_r += (gba->apu.latch.fifo[FIFO_A] * (bool)gba->io.soundcnt_h.enable_fifo_a_right)  * fifo_volume[gba->io.soundcnt_h.volume_fifo_a] * gba->settings.apu.enable_fifo_channels[0];
 
-    sample_l += (gba->apu.latch.fifo[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_left) * fifo_volume[gba->io.soundcnt_h.volume_fifo_b]; // [-0x600; 0x600]
-    sample_r += (gba->apu.latch.fifo[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_right) * fifo_volume[gba->io.soundcnt_h.volume_fifo_b];
+    sample_l += (gba->apu.latch.fifo[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_left) * fifo_volume[gba->io.soundcnt_h.volume_fifo_b] * gba->settings.apu.enable_fifo_channels[1]; // [-0x600; 0x600]
+    sample_r += (gba->apu.latch.fifo[FIFO_B] * (bool)gba->io.soundcnt_h.enable_fifo_b_right) * fifo_volume[gba->io.soundcnt_h.volume_fifo_b] * gba->settings.apu.enable_fifo_channels[1];
 
     sample_l += gba->io.soundbias.bias; // [-0x400; 0x800] (with default bias)
     sample_r += gba->io.soundbias.bias;

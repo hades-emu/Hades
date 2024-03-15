@@ -103,7 +103,7 @@ app_win_menubar_emulation(
             bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE]);
             if (igMenuItem_Bool("Fast Forward", bind ?: "", app->emulation.fast_forward, true)) {
                 app->emulation.fast_forward ^= true;
-                app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
+                app_emulator_settings(app);
             }
 
             igSeparator();
@@ -136,7 +136,7 @@ app_win_menubar_emulation(
                 if (igMenuItem_Bool(speeds_str[x], bind ?: "", app->emulation.speed >= speeds[x] - 0.01 && app->emulation.speed <= speeds[x] + 0.01, true)) {
                     app->emulation.speed = speeds[x];
                     app->emulation.fast_forward = false;
-                    app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
+                    app_emulator_settings(app);
                 }
             }
             igEndDisabled();

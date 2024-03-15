@@ -136,6 +136,8 @@ enum commands_list {
     CMD_IO,
     CMD_KEY,
     CMD_SCREENSHOT,
+    CMD_PPU,
+    CMD_APU,
 };
 
 struct io_bitfield {
@@ -167,6 +169,9 @@ extern struct command g_commands[];
 */
 extern struct io_register g_io_registers[];
 extern size_t g_io_registers_len;
+
+/* app/dbg/cmd/apu.c */
+void debugger_cmd_apu(struct app *, size_t, struct arg const *);
 
 /* app/dbg/cmd/break.c */
 void debugger_cmd_break(struct app *, size_t, struct arg const *);
@@ -200,6 +205,9 @@ void debugger_cmd_io(struct app *, size_t, struct arg const *);
 
 /* app/dbg/cmd/key.c */
 void debugger_cmd_key(struct app *, size_t, struct arg const *);
+
+/* app/dbg/cmd/ppu.c */
+void debugger_cmd_ppu(struct app *, size_t, struct arg const *);
 
 /* app/dbg/cmd/print.c */
 void debugger_cmd_print(struct app *, size_t, struct arg const *);

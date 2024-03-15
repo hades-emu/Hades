@@ -74,6 +74,28 @@ struct shared_data {
     pthread_mutex_t audio_rbuffer_mutex;
 };
 
+/*
+** Settings that can be altered while the game is running.
+*/
+struct emulation_settings {
+    // Fast forward
+    bool fast_forward;
+
+    // Speed. 0.5 = 30fps, 1 = 60fps, 2 = 120fps, etc.
+    // Can't be 0 unless `fast_forward` is true.
+    float speed;
+
+    struct {
+        bool enable_bg_layers[4];
+        bool enable_oam;
+    } ppu;
+
+    struct {
+        bool enable_psg_channels[4];
+        bool enable_fifo_channels[2];
+    } apu;
+};
+
 struct game_entry {
     char *code;
     enum backup_storage_types storage;
@@ -92,6 +114,9 @@ struct gba {
 
     // Shared data with the frontend, mainly the framebuffer and audio channels.
     struct shared_data shared_data;
+
+    // A set of settings the frontend can update during the emulator's execution (speed, etc.)
+    struct emulation_settings settings;
 
     // The different components of the GBA
     struct core core;
@@ -123,11 +148,6 @@ struct launch_config {
     // True if the BIOS should be skipped
     bool skip_bios;
 
-    bool fast_forward;              // Fast forward
-
-    float speed;                    // Speed. 0.5 = 30fps, 1 = 60fps, 2 = 120fps, etc.
-                                    // Can't be 0 unless `fast_forward` is true.
-
     // Set to the frontend's audio frequency.
     // Can be 0 if the frontend has no audio.
     uint32_t audio_frequency;
@@ -141,6 +161,9 @@ struct launch_config {
         uint8_t *data;
         size_t size;
     } backup_storage;
+
+    // Initial value for all runtime-settings (speed, etc.)
+    struct emulation_settings settings;
 };
 
 struct notification;

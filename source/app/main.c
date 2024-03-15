@@ -67,6 +67,10 @@ main(
     app.emulation.backup_storage.type = BACKUP_NONE;
     app.emulation.gpio_device.autodetect = true;
     app.emulation.gpio_device.type = GPIO_NONE;
+    app.config.video.enable_oam = true;
+    memset(app.config.video.enable_bg_layers, true, sizeof(app.config.video.enable_bg_layers));
+    memset(app.config.audio.enable_psg_channels, true, sizeof(app.config.audio.enable_psg_channels));
+    memset(app.config.audio.enable_fifo_channels, true, sizeof(app.config.audio.enable_fifo_channels));
     app.file.bios_path = strdup("./bios.bin");
     app.video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
     app.video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;

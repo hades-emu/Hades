@@ -132,7 +132,7 @@ app_bindings_handle(
         case BIND_GBA_START:                    app_emulator_key(app, KEY_START, pressed); break;
         case BIND_EMULATOR_FAST_FORWARD_HOLD: {
             app->emulation.fast_forward = pressed;
-            app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
+            app_emulator_settings(app);
             break;
         };
         default: break;
@@ -167,12 +167,12 @@ app_bindings_handle(
             };
             app->emulation.fast_forward = false;
             app->emulation.speed = speeds[bind - BIND_EMULATOR_SPEED_X0_25];
-            app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
+            app_emulator_settings(app);
             break;
         };
         case BIND_EMULATOR_FAST_FORWARD_TOGGLE: {
             app->emulation.fast_forward ^= true;
-            app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
+            app_emulator_settings(app);
             break;
         }
         case BIND_EMULATOR_QUICKSAVE_1:

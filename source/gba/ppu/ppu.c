@@ -8,7 +8,6 @@
 \******************************************************************************/
 
 #include <string.h>
-#include <math.h>
 #include "gba/gba.h"
 #include "gba/ppu.h"
 
@@ -187,13 +186,16 @@ ppu_render_scanline(
                 int32_t bg_idx;
 
                 for (bg_idx = 3; bg_idx >= 0; --bg_idx) {
-                    if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio) {
+                    if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio && likely(gba->settings.ppu.enable_bg_layers[bg_idx])) {
                         ppu_render_background_text(gba, scanline, y, bg_idx);
                         ppu_merge_layer(gba, scanline, scanline->bg);
                     }
                 }
-                scanline->top_idx = 4;
-                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+
+                if (likely(gba->settings.ppu.enable_oam)) {
+                    scanline->top_idx = 4;
+                    ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+                }
             }
             break;
         };
@@ -202,7 +204,7 @@ ppu_render_scanline(
                 int32_t bg_idx;
 
                 for (bg_idx = 2; bg_idx >= 0; --bg_idx) {
-                    if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio) {
+                    if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio && likely(gba->settings.ppu.enable_bg_layers[bg_idx])) {
                         if (bg_idx == 2) {
                             memset(scanline->bg, 0x00, sizeof(scanline->bg));
                             ppu_render_background_affine(gba, scanline, y, bg_idx);
@@ -212,8 +214,11 @@ ppu_render_scanline(
                         ppu_merge_layer(gba, scanline, scanline->bg);
                     }
                 }
-                scanline->top_idx = 4;
-                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+
+                if (likely(gba->settings.ppu.enable_oam)) {
+                    scanline->top_idx = 4;
+                    ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+                }
             }
             break;
         };
@@ -222,50 +227,62 @@ ppu_render_scanline(
                 int32_t bg_idx;
 
                 for (bg_idx = 3; bg_idx >= 2; --bg_idx) {
-                    if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio) {
+                    if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio && likely(gba->settings.ppu.enable_bg_layers[bg_idx])) {
                         memset(scanline->bg, 0x00, sizeof(scanline->bg));
                         ppu_render_background_affine(gba, scanline, y, bg_idx);
                         ppu_merge_layer(gba, scanline, scanline->bg);
                     }
                 }
-                scanline->top_idx = 4;
-                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+
+                if (likely(gba->settings.ppu.enable_oam)) {
+                    scanline->top_idx = 4;
+                    ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+                }
             }
             break;
         };
         case 3: {
             for (prio = 3; prio >= 0; --prio) {
-                if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio) {
+                if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio && likely(gba->settings.ppu.enable_bg_layers[2])) {
                     memset(scanline->bg, 0x00, sizeof(scanline->bg));
                     ppu_render_background_bitmap(gba, scanline, false);
                     ppu_merge_layer(gba, scanline, scanline->bg);
                 }
-                scanline->top_idx = 4;
-                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+
+                if (likely(gba->settings.ppu.enable_oam)) {
+                    scanline->top_idx = 4;
+                    ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+                }
             }
             break;
         };
         case 4: {
             for (prio = 3; prio >= 0; --prio) {
-                if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio) {
+                if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio && likely(gba->settings.ppu.enable_bg_layers[2])) {
                     memset(scanline->bg, 0x00, sizeof(scanline->bg));
                     ppu_render_background_bitmap(gba, scanline, true);
                     ppu_merge_layer(gba, scanline, scanline->bg);
                 }
-                scanline->top_idx = 4;
-                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+
+                if (likely(gba->settings.ppu.enable_oam)) {
+                    scanline->top_idx = 4;
+                    ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+                }
             }
             break;
         };
         case 5: {
             for (prio = 3; prio >= 0; --prio) {
-                if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio && y < 128) {
+                if (bitfield_get((uint8_t)io->dispcnt.bg, 2) && io->bgcnt[2].priority == prio && y < 128 && likely(gba->settings.ppu.enable_bg_layers[2])) {
                     memset(scanline->bg, 0x00, sizeof(scanline->bg));
                     ppu_render_background_bitmap_small(gba, scanline);
                     ppu_merge_layer(gba, scanline, scanline->bg);
                 }
-                scanline->top_idx = 4;
-                ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+
+                if (likely(gba->settings.ppu.enable_oam)) {
+                    scanline->top_idx = 4;
+                    ppu_merge_layer(gba, scanline, scanline->oam[prio]);
+                }
             }
             break;
         };

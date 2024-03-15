@@ -187,7 +187,7 @@ sched_frame_limiter(
     struct gba *gba,
     struct event_args args __unused
 ) {
-    if (!gba->scheduler.fast_forward) {
+    if (gba->scheduler.time_per_frame) {
         uint64_t now;
 
         now = hs_time();
@@ -203,22 +203,16 @@ sched_frame_limiter(
 
 void
 sched_update_speed(
-    struct gba *gba,
-    bool fast_forward,
-    float speed
+    struct gba *gba
 ) {
     struct scheduler *scheduler;
 
     scheduler = &gba->scheduler;
 
-    scheduler->fast_forward = fast_forward;
-
-    if (fast_forward) {
-        scheduler->speed = 0.0;
-        scheduler->time_per_frame = 0.0;
+    if (gba->settings.fast_forward) {
+        scheduler->time_per_frame = 0;
     } else {
-        scheduler->speed = speed;
-        scheduler->time_per_frame = 1000.f * 1000.f / (speed * 59.737f);
+        scheduler->time_per_frame = 1000.f * 1000.f / (gba->settings.speed * 59.737f);
     }
 
     sched_reset_frame_limiter(gba);

@@ -241,7 +241,7 @@ app_win_settings_emulation(
 
         igTableNextColumn();
         if (igCheckbox("##FastForward", &app->emulation.fast_forward)) {
-            app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
+            app_emulator_settings(app);
         }
 
         // Speed
@@ -267,7 +267,7 @@ app_win_settings_emulation(
                 if (igSelectable_Bool(speeds_str[i], speed >= speeds[i] - 0.01 && speed <= speeds[i] + 0.01, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
                     app->emulation.speed = speeds[i];
                     app->emulation.fast_forward = false;
-                    app_emulator_speed(app, app->emulation.fast_forward, app->emulation.speed);
+                    app_emulator_settings(app);
                 }
             }
             igEndCombo();

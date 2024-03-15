@@ -22,9 +22,9 @@ enum message_kind {
     MESSAGE_PAUSE,
     MESSAGE_STOP,
     MESSAGE_KEY,
-    MESSAGE_SPEED,
     MESSAGE_QUICKSAVE,
     MESSAGE_QUICKLOAD,
+    MESSAGE_SETTINGS,
 
 #ifdef WITH_DEBUGGER
     MESSAGE_FRAME,
@@ -49,10 +49,9 @@ struct message_reset {
     struct launch_config config;
 };
 
-struct message_speed {
+struct message_settings {
     struct event_header header;
-    bool fast_forward;
-    float speed;
+    struct emulation_settings settings;
 };
 
 struct message_key {

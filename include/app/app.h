@@ -151,6 +151,18 @@ struct ui_notification {
     struct ui_notification *next;
 };
 
+struct app_config {
+    struct {
+        bool enable_bg_layers[4];
+        bool enable_oam;
+    } video;
+
+    struct {
+        bool enable_psg_channels[4];
+        bool enable_fifo_channels[2];
+    } audio;
+};
+
 struct app {
     atomic_bool run;
 
@@ -369,6 +381,8 @@ struct app {
         SDL_GameControllerButton controller_alt[BIND_MAX];
     } binds;
 
+    struct app_config config;
+
 #if WITH_DEBUGGER
     struct {
         bool is_running;
@@ -460,7 +474,7 @@ void app_emulator_run(struct app *app);
 void app_emulator_pause(struct app *app);
 void app_emulator_exit(struct app *app);
 void app_emulator_key(struct app *app, enum keys key, bool pressed);
-void app_emulator_speed(struct app *app, bool, float);
+void app_emulator_settings(struct app *app);
 void app_emulator_update_backup(struct app *app);
 void app_emulator_screenshot(struct app *app);
 void app_emulator_screenshot_path(struct app *app, char const *);

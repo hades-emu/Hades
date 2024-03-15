@@ -150,6 +150,18 @@ struct command g_commands[] = {
         .description = "Store a screenshot of the screen in FILE.",
         .func = debugger_cmd_screenshot
     },
+    [CMD_PPU] = {
+        .name = "ppu",
+        .usage = "ppu OPTION VALUE",
+        .description = "Set options for the ppu.",
+        .func = debugger_cmd_ppu
+    },
+    [CMD_APU] = {
+        .name = "apu",
+        .usage = "apu OPTION VALUE",
+        .description = "Set options for the apu.",
+        .func = debugger_cmd_apu
+    },
     {
         .name = NULL,
     }

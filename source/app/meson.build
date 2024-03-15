@@ -19,6 +19,7 @@ libapp_extra_deps = []
 if get_option('with_debugger')
     libdbg = static_library(
         'dbg',
+        'dbg/cmd/apu.c',
         'dbg/cmd/break.c',
         'dbg/cmd/context.c',
         'dbg/cmd/continue.c',
@@ -28,6 +29,7 @@ if get_option('with_debugger')
         'dbg/cmd/help.c',
         'dbg/cmd/io.c',
         'dbg/cmd/key.c',
+        'dbg/cmd/ppu.c',
         'dbg/cmd/print.c',
         'dbg/cmd/registers.c',
         'dbg/cmd/reset.c',
