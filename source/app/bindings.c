@@ -143,6 +143,17 @@ app_bindings_handle(
         return ;
     }
 
+    /* Bindings that can be used outside of a game */
+    switch (bind) {
+        // So far, none
+        default: break;
+    }
+
+    if (!app->emulation.is_started) {
+        return ;
+    }
+
+    /* Bindings that cannot be used outside of a game */
     switch (bind) {
         case BIND_EMULATOR_MUTE:                app->audio.mute ^= 1; break;
         case BIND_EMULATOR_SCREENSHOT:          app_emulator_screenshot(app); break;
