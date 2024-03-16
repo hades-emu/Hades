@@ -77,7 +77,7 @@ struct shared_data {
 /*
 ** Settings that can be altered while the game is running.
 */
-struct emulation_settings {
+struct gba_settings {
     // Fast forward
     bool fast_forward;
 
@@ -116,7 +116,7 @@ struct gba {
     struct shared_data shared_data;
 
     // A set of settings the frontend can update during the emulator's execution (speed, etc.)
-    struct emulation_settings settings;
+    struct gba_settings settings;
 
     // The different components of the GBA
     struct core core;
@@ -163,7 +163,7 @@ struct launch_config {
     } backup_storage;
 
     // Initial value for all runtime-settings (speed, etc.)
-    struct emulation_settings settings;
+    struct gba_settings settings;
 };
 
 struct notification;

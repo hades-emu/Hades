@@ -7,7 +7,6 @@
 **
 \******************************************************************************/
 
-#include "hades.h"
 #include "app/app.h"
 #include "gba/gba.h"
 
@@ -44,8 +43,8 @@ app_sdl_audio_callback(
         left = (int16_t)((val >> 16) & 0xFFFF);
         right = (int16_t)(val & 0xFFFF);
 
-        stream[0] = (int16_t)(left * !app->audio.mute * app->audio.level);
-        stream[1] = (int16_t)(right * !app->audio.mute * app->audio.level);
+        stream[0] = (int16_t)(left * !app->settings.audio.mute * app->settings.audio.level);
+        stream[1] = (int16_t)(right * !app->settings.audio.mute * app->settings.audio.level);
         stream += 2;
     }
     pthread_mutex_unlock(&gba->shared_data.audio_rbuffer_mutex);

@@ -131,7 +131,7 @@ app_bindings_handle(
         case BIND_GBA_SELECT:                   app_emulator_key(app, KEY_SELECT, pressed); break;
         case BIND_GBA_START:                    app_emulator_key(app, KEY_START, pressed); break;
         case BIND_EMULATOR_FAST_FORWARD_HOLD: {
-            app->emulation.fast_forward = pressed;
+            app->settings.emulation.fast_forward = pressed;
             app_emulator_settings(app);
             break;
         };
@@ -155,7 +155,7 @@ app_bindings_handle(
 
     /* Bindings that cannot be used outside of a game */
     switch (bind) {
-        case BIND_EMULATOR_MUTE:                app->audio.mute ^= 1; break;
+        case BIND_EMULATOR_MUTE:                app->settings.audio.mute ^= 1; break;
         case BIND_EMULATOR_SCREENSHOT:          app_emulator_screenshot(app); break;
         case BIND_EMULATOR_PAUSE:               app->emulation.is_running ? app_emulator_pause(app) : app_emulator_run(app); break;
         case BIND_EMULATOR_STOP:                app_emulator_stop(app); break;
@@ -176,13 +176,13 @@ app_bindings_handle(
                 4.00f,
                 5.00f,
             };
-            app->emulation.fast_forward = false;
-            app->emulation.speed = speeds[bind - BIND_EMULATOR_SPEED_X0_25];
+            app->settings.emulation.fast_forward = false;
+            app->settings.emulation.speed = speeds[bind - BIND_EMULATOR_SPEED_X0_25];
             app_emulator_settings(app);
             break;
         };
         case BIND_EMULATOR_FAST_FORWARD_TOGGLE: {
-            app->emulation.fast_forward ^= true;
+            app->settings.emulation.fast_forward ^= true;
             app_emulator_settings(app);
             break;
         }

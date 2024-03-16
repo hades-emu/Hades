@@ -174,20 +174,20 @@ app_emulator_wait_for_notif(
 
 static inline
 void
-app_emulator_fill_emulation_settings(
+app_emulator_fill_gba_settings(
     struct app const *app,
-    struct emulation_settings *settings
+    struct gba_settings *settings
 ) {
     memset(settings, 0, sizeof(*settings));
 
-    settings->fast_forward = app->emulation.fast_forward;
-    settings->speed = app->emulation.speed;
+    settings->fast_forward = app->settings.emulation.fast_forward;
+    settings->speed = app->settings.emulation.speed;
 
-    settings->ppu.enable_oam = app->config.video.enable_oam;
-    memcpy(settings->ppu.enable_bg_layers, app->config.video.enable_bg_layers, sizeof(settings->ppu.enable_bg_layers));
+    settings->ppu.enable_oam = app->settings.video.enable_oam;
+    memcpy(settings->ppu.enable_bg_layers, app->settings.video.enable_bg_layers, sizeof(settings->ppu.enable_bg_layers));
 
-    memcpy(settings->apu.enable_psg_channels, app->config.audio.enable_psg_channels, sizeof(settings->apu.enable_psg_channels));
-    memcpy(settings->apu.enable_fifo_channels, app->config.audio.enable_fifo_channels, sizeof(settings->apu.enable_fifo_channels));
+    memcpy(settings->apu.enable_psg_channels, app->settings.audio.enable_psg_channels, sizeof(settings->apu.enable_psg_channels));
+    memcpy(settings->apu.enable_fifo_channels, app->settings.audio.enable_fifo_channels, sizeof(settings->apu.enable_fifo_channels));
 }
 
 static
@@ -227,7 +227,7 @@ app_emulator_configure_bios(
     FILE *file;
     void *data;
 
-    bios_path = app->args.bios_path ?: app->file.bios_path;
+    bios_path = app->args.bios_path ?: app->settings.emulation.bios_path;
     if (!bios_path) {
         app_new_notification(
             app,
@@ -576,22 +576,22 @@ app_emulator_configure_and_run(
     }
 
     app->emulation.game_path = strdup(rom_path);
-    app->emulation.launch_config->skip_bios = app->emulation.skip_bios;
+    app->emulation.launch_config->skip_bios = app->settings.emulation.skip_bios;
     app->emulation.launch_config->audio_frequency = GBA_CYCLES_PER_SECOND / app->audio.resample_frequency;
 
-    if (app->emulation.backup_storage.autodetect) {
+    if (app->settings.emulation.backup_storage.autodetect) {
         app->emulation.launch_config->backup_storage.type = app->emulation.game_entry->storage;
     } else {
-        app->emulation.launch_config->backup_storage.type = app->emulation.backup_storage.type;
+        app->emulation.launch_config->backup_storage.type = app->settings.emulation.backup_storage.type;
     }
 
-    if (app->emulation.gpio_device.autodetect) {
+    if (app->settings.emulation.gpio_device.autodetect) {
         app->emulation.launch_config->gpio_device_type = app->emulation.game_entry->gpio;
     } else {
-        app->emulation.launch_config->gpio_device_type = app->emulation.gpio_device.type;
+        app->emulation.launch_config->gpio_device_type = app->settings.emulation.gpio_device.type;
     }
 
-    app_emulator_fill_emulation_settings(app, &app->emulation.launch_config->settings);
+    app_emulator_fill_gba_settings(app, &app->emulation.launch_config->settings);
 
     logln(HS_INFO, "Emulator's configuration:");
     logln(HS_INFO, "    Skip BIOS: %s", app->emulation.launch_config->skip_bios ? "true" : "false");
@@ -625,7 +625,7 @@ app_emulator_configure_and_run(
 
     logln(HS_INFO, "Game successfully loaded.");
 
-    if (app->emulation.pause_on_reset) {
+    if (app->settings.emulation.pause_on_reset) {
         app_emulator_pause(app);
     } else {
         app_emulator_run(app);
@@ -751,7 +751,7 @@ app_emulator_settings(
     event.header.kind = MESSAGE_SETTINGS;
     event.header.size = sizeof(event);
 
-    app_emulator_fill_emulation_settings(app, &event.settings);
+    app_emulator_fill_gba_settings(app, &event.settings);
 
     channel_lock(&app->emulation.gba->channels.messages);
     channel_push(&app->emulation.gba->channels.messages, &event.header);

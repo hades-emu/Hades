@@ -196,7 +196,7 @@ app_win_settings_emulation(
 
         igTableNextColumn();
         igBeginDisabled(true);
-        igInputText("##BiosPath", app->file.bios_path, strlen(app->file.bios_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
+        igInputText("##BiosPath", app->settings.emulation.bios_path, strlen(app->settings.emulation.bios_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
@@ -211,8 +211,8 @@ app_win_settings_emulation(
             );
 
             if (result == NFD_OKAY) {
-                free(app->file.bios_path);
-                app->file.bios_path = strdup(path);
+                free(app->settings.emulation.bios_path);
+                app->settings.emulation.bios_path = strdup(path);
                 NFD_FreePath(path);
             }
         }
@@ -223,7 +223,7 @@ app_win_settings_emulation(
         igTextWrapped("Skip BIOS Intro");
 
         igTableNextColumn();
-        igCheckbox("##SkipBIOS", &app->emulation.skip_bios);
+        igCheckbox("##SkipBIOS", &app->settings.emulation.skip_bios);
 
         igEndTable();
     }
@@ -240,21 +240,21 @@ app_win_settings_emulation(
         igTextWrapped("Fast Forward");
 
         igTableNextColumn();
-        if (igCheckbox("##FastForward", &app->emulation.fast_forward)) {
+        if (igCheckbox("##FastForward", &app->settings.emulation.fast_forward)) {
             app_emulator_settings(app);
         }
 
         // Speed
-        igBeginDisabled(app->emulation.fast_forward);
+        igBeginDisabled(app->settings.emulation.fast_forward);
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
         igTextWrapped("Speed");
 
         igTableNextColumn();
 
-        speed = app->emulation.speed;
+        speed = app->settings.emulation.speed;
         for (i = 0; i < array_length(speeds); ++i) {
-            if (app->emulation.speed >= speeds[i] - 0.01 && app->emulation.speed <= speeds[i] + 0.01) {
+            if (app->settings.emulation.speed >= speeds[i] - 0.01 && app->settings.emulation.speed <= speeds[i] + 0.01) {
                 speed = speeds[i];
                 break;
             }
@@ -265,8 +265,8 @@ app_win_settings_emulation(
         if (igBeginCombo("##Speed", buffer, ImGuiComboFlags_None)) {
             for (i = 0; i < array_length(speeds_str); ++i) {
                 if (igSelectable_Bool(speeds_str[i], speed >= speeds[i] - 0.01 && speed <= speeds[i] + 0.01, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
-                    app->emulation.speed = speeds[i];
-                    app->emulation.fast_forward = false;
+                    app->settings.emulation.speed = speeds[i];
+                    app->settings.emulation.fast_forward = false;
                     app_emulator_settings(app);
                 }
             }
@@ -289,16 +289,16 @@ app_win_settings_emulation(
         igTextWrapped("Auto-Detect");
 
         igTableNextColumn();
-        igCheckbox("##BackupStorageTypeAutoDetect", &app->emulation.backup_storage.autodetect);
+        igCheckbox("##BackupStorageTypeAutoDetect", &app->settings.emulation.backup_storage.autodetect);
 
         // Backup Storage Type
-        igBeginDisabled(app->emulation.backup_storage.autodetect);
+        igBeginDisabled(app->settings.emulation.backup_storage.autodetect);
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
         igTextWrapped("Type");
 
         igTableNextColumn();
-        igCombo_Str_arr("##BackupStorageType", (int *)&app->emulation.backup_storage.type, backup_storage_names, array_length(backup_storage_names), 0);
+        igCombo_Str_arr("##BackupStorageType", (int *)&app->settings.emulation.backup_storage.type, backup_storage_names, array_length(backup_storage_names), 0);
         igEndDisabled();
 
         igEndTable();
@@ -316,16 +316,16 @@ app_win_settings_emulation(
         igTextWrapped("Auto-Detect");
 
         igTableNextColumn();
-        igCheckbox("##GPIODeviceTypeAutoDetect", &app->emulation.gpio_device.autodetect);
+        igCheckbox("##GPIODeviceTypeAutoDetect", &app->settings.emulation.gpio_device.autodetect);
 
         // GPIO Device Type
-        igBeginDisabled(app->emulation.gpio_device.autodetect);
+        igBeginDisabled(app->settings.emulation.gpio_device.autodetect);
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
         igTextWrapped("Type");
 
         igTableNextColumn();
-        igCombo_Str_arr("##GPIODeviceType", (int *)&app->emulation.gpio_device.type, gpio_device_names, array_length(gpio_device_names), 0);
+        igCombo_Str_arr("##GPIODeviceType", (int *)&app->settings.emulation.gpio_device.type, gpio_device_names, array_length(gpio_device_names), 0);
         igEndDisabled();
 
         igEndTable();
@@ -343,7 +343,7 @@ app_win_settings_emulation(
         igTextWrapped("Auto-Pause");
 
         igTableNextColumn();
-        igCheckbox("##AutoPause", &app->emulation.auto_pause);
+        igCheckbox("##AutoPause", &app->settings.emulation.auto_pause);
 
 #ifdef WITH_DEBUGGER
         // Pause game after a reset
@@ -352,7 +352,7 @@ app_win_settings_emulation(
         igTextWrapped("Pause Game After Reset");
 
         igTableNextColumn();
-        igCheckbox("##PauseGameAfterReset", &app->emulation.pause_on_reset);
+        igCheckbox("##PauseGameAfterReset", &app->settings.emulation.pause_on_reset);
 #endif
 
         igEndTable();
@@ -387,8 +387,8 @@ app_win_settings_video(
         igTextWrapped("VSync");
 
         igTableNextColumn();
-        if (igCheckbox("##VSync", &app->video.vsync)) {
-            SDL_GL_SetSwapInterval(app->video.vsync);
+        if (igCheckbox("##VSync", &app->settings.video.vsync)) {
+            SDL_GL_SetSwapInterval(app->settings.video.vsync);
         }
 
         // Display Size
@@ -412,7 +412,7 @@ app_win_settings_video(
 
                 is_selected = (display_size == i);
                 if (igSelectable_Bool(display_size_names[i - 1], is_selected, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
-                    app->video.display_size = i;
+                    app->settings.video.display_size = i;
                     app->ui.win.resize = true;
                     app->ui.win.resize_with_ratio = false;
                 }
@@ -430,9 +430,9 @@ app_win_settings_video(
         igTextWrapped("Aspect Ratio");
 
         igTableNextColumn();
-        if (igCombo_Str_arr("##AspectRatio", (int *)&app->video.aspect_ratio, aspect_ratio_names, ASPECT_RATIO_LEN, 0)) {
+        if (igCombo_Str_arr("##AspectRatio", (int *)&app->settings.video.aspect_ratio, aspect_ratio_names, ASPECT_RATIO_LEN, 0)) {
             // Force a resize of the window if the "auto-resize" option is selected
-            if (app->video.aspect_ratio == ASPECT_RATIO_RESIZE) {
+            if (app->settings.video.aspect_ratio == ASPECT_RATIO_RESIZE) {
                 app->ui.win.resize = true;
                 app->ui.win.resize_with_ratio = true;
                 app->ui.win.resize_ratio = min(app->ui.game.width / ((float)GBA_SCREEN_WIDTH * app->ui.scale), app->ui.game.height / ((float)GBA_SCREEN_HEIGHT * app->ui.scale));
@@ -454,7 +454,7 @@ app_win_settings_video(
         igTextWrapped("Texture Filter");
 
         igTableNextColumn();
-        if (igCombo_Str_arr("##TextureFilters", (int *)&app->video.texture_filter, texture_filters_names, TEXTURE_FILTER_LEN, 0)) {
+        if (igCombo_Str_arr("##TextureFilters", (int *)&app->settings.video.texture_filter, texture_filters_names, TEXTURE_FILTER_LEN, 0)) {
             app_sdl_video_rebuild_pipeline(app);
         }
 
@@ -464,7 +464,7 @@ app_win_settings_video(
         igTextWrapped("Color Filter");
 
         igTableNextColumn();
-        if (igCombo_Str_arr("##ColorFilter", (int *)&app->video.pixel_color_filter, pixel_color_filters_names, PIXEL_COLOR_FILTER_LEN, 0)) {
+        if (igCombo_Str_arr("##ColorFilter", (int *)&app->settings.video.pixel_color_filter, pixel_color_filters_names, PIXEL_COLOR_FILTER_LEN, 0)) {
             app_sdl_video_rebuild_pipeline(app);
         }
 
@@ -474,7 +474,7 @@ app_win_settings_video(
         igTextWrapped("Scaling Filter");
 
         igTableNextColumn();
-        if (igCombo_Str_arr("##ScalingFilter", (int *)&app->video.pixel_scaling_filter, pixel_scaling_filters_names, PIXEL_SCALING_FILTER_LEN, 0)) {
+        if (igCombo_Str_arr("##ScalingFilter", (int *)&app->settings.video.pixel_scaling_filter, pixel_scaling_filters_names, PIXEL_SCALING_FILTER_LEN, 0)) {
             app_sdl_video_rebuild_pipeline(app);
         }
 
@@ -489,7 +489,7 @@ app_win_settings_video(
         igTableSetupColumn("##VideoSettingsDebugValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
         // Enable BG layer X
-        for (i = 0; i < array_length(app->config.video.enable_bg_layers); ++i) {
+        for (i = 0; i < array_length(app->settings.video.enable_bg_layers); ++i) {
             char label[32];
 
             snprintf(label, sizeof(label), "##BGLayer%u", i);
@@ -499,7 +499,7 @@ app_win_settings_video(
             igTextWrapped("BG Layer %u", i);
 
             igTableNextColumn();
-            if (igCheckbox(label, &app->config.video.enable_bg_layers[i])) {
+            if (igCheckbox(label, &app->settings.video.enable_bg_layers[i])) {
                 app_emulator_settings(app);
             }
         }
@@ -510,7 +510,7 @@ app_win_settings_video(
         igTextWrapped("Sprites");
 
         igTableNextColumn();
-        if (igCheckbox("##Sprites", &app->config.video.enable_oam)) {
+        if (igCheckbox("##Sprites", &app->settings.video.enable_oam)) {
             app_emulator_settings(app);
         }
 
@@ -528,7 +528,7 @@ app_win_settings_audio(
     float level;
 
     vp = igGetMainViewport();
-    level = app->audio.level * 100.f;
+    level = app->settings.audio.level * 100.f;
 
     igTextWrapped("Audio Settings");
     igSpacing();
@@ -547,17 +547,17 @@ app_win_settings_audio(
         igTextWrapped("Mute");
 
         igTableNextColumn();
-        igCheckbox("##Mute", &app->audio.mute);
+        igCheckbox("##Mute", &app->settings.audio.mute);
 
         // Audio level
-        igBeginDisabled(app->audio.mute);
+        igBeginDisabled(app->settings.audio.mute);
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
         igTextWrapped("Audio Level");
 
         igTableNextColumn();
         if (igSliderFloat("##SoundLevel", &level, 0.0f, 100.0f, "%.0f%%", ImGuiSliderFlags_None)) {
-            app->audio.level = max(0.0f, min(level / 100.f, 1.f));
+            app->settings.audio.level = max(0.0f, min(level / 100.f, 1.f));
         }
         igEndDisabled();
 
@@ -574,7 +574,7 @@ app_win_settings_audio(
         uint32_t i;
 
         // Enable PSG Channel X
-        for (i = 0; i < array_length(app->config.audio.enable_psg_channels); ++i) {
+        for (i = 0; i < array_length(app->settings.audio.enable_psg_channels); ++i) {
             char label[32];
 
             snprintf(label, sizeof(label), "##PSGChannel%u", i);
@@ -584,13 +584,13 @@ app_win_settings_audio(
             igTextWrapped("PSG Channel %u", i);
 
             igTableNextColumn();
-            if (igCheckbox(label, &app->config.audio.enable_psg_channels[i])) {
+            if (igCheckbox(label, &app->settings.audio.enable_psg_channels[i])) {
                 app_emulator_settings(app);
             }
         }
 
         // Enable FIFO Channel X
-        for (i = 0; i < array_length(app->config.audio.enable_fifo_channels); ++i) {
+        for (i = 0; i < array_length(app->settings.audio.enable_fifo_channels); ++i) {
             char label[32];
 
             snprintf(label, sizeof(label), "##FifoChannel%u", i);
@@ -600,7 +600,7 @@ app_win_settings_audio(
             igTextWrapped("Fifo Channel %u", i);
 
             igTableNextColumn();
-            if (igCheckbox(label, &app->config.audio.enable_fifo_channels[i])) {
+            if (igCheckbox(label, &app->settings.audio.enable_fifo_channels[i])) {
                 app_emulator_settings(app);
             }
         }

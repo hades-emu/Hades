@@ -28,11 +28,11 @@ debugger_cmd_ppu(
     };
 
     bool *values[] = {
-        &app->config.video.enable_bg_layers[0],
-        &app->config.video.enable_bg_layers[1],
-        &app->config.video.enable_bg_layers[2],
-        &app->config.video.enable_bg_layers[3],
-        &app->config.video.enable_oam,
+        &app->settings.video.enable_bg_layers[0],
+        &app->settings.video.enable_bg_layers[1],
+        &app->settings.video.enable_bg_layers[2],
+        &app->settings.video.enable_bg_layers[3],
+        &app->settings.video.enable_oam,
     };
 
     if (argc == 0) {

@@ -148,7 +148,7 @@ gba_state_reset(
     struct launch_config const *config
 ) {
     // Settings
-    memcpy(&gba->settings, &config->settings, sizeof(struct emulation_settings));
+    memcpy(&gba->settings, &config->settings, sizeof(struct gba_settings));
 
     // Scheduler
     {
@@ -430,7 +430,7 @@ gba_process_message(
             struct message_settings const *msg_settings;
 
             msg_settings = (struct message_settings const *)message;
-            memcpy(&gba->settings, &msg_settings->settings, sizeof(struct emulation_settings));
+            memcpy(&gba->settings, &msg_settings->settings, sizeof(struct gba_settings));
 
             sched_update_speed(gba);
             break;

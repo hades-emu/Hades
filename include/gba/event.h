@@ -51,7 +51,7 @@ struct message_reset {
 
 struct message_settings {
     struct event_header header;
-    struct emulation_settings settings;
+    struct gba_settings settings;
 };
 
 struct message_key {

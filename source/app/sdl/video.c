@@ -11,7 +11,6 @@
 #include <cimgui.h>
 #include <cimgui_impl.h>
 #include <nfd.h>
-#include <errno.h>
 #include "hades.h"
 #include "app/app.h"
 #include "gba/gba.h"
@@ -86,8 +85,8 @@ app_sdl_video_init(
     ** unknown at this stage.
     ** The size given here is merely a guess as to what the real size will be, hence the magical +19.f for the window's height.
     */
-    app->ui.game.width = GBA_SCREEN_WIDTH * app->video.display_size * app->ui.scale;
-    app->ui.game.height = GBA_SCREEN_HEIGHT * app->video.display_size * app->ui.scale;
+    app->ui.game.width = GBA_SCREEN_WIDTH * app->settings.video.display_size * app->ui.scale;
+    app->ui.game.height = GBA_SCREEN_HEIGHT * app->settings.video.display_size * app->ui.scale;
     app->ui.win.width = app->ui.game.width;
     app->ui.win.height = app->ui.game.height + 19.f * app->ui.scale;
 
@@ -111,7 +110,7 @@ app_sdl_video_init(
     SDL_GL_MakeCurrent(app->sdl.window, app->gfx.gl_context);
 
     /* Enable VSync */
-    SDL_GL_SetSwapInterval(app->video.vsync);
+    SDL_GL_SetSwapInterval(app->settings.video.vsync);
 
     /* Initialize OpenGL */
     err = glewInit();
@@ -196,7 +195,7 @@ app_sdl_video_rebuild_pipeline(
 ) {
     GLint texture_filter;
 
-    switch (app->video.texture_filter) {
+    switch (app->settings.video.texture_filter) {
         case TEXTURE_FILTER_LINEAR: texture_filter = GL_LINEAR; break;
         case TEXTURE_FILTER_NEAREST: texture_filter = GL_NEAREST; break;
         default: texture_filter = GL_NEAREST; break;
@@ -220,7 +219,7 @@ app_sdl_video_rebuild_pipeline(
         NULL
     );
 
-    switch (app->video.pixel_color_filter) {
+    switch (app->settings.video.pixel_color_filter) {
         case PIXEL_COLOR_FILTER_COLOR_CORRECTION: {
             app->gfx.pixel_color_program = app->gfx.program_color_correction;
             break;
@@ -253,7 +252,7 @@ app_sdl_video_rebuild_pipeline(
         NULL
     );
 
-    switch (app->video.pixel_scaling_filter) {
+    switch (app->settings.video.pixel_scaling_filter) {
         case PIXEL_SCALING_FILTER_LCD_GRID: {
             app->gfx.pixel_scaling_program = app->gfx.program_lcd_grid;
             app->gfx.pixel_scaling_size = 3;

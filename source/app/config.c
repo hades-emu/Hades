@@ -45,8 +45,8 @@ app_config_load(
         int i;
 
         if (mjson_get_string(data, data_len, "$.file.bios", str, sizeof(str)) > 0) {
-            free(app->file.bios_path);
-            app->file.bios_path = strdup(str);
+            free(app->settings.emulation.bios_path);
+            app->settings.emulation.bios_path = strdup(str);
         }
 
         recent_rom_path = strdup("$.file.recent_roms[0]");
@@ -67,39 +67,39 @@ app_config_load(
         double d;
 
         if (mjson_get_number(data, data_len, "$.emulation.speed", &d)) {
-            app->emulation.speed = max(0.0, min(d, 5.0));
+            app->settings.emulation.speed = max(0.0, min(d, 5.0));
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.fast_forward", &b)) {
-            app->emulation.fast_forward = b;
+            app->settings.emulation.fast_forward = b;
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.backup_storage.autodetect", &b)) {
-            app->emulation.backup_storage.autodetect = b;
+            app->settings.emulation.backup_storage.autodetect = b;
         }
 
         if (mjson_get_number(data, data_len, "$.emulation.backup_storage.type", &d)) {
-            app->emulation.backup_storage.type = max(BACKUP_MIN, min((int)d, BACKUP_MAX));
+            app->settings.emulation.backup_storage.type = max(BACKUP_MIN, min((int)d, BACKUP_MAX));
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.gpio.autodetect", &b)) {
-            app->emulation.gpio_device.autodetect = b;
+            app->settings.emulation.gpio_device.autodetect = b;
         }
 
         if (mjson_get_number(data, data_len, "$.emulation.gpio.type", &d)) {
-            app->emulation.gpio_device.type = max(GPIO_MIN, min((int)d, GPIO_MAX));
+            app->settings.emulation.gpio_device.type = max(GPIO_MIN, min((int)d, GPIO_MAX));
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.skip_bios", &b)) {
-            app->emulation.skip_bios = b;
+            app->settings.emulation.skip_bios = b;
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.auto_pause", &b)) {
-            app->emulation.auto_pause = b;
+            app->settings.emulation.auto_pause = b;
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.pause_on_reset", &b)) {
-            app->emulation.pause_on_reset = b;
+            app->settings.emulation.pause_on_reset = b;
         }
     }
 
@@ -109,32 +109,32 @@ app_config_load(
         double d;
 
         if (mjson_get_number(data, data_len, "$.video.display_size", &d)) {
-            app->video.display_size = (int)d;
-            app->video.display_size = max(1, min(app->video.display_size, 5));
+            app->settings.video.display_size = (int)d;
+            app->settings.video.display_size = max(1, min(app->settings.video.display_size, 5));
         }
 
         if (mjson_get_number(data, data_len, "$.video.aspect_ratio", &d)) {
-            app->video.aspect_ratio = (int)d;
-            app->video.aspect_ratio = max(ASPECT_RATIO_MIN, min(app->video.aspect_ratio, ASPECT_RATIO_MAX));
+            app->settings.video.aspect_ratio = (int)d;
+            app->settings.video.aspect_ratio = max(ASPECT_RATIO_MIN, min(app->settings.video.aspect_ratio, ASPECT_RATIO_MAX));
         }
 
         if (mjson_get_bool(data, data_len, "$.video.vsync", &b)) {
-            app->video.vsync = b;
+            app->settings.video.vsync = b;
         }
 
         if (mjson_get_number(data, data_len, "$.video.texture_filter", &d)) {
-            app->video.texture_filter = (int)d;
-            app->video.texture_filter = max(TEXTURE_FILTER_MIN, min(app->video.texture_filter, TEXTURE_FILTER_MAX));
+            app->settings.video.texture_filter = (int)d;
+            app->settings.video.texture_filter = max(TEXTURE_FILTER_MIN, min(app->settings.video.texture_filter, TEXTURE_FILTER_MAX));
         }
 
         if (mjson_get_number(data, data_len, "$.video.pixel_color_filter", &d)) {
-            app->video.pixel_color_filter = (int)d;
-            app->video.pixel_color_filter = max(PIXEL_COLOR_FILTER_MIN, min(app->video.pixel_color_filter, PIXEL_COLOR_FILTER_MAX));
+            app->settings.video.pixel_color_filter = (int)d;
+            app->settings.video.pixel_color_filter = max(PIXEL_COLOR_FILTER_MIN, min(app->settings.video.pixel_color_filter, PIXEL_COLOR_FILTER_MAX));
         }
 
         if (mjson_get_number(data, data_len, "$.video.pixel_scaling_filter", &d)) {
-            app->video.pixel_scaling_filter = (int)d;
-            app->video.pixel_scaling_filter = max(PIXEL_SCALING_FILTER_MIN, min(app->video.pixel_scaling_filter, PIXEL_SCALING_FILTER_MAX));
+            app->settings.video.pixel_scaling_filter = (int)d;
+            app->settings.video.pixel_scaling_filter = max(PIXEL_SCALING_FILTER_MIN, min(app->settings.video.pixel_scaling_filter, PIXEL_SCALING_FILTER_MAX));
         }
     }
 
@@ -144,12 +144,12 @@ app_config_load(
         double d;
 
         if (mjson_get_bool(data, data_len, "$.audio.mute", &b)) {
-            app->audio.mute = b;
+            app->settings.audio.mute = b;
         }
 
         if (mjson_get_number(data, data_len, "$.audio.level", &d)) {
-            app->audio.level = d;
-            app->audio.level = max(0.f, min(app->audio.level, 1.f));
+            app->settings.audio.level = d;
+            app->settings.audio.level = max(0.f, min(app->settings.audio.level, 1.f));
         }
     }
 
@@ -279,29 +279,29 @@ app_config_save(
                 "level": %g
             },
         }),
-        app->file.bios_path,
+        app->settings.emulation.bios_path,
         app->file.recent_roms[0],
         app->file.recent_roms[1],
         app->file.recent_roms[2],
         app->file.recent_roms[3],
         app->file.recent_roms[4],
-        (int)app->emulation.skip_bios,
-        app->emulation.speed,
-        (int)app->emulation.fast_forward,
-        (int)app->emulation.backup_storage.autodetect,
-        (int)app->emulation.backup_storage.type,
-        (int)app->emulation.gpio_device.autodetect,
-        (int)app->emulation.gpio_device.type,
-        (int)app->emulation.auto_pause,
-        (int)app->emulation.pause_on_reset,
-        (int)app->video.display_size,
-        (int)app->video.aspect_ratio,
-        (int)app->video.vsync,
-        (int)app->video.texture_filter,
-        (int)app->video.pixel_color_filter,
-        (int)app->video.pixel_scaling_filter,
-        (int)app->audio.mute,
-        app->audio.level
+        (int)app->settings.emulation.skip_bios,
+        app->settings.emulation.speed,
+        (int)app->settings.emulation.fast_forward,
+        (int)app->settings.emulation.backup_storage.autodetect,
+        (int)app->settings.emulation.backup_storage.type,
+        (int)app->settings.emulation.gpio_device.autodetect,
+        (int)app->settings.emulation.gpio_device.type,
+        (int)app->settings.emulation.auto_pause,
+        (int)app->settings.emulation.pause_on_reset,
+        (int)app->settings.video.display_size,
+        (int)app->settings.video.aspect_ratio,
+        (int)app->settings.video.vsync,
+        (int)app->settings.video.texture_filter,
+        (int)app->settings.video.pixel_color_filter,
+        (int)app->settings.video.pixel_scaling_filter,
+        (int)app->settings.audio.mute,
+        app->settings.audio.level
     );
 
     if (!data) {

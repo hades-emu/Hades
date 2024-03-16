@@ -29,12 +29,12 @@ debugger_cmd_apu(
     };
 
     bool *values[] = {
-        &app->config.audio.enable_psg_channels[0],
-        &app->config.audio.enable_psg_channels[1],
-        &app->config.audio.enable_psg_channels[2],
-        &app->config.audio.enable_psg_channels[3],
-        &app->config.audio.enable_fifo_channels[0],
-        &app->config.audio.enable_fifo_channels[1],
+        &app->settings.audio.enable_psg_channels[0],
+        &app->settings.audio.enable_psg_channels[1],
+        &app->settings.audio.enable_psg_channels[2],
+        &app->settings.audio.enable_psg_channels[3],
+        &app->settings.audio.enable_fifo_channels[0],
+        &app->settings.audio.enable_fifo_channels[1],
     };
 
     if (argc == 0) {

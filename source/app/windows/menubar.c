@@ -71,8 +71,8 @@ app_win_menubar_file(
             );
 
             if (result == NFD_OKAY) {
-                free(app->file.bios_path);
-                app->file.bios_path = strdup(path);
+                free(app->settings.emulation.bios_path);
+                app->settings.emulation.bios_path = strdup(path);
                 NFD_FreePath(path);
             }
         }
@@ -101,8 +101,8 @@ app_win_menubar_emulation(
             uint32_t x;
 
             bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE]);
-            if (igMenuItem_Bool("Fast Forward", bind ?: "", app->emulation.fast_forward, true)) {
-                app->emulation.fast_forward ^= true;
+            if (igMenuItem_Bool("Fast Forward", bind ?: "", app->settings.emulation.fast_forward, true)) {
+                app->settings.emulation.fast_forward ^= true;
                 app_emulator_settings(app);
             }
 
@@ -128,14 +128,14 @@ app_win_menubar_emulation(
                 5.00f,
             };
 
-            igBeginDisabled(app->emulation.fast_forward);
+            igBeginDisabled(app->settings.emulation.fast_forward);
             for (x = 0; x < array_length(speeds); ++x) {
                 char const *bind;
 
                 bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_X0_25 + x]);
-                if (igMenuItem_Bool(speeds_str[x], bind ?: "", app->emulation.speed >= speeds[x] - 0.01 && app->emulation.speed <= speeds[x] + 0.01, true)) {
-                    app->emulation.speed = speeds[x];
-                    app->emulation.fast_forward = false;
+                if (igMenuItem_Bool(speeds_str[x], bind ?: "", app->settings.emulation.speed >= speeds[x] - 0.01 && app->settings.emulation.speed <= speeds[x] + 0.01, true)) {
+                    app->settings.emulation.speed = speeds[x];
+                    app->settings.emulation.fast_forward = false;
                     app_emulator_settings(app);
                 }
             }
@@ -259,7 +259,7 @@ app_win_menubar_video(
                     width == GBA_SCREEN_WIDTH * x * app->ui.scale && height == GBA_SCREEN_HEIGHT * x * app->ui.scale,
                     true
                 )) {
-                    app->video.display_size = x;
+                    app->settings.video.display_size = x;
                     app->ui.win.resize = true;
                     app->ui.win.resize_with_ratio = false;
                 }
@@ -278,20 +278,20 @@ app_win_menubar_video(
 
         /* Pixel Color Effect */
         if (igBeginMenu("Color Effect", true)) {
-            if (igMenuItem_Bool("None", NULL, app->video.pixel_color_filter == PIXEL_COLOR_FILTER_NONE, true)) {
-                app->video.pixel_color_filter = PIXEL_COLOR_FILTER_NONE;
+            if (igMenuItem_Bool("None", NULL, app->settings.video.pixel_color_filter == PIXEL_COLOR_FILTER_NONE, true)) {
+                app->settings.video.pixel_color_filter = PIXEL_COLOR_FILTER_NONE;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
             igSeparator();
 
-            if (igMenuItem_Bool("Color Correction", NULL, app->video.pixel_color_filter == PIXEL_COLOR_FILTER_COLOR_CORRECTION, true)) {
-                app->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
+            if (igMenuItem_Bool("Color Correction", NULL, app->settings.video.pixel_color_filter == PIXEL_COLOR_FILTER_COLOR_CORRECTION, true)) {
+                app->settings.video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
-            if (igMenuItem_Bool("Grey Scale", NULL, app->video.pixel_color_filter == PIXEL_COLOR_FILTER_GREY_SCALE, true)) {
-                app->video.pixel_color_filter = PIXEL_COLOR_FILTER_GREY_SCALE;
+            if (igMenuItem_Bool("Grey Scale", NULL, app->settings.video.pixel_color_filter == PIXEL_COLOR_FILTER_GREY_SCALE, true)) {
+                app->settings.video.pixel_color_filter = PIXEL_COLOR_FILTER_GREY_SCALE;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
@@ -300,20 +300,20 @@ app_win_menubar_video(
 
         /* Pixel Scaling Effect */
         if (igBeginMenu("Scaling Effect", true)) {
-            if (igMenuItem_Bool("None", NULL, app->video.pixel_scaling_filter == PIXEL_SCALING_FILTER_NONE, true)) {
-                app->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_NONE;
+            if (igMenuItem_Bool("None", NULL, app->settings.video.pixel_scaling_filter == PIXEL_SCALING_FILTER_NONE, true)) {
+                app->settings.video.pixel_scaling_filter = PIXEL_SCALING_FILTER_NONE;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
             igSeparator();
 
-            if (igMenuItem_Bool("LCD Grid /w RGB Stripes", NULL, app->video.pixel_scaling_filter == PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES, true)) {
-                app->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES;
+            if (igMenuItem_Bool("LCD Grid /w RGB Stripes", NULL, app->settings.video.pixel_scaling_filter == PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES, true)) {
+                app->settings.video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
-            if (igMenuItem_Bool("LCD Grid", NULL, app->video.pixel_scaling_filter == PIXEL_SCALING_FILTER_LCD_GRID, true)) {
-                app->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
+            if (igMenuItem_Bool("LCD Grid", NULL, app->settings.video.pixel_scaling_filter == PIXEL_SCALING_FILTER_LCD_GRID, true)) {
+                app->settings.video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
                 app_sdl_video_rebuild_pipeline(app);
             }
 
@@ -338,8 +338,8 @@ app_win_menubar_audio(
 ) {
     if (igBeginMenu("Audio", true)) {
         /* VSync */
-        if (igMenuItem_Bool("Mute", NULL, app->audio.mute, true)) {
-            app->audio.mute ^= 1;
+        if (igMenuItem_Bool("Mute", NULL, app->settings.audio.mute, true)) {
+            app->settings.audio.mute ^= 1;
         }
 
         igSeparator();

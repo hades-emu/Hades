@@ -110,7 +110,7 @@ app_win_game(
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Calculate the game size depending on the aspect ratio
-    switch (app->video.aspect_ratio) {
+    switch (app->settings.video.aspect_ratio) {
         case ASPECT_RATIO_RESIZE:
         case ASPECT_RATIO_BORDERS: {
             float game_scale;

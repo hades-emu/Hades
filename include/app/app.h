@@ -128,7 +128,7 @@ enum bind_actions {
 extern char const * const binds_pretty_name[];
 extern char const * const binds_slug[];
 
-enum ui_notification_kind {
+enum app_notification_kind {
     UI_NOTIFICATION_INFO,
     UI_NOTIFICATION_SUCCESS,
     UI_NOTIFICATION_ERROR,
@@ -143,22 +143,92 @@ enum menu_kind {
     MENU_MAX,
 };
 
-struct ui_notification {
-    enum ui_notification_kind kind;
+struct app_notification {
+    enum app_notification_kind kind;
     char *msg;
     uint64_t timeout;
     uint64_t fade_time_start;
-    struct ui_notification *next;
+    struct app_notification *next;
 };
 
-struct app_config {
+struct settings {
     struct {
+        // BIOS Path
+        char *bios_path;
+
+        // Fast forward
+        bool fast_forward;
+
+        // Speed
+        float speed;
+
+        // Skip BIOS
+        bool skip_bios;
+
+        // Automatically pause the game when the window looses focus
+        bool auto_pause;
+
+        // Pause immediately after resetting the game
+        bool pause_on_reset;
+
+        // Backup storage
+        struct {
+            bool autodetect;
+            enum backup_storage_types type;
+        } backup_storage;
+
+        // GPIO
+        struct {
+            bool autodetect;
+            enum gpio_device_types type;
+        } gpio_device;
+    } emulation;
+
+    struct {
+        // Display size
+        uint32_t display_size;
+
+        // Aspect Ratio (Black borders, Auto-Resize, etc.)
+        enum aspect_ratio aspect_ratio;
+
+        // VSync
+        bool vsync;
+
+        // Texture Filter (Linear, Nearest)
+        enum texture_filter_kind texture_filter;
+
+        // Color Filter (Color Correction)
+        enum pixel_color_filter_kind pixel_color_filter;
+
+        // Pixel Scaling Filter (LCD Grid, xBRZ, etc.)
+        enum pixel_scaling_filter_kind pixel_scaling_filter;
+
+        /*
+        ** Debug
+        */
+
+        // Enable BG Layer X
         bool enable_bg_layers[4];
+
+        // Enable OAM (Sprites)
         bool enable_oam;
     } video;
 
     struct {
+        // Mute all the emulator's sounds
+        bool mute;
+
+        // Level of the sound (0.0 to 1.0)
+        float level;
+
+        /*
+        ** Debug
+        */
+
+        // Enable PSG Channel X
         bool enable_psg_channels[4];
+
+        // Enable FIFO Channel
         bool enable_fifo_channels[2];
     } audio;
 };
@@ -187,33 +257,6 @@ struct app {
 
         // Current FPS
         uint32_t fps;
-
-        // Fast forward
-        bool fast_forward;
-
-        // Speed
-        float speed;
-
-        // Skip BIOS
-        bool skip_bios;
-
-        // Automatically pause the game when the window looses focus
-        bool auto_pause;
-
-        // Pause immediately after resetting the game
-        bool pause_on_reset;
-
-        // Backup storage
-        struct {
-            bool autodetect;
-            enum backup_storage_types type;
-        } backup_storage;
-
-        // GPIO
-        struct {
-            bool autodetect;
-            enum gpio_device_types type;
-        } gpio_device;
 
         // The current quicksave request
         struct {
@@ -271,7 +314,6 @@ struct app {
         char *sys_pictures_dir_path;
         char *sys_config_path;
 
-        char *bios_path;
         char *recent_roms[MAX_RECENT_ROMS];
 
         struct {
@@ -284,17 +326,6 @@ struct app {
     } file;
 
     struct {
-        uint32_t display_size;
-        enum aspect_ratio aspect_ratio;
-        bool vsync;
-        enum texture_filter_kind texture_filter;
-        enum pixel_color_filter_kind pixel_color_filter;
-        enum pixel_scaling_filter_kind pixel_scaling_filter;
-    } video;
-
-    struct {
-        bool mute;
-        float level;
         uint32_t resample_frequency;
     } audio;
 
@@ -371,7 +402,7 @@ struct app {
             } keybindings_editor;
         } settings;
 
-        struct ui_notification *notifications;
+        struct app_notification *notifications;
     } ui;
 
     struct {
@@ -381,7 +412,7 @@ struct app {
         SDL_GameControllerButton controller_alt[BIND_MAX];
     } binds;
 
-    struct app_config config;
+    struct settings settings;
 
 #if WITH_DEBUGGER
     struct {
@@ -445,7 +476,7 @@ void app_win_game(struct app *app);
 void app_win_menubar(struct app *app);
 
 /* app/windows/notif.c */
-void app_new_notification(struct app *app, enum ui_notification_kind, char const *msg, ...);
+void app_new_notification(struct app *app, enum app_notification_kind, char const *msg, ...);
 void app_win_notifications(struct app *app);
 
 /* app/windows/settings.c */

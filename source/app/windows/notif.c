@@ -23,12 +23,12 @@
 void
 app_new_notification(
     struct app *app,
-    enum ui_notification_kind kind,
+    enum app_notification_kind kind,
     char const *msg,
     ...
 ) {
-    struct ui_notification *notif;
-    struct ui_notification *n;
+    struct app_notification *notif;
+    struct app_notification *n;
     char *formatted_msg;
     va_list va;
 
@@ -66,7 +66,7 @@ app_new_notification(
 
 void
 app_delete_notification(
-    struct ui_notification *notif
+    struct app_notification *notif
 ) {
     free(notif->msg);
     free(notif);
@@ -76,8 +76,8 @@ void
 app_win_notifications(
     struct app *app
 ) {
-    struct ui_notification *notif;
-    struct ui_notification **prev;
+    struct app_notification *notif;
+    struct app_notification **prev;
     size_t offset;
     uint64_t now;
     size_t i;

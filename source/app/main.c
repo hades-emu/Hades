@@ -42,6 +42,37 @@ sighandler(
 
 #endif
 
+/*
+** Default value for all options, before config and argument parsing.
+*/
+static
+void
+app_settings_default(
+    struct settings *settings
+) {
+    free(settings->emulation.bios_path);
+
+    settings->emulation.speed = 1.0;
+    settings->emulation.fast_forward = false;
+    settings->emulation.backup_storage.autodetect = true;
+    settings->emulation.backup_storage.type = BACKUP_NONE;
+    settings->emulation.gpio_device.autodetect = true;
+    settings->emulation.gpio_device.type = GPIO_NONE;
+    settings->video.enable_oam = true;
+    memset(settings->video.enable_bg_layers, true, sizeof(settings->video.enable_bg_layers));
+    memset(settings->audio.enable_psg_channels, true, sizeof(settings->audio.enable_psg_channels));
+    memset(settings->audio.enable_fifo_channels, true, sizeof(settings->audio.enable_fifo_channels));
+    settings->emulation.bios_path = strdup("./bios.bin");
+    settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
+    settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
+    settings->video.vsync = false;
+    settings->video.display_size = 3;
+    settings->video.aspect_ratio = ASPECT_RATIO_RESIZE;
+    settings->audio.mute = false;
+    settings->audio.level = 1.0f;
+    settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
+}
+
 int
 main(
     int argc,
@@ -56,37 +87,18 @@ main(
     memset(&app, 0, sizeof(app));
     app.emulation.gba = gba_create();
 
-    /* Default value for all options, before config and argument parsing. */
     app.run = true;
     app.args.with_gui = true;
     app.emulation.is_started = false;
     app.emulation.is_running = false;
-    app.emulation.speed = 1.0;
-    app.emulation.fast_forward = false;
-    app.emulation.backup_storage.autodetect = true;
-    app.emulation.backup_storage.type = BACKUP_NONE;
-    app.emulation.gpio_device.autodetect = true;
-    app.emulation.gpio_device.type = GPIO_NONE;
-    app.config.video.enable_oam = true;
-    memset(app.config.video.enable_bg_layers, true, sizeof(app.config.video.enable_bg_layers));
-    memset(app.config.audio.enable_psg_channels, true, sizeof(app.config.audio.enable_psg_channels));
-    memset(app.config.audio.enable_fifo_channels, true, sizeof(app.config.audio.enable_fifo_channels));
-    app.file.bios_path = strdup("./bios.bin");
-    app.video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
-    app.video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
-    app.video.vsync = false;
-    app.video.display_size = 3;
-    app.video.aspect_ratio = ASPECT_RATIO_RESIZE;
-    app.audio.mute = false;
-    app.audio.level = 1.0f;
     app.audio.resample_frequency = 48000;
-    app.video.texture_filter = TEXTURE_FILTER_NEAREST;
     app.ui.win.resize = true;
     app.ui.win.resize_with_ratio = false;
+    app_settings_default(&app.settings);
+    app_bindings_setup_default(&app);
 
     app_paths_update(&app);
     app_args_parse(&app, argc, argv);
-    app_bindings_setup_default(&app);
     app_config_load(&app);
 
     logln(HS_INFO, "Welcome to Hades v" HADES_VERSION);
@@ -200,8 +212,8 @@ main(
                 new_width = GBA_SCREEN_WIDTH * app.ui.win.resize_ratio * app.ui.scale;
                 new_height = app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.ui.win.resize_ratio * app.ui.scale;
             } else {
-                new_width = GBA_SCREEN_WIDTH * app.video.display_size * app.ui.scale;
-                new_height = app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.video.display_size * app.ui.scale;
+                new_width = GBA_SCREEN_WIDTH * app.settings.video.display_size * app.ui.scale;
+                new_height = app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.settings.video.display_size * app.ui.scale;
             }
 
             SDL_SetWindowMinimumSize(app.sdl.window, GBA_SCREEN_WIDTH * app.ui.scale, app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.ui.scale);
@@ -220,7 +232,7 @@ main(
         */
         if (app.emulation.is_started && app.emulation.is_running) {
             // If the emulator is running without vsync, cap the gui's FPS to 4x the display's refresh rate
-            if (!app.video.vsync) {
+            if (!app.settings.video.vsync) {
                 SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
             }
 
