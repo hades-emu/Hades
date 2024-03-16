@@ -140,7 +140,7 @@ app_bindings_handle(
 
     /* The next binds are only triggered when the key is pressed, not when it is released. */
     if (!pressed) {
-        return ;
+        return;
     }
 
     /* Bindings that can be used outside of a game */
@@ -150,7 +150,7 @@ app_bindings_handle(
     }
 
     if (!app->emulation.is_started) {
-        return ;
+        return;
     }
 
     /* Bindings that cannot be used outside of a game */

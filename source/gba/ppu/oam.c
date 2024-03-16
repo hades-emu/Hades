@@ -42,7 +42,7 @@ ppu_prerender_oam(
     bg_mode = io->dispcnt.bg_mode;
 
     if (!io->dispcnt.obj) {
-        return ;
+        return;
     }
 
     for (oam_idx = 127; oam_idx >= 0; --oam_idx) {

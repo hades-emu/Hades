@@ -45,8 +45,9 @@ char const *g_light_cyan     = "\e[96m";
 char const *g_white          = "\e[97m";
 
 void
-disable_colors(void)
-{
+disable_colors(
+    void
+) {
     g_reset          = "";
     g_bold           = "";
 

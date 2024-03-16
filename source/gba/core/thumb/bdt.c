@@ -29,7 +29,7 @@ core_thumb_push(
     if (!bitfield_get_range(op, 0, 9)) {
         core->sp -= 0x40;
         mem_write32(gba, core->sp, core->pc, NON_SEQUENTIAL);
-        return ;
+        return;
     }
 
     /* Push LR */
@@ -67,7 +67,7 @@ core_thumb_pop(
         core->pc = mem_read32(gba, core->sp, NON_SEQUENTIAL);
         core_reload_pipeline(gba);
         core->sp += 0x40;
-        return ;
+        return;
     }
 
     access_type = NON_SEQUENTIAL;
@@ -119,7 +119,7 @@ core_thumb_stmia(
     if (!bitfield_get_range(op, 0, 8)) {
         mem_write32(gba, core->registers[rb], core->pc, NON_SEQUENTIAL);
         core->registers[rb] += 0x40;
-        return ;
+        return;
     }
 
     for (i = 0; i < 8; ++i) {
@@ -181,7 +181,7 @@ core_thumb_ldmia(
         core->pc = mem_read32(gba, core->registers[rb], NON_SEQUENTIAL);
         core_reload_pipeline(gba);
         core->registers[rb] += 0x40;
-        return ;
+        return;
     }
 
     for (i = 0; i < 8; ++i) {

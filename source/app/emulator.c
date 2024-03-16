@@ -883,7 +883,7 @@ app_emulator_quickload(
 
     if (app->emulation.quickload_request.enabled) {
         logln(HS_WARNING, "A saved state is already being loaded by the emulator, ignoring the new request.");
-        return ;
+        return;
     }
 
     data = NULL;

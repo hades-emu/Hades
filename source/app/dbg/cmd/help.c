@@ -36,7 +36,7 @@ debugger_cmd_help(
                     printf("Usage: %s\n", cmd->usage);
                     printf("\n");
                     printf("%s\n", cmd->description);
-                    return ;
+                    return;
                 }
                 ++cmd;
             }

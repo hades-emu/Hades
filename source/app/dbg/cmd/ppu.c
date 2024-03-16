@@ -52,7 +52,7 @@ debugger_cmd_ppu(
         size_t i;
 
         if (debugger_check_arg_type(CMD_PPU, &argv[0], ARGS_STRING)) {
-            return ;
+            return;
         }
 
         for (i = 0; i < array_length(values); ++i) {
@@ -67,7 +67,7 @@ debugger_cmd_ppu(
                     g_reset
                 );
                 app_emulator_settings(app);
-                return ;
+                return;
             }
         }
 

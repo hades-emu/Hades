@@ -270,14 +270,14 @@ debugger_cmd_print(
 
     if (argc != 2 && argc != 3) {
         printf("Usage: %s\n", g_commands[CMD_PRINT].usage);
-        return ;
+        return;
     }
 
     if (debugger_check_arg_type(CMD_PRINT, &argv[0], ARGS_STRING)
         || debugger_check_arg_type(CMD_PRINT, &argv[1], ARGS_INTEGER)
         || (argc == 3 && debugger_check_arg_type(CMD_PRINT, &argv[2], ARGS_INTEGER))
     ) {
-        return ;
+        return;
     }
 
     type = argv[0].value.s;

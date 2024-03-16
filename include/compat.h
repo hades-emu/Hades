@@ -154,8 +154,9 @@ hs_usleep(
 
 static inline
 uint64_t
-hs_time(void)
-{
+hs_time(
+    void
+) {
     FILETIME ts;
     uint64_t time;
 
@@ -198,8 +199,9 @@ hs_basename(
 
 static inline
 uint64_t
-hs_time(void)
-{
+hs_time(
+    void
+) {
     struct timespec ts;
 
     hs_assert(clock_gettime(CLOCK_MONOTONIC, &ts) == 0);

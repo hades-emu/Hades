@@ -196,7 +196,7 @@ debugger_cmd_io(
         struct io_register *reg;
 
         if (debugger_check_arg_type(CMD_IO, &argv[0], ARGS_INTEGER)) {
-            return ;
+            return;
         }
 
         reg = debugger_io_lookup_reg(argv[0].value.i64);
@@ -217,7 +217,7 @@ debugger_cmd_io(
             debugger_check_arg_type(CMD_IO, &argv[0], ARGS_INTEGER)
             || debugger_check_arg_type(CMD_IO, &argv[1], ARGS_INTEGER)
         ) {
-            return ;
+            return;
         }
 
         reg = debugger_io_lookup_reg(argv[0].value.i64);
@@ -239,6 +239,6 @@ debugger_cmd_io(
         }
     } else {
         printf("Usage: %s\n", g_commands[CMD_IO].usage);
-        return ;
+        return;
     }
 }

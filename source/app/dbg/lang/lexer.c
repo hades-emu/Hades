@@ -106,7 +106,7 @@ debugger_lang_lexe(
                 i += end - (input + i);
                 if (isalpha(input[i])) {
                     lexer->error = hs_format("Invalid character \'%c\'", input[i]);
-                    return ;
+                    return;
                 }
                 break;
             };
@@ -174,7 +174,7 @@ debugger_lang_lexe(
             };
             default: {
                 lexer->error = hs_format("Invalid character \'%c\'", input[i]);
-                return ;
+                return;
             };
         }
     }

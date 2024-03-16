@@ -373,7 +373,7 @@ debugger_run_command(
         if (ast->error) {
             printf("Error: %s.\n", ast->error);
             // TODO FIXME free stuff
-            return ;
+            return;
         }
 
         args = realloc(args, sizeof(*args) * (len + 1));
@@ -394,7 +394,7 @@ debugger_run_command(
             if (eval.error) {
                 printf("Error: %s.\n", eval.error);
                 // TODO FIXME free stuff
-                return ;
+                return;
             }
 
             args[len - 1].type = ARGS_INTEGER;
@@ -565,8 +565,9 @@ cleanup:
 }
 
 void
-debugger_reset_terminal(void)
-{
+debugger_reset_terminal(
+    void
+) {
     rl_reset_terminal(NULL);
 }
 

@@ -29,7 +29,7 @@ debugger_cmd_trace(
         debugger_dump_context_compact_header();
     } else if (argc == 1) {
         if (debugger_check_arg_type(CMD_TRACE, &argv[0], ARGS_INTEGER)) {
-            return ;
+            return;
         }
 
         debugger_dump_context_compact_header();
@@ -38,6 +38,6 @@ debugger_cmd_trace(
         debugger_dump_context_compact_header();
     } else {
         printf("Usage: %s\n", g_commands[CMD_TRACE].usage);
-        return ;
+        return;
     }
 }

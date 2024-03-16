@@ -26,7 +26,7 @@ app_config_load(
     config_file = hs_fopen(path, "r");
     if (!config_file) {
         logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
-        return ;
+        return;
     }
 
     data_len = fread(data, 1, sizeof(data) - 1, config_file);
@@ -229,7 +229,7 @@ app_config_save(
     config_file = hs_fopen(path, "w");
     if (!config_file) {
         logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
-        return ;
+        return;
     }
 
     // We need to fill `keyboard_binds_name` with a copy of all the keyboard's bind name because

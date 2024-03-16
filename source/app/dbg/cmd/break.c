@@ -64,18 +64,18 @@ debugger_cmd_break(
         if (debugger_check_arg_type(CMD_BREAK, &argv[0], ARGS_STRING)
             || debugger_check_arg_type(CMD_BREAK, &argv[1], ARGS_INTEGER)
         ) {
-            return ;
+            return;
         }
 
         if (strcmp(argv[0].value.s, "delete") && strcmp(argv[0].value.s, "d")) {
             printf("Usage: %s\n", g_commands[CMD_BREAK].usage);
-            return ;
+            return;
         }
 
         idx = argv[1].value.i64;
         if (idx <= 0 || idx > app->debugger.breakpoints_len) {
             printf("Unknown breakpoint with ID %zu.\n", idx);
-            return ;
+            return;
         }
         idx -= 1;
 

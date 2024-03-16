@@ -151,7 +151,7 @@ debugger_lang_cleanup_node(
     struct node *node
 ) {
     if (!node) {
-        return ;
+        return;
     }
 
     switch (node->kind) {

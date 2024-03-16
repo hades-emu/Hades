@@ -26,12 +26,12 @@ debugger_cmd_screenshot(
         app_emulator_screenshot(app);
     } else if (argc == 1) {
         if (debugger_check_arg_type(CMD_SCREENSHOT, &argv[0], ARGS_STRING)) {
-            return ;
+            return;
         }
 
         app_emulator_screenshot_path(app, argv[0].value.s);
     } else {
         printf("Usage: %s\n", g_commands[CMD_SCREENSHOT].usage);
-        return ;
+        return;
     }
 }

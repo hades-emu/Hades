@@ -137,8 +137,9 @@ void (*arm_lut[4096])(struct gba *gba, uint32_t op) = { 0 };
 bool cond_lut[256];
 
 void
-core_arm_decode_insns(void)
-{
+core_arm_decode_insns(
+    void
+) {
     struct hs_arm_decoded_insn arm_decoded_insns[arm_insns_len];
     size_t i;
 

@@ -58,7 +58,7 @@ debugger_cmd_verbose(
         uint32_t i;
 
         if (debugger_check_arg_type(CMD_VERBOSE, &argv[0], ARGS_STRING)) {
-            return ;
+            return;
         }
 
         // Easily toggle all verbosities on or off
@@ -84,7 +84,7 @@ debugger_cmd_verbose(
                 g_reset
             );
 
-            return ;
+            return;
         }
 
         for (i = 0; verbosities[i].name; ++i) {

@@ -29,7 +29,7 @@ debugger_cmd_step_in(
     } else if (argc == 1) {
 
         if (debugger_check_arg_type(CMD_STEP_IN, &argv[0], ARGS_INTEGER)) {
-            return ;
+            return;
         }
 
         app_emulator_step_in(app, argv[0].value.i64);
@@ -37,7 +37,7 @@ debugger_cmd_step_in(
         debugger_dump_context_auto(app);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP_IN].usage);
-        return ;
+        return;
     }
 }
 
@@ -59,7 +59,7 @@ debugger_cmd_step_over(
     } else if (argc == 1) {
 
         if (debugger_check_arg_type(CMD_STEP_OVER, &argv[0], ARGS_INTEGER)) {
-            return ;
+            return;
         }
 
         app_emulator_step_over(app, argv[0].value.i64);
@@ -67,6 +67,6 @@ debugger_cmd_step_over(
         debugger_dump_context_auto(app);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP_OVER].usage);
-        return ;
+        return;
     }
 }

@@ -139,7 +139,7 @@ gpio_rtc_write(
 
     // Only continue if CS is set and SCK is rising
     if (!(rtc->cs && !old_sck && rtc->sck)) {
-        return ;
+        return;
     }
 
     switch (rtc->state) {

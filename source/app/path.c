@@ -28,8 +28,9 @@
 */
 static inline
 char *
-system_config_dir(void)
-{
+system_config_dir(
+    void
+) {
 #if __APPLE__
     char *home_dir;
 
@@ -67,8 +68,9 @@ system_config_dir(void)
 */
 static inline
 char *
-system_pictures_dir(void)
-{
+system_pictures_dir(
+    void
+) {
 #if __APPLE__
     char *home_dir;
 

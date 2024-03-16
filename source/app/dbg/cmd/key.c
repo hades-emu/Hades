@@ -41,7 +41,7 @@ debugger_cmd_key(
         if (debugger_check_arg_type(CMD_KEY, &argv[0], ARGS_STRING)
             || debugger_check_arg_type(CMD_KEY, &argv[1], ARGS_INTEGER)
         ) {
-            return ;
+            return;
         }
 
         for (i = KEY_MIN; i < KEY_MAX; ++i) {
@@ -52,13 +52,13 @@ debugger_cmd_key(
                     argv[0].value.s,
                     argv[1].value.i64 ? "true" : "false"
                 );
-                return ;
+                return;
             }
         }
 
         printf("Error: unknown key \"%s\".\n", argv[0].value.s);
     } else {
         printf("Usage: %s\n", g_commands[CMD_KEY].usage);
-        return ;
+        return;
     }
 }

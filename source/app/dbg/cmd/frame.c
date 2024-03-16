@@ -28,7 +28,7 @@ debugger_cmd_frame(
         debugger_dump_context_auto(app);
     } else if (argc == 1) {
         if (debugger_check_arg_type(CMD_FRAME, &argv[0], ARGS_INTEGER)) {
-            return ;
+            return;
         }
 
         app_emulator_frame(app, argv[0].value.i64);
@@ -36,6 +36,6 @@ debugger_cmd_frame(
         debugger_dump_context_auto(app);
     } else {
         printf("Usage: %s\n", g_commands[CMD_FRAME].usage);
-        return ;
+        return;
     }
 }

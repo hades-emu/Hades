@@ -76,7 +76,7 @@ apu_wave_step(
 
     if (!gba->io.sound3cnt_l.enable || !gba->apu.wave.enabled) {
         apu_wave_stop(gba);
-        return ;
+        return;
     }
 
     gba->io.soundcnt_x.sound_3_status = true;

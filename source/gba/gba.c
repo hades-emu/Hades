@@ -19,8 +19,9 @@
 ** Create a new GBA emulator.
 */
 struct gba *
-gba_create(void)
-{
+gba_create(
+    void
+) {
     struct gba *gba;
 
     gba = malloc(sizeof(struct gba));
@@ -551,7 +552,7 @@ gba_run(
 
             // If the exit flag was raised, leave now
             if (gba->exit) {
-                return ;
+                return;
             }
 
             // Wait until there's new messages in the message queue.

@@ -101,8 +101,9 @@ static size_t const thumb_insns_len = array_length(thumb_insns);
 void (*thumb_lut[256])(struct gba *gba, uint16_t op) = { 0 };
 
 void
-core_thumb_decode_insns(void)
-{
+core_thumb_decode_insns(
+    void
+) {
     struct hs_thumb_decoded_insn thumb_decoded_insns[thumb_insns_len];
     size_t i;
 

@@ -58,8 +58,9 @@ debugger_dump_context_auto(
 }
 
 void
-debugger_dump_context_compact_header(void)
-{
+debugger_dump_context_compact_header(
+    void
+) {
     size_t i;
 
     printf("  %sCycle Counter%s  ", g_light_green, g_reset);

@@ -179,7 +179,7 @@ dma_run_channel(
     }
 
     if (gba->core.reenter_dma_transfer_loop) {
-        return ;
+        return;
     }
 
     gba->core.pending_dma &= ~(1 << channel->index);
@@ -226,7 +226,7 @@ mem_dma_do_all_pending_transfers(
     size_t i;
 
     if (!gba->core.pending_dma) {
-        return ;
+        return;
     }
 
     gba->core.is_dma_running = true;

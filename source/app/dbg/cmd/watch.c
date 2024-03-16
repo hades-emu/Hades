@@ -45,7 +45,7 @@ debugger_cmd_watch(
             || debugger_check_arg_type(CMD_WATCH, &argv[1], ARGS_INTEGER)
         ) {
             printf("Usage: %s\n", g_commands[CMD_WATCH].usage);
-            return ;
+            return;
         }
 
         read = !strcmp(argv[0].value.s, "read") || !strcmp(argv[0].value.s, "r");
@@ -78,7 +78,7 @@ debugger_cmd_watch(
             idx = argv[1].value.i64;
             if (idx <= 0 || idx > app->debugger.watchpoints_len) {
                 printf("Unknown watchpoint with ID %zu.\n", idx);
-                return ;
+                return;
             }
             idx -= 1;
 

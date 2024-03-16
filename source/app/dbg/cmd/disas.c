@@ -308,7 +308,7 @@ debugger_cmd_disas(
         ptr = core->pc >= op_len * 2 ? core->pc - op_len * 2 : 0;
     } else if (argc == 1) {
         if (debugger_check_arg_type(CMD_DISAS, &argv[0], ARGS_INTEGER)) {
-            return ;
+            return;
         }
 
         ptr = argv[0].value.i64;
@@ -318,7 +318,7 @@ debugger_cmd_disas(
         if (debugger_check_arg_type(CMD_DISAS, &argv[0], ARGS_STRING)
             || debugger_check_arg_type(CMD_DISAS, &argv[1], ARGS_INTEGER)
         ) {
-            return ;
+            return;
         }
 
         mode = argv[0].value.s;
@@ -331,18 +331,18 @@ debugger_cmd_disas(
             op_len = 4;
         } else {
             printf("Unknown mode \"%s\".\n", mode);
-            return ;
+            return;
         }
 
         ptr = argv[1].value.i64;
     } else {
         printf("Usage: %s\n", g_commands[CMD_DISAS].usage);
-        return ;
+        return;
     }
 
     if (ptr % op_len) {
         printf("The address to disassemble (0x%08x) isn't aligned.\n", ptr);
-        return ;
+        return;
     }
 
     debugger_cmd_disas_around(
