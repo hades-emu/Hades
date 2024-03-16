@@ -480,6 +480,43 @@ app_win_settings_video(
 
         igEndTable();
     }
+
+#ifdef WITH_DEBUGGER
+    igSeparatorText("Debug");
+
+    if (igBeginTable("##VideoSettingsDebug", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##VideoSettingsDebugLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##VideoSettingsDebugValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Enable BG layer X
+        for (i = 0; i < array_length(app->config.video.enable_bg_layers); ++i) {
+            char label[32];
+
+            snprintf(label, sizeof(label), "##BGLayer%u", i);
+
+            igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+            igTableNextColumn();
+            igTextWrapped("BG Layer %u", i);
+
+            igTableNextColumn();
+            if (igCheckbox(label, &app->config.video.enable_bg_layers[i])) {
+                app_emulator_settings(app);
+            }
+        }
+
+        // Enable OAM
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Sprites");
+
+        igTableNextColumn();
+        if (igCheckbox("##Sprites", &app->config.video.enable_oam)) {
+            app_emulator_settings(app);
+        }
+
+        igEndTable();
+    }
+#endif
 }
 
 static
@@ -497,6 +534,8 @@ app_win_settings_audio(
     igSpacing();
     igSeparator();
     igSpacing();
+
+    igSeparatorText("Volume");
 
     if (igBeginTable("##AudioSettings", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
         igTableSetupColumn("##AudioSettingsLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
@@ -524,6 +563,51 @@ app_win_settings_audio(
 
         igEndTable();
     }
+
+#ifdef WITH_DEBUGGER
+    igSeparatorText("Debug");
+
+    if (igBeginTable("##AudioSettingsDebug", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##AudioSettingsDebugLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##AudioSettingsDebugValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        uint32_t i;
+
+        // Enable PSG Channel X
+        for (i = 0; i < array_length(app->config.audio.enable_psg_channels); ++i) {
+            char label[32];
+
+            snprintf(label, sizeof(label), "##PSGChannel%u", i);
+
+            igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+            igTableNextColumn();
+            igTextWrapped("PSG Channel %u", i);
+
+            igTableNextColumn();
+            if (igCheckbox(label, &app->config.audio.enable_psg_channels[i])) {
+                app_emulator_settings(app);
+            }
+        }
+
+        // Enable FIFO Channel X
+        for (i = 0; i < array_length(app->config.audio.enable_fifo_channels); ++i) {
+            char label[32];
+
+            snprintf(label, sizeof(label), "##FifoChannel%u", i);
+
+            igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+            igTableNextColumn();
+            igTextWrapped("Fifo Channel %u", i);
+
+            igTableNextColumn();
+            if (igCheckbox(label, &app->config.audio.enable_fifo_channels[i])) {
+                app_emulator_settings(app);
+            }
+        }
+
+        igEndTable();
+    }
+#endif
 }
 
 static
