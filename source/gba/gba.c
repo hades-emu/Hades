@@ -555,7 +555,7 @@ gba_run(
             }
 
             // Wait until there's new messages in the message queue.
-            if (gba->state == GBA_STATE_PAUSE) {
+            if (gba->state != GBA_STATE_RUN) {
                 channel_wait(messages);
             }
 
