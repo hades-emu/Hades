@@ -133,7 +133,7 @@ main(
     );
 
     if (app.args.rom_path) {
-        app_emulator_configure_and_run(&app, app.args.rom_path);
+        app_emulator_configure_and_run(&app, app.args.rom_path, NULL);
     }
 
 #ifdef WITH_DEBUGGER

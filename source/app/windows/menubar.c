@@ -35,7 +35,7 @@ app_win_menubar_file(
             );
 
             if (result == NFD_OKAY) {
-                app_emulator_configure_and_run(app, path);
+                app_emulator_configure_and_run(app, path, NULL);
                 NFD_FreePath(path);
             }
         }
@@ -51,7 +51,7 @@ app_win_menubar_file(
                     // the path to a safe space first.
                     path = strdup(app->file.recent_roms[x]);
 
-                    app_emulator_configure_and_run(app, path);
+                    app_emulator_configure_and_run(app, path, NULL);
 
                     free(path);
                 }
@@ -192,6 +192,47 @@ app_win_menubar_emulation(
             }
 
             igEndMenu();
+        }
+
+        igSeparator();
+
+        if (igMenuItem_Bool("Import Save File", NULL, false, app->emulation.is_started && (bool)app->emulation.gba->shared_data.backup_storage.data)) {
+            nfdresult_t result;
+            nfdchar_t *path;
+
+            result = NFD_OpenDialog(
+                &path,
+                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Save File", .spec = "sav"}},
+                1,
+                NULL
+            );
+
+            if (result == NFD_OKAY) {
+                char *game_path;
+
+                game_path = strdup(app->emulation.game_path);
+                app_emulator_configure_and_run(app, game_path, path);
+                free(game_path);
+                NFD_FreePath(path);
+            }
+        }
+
+        if (igMenuItem_Bool("Export Save File", NULL, false, app->emulation.is_started && (bool)app->emulation.gba->shared_data.backup_storage.data)) {
+            nfdresult_t result;
+            nfdchar_t *path;
+
+            result = NFD_SaveDialog(
+                &path,
+                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Save File", .spec = "sav"}},
+                1,
+                NULL,
+                NULL
+            );
+
+            if (result == NFD_OKAY) {
+                app_emulator_export_save_to_path(app, path);
+                NFD_FreePath(path);
+            }
         }
 
         igSeparator();

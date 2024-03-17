@@ -428,7 +428,7 @@ app_emulator_configure_rom(
 
 static
 bool
-app_emulator_configure_backup(
+app_emulator_configure_backupe_storage(
     struct app *app,
     char const *backup_path
 ) {
@@ -458,7 +458,76 @@ app_emulator_configure_backup(
         app->emulation.launch_config->backup_storage.data = data;
         app->emulation.launch_config->backup_storage.size = file_len;
     } else {
-        logln(HS_WARNING, "Failed to open the save file. A new one is created instead.");
+        logln(HS_WARNING, "Failed to open the save file. A new one will be created instead.");
+
+        app->emulation.backup_file = hs_fopen(backup_path, "wb+");
+
+        if (!app->emulation.backup_file) {
+            app_new_notification(
+                app,
+                UI_NOTIFICATION_ERROR,
+                "Failed to create %s: %s.",
+                backup_path,
+                strerror(errno)
+            );
+            return (true);
+        }
+    }
+    return (false);
+}
+
+static
+bool
+app_emulator_import_backup_storage(
+    struct app *app,
+    char const *backup_path_to_import,
+    char const *backup_path
+) {
+    size_t file_len;
+    size_t read_len;
+    FILE *backup;
+    void *data;
+
+
+    backup = hs_fopen(backup_path_to_import, "rb");
+    if (!backup) {
+        app_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "Failed to import save file %s: %s.",
+            backup_path_to_import,
+            strerror(errno)
+        );
+        return (true);
+    }
+
+    fseek(backup, 0, SEEK_END);
+    file_len = ftell(backup);
+    rewind(backup);
+
+    data = calloc(1, file_len);
+    hs_assert(data);
+
+    read_len = fread(data, 1, file_len, backup);
+
+    if (read_len != file_len) {
+        logln(HS_WARNING, "Failed to import the save file. Is it corrupted?");
+    } else {
+        app_new_notification(
+            app,
+            UI_NOTIFICATION_SUCCESS,
+            "Save file successfully imported.",
+            backup_path_to_import,
+            strerror(errno)
+        );
+    }
+
+    app->emulation.launch_config->backup_storage.data = data;
+    app->emulation.launch_config->backup_storage.size = file_len;
+    app->emulation.backup_file = hs_fopen(backup_path, "rb+");
+
+    if (!app->emulation.backup_file) {
+        logln(HS_WARNING, "Failed to open the save file. A new one will be created instead.");
 
         app->emulation.backup_file = hs_fopen(backup_path, "wb+");
 
@@ -487,11 +556,14 @@ app_emulator_configure_backup(
 **   - Reset the emulator
 **   - Wait for the reset notification
 **   - Run/Pause the emulator, according to the configuration
+**
+** NOTE: `backup_to_import` can be NULL if there is no backup to import.
 */
 bool
 app_emulator_configure_and_run(
     struct app *app,
-    char const *rom_path
+    char const *rom_path,
+    char const *backup_to_import
 ) {
     struct message_reset event;
     char *backup_path;
@@ -543,7 +615,7 @@ app_emulator_configure_and_run(
 
     if (app_emulator_configure_bios(app)
         || (is_archive ? app_emulator_configure_rom_archive(app, rom_path) : app_emulator_configure_rom(app, rom_path))
-        || app_emulator_configure_backup(app, backup_path)
+        || (backup_to_import ? app_emulator_import_backup_storage(app, backup_to_import, backup_path) : app_emulator_configure_backupe_storage(app, backup_path))
     ) {
         app_emulator_unconfigure(app);
         return (true);
@@ -644,7 +716,7 @@ app_emulator_reset(
     char *game_path;
 
     game_path = strdup(app->emulation.game_path);
-    app_emulator_configure_and_run(app, game_path);
+    app_emulator_configure_and_run(app, game_path, NULL);
     free(game_path);
 }
 
@@ -781,6 +853,54 @@ app_emulator_update_backup(
         );
     }
     app->emulation.gba->shared_data.backup_storage.dirty = false;
+}
+
+/*
+** Write the content of the backup storage on the disk, regardless if it's dirty or not.
+*/
+void
+app_emulator_export_save_to_path(
+    struct app *app,
+    char const *path
+) {
+    FILE *file;
+
+    if (app->emulation.gba->shared_data.backup_storage.data) {
+        file = hs_fopen(path, "wb");
+
+        if (!file) {
+            goto error;
+        }
+
+        if (
+            fwrite(
+                app->emulation.gba->shared_data.backup_storage.data,
+                app->emulation.gba->shared_data.backup_storage.size,
+                1,
+                file
+            ) != 1
+        ) {
+            goto error;
+        }
+
+        app_new_notification(
+            app,
+            UI_NOTIFICATION_SUCCESS,
+            "Save file exported to \"%s\"",
+            path
+        );
+    }
+
+    return;
+
+error:
+    app_new_notification(
+        app,
+        UI_NOTIFICATION_ERROR,
+        "Failed to export the save file to \"%s\": %s",
+        path,
+        strerror(errno)
+    );
 }
 
 /*

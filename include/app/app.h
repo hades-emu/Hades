@@ -498,7 +498,7 @@ void app_config_push_recent_rom(struct app *app, char const *path);
 
 /* emulator.c */
 void app_emulator_process_all_notifs(struct app *app);
-bool app_emulator_configure_and_run(struct app *app, char const *rom_path);
+bool app_emulator_configure_and_run(struct app *app, char const *rom_path, char const *backup_to_import);
 void app_emulator_reset(struct app *app);
 void app_emulator_stop(struct app *app);
 void app_emulator_run(struct app *app);
@@ -506,6 +506,7 @@ void app_emulator_pause(struct app *app);
 void app_emulator_exit(struct app *app);
 void app_emulator_key(struct app *app, enum keys key, bool pressed);
 void app_emulator_settings(struct app *app);
+void app_emulator_export_save_to_path(struct app *app, char const *);
 void app_emulator_update_backup(struct app *app);
 void app_emulator_screenshot(struct app *app);
 void app_emulator_screenshot_path(struct app *app, char const *);
