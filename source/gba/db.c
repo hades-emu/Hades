@@ -1581,7 +1581,7 @@ static struct game_entry game_database[] = {
     (struct game_entry){.code = "BTO", .storage = BACKUP_EEPROM_64K,.gpio = GPIO_NONE, .title = "Tony Hawk's Underground"},
     (struct game_entry){.code = "B2T", .storage = BACKUP_EEPROM_64K,.gpio = GPIO_NONE, .title = "Tony Hawk's Underground 2"},
     (struct game_entry){.code = "AT7", .storage = BACKUP_NONE,      .gpio = GPIO_NONE, .title = "Tootuff - The Gagmachine"},
-    (struct game_entry){.code = "A2Y", .storage = BACKUP_FLASH64,   .gpio = GPIO_NONE, .title = "Top Gun - Combat Zones"},
+    (struct game_entry){.code = "A2Y", .storage = BACKUP_NONE,      .gpio = GPIO_NONE, .title = "Top Gun - Combat Zones"},
     (struct game_entry){.code = "ATG", .storage = BACKUP_NONE,      .gpio = GPIO_NONE, .title = "Top Gun - Firestorm Advance"},
     (struct game_entry){.code = "B27", .storage = BACKUP_EEPROM_4K, .gpio = GPIO_NONE, .title = "Top Spin 2"},
     (struct game_entry){.code = "ATC", .storage = BACKUP_EEPROM_4K, .gpio = GPIO_NONE, .title = "TopGear GT Championship"},
