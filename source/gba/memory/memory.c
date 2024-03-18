@@ -202,11 +202,11 @@ mem_openbus_read(
 
     shift = addr & 0x3;
 
-    if (gba->core.current_dma_idx != NO_CURRENT_DMA) {
-        struct dma_channel const *channel;
-
-        channel = &gba->io.dma[gba->core.current_dma_idx];
-        return (channel->bus >> (8 * shift));
+    // On first access, open-bus during DMA transfers returns the
+    // last prefetched instruction (as one would expect), but on
+    // subsequent transfers it returns the last transfered data.
+    if (gba->core.is_dma_running && gba->memory.is_dma_bus_dirty) {
+        return gba->memory.dma_bus >> (8 * shift);
     }
 
     if (gba->core.cpsr.thumb) {

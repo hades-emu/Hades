@@ -163,12 +163,12 @@ enum io_regs {
     IO_REG_IF           = 0x04000202,
     IO_REG_WAITCNT      = 0x04000204,
     IO_REG_IME          = 0x04000208,
-    IO_REG_UNKNOWN_3    = 0x04000302,
 
     /* System */
 
     IO_REG_POSTFLG      = 0x04000300,
     IO_REG_HALTCNT      = 0x04000301,
+    IO_REG_UNKNOWN_3    = 0x04000302,
 
     IO_REG_END,
 };
@@ -198,7 +198,7 @@ struct dma_channel {
     uint32_t internal_dst;
     uint32_t internal_count;
 
-    uint32_t bus;
+    uint32_t latch;
 
     bool is_fifo;
     bool is_video;

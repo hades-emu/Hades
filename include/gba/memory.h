@@ -237,8 +237,12 @@ struct memory {
     // Prefetch buffer
     struct prefetch_buffer pbuffer;
 
-    // Open Bus
+    // BIOS Open Bus
     uint32_t bios_bus;
+
+    // DMA Open Bus
+    uint32_t dma_bus;
+    bool is_dma_bus_dirty;
 
     // Set when the cartridge memory bus is in used
     bool gamepak_bus_in_use;

@@ -152,28 +152,26 @@ dma_run_channel(
 
         if (unit_size == 4) {
             if (likely(channel->internal_src >= EWRAM_START)) {
-                channel->bus = mem_read32(gba, channel->internal_src, access_src);
+                channel->latch = mem_read32(gba, channel->internal_src, access_src);
             } else {
                 mem_read32(gba, channel->internal_src, access_src);
             }
-            mem_write32(gba, channel->internal_dst, channel->bus, access_dst);
+            mem_write32(gba, channel->internal_dst, channel->latch, access_dst);
         } else { // unit_size == 2
             if (likely(channel->internal_src >= EWRAM_START)) {
-                /*
-                ** Not sure what's the expected behaviour regarding the DMA's open bus behaviour/latch management,
-                ** this is more or less random.
-                */
-                channel->bus = mem_read16(gba, channel->internal_src, access_src);
-                channel->bus = ((channel->bus << 16) | channel->bus);
+                channel->latch = mem_read16(gba, channel->internal_src, access_src);
+                channel->latch = ((channel->latch << 16) | channel->latch);
             } else {
                 mem_read16(gba, channel->internal_src, access_src);
-                channel->bus = ror32(channel->bus, 8 * (channel->internal_dst & 3));
+                channel->latch = ror32(channel->latch, 8 * (channel->internal_dst & 3));
             }
-            mem_write16(gba, channel->internal_dst, channel->bus, access_dst);
+            mem_write16(gba, channel->internal_dst, channel->latch, access_dst);
         }
         channel->internal_src += src_step;
         channel->internal_dst += dst_step;
         channel->internal_count -= 1;
+        gba->memory.dma_bus = channel->latch;
+        gba->memory.is_dma_bus_dirty = true;
         access_src = SEQUENTIAL;
         access_dst = SEQUENTIAL;
     }
@@ -230,6 +228,7 @@ mem_dma_do_all_pending_transfers(
     }
 
     gba->core.is_dma_running = true;
+    gba->memory.is_dma_bus_dirty = false;
     core_idle(gba);
 
     while (gba->core.pending_dma) {
