@@ -171,7 +171,7 @@ dma_run_channel(
         channel->internal_dst += dst_step;
         channel->internal_count -= 1;
         gba->memory.dma_bus = channel->latch;
-        gba->memory.is_dma_bus_dirty = true;
+        gba->memory.was_last_access_from_dma = true;
         access_src = SEQUENTIAL;
         access_dst = SEQUENTIAL;
     }
@@ -228,7 +228,6 @@ mem_dma_do_all_pending_transfers(
     }
 
     gba->core.is_dma_running = true;
-    gba->memory.is_dma_bus_dirty = false;
     core_idle(gba);
 
     while (gba->core.pending_dma) {

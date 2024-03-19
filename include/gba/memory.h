@@ -242,7 +242,10 @@ struct memory {
 
     // DMA Open Bus
     uint32_t dma_bus;
-    bool is_dma_bus_dirty;
+
+    // Set when the last memory access was done by the DMA unit.
+    // Used to correctly handle invalid memory reads.
+    bool was_last_access_from_dma;
 
     // Set when the cartridge memory bus is in used
     bool gamepak_bus_in_use;

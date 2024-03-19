@@ -202,10 +202,9 @@ mem_openbus_read(
 
     shift = addr & 0x3;
 
-    // On first access, open-bus during DMA transfers returns the
-    // last prefetched instruction (as one would expect), but on
-    // subsequent transfers it returns the last transfered data.
-    if (gba->core.is_dma_running && gba->memory.is_dma_bus_dirty) {
+    // On first access, open-bus during DMA transfers returns the last prefetched instruction.
+    // On subsequent transfers it returns the the last transfered data.
+    if (gba->memory.was_last_access_from_dma) {
         return gba->memory.dma_bus >> (8 * shift);
     }
 
@@ -246,7 +245,7 @@ mem_openbus_read(
             default: {
                 panic(HS_MEMORY, "Reading the open bus from an impossible page: %u", pc >> 24);
                 break;
-            }
+            };
         }
     } else {
         val = gba->core.prefetch[1];

@@ -26,6 +26,15 @@
 
 /*
 ** Fetch, decode and execute the next instruction.
+**
+** First check if the IRQ line is raised and if IRQs aren't disabled in the CPSR and
+** interrupt the core appropriately.
+**
+** Then, take the appropriate action depending on the core's state:
+**   - Run: Fetch, decode and execute the next instruction
+**   - Halt: Idle until the next event
+**
+** The `Stop` state isn't handled here, hence why it isn't mentioned.
 */
 void
 core_next(
@@ -35,7 +44,7 @@ core_next(
 
     core = &gba->core;
 
-    /* Fire an interrupt if the IRQ line is set. */
+    // Fire an interrupt if the IRQ line is set.
     if (core->irq_line && !gba->core.cpsr.irq_disable) {
         logln(HS_IRQ, "Received new IRQ: 0x%04x.", gba->io.int_enabled.raw & gba->io.int_flag.raw);
         core_interrupt(gba, VEC_IRQ, MODE_IRQ, true);
@@ -48,7 +57,12 @@ core_next(
             op = core->prefetch[0];
             core->prefetch[0] = core->prefetch[1];
             core->prefetch[1] = mem_read16(gba, core->pc, core->prefetch_access_type);
+            gba->memory.was_last_access_from_dma = false;
 
+            // Build a unique index based on the instruction's opcode, which is then used to index
+            // the Lookup Table (LUT) of Thumb instructions.
+            //
+            // NOTE: We need to properly handle unknown instructions instead of crashing.
             if (unlikely(thumb_lut[op >> 8] == NULL)) {
                 panic(HS_CORE, "Unknown Thumb op-code 0x%04x (pc=0x%08x).", op, core->pc);
             }
@@ -61,12 +75,12 @@ core_next(
             op = core->prefetch[0];
             core->prefetch[0] = core->prefetch[1];
             core->prefetch[1] = mem_read32(gba, core->pc, core->prefetch_access_type);
+            gba->memory.was_last_access_from_dma = false;
 
-            /*
-            ** Test if the conditions required to execute the instruction are met
-            ** Ignore instructions where the conditions aren't met.
-            */
-
+            // Test if the conditions required to execute the instruction are met using a Lookup Table (LUT).
+            //
+            // The index of the LUT is both the CPSR and the condition combined in an 8-bit integer
+            // unique per situation.
             idx = (bitfield_get_range(core->cpsr.raw, 28, 32) << 4) | (bitfield_get_range(op, 28, 32));
             if (unlikely(!cond_lut[idx])) {
                 core->pc += 4;
@@ -74,8 +88,11 @@ core_next(
                 goto end;
             }
 
+            // Build a unique index based on the instruction's opcode, which is then used to index
+            // the Lookup Table (LUT) of ARM instructions.
+            //
+            // NOTE: We need to properly handle unknown instructions instead of crashing.
             idx = ((op >> 16) & 0xFF0) | ((op >> 4) & 0x00F);
-
             if (unlikely(arm_lut[idx] == NULL)) {
                 panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
             }
