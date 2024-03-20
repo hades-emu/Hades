@@ -305,7 +305,16 @@ TESTS_SUITE: List[Test] = [
     ),
 
     # Hades Tests
-    # https://github.com/Arignir/Hades-Tests
+    # https://github.com/hades-emu/Hades-Tests
+    Test(
+        name="Hades Tests - DMA Latch",
+        rom='hades-dma-latch.gba',
+        code='''
+            frame 20
+            screenshot ./.tests_screenshots/hades_dma_latch.png
+        ''',
+        screenshot='hades_dma_latch.png',
+    ),
     Test(
         name="Hades Tests - DMA Start Delay",
         rom='hades-dma-start-delay.gba',
