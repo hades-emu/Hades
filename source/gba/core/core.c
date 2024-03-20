@@ -152,8 +152,8 @@ core_idle_for(
 }
 
 /*
-** Reload the cached op-code on the 3-stage pipeline.
-** This must be called when the value of PC is changed.
+** Reload the cached opcodes of the 3-stage pipeline.
+** This must be called when the r15 (PC) is written.
 **
 ** This function takes 1N and 1S cycles to complete, and set the
 ** next prefetch access type to SEQUENTIAL.
