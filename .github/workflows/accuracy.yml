@@ -50,7 +50,7 @@ jobs:
           wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/save/sram.gba -O jsmolka-sram.gba
           wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/dma-start-delay.gba -O hades-dma-start-delay.gba
           wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/dma-latch.gba -O hades-dma-latch.gba
-          wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/openbus-bios.gba -O hades-openbus-bios.gba
+          wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/bios-openbus.gba -O hades-bios-openbus.gba
           wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/timer-basic.gba -O hades-timer-basic.gba
           wget -q https://raw.githubusercontent.com/nba-emu/hw-test/master/dma/start-delay/start-delay.gba -O nba-dma-start-delay.gba
           wget -q https://raw.githubusercontent.com/nba-emu/hw-test/master/dma/latch/latch.gba -O nba-dma-latch.gba
