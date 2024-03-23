@@ -326,13 +326,13 @@ TESTS_SUITE: List[Test] = [
         skip=True,
     ),
     Test(
-        name="Hades Tests - Openbus BIOS",
-        rom='hades-openbus-bios.gba',
+        name="Hades Tests - BIOS Openbus",
+        rom='hades-bios-openbus.gba',
         code='''
             frame 20
-            screenshot ./.tests_screenshots/hades_openbus_bios.png
+            screenshot ./.tests_screenshots/hades_bios_openbus.png
         ''',
-        screenshot='hades_openbus_bios.png',
+        screenshot='hades_bios_openbus.png',
     ),
     Test(
         name="Hades Tests - Timer Basic",
