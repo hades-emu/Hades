@@ -139,6 +139,7 @@ enum menu_kind {
     MENU_VIDEO,
     MENU_AUDIO,
     MENU_BINDINGS,
+    MENU_MISC,
 
     MENU_MAX,
 };
@@ -164,12 +165,6 @@ struct settings {
 
         // Skip BIOS
         bool skip_bios;
-
-        // Automatically pause the game when the window looses focus
-        bool auto_pause;
-
-        // Pause immediately after resetting the game
-        bool pause_on_reset;
 
         // Backup storage
         struct {
@@ -231,6 +226,14 @@ struct settings {
         // Enable FIFO Channel
         bool enable_fifo_channels[2];
     } audio;
+
+    struct {
+        // Pause when the window is inactive
+        bool pause_when_window_inactive;
+
+        // Pause when the game resets
+        bool pause_when_game_resets;
+    } misc;
 };
 
 struct app {

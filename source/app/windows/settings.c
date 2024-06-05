@@ -17,6 +17,7 @@ static char const *menu_names[MENU_MAX] = {
     [MENU_VIDEO] = "Video",
     [MENU_AUDIO] = "Audio",
     [MENU_BINDINGS] = "Bindings",
+    [MENU_MISC] = "Misc",
 };
 
 static char const *texture_filters_names[TEXTURE_FILTER_LEN] = {
@@ -330,33 +331,6 @@ app_win_settings_emulation(
 
         igEndTable();
     }
-
-    igSeparatorText("Misc");
-
-    if (igBeginTable("##EmulationSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##EmulationSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##EmulationSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
-
-        // Pause game when the window loses focus
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Auto-Pause");
-
-        igTableNextColumn();
-        igCheckbox("##AutoPause", &app->settings.emulation.auto_pause);
-
-#ifdef WITH_DEBUGGER
-        // Pause game after a reset
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Pause Game After Reset");
-
-        igTableNextColumn();
-        igCheckbox("##PauseGameAfterReset", &app->settings.emulation.pause_on_reset);
-#endif
-
-        igEndTable();
-    }
 }
 
 static
@@ -612,6 +586,48 @@ app_win_settings_audio(
 
 static
 void
+app_win_settings_misc(
+    struct app *app
+) {
+    ImGuiViewport *vp;
+
+    vp = igGetMainViewport();
+
+    igTextWrapped("Misc Settings");
+    igSpacing();
+    igSeparator();
+    igSpacing();
+
+    igSeparatorText("Interface");
+
+    if (igBeginTable("##MiscSettingsInterface", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##MiscSettingsInterfaceLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##MiscSettingsInterfaceValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Pause when the window is inactive
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Pause when the window is inactive");
+
+        igTableNextColumn();
+        igCheckbox("##PauseWhenWindowInactive", &app->settings.misc.pause_when_window_inactive);
+
+#ifdef WITH_DEBUGGER
+        // Pause when the game resets
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Pause when the game resets");
+
+        igTableNextColumn();
+        igCheckbox("##PauseWhenGameResets", &app->settings.misc.pause_when_game_resets);
+#endif
+
+        igEndTable();
+    }
+}
+
+static
+void
 app_win_settings_bindings_bind_keyboard(
     struct app *app,
     size_t bind
@@ -762,6 +778,7 @@ static void (*menu_callbacks[MENU_MAX])(struct app *) = {
     [MENU_VIDEO] =                  &app_win_settings_video,
     [MENU_AUDIO] =                  &app_win_settings_audio,
     [MENU_BINDINGS] =               &app_win_settings_bindings,
+    [MENU_MISC] =                   &app_win_settings_misc,
 };
 
 void

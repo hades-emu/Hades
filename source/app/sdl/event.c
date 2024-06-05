@@ -77,13 +77,13 @@ app_sdl_handle_events(
                         break;
                     };
                     case SDL_WINDOWEVENT_FOCUS_GAINED: {
-                        if (app->settings.emulation.auto_pause && app->emulation.is_started && !app->emulation.is_running) {
+                        if (app->settings.misc.pause_when_window_inactive && app->emulation.is_started && !app->emulation.is_running) {
                             app_emulator_run(app);
                         }
                         break;
                     };
                     case SDL_WINDOWEVENT_FOCUS_LOST: {
-                        if (app->settings.emulation.auto_pause && app->emulation.is_started && app->emulation.is_running) {
+                        if (app->settings.misc.pause_when_window_inactive && app->emulation.is_started && app->emulation.is_running) {
                             app_emulator_pause(app);
                         }
                         break;
@@ -227,6 +227,9 @@ app_sdl_handle_events(
                     app_bindings_handle(app, BIND_GBA_UP, state_b);
                 }
                 break;
+            }
+            case SDL_MOUSEMOTION: {
+
             }
         }
     }

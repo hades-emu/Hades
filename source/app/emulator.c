@@ -697,7 +697,7 @@ app_emulator_configure_and_run(
 
     logln(HS_INFO, "Game successfully loaded.");
 
-    if (app->settings.emulation.pause_on_reset) {
+    if (app->settings.misc.pause_when_game_resets) {
         app_emulator_pause(app);
     } else {
         app_emulator_run(app);

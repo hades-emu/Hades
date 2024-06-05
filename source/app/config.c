@@ -93,14 +93,6 @@ app_config_load(
         if (mjson_get_bool(data, data_len, "$.emulation.skip_bios", &b)) {
             app->settings.emulation.skip_bios = b;
         }
-
-        if (mjson_get_bool(data, data_len, "$.emulation.auto_pause", &b)) {
-            app->settings.emulation.auto_pause = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.emulation.pause_on_reset", &b)) {
-            app->settings.emulation.pause_on_reset = b;
-        }
     }
 
     // Video
@@ -150,6 +142,19 @@ app_config_load(
         if (mjson_get_number(data, data_len, "$.audio.level", &d)) {
             app->settings.audio.level = d;
             app->settings.audio.level = max(0.f, min(app->settings.audio.level, 1.f));
+        }
+    }
+
+    // Misc
+    {
+        int b;
+
+        if (mjson_get_bool(data, data_len, "$.misc.pause_when_window_inactive", &b)) {
+            app->settings.misc.pause_when_window_inactive = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.misc.pause_when_game_resets", &b)) {
+            app->settings.misc.pause_when_game_resets = b;
         }
     }
 
@@ -259,8 +264,6 @@ app_config_save(
                     "autodetect": %B,
                     "type": %d
                 },
-                "auto_pause": %B,
-                "pause_on_reset": %B
             },
 
             // Video
@@ -278,6 +281,12 @@ app_config_save(
                 "mute": %B,
                 "level": %g
             },
+
+            // Misc
+            "misc": {
+                "pause_when_window_inactive": %B,
+                "pause_when_game_resets": %B
+            }
         }),
         app->settings.emulation.bios_path,
         app->file.recent_roms[0],
@@ -292,8 +301,6 @@ app_config_save(
         (int)app->settings.emulation.backup_storage.type,
         (int)app->settings.emulation.gpio_device.autodetect,
         (int)app->settings.emulation.gpio_device.type,
-        (int)app->settings.emulation.auto_pause,
-        (int)app->settings.emulation.pause_on_reset,
         (int)app->settings.video.display_size,
         (int)app->settings.video.aspect_ratio,
         (int)app->settings.video.vsync,
@@ -301,7 +308,9 @@ app_config_save(
         (int)app->settings.video.pixel_color_filter,
         (int)app->settings.video.pixel_scaling_filter,
         (int)app->settings.audio.mute,
-        app->settings.audio.level
+        app->settings.audio.level,
+        (int)app->settings.misc.pause_when_window_inactive,
+        (int)app->settings.misc.pause_when_game_resets
     );
 
     if (!data) {
