@@ -27,7 +27,6 @@
 #include <shellapi.h>
 
 #define hs_isatty(x)            false
-#define hs_mkdir(path)          CreateDirectoryA((path), NULL)
 
 static inline
 wchar_t *
@@ -76,14 +75,22 @@ end:
 }
 
 static inline
-char const *
-hs_basename(
+bool
+hs_mkdir(
     char const *path
 ) {
-    char const *base;
+    wchar_t *wpath;
+    bool out;
 
-    base = strrchr(path, '\\');
-    return (base ? base + 1 : path);
+    wpath = hs_convert_to_wchar(path);
+    if (!wpath) {
+        return (false);
+    }
+
+    out = CreateDirectoryW(wpath, NULL);
+
+    free(wpath);
+    return out;
 }
 
 static inline
@@ -103,6 +110,17 @@ hs_fexists(
 
     free(wpath);
     return (out);
+}
+
+static inline
+char const *
+hs_basename(
+    char const *path
+) {
+    char const *base;
+
+    base = strrchr(path, '\\');
+    return (base ? base + 1 : path);
 }
 
 static inline
@@ -221,7 +239,7 @@ hs_fmtime(
         return (NULL);
     }
 
-    out = malloc(sizeof(char) * 128);
+    out = (char *)malloc(sizeof(char) * 128);
     hs_assert(out);
 
     tm = localtime(&stbuf.st_mtime);
