@@ -224,7 +224,7 @@ TESTS_SUITE: List[Test] = [
         rom='mgba-suite.gba',
         code='''
             key down true
-            frame 90
+            frame 95
             key down false
             key a true
             frame 20
