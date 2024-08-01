@@ -622,6 +622,17 @@ app_win_settings_misc(
         igCheckbox("##PauseWhenGameResets", &app->settings.misc.pause_when_game_resets);
 #endif
 
+        // Hide the cursor when the mouse is inactive
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Hide cursor when the mouse is inactive");
+
+        igTableNextColumn();
+        if (igCheckbox("##HideCursorWhenMouseInactive", &app->settings.misc.hide_cursor_when_mouse_inactive)) {
+            app->ui.time_elapsed_since_last_mouse_motion_ms = 0;
+            SDL_ShowCursor(SDL_ENABLE);
+        }
+
         igEndTable();
     }
 }

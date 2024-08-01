@@ -206,7 +206,7 @@ app_sdl_handle_events(
                 bool state_a;
                 bool state_b;
 
-                /* Disable the joysticks if the settings are visible */
+                /* Disable the joysticks if the settings are open */
                 if (app->ui.settings.open) {
                     break;
                 }
@@ -229,7 +229,10 @@ app_sdl_handle_events(
                 break;
             }
             case SDL_MOUSEMOTION: {
-
+                // Handle the "hide cursor on mouse inactivity" option by
+                // resetting the "time_elapsed_since_last_mouse_motion_ms" counter.
+                // The main loop will then update the cursor's visibility if needed.
+                app->ui.time_elapsed_since_last_mouse_motion_ms = 0.f;
             }
         }
     }

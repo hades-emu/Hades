@@ -233,6 +233,9 @@ struct settings {
 
         // Pause when the game resets
         bool pause_when_game_resets;
+
+        // Hide the cursor after a few seconds of inactivity
+        bool hide_cursor_when_mouse_inactive;
     } misc;
 };
 
@@ -353,6 +356,9 @@ struct app {
 
         /* Temporary value used to measure the FPS. */
         uint32_t ticks_last_frame;
+
+        /* Temporary value used to measure the time since the last mouse movement (in ms) */
+        float time_elapsed_since_last_mouse_motion_ms;
 
         /*
         ** The size of the `game` window.

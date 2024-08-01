@@ -156,6 +156,10 @@ app_config_load(
         if (mjson_get_bool(data, data_len, "$.misc.pause_when_game_resets", &b)) {
             app->settings.misc.pause_when_game_resets = b;
         }
+
+        if (mjson_get_bool(data, data_len, "$.misc.hide_cursor_when_mouse_inactive", &b)) {
+            app->settings.misc.hide_cursor_when_mouse_inactive = b;
+        }
     }
 
     // Binds
@@ -285,7 +289,8 @@ app_config_save(
             // Misc
             "misc": {
                 "pause_when_window_inactive": %B,
-                "pause_when_game_resets": %B
+                "pause_when_game_resets": %B,
+                "hide_cursor_when_mouse_inactive": %B
             }
         }),
         app->settings.emulation.bios_path,
@@ -310,7 +315,8 @@ app_config_save(
         (int)app->settings.audio.mute,
         app->settings.audio.level,
         (int)app->settings.misc.pause_when_window_inactive,
-        (int)app->settings.misc.pause_when_game_resets
+        (int)app->settings.misc.pause_when_game_resets,
+        (int)app->settings.misc.hide_cursor_when_mouse_inactive
     );
 
     if (!data) {

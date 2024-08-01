@@ -68,9 +68,10 @@ app_settings_default(
     settings->video.vsync = false;
     settings->video.display_size = 3;
     settings->video.aspect_ratio = ASPECT_RATIO_RESIZE;
+    settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
     settings->audio.mute = false;
     settings->audio.level = 1.0f;
-    settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
+    settings->misc.hide_cursor_when_mouse_inactive = true;
 }
 
 int
@@ -254,6 +255,23 @@ main(
             } else {
                 SDL_Delay(max(0.f, floor((1000.f / 60.0f) - elapsed_ms)));
             }
+        }
+
+        // Hide the cursor if the game is running and the mouse is inactive for a while
+        if (app.settings.misc.hide_cursor_when_mouse_inactive && app.emulation.is_started && app.emulation.is_running) {
+            int show_cursor;
+
+            show_cursor = SDL_DISABLE;
+            if (app.ui.time_elapsed_since_last_mouse_motion_ms <= 2000.0) { // 2s
+                app.ui.time_elapsed_since_last_mouse_motion_ms += elapsed_ms;
+                show_cursor = SDL_ENABLE;
+            }
+
+            if (SDL_ShowCursor(SDL_QUERY) != show_cursor) {
+                SDL_ShowCursor(show_cursor);
+            }
+        } else {
+            app.ui.time_elapsed_since_last_mouse_motion_ms = 0;
         }
 
         // Flush the quick save cache
