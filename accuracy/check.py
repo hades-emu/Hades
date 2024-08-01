@@ -130,7 +130,6 @@ def main():
           }},
           "emulation": {{
             "skip_bios": true,
-            "pause_on_reset": true,
             "speed": 1,
             "fast_forward": true,
             "backup_storage": {{
@@ -141,6 +140,9 @@ def main():
               "autodetect": true,
               "type": 0
             }}
+          }},
+          "misc": {{
+            "pause_when_game_resets": true
           }}
         }}
     ''').encode('utf-8'))
