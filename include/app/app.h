@@ -21,7 +21,7 @@
 
 #define GLSL(src)                   "#version 330 core\n" #src
 
-#define MAX_RECENT_ROMS             5
+#define MAX_RECENT_ROMS             10
 #define MAX_QUICKSAVES              10
 #define POWER_SAVE_FRAME_DELAY      30
 #define MAX_GFX_PROGRAMS            10

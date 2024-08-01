@@ -252,7 +252,7 @@ app_config_save(
             // File
             "file": {
                 "bios": %Q,
-                "recent_roms": [ %Q, %Q, %Q, %Q, %Q ]
+                "recent_roms": [ %Q, %Q, %Q, %Q, %Q, %Q, %Q, %Q, %Q, %Q ]
             },
 
             // Emulation
@@ -299,6 +299,11 @@ app_config_save(
         app->file.recent_roms[2],
         app->file.recent_roms[3],
         app->file.recent_roms[4],
+        app->file.recent_roms[5],
+        app->file.recent_roms[6],
+        app->file.recent_roms[7],
+        app->file.recent_roms[8],
+        app->file.recent_roms[9],
         (int)app->settings.emulation.skip_bios,
         app->settings.emulation.speed,
         (int)app->settings.emulation.fast_forward,
