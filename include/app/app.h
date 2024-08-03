@@ -262,7 +262,7 @@ struct app {
         bool is_running;
 
         // Current FPS
-        uint32_t fps;
+        float fps;
 
         // The current quicksave request
         struct {

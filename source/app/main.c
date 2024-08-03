@@ -180,7 +180,7 @@ main(
 
             now = SDL_GetTicks();
             if ((now - app.ui.ticks_last_frame) >= 1000) {
-                app.emulation.fps = gba_shared_reset_frame_counter(app.emulation.gba);
+                app.emulation.fps = gba_shared_reset_frame_counter(app.emulation.gba) / (float)(now - app.ui.ticks_last_frame) * 1000.0;
                 app.ui.ticks_last_frame = now;
 
                 /*

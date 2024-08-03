@@ -474,7 +474,7 @@ app_win_menubar_fps_counter(
         spacing = igGetStyle()->ItemSpacing.x;
 
         igSameLine(igGetWindowWidth() - (app->ui.menubar_fps_width + spacing * 2), 1);
-        igText("FPS: %u (%u%%)", app->emulation.fps, (unsigned)(app->emulation.fps / 60.0 * 100.0));
+        igText("FPS: %.1f (%.1f%%)", app->emulation.fps, app->emulation.fps / 60.0 * 100.0);
         igGetItemRectSize(&out);
         app->ui.menubar_fps_width = out.x;
     }
