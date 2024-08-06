@@ -63,7 +63,7 @@ jobs:
             "$BREW_X86_64_ROOT/bin/brew" fetch --deps --force --bottle-tag=monterey "$dependency"
 
             echo "Installing $dependency"
-            "$BREW_X86_64_ROOT/bin/brew" install $(brew --cache --bottle-tag=monterey "$dependency")
+            "$BREW_X86_64_ROOT/bin/brew" install $("$BREW_X86_64_ROOT/bin/brew" --cache --bottle-tag=monterey "$dependency")
           done
 
       - name: Build Hades for arm64
