@@ -85,12 +85,16 @@ jobs:
       - name: Check Accuracy
         run: |
           python3 ./accuracy/check.py --binary ./build/hades --roms ./roms/
+
+          # GitHub upload-artifact@v4 doesn't include hidden files and directories
+          # https://github.com/actions/upload-artifact/issues/602
+          mv -v {.,}tests_screenshots
       - name: Collect Screenshots
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: tests-screenshots
-          path: './.tests_screenshots/'
+          path: './tests_screenshots'
           if-no-files-found: error
       - name: Cleanup
         if: always()
