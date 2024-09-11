@@ -7,7 +7,6 @@
 **
 \******************************************************************************/
 
-#include <string.h>
 #include "gba/gba.h"
 #include "gba/gpio.h"
 
@@ -23,10 +22,19 @@ gpio_read_u8(
         case GPIO_REG_DATA: {
             uint8_t val;
 
-            if (gba->gpio.rtc.enabled) {
-                val = gpio_rtc_read(gba);
-            } else {
-                val = 0;
+            switch (gba->gpio.device) {
+                case GPIO_RTC: {
+                    val = gpio_rtc_read(gba);
+                    break;
+                };
+                case GPIO_RUMBLE: {
+                    val = gpio_rumble_read(gba);
+                    break;
+                };
+                default: {
+                    val = 0;
+                    break;
+                }
             }
             return (val);
         };
@@ -49,10 +57,17 @@ gpio_write_u8(
             break;
         };
         case GPIO_REG_DATA: {
-            if (gba->gpio.rtc.enabled) {
-                gpio_rtc_write(gba, val);
+            switch (gba->gpio.device) {
+                case GPIO_RTC: {
+                    gpio_rtc_write(gba, val);
+                    break;
+                }
+                case GPIO_RUMBLE: {
+                    gpio_rumble_write(gba, val);
+                    break;
+                }
+                default: break;
             }
-            break;
         };
         case GPIO_REG_DIRECTION: {
             break;

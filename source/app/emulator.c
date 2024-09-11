@@ -114,6 +114,10 @@ qsave_finally:
             app->emulation.quickload_request.data = NULL;
             break;
         };
+        case NOTIFICATION_RUMBLE: {
+            app_sdl_set_rumble(app, true);
+            break;
+        };
     }
     gba_delete_notification(notif);
 }

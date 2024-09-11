@@ -14,7 +14,8 @@
 enum gpio_device_types {
     GPIO_NONE = 0,
 
-    GPIO_RTC, // Pokémon games
+    GPIO_RTC,       // Eg: Pokémon games
+    GPIO_RUMBLE,    // Eg: Drill Dozer
 
     // Unsupported devices:
     // GPIO_GYRO_XY,
@@ -22,12 +23,13 @@ enum gpio_device_types {
     // etc.
 
     GPIO_MIN = GPIO_NONE,
-    GPIO_MAX = GPIO_RTC,
+    GPIO_MAX = GPIO_RUMBLE,
 };
 
 static char const * const gpio_device_names[] = {
     [GPIO_NONE] = "None",
     [GPIO_RTC] = "RTC",
+    [GPIO_RUMBLE] = "Rumble",
     // [GPIO_GYRO_XY] = "Gyro X/Y",
     // [GPIO_GYRO_Z_WITH_RUMBLE] = "Gyro Z w/ Rumble",
 };
@@ -57,8 +59,6 @@ enum rtc_registers {
 };
 
 struct rtc {
-    bool enabled;
-
     enum rtc_states state;
 
     uint64_t data;
@@ -83,11 +83,16 @@ struct rtc {
     } control;
 };
 
+struct rumble {
+    bool enabled;
+};
+
 struct gpio {
     enum gpio_device_types device;
     bool readable;
 
     struct rtc rtc;
+    struct rumble rumble;
 };
 
 struct gba;
@@ -99,3 +104,7 @@ void gpio_write_u8(struct gba *gba, uint32_t, uint8_t);
 /* gpio/rtc.c */
 uint8_t gpio_rtc_read(struct gba *gba);
 void gpio_rtc_write(struct gba *gba, uint8_t);
+
+/* gpio/rumble.c */
+uint8_t gpio_rumble_read(struct gba *gba);
+void gpio_rumble_write(struct gba *gba, uint8_t);

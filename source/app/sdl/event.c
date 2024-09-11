@@ -93,11 +93,10 @@ app_sdl_handle_events(
             };
             case SDL_CONTROLLERDEVICEADDED: {
                 if (!app->sdl.controller.connected) {
-                    SDL_Joystick *joystick;
-
                     app->sdl.controller.ptr = SDL_GameControllerOpen(event.cdevice.which);
-                    joystick = SDL_GameControllerGetJoystick(app->sdl.controller.ptr);
-                    app->sdl.controller.joystick.idx = SDL_JoystickInstanceID(joystick);
+                    app->sdl.controller.joystick.ptr = SDL_GameControllerGetJoystick(app->sdl.controller.ptr);
+                    app->sdl.controller.joystick.idx = SDL_JoystickInstanceID(app->sdl.controller.joystick.ptr);
+                    app->sdl.controller.joystick.can_rumble = SDL_JoystickHasRumble(app->sdl.controller.joystick.ptr);
                     app->sdl.controller.connected = true;
                     logln(
                         HS_INFO,
@@ -106,6 +105,9 @@ app_sdl_handle_events(
                         SDL_GameControllerName(app->sdl.controller.ptr),
                         g_reset
                     );
+
+                    // Disable any active rumble
+                    app_sdl_set_rumble(app, false);
                 }
                 break;
             };
@@ -235,5 +237,22 @@ app_sdl_handle_events(
                 app->ui.time_elapsed_since_last_mouse_motion_ms = 0.f;
             }
         }
+    }
+}
+
+void
+app_sdl_set_rumble(
+    struct app *app,
+    bool enable
+) {
+    if (!app->sdl.controller.ptr || !app->sdl.controller.joystick.ptr || !app->sdl.controller.joystick.can_rumble) {
+        return ;
+    }
+
+    // Rumble for 0.25s
+    if (enable) {
+        SDL_JoystickRumble(app->sdl.controller.joystick.ptr, 0xFFFF, 0xFFFF, 250);
+    } else {
+        SDL_JoystickRumble(app->sdl.controller.joystick.ptr, 0, 0, 0);
     }
 }

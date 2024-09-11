@@ -112,6 +112,7 @@ enum notification_kind {
     // Only sent to the frontend
     NOTIFICATION_QUICKSAVE,
     NOTIFICATION_QUICKLOAD,
+    NOTIFICATION_RUMBLE,
 
     // Only sent to the debuger
 #ifdef WITH_DEBUGGER

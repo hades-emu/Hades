@@ -15,9 +15,6 @@
 #include "gba/core.h"
 #include "gba/event.h"
 
-void gba_state_pause(struct gba *);
-void gba_send_notification_raw(struct gba *gba, struct event_header const *notif_header);
-
 void
 debugger_init(
     struct debugger *debugger

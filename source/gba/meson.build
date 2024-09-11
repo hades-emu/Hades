@@ -34,6 +34,7 @@ libgba = static_library(
     'core/core.c',
     'gpio/gpio.c',
     'gpio/rtc.c',
+    'gpio/rumble.c',
     'memory/storage/eeprom.c',
     'memory/storage/flash.c',
     'memory/storage/storage.c',

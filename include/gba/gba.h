@@ -167,8 +167,15 @@ struct launch_config {
 };
 
 struct notification;
+enum notification_kind;
 
-/* source/gba.c */
+/*
+** The following functions are part of the public API of libgba.
+**
+** TODO FIXME: Make a public header for libgba.
+*/
+
+/* source/gba/gba.c */
 struct gba *gba_create(void);
 void gba_run(struct gba *gba);
 void gba_delete(struct gba *gba);
@@ -180,6 +187,15 @@ uint32_t gba_shared_audio_rbuffer_pop_sample(struct gba *gba);
 uint32_t gba_shared_reset_frame_counter(struct gba *gba);
 void gba_delete_notification(struct notification const *notif);
 
-/* source/db.c */
+/* source/gba/db.c */
 struct game_entry *db_lookup_game(uint8_t const *code);
 struct game_entry *db_autodetect_game_features(uint8_t const *rom, size_t rom_size);
+
+/*
+** The following functions are *NOT* part of the public API of libgba.
+*/
+
+/* source/gba/gba.c */
+void gba_send_notification(struct gba *gba, enum notification_kind notif);
+void gba_state_pause(struct gba *);
+void gba_send_notification_raw(struct gba *gba, struct event_header const *notif_header);

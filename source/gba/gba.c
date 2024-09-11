@@ -76,7 +76,8 @@ gba_send_notification_raw(
             break;
         };
         case NOTIFICATION_QUICKSAVE:
-        case NOTIFICATION_QUICKLOAD: {
+        case NOTIFICATION_QUICKLOAD:
+        case NOTIFICATION_RUMBLE: {
             channel_lock(&gba->channels.notifications);
             channel_push(&gba->channels.notifications, notif_header);
             channel_release(&gba->channels.notifications);
@@ -286,7 +287,6 @@ gba_state_reset(
         gpio->device = config->gpio_device_type;
         switch (config->gpio_device_type) {
             case GPIO_RTC: {
-                gpio->rtc.enabled = true;
                 gpio->rtc.state = RTC_COMMAND;
                 gpio->rtc.data_len = 8;
                 break;

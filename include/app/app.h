@@ -281,12 +281,14 @@ struct app {
         SDL_Window *window;
         SDL_AudioDeviceID audio_device;
 
-        /* Game controller */
+        // Game controller
         struct {
             SDL_GameController *ptr;
             bool connected;
             struct {
                 SDL_JoystickID idx;
+                SDL_Joystick *ptr;
+                bool can_rumble;
                 bool up;
                 bool down;
                 bool right;
@@ -449,6 +451,7 @@ void app_sdl_audio_cleanup(struct app *app);
 
 /* app/sdl/event.c */
 void app_sdl_handle_events(struct app *app);
+void app_sdl_set_rumble(struct app *app, bool enable);
 
 /* app/sdl/init.c */
 void app_sdl_init(struct app *app);
