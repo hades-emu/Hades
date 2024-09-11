@@ -439,7 +439,7 @@ static struct game_entry game_database[] = {
     (struct game_entry){.code = "BD9", .storage = BACKUP_NONE,      .gpio = GPIO_NONE, .title = "Dragon Tales - Dragon Adventures"},
     (struct game_entry){.code = "BJD", .storage = BACKUP_EEPROM_4K, .gpio = GPIO_NONE, .title = "Dragon's Rock"},
     (struct game_entry){.code = "AJY", .storage = BACKUP_NONE,      .gpio = GPIO_NONE, .title = "Drake & Josh"},
-    (struct game_entry){.code = "V49", .storage = BACKUP_SRAM,      .gpio = GPIO_NONE, .title = "Drill Dozer"},
+    (struct game_entry){.code = "V49", .storage = BACKUP_SRAM,      .gpio = GPIO_RUMBLE, .title = "Drill Dozer"},
     (struct game_entry){.code = "B3R", .storage = BACKUP_EEPROM_4K, .gpio = GPIO_NONE, .title = "Driv3r"},
     (struct game_entry){.code = "ADV", .storage = BACKUP_EEPROM_4K, .gpio = GPIO_NONE, .title = "Driven"},
     (struct game_entry){.code = "ADU", .storage = BACKUP_EEPROM_4K, .gpio = GPIO_NONE, .title = "Driver 2 Advance"},
