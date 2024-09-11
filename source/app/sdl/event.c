@@ -96,7 +96,11 @@ app_sdl_handle_events(
                     app->sdl.controller.ptr = SDL_GameControllerOpen(event.cdevice.which);
                     app->sdl.controller.joystick.ptr = SDL_GameControllerGetJoystick(app->sdl.controller.ptr);
                     app->sdl.controller.joystick.idx = SDL_JoystickInstanceID(app->sdl.controller.joystick.ptr);
+#if SDL_VERSION_ATLEAST(2, 0, 18)
                     app->sdl.controller.joystick.can_rumble = SDL_JoystickHasRumble(app->sdl.controller.joystick.ptr);
+#else
+                    app->sdl.controller.joystick.can_rumble = true;
+#endif
                     app->sdl.controller.connected = true;
                     logln(
                         HS_INFO,
