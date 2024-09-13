@@ -28,7 +28,9 @@ Currently, Hades features:
   - Game controller support
   - Keys and buttons remapping
   - Quick Saves (also known as Save State)
-  - Real Time Clock (RTC) support
+  - Some GPIO devices, such as:
+    - Real Time Clock (RTC)
+    - Rumble
   - Color correction & LCD effects
   - Loading games from common archive formats (`.zip`, `.7z`, `.rar`, etc.)
 
