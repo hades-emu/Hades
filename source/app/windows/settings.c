@@ -83,8 +83,8 @@ char const * const binds_pretty_name[] = {
     [BIND_GBA_START] = "Start",
     [BIND_GBA_SELECT] = "Select",
 
-    [BIND_EMULATOR_MUTE] = "Mute",
     [BIND_EMULATOR_SCREENSHOT] = "Screenshot",
+    [BIND_EMULATOR_MUTE] = "Mute",
     [BIND_EMULATOR_PAUSE] = "Pause",
     [BIND_EMULATOR_STOP] = "Stop",
     [BIND_EMULATOR_RESET] = "Reset",
@@ -131,8 +131,8 @@ char const * const binds_slug[] = {
     [BIND_GBA_START] = "start",
     [BIND_GBA_SELECT] = "select",
 
-    [BIND_EMULATOR_MUTE] = "mute",
     [BIND_EMULATOR_SCREENSHOT] = "screenshot",
+    [BIND_EMULATOR_MUTE] = "mute",
     [BIND_EMULATOR_PAUSE] = "pause",
     [BIND_EMULATOR_STOP] = "stop",
     [BIND_EMULATOR_RESET] = "reset",
@@ -641,12 +641,14 @@ static
 void
 app_win_settings_bindings_bind_keyboard(
     struct app *app,
-    size_t bind
+    enum bind_actions bind
 ) {
-    SDL_Keycode *keycode;
-    char const *name;
-    char label[128];
     size_t j;
+
+    struct keyboard_binding *keyboard_layers[] = {
+        app->binds.keyboard,
+        app->binds.keyboard_alt,
+    };
 
     igTableNextRow(ImGuiTableRowFlags_None, 0.f);
 
@@ -654,10 +656,14 @@ app_win_settings_bindings_bind_keyboard(
     igTextWrapped(binds_pretty_name[bind]);
 
     for (j = 0; j < 2; ++j) {
-        keycode = (j == 0) ? &app->binds.keyboard[bind] : &app->binds.keyboard_alt[bind];
-        name = SDL_GetKeyName(*keycode);
+        struct keyboard_binding *keyboard_bind;
+        char const *name;
+        char label[128];
 
-        if (keycode == app->ui.settings.keybindings_editor.keyboard_target) {
+        keyboard_bind = &keyboard_layers[j][bind];
+        name = app_bindings_keyboard_binding_to_str(keyboard_bind);
+
+        if (keyboard_bind == app->ui.settings.keybindings_editor.keyboard_target) {
             snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsKeyboard%zu", name ?: " ", bind * 10 + j);
         } else {
             snprintf(label, sizeof(label), "%s##BindingsSettingsKeyboard%zu", name ?: "", bind * 10 + j);
@@ -665,7 +671,7 @@ app_win_settings_bindings_bind_keyboard(
 
         igTableNextColumn();
         if (igButton(label, (ImVec2){ -1.f, 0.f })) {
-            app->ui.settings.keybindings_editor.keyboard_target = keycode;
+            app->ui.settings.keybindings_editor.keyboard_target = keyboard_bind;
             app->ui.settings.keybindings_editor.controller_target = NULL;
         }
     }
@@ -677,10 +683,12 @@ app_win_settings_bindings_bind_controller(
     struct app *app,
     size_t bind
 ) {
-    SDL_GameControllerButton *button;
-    char const *name;
-    char label[128];
     size_t j;
+
+    SDL_GameControllerButton *controller_layers[] = {
+        app->binds.controller,
+        app->binds.controller_alt,
+    };
 
     igTableNextRow(ImGuiTableRowFlags_None, 0.f);
 
@@ -688,7 +696,11 @@ app_win_settings_bindings_bind_controller(
     igTextWrapped(binds_pretty_name[bind]);
 
     for (j = 0; j < 2; ++j) {
-        button = (j == 0) ? &app->binds.controller[bind] : &app->binds.controller_alt[bind];
+        SDL_GameControllerButton *button;
+        char const *name;
+        char label[128];
+
+        button = &controller_layers[j][bind];
         name = SDL_GameControllerGetStringForButton(*button);
 
         if (button == app->ui.settings.keybindings_editor.controller_target) {

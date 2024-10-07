@@ -13,6 +13,16 @@
 #include "app/app.h"
 #include "compat.h"
 
+static char const *controller_layers_name[] = {
+    "controller",
+    "controller_alt"
+};
+
+static char const *keyboard_layers_name[] = {
+    "keyboard",
+    "keyboard_alt",
+};
+
 void
 app_config_load(
     struct app *app
@@ -170,47 +180,77 @@ app_config_load(
         size_t bind;
         int len;
 
-        static char const *layers_name[] = {
-            "keyboard",
-            "keyboard_alt",
-            "controller",
-            "controller_alt"
+        struct keyboard_binding *keyboard_layers[] = {
+            app->binds.keyboard,
+            app->binds.keyboard_alt,
         };
 
-        for (layer = 0; layer < 4; ++layer) {
+        SDL_GameControllerButton *controller_layers[] = {
+            app->binds.controller,
+            app->binds.controller_alt,
+        };
+
+        for (layer = 0; layer < array_length(keyboard_layers_name); ++layer) {
             for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
-                snprintf(path, sizeof(path), "$.binds.%s.%s", layers_name[layer], binds_slug[bind]);
+                struct keyboard_binding tmp;
+                int b;
+
+                memset(&tmp, 0, sizeof(tmp));
+
+                snprintf(path, sizeof(path), "$.binds.%s.%s.key", keyboard_layers_name[layer], binds_slug[bind]);
 
                 len = mjson_get_string(data, data_len, path, str, sizeof(str));
                 if (len < 0) {
                     continue;
                 }
 
-                if (layer <= 1) { // Keyboard
-                    SDL_Keycode *target;
-                    SDL_Keycode key;
-
-                    target = (layer == 0) ? &app->binds.keyboard[bind] : &app->binds.keyboard_alt[bind];
-                    key = SDL_GetKeyFromName(str);
-
-                    // Clear any binding with that key and then set the binding
-                    if (key != SDLK_UNKNOWN) {
-                        app_bindings_keyboard_clear(app, key);
-                    }
-                    *target = key;
-                } else { // Controller
-                    SDL_GameControllerButton *target;
-                    SDL_GameControllerButton button;
-
-                    target = (layer == 2) ? &app->binds.controller[bind] : &app->binds.controller_alt[bind];
-                    button = SDL_GameControllerGetButtonFromString(str);
-
-                    // Clear any binding with that button and then set the binding
-                    if (button != SDL_CONTROLLER_BUTTON_INVALID) {
-                        app_bindings_controller_clear(app, button);
-                    }
-                    *target = button;
+                tmp.key = SDL_GetKeyFromName(str);
+                if (tmp.key == SDLK_UNKNOWN) {
+                    // Set the binding for that key to be invalid.
+                    app_bindings_keyboard_binding_clear(app, &tmp);
+                    continue;
                 }
+
+                snprintf(path, sizeof(path), "$.binds.%s.%s.ctrl", keyboard_layers_name[layer], binds_slug[bind]);
+                if (mjson_get_bool(data, data_len, path, &b)) {
+                    tmp.ctrl = b;
+                }
+
+                snprintf(path, sizeof(path), "$.binds.%s.%s.alt", keyboard_layers_name[layer], binds_slug[bind]);
+                if (mjson_get_bool(data, data_len, path, &b)) {
+                    tmp.alt = b;
+                }
+
+                snprintf(path, sizeof(path), "$.binds.%s.%s.shift", keyboard_layers_name[layer], binds_slug[bind]);
+                if (mjson_get_bool(data, data_len, path, &b)) {
+                    tmp.shift = b;
+                }
+
+                // Clear any binding with that key and then set the binding
+                app_bindings_keyboard_binding_clear(app, &tmp);
+                keyboard_layers[layer][bind] = tmp;
+            }
+        }
+
+        for (layer = 0; layer < array_length(controller_layers_name); ++layer) {
+            for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
+                SDL_GameControllerButton button;
+
+                snprintf(path, sizeof(path), "$.binds.%s.%s", controller_layers_name[layer], binds_slug[bind]);
+
+                len = mjson_get_string(data, data_len, path, str, sizeof(str));
+                if (len < 0) {
+                    continue;
+                }
+
+                button = SDL_GameControllerGetButtonFromString(str);
+
+                // Clear any binding with that button and then set the binding
+                if (button != SDL_CONTROLLER_BUTTON_INVALID) {
+                    app_bindings_controller_binding_clear(app, button);
+                }
+
+                controller_layers[layer][bind] = button;
             }
         }
     }
@@ -228,8 +268,6 @@ app_config_save(
     int out;
     char *data;
     char *pretty_data;
-    char *keyboard_binds_name[BIND_MAX];
-    size_t i;
 
     data = NULL;
     pretty_data = NULL;
@@ -239,12 +277,6 @@ app_config_save(
     if (!config_file) {
         logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
         return;
-    }
-
-    // We need to fill `keyboard_binds_name` with a copy of all the keyboard's bind name because
-    // the output of `SDL_GetKeyName()` lasts only until the next call to the function.
-    for (i = 0; i < BIND_MAX; ++i) {
-        keyboard_binds_name[i] = strdup(SDL_GetKeyName(app->binds.keyboard[i]));
     }
 
     data = mjson_aprintf(
@@ -335,24 +367,66 @@ app_config_save(
         size_t layer;
         size_t bind;
 
-        static char const *layers_name[] = {
-            "keyboard",
-            "keyboard_alt",
-            "controller",
-            "controller_alt"
+        struct keyboard_binding *keyboard_layers[] = {
+            app->binds.keyboard,
+            app->binds.keyboard_alt,
         };
 
-        for (layer = 0; layer < 4; ++layer) {
-            for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
-                char *tmp_data;
-                char const *key_name;
+        SDL_GameControllerButton *controller_layers[] = {
+            app->binds.controller,
+            app->binds.controller_alt,
+        };
 
-                switch (layer) {
-                    case 0: key_name = SDL_GetKeyName(app->binds.keyboard[bind]); break;
-                    case 1: key_name = SDL_GetKeyName(app->binds.keyboard_alt[bind]); break;
-                    case 2: key_name = SDL_GameControllerGetStringForButton(app->binds.controller[bind]); break;
-                    case 3: key_name = SDL_GameControllerGetStringForButton(app->binds.controller_alt[bind]); break;
-                }
+        for (layer = 0; layer < array_length(keyboard_layers_name); ++layer) {
+            for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
+                struct keyboard_binding const *keyboard_bind;
+                char const *key_name;
+                char *tmp_data;
+
+                keyboard_bind = &keyboard_layers[layer][bind];
+                key_name = SDL_GetKeyName(keyboard_bind->key);
+
+                // Build a temporary JSON containing our bind
+                mjson_snprintf(
+                    str,
+                    sizeof(str),
+                    STR({
+                        "binds": {
+                            "%s": {
+                                "%s": {
+                                    "key": "%s",
+                                    "ctrl": %B,
+                                    "alt": %B,
+                                    "shift": %B
+                                },
+                            },
+                        },
+                    }),
+                    keyboard_layers_name[layer],
+                    binds_slug[bind],
+                    key_name ?: "",
+                    keyboard_bind->ctrl,
+                    keyboard_bind->alt,
+                    keyboard_bind->shift
+                );
+
+                tmp_data = NULL;
+
+                // Merge that json with the previous one into `tmp_data`.
+                mjson_merge(data, strlen(data), str, strlen(str), mjson_print_dynamic_buf, &tmp_data);
+
+                // Swap `data` with `tmp_data`.
+                free(data);
+                data = tmp_data;
+            }
+        }
+
+        for (layer = 0; layer < array_length(controller_layers_name); ++layer) {
+            for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
+                char const *button_name;
+                char *tmp_data;
+
+                button_name = SDL_GameControllerGetStringForButton(controller_layers[layer][bind]);
 
                 // Build a temporary JSON containing our bind
                 snprintf(
@@ -361,13 +435,13 @@ app_config_save(
                     STR({
                         "binds": {
                             "%s": {
-                                "%s": "%s",
+                                "%s": %s
                             },
                         },
                     }),
-                    layers_name[layer],
+                    controller_layers_name[layer],
                     binds_slug[bind],
-                    key_name ?: ""
+                    button_name ?: ""
                 );
 
                 tmp_data = NULL;
@@ -394,10 +468,6 @@ app_config_save(
     }
 
 end:
-    for (i = 0; i < BIND_MAX; ++i) {
-        free(keyboard_binds_name[i]);
-    }
-
     free(data);
     free(pretty_data);
     fclose(config_file);

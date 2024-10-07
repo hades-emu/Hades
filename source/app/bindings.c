@@ -10,6 +10,7 @@
 #include <SDL2/SDL.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
+#include "SDL_keycode.h"
 #include "app/app.h"
 
 void
@@ -19,33 +20,42 @@ app_bindings_setup_default(
     size_t i;
 
     for (i = BIND_MIN; i < BIND_MAX; ++i) {
-        app->binds.keyboard[i] = SDLK_UNKNOWN;
-        app->binds.keyboard_alt[i] = SDLK_UNKNOWN;
+        app_bindings_keyboard_binding_build(&app->binds.keyboard[i], SDLK_UNKNOWN, false, false, false);
+        app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[i], SDLK_UNKNOWN, false, false, false);
+    }
+
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_A], SDL_GetKeyFromName("P"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_B], SDL_GetKeyFromName("L"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_L], SDL_GetKeyFromName("E"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_R], SDL_GetKeyFromName("O"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_UP], SDL_GetKeyFromName("W"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_DOWN], SDL_GetKeyFromName("S"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_LEFT], SDL_GetKeyFromName("A"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_RIGHT], SDL_GetKeyFromName("D"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_START], SDL_GetKeyFromName("Return"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_SELECT], SDL_GetKeyFromName("Backspace"), false, false, false);
+
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_RESET], SDL_GetKeyFromName("R"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_MUTE], SDL_GetKeyFromName("M"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_PAUSE], SDL_GetKeyFromName("P"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT], SDL_GetKeyFromName("F12"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_HOLD], SDL_GetKeyFromName("Space"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE], SDL_GetKeyFromName("Space"), true, false, false);
+
+    for (i = 0; i < MAX_QUICKSAVES && i < 10; ++i) {
+        app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_QUICKSAVE_1 + i], SDL_GetKeyFromName("F1") + i, false, false, false);
+        app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_QUICKLOAD_1 + i], SDL_GetKeyFromName("F1") + i, false, true, false);
+    }
+
+    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_UP], SDL_GetKeyFromName("Up"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_DOWN], SDL_GetKeyFromName("Down"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_LEFT], SDL_GetKeyFromName("Left"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_RIGHT], SDL_GetKeyFromName("Right"), false, false, false);
+
+    for (i = BIND_MIN; i < BIND_MAX; ++i) {
         app->binds.controller[i] = SDL_CONTROLLER_BUTTON_INVALID;
         app->binds.controller_alt[i] = SDL_CONTROLLER_BUTTON_INVALID;
     }
-
-    app->binds.keyboard[BIND_GBA_A] = SDL_GetKeyFromName("P");
-    app->binds.keyboard[BIND_GBA_B] = SDL_GetKeyFromName("L");
-    app->binds.keyboard[BIND_GBA_L] = SDL_GetKeyFromName("E");
-    app->binds.keyboard[BIND_GBA_R] = SDL_GetKeyFromName("O");
-    app->binds.keyboard[BIND_GBA_UP] = SDL_GetKeyFromName("W");
-    app->binds.keyboard[BIND_GBA_DOWN] = SDL_GetKeyFromName("S");
-    app->binds.keyboard[BIND_GBA_LEFT] = SDL_GetKeyFromName("A");
-    app->binds.keyboard[BIND_GBA_RIGHT] = SDL_GetKeyFromName("D");
-    app->binds.keyboard[BIND_GBA_START] = SDL_GetKeyFromName("Return");
-    app->binds.keyboard[BIND_GBA_SELECT] = SDL_GetKeyFromName("Backspace");
-    app->binds.keyboard[BIND_EMULATOR_MUTE] = SDL_GetKeyFromName("M");
-    app->binds.keyboard[BIND_EMULATOR_SCREENSHOT] = SDL_GetKeyFromName("F2");
-    app->binds.keyboard[BIND_EMULATOR_PAUSE] = SDL_GetKeyFromName("F3");
-    app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_HOLD] = SDL_GetKeyFromName("Space");
-    app->binds.keyboard[BIND_EMULATOR_QUICKSAVE_1] = SDL_GetKeyFromName("F5");
-    app->binds.keyboard[BIND_EMULATOR_QUICKLOAD_1] = SDL_GetKeyFromName("F8");
-
-    app->binds.keyboard_alt[BIND_GBA_UP] = SDL_GetKeyFromName("Up");
-    app->binds.keyboard_alt[BIND_GBA_DOWN] = SDL_GetKeyFromName("Down");
-    app->binds.keyboard_alt[BIND_GBA_LEFT] = SDL_GetKeyFromName("Left");
-    app->binds.keyboard_alt[BIND_GBA_RIGHT] = SDL_GetKeyFromName("Right");
 
     app->binds.controller[BIND_GBA_A] = SDL_CONTROLLER_BUTTON_A;
     app->binds.controller[BIND_GBA_B] = SDL_CONTROLLER_BUTTON_B;
@@ -69,22 +79,81 @@ app_bindings_setup_default(
 }
 
 /*
+** Setup the content of `bind` to match when `key` is pressed with the given modifiers.
+*/
+void
+app_bindings_keyboard_binding_build(
+    struct keyboard_binding *bind,
+    SDL_Keycode key,
+    bool ctrl,
+    bool alt,
+    bool shift
+) {
+    bind->key = key;
+    bind->ctrl = ctrl;
+    bind->alt = alt;
+    bind->shift = shift;
+}
+
+/*
+** Return true if the two given bindings match.
+*/
+bool
+app_bindings_keyboard_binding_match(
+    struct keyboard_binding const *left,
+    struct keyboard_binding const *right
+) {
+    return left->key == right->key
+        && left->ctrl == right->ctrl
+        && left->alt == right->alt
+        && left->shift == right->shift
+    ;
+}
+
+/*
+** Return the user-printable name of the given bind.
+** Eg: `Ctrl-Alt-P`.
+**
+** The return value must be freed.
+*/
+char *
+app_bindings_keyboard_binding_to_str(
+    struct keyboard_binding const *bind
+) {
+    char const *key_name;
+
+    key_name = SDL_GetKeyName(bind->key);
+
+    if (!key_name) {
+        return NULL;
+    }
+
+    return hs_format(
+        "%s%s%s%s",
+        bind->ctrl ? "Ctrl-" : "",
+        bind->alt ? "Alt-" : "",
+        bind->shift ? "Shift-" : "",
+        key_name
+    );
+}
+
+/*
 ** Clear any existing keyboard bindings matching the given key.
 */
 void
-app_bindings_keyboard_clear(
+app_bindings_keyboard_binding_clear(
     struct app *app,
-    SDL_Keycode key
+    struct keyboard_binding const *binding
 ) {
     size_t i;
 
     for (i = BIND_MIN; i < BIND_MAX; ++i) {
-        if (app->binds.keyboard[i] == key) {
-            app->binds.keyboard[i] = SDLK_UNKNOWN;
+        if (app_bindings_keyboard_binding_match(&app->binds.keyboard[i], binding)) {
+            app_bindings_keyboard_binding_build(&app->binds.keyboard[i], SDLK_UNKNOWN, false, false, false);
         }
 
-        if (app->binds.keyboard_alt[i] == key) {
-            app->binds.keyboard_alt[i] = SDLK_UNKNOWN;
+        if (app_bindings_keyboard_binding_match(&app->binds.keyboard_alt[i], binding)) {
+            app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[i], SDLK_UNKNOWN, false, false, false);
         }
     }
 }
@@ -93,7 +162,7 @@ app_bindings_keyboard_clear(
 ** Clear any existing controller bindings matching the given key.
 */
 void
-app_bindings_controller_clear(
+app_bindings_controller_binding_clear(
     struct app *app,
     SDL_GameControllerButton btn
 ) {

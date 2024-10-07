@@ -81,8 +81,8 @@ enum bind_actions {
     BIND_GBA_START,
     BIND_GBA_SELECT,
 
-    BIND_EMULATOR_MUTE,
     BIND_EMULATOR_SCREENSHOT,
+    BIND_EMULATOR_MUTE,
     BIND_EMULATOR_PAUSE,
     BIND_EMULATOR_STOP,
     BIND_EMULATOR_RESET,
@@ -121,7 +121,7 @@ enum bind_actions {
 
     BIND_GBA_MIN = BIND_GBA_A,
     BIND_GBA_MAX = BIND_GBA_SELECT,
-    BIND_EMULATOR_MIN = BIND_EMULATOR_MUTE,
+    BIND_EMULATOR_MIN = BIND_EMULATOR_SCREENSHOT,
     BIND_EMULATOR_MAX = BIND_EMULATOR_QUICKLOAD_10,
 };
 
@@ -150,6 +150,15 @@ struct app_notification {
     uint64_t timeout;
     uint64_t fade_time_start;
     struct app_notification *next;
+};
+
+struct keyboard_binding {
+    SDL_Keycode key;
+
+    // Modifiers
+    bool ctrl;
+    bool alt;
+    bool shift;
 };
 
 struct settings {
@@ -408,7 +417,7 @@ struct app {
             uint32_t menu;
 
             struct {
-                SDL_Keycode *keyboard_target;
+                struct keyboard_binding *keyboard_target;
                 SDL_GameControllerButton *controller_target;
             } keybindings_editor;
         } settings;
@@ -417,8 +426,8 @@ struct app {
     } ui;
 
     struct {
-        SDL_Keycode keyboard[BIND_MAX];
-        SDL_Keycode keyboard_alt[BIND_MAX];
+        struct keyboard_binding keyboard[BIND_MAX];
+        struct keyboard_binding keyboard_alt[BIND_MAX];
         SDL_GameControllerButton controller[BIND_MAX];
         SDL_GameControllerButton controller_alt[BIND_MAX];
     } binds;
@@ -499,8 +508,11 @@ void app_args_parse(struct app *app, int argc, char * const argv[]);
 
 /* bindings.c */
 void app_bindings_setup_default(struct app *app);
-void app_bindings_keyboard_clear(struct app *app, SDL_Keycode key);
-void app_bindings_controller_clear(struct app *app, SDL_GameControllerButton btn);
+void app_bindings_keyboard_binding_build(struct keyboard_binding *, SDL_Keycode key, bool ctrl, bool alt, bool shift);
+void app_bindings_keyboard_binding_clear(struct app *app, struct keyboard_binding const *binding);
+bool app_bindings_keyboard_binding_match(struct keyboard_binding const *, struct keyboard_binding const *);
+char *app_bindings_keyboard_binding_to_str(struct keyboard_binding const *bind);
+void app_bindings_controller_binding_clear(struct app *app, SDL_GameControllerButton btn);
 void app_bindings_handle(struct app *app, enum bind_actions bind, bool pressed);
 
 /* config.c */

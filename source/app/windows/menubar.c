@@ -93,18 +93,19 @@ void
 app_win_menubar_emulation(
     struct app *app
 ) {
-    char const *bind;
+    char *bind_str;
 
     if (igBeginMenu("Emulation", true)) {
 
         if (igBeginMenu("Speed", app->emulation.is_started)) {
             uint32_t x;
 
-            bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE]);
-            if (igMenuItem_Bool("Fast Forward", bind ?: "", app->settings.emulation.fast_forward, true)) {
+            bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE]);
+            if (igMenuItem_Bool("Fast Forward", bind_str ?: "", app->settings.emulation.fast_forward, true)) {
                 app->settings.emulation.fast_forward ^= true;
                 app_emulator_settings(app);
             }
+            free(bind_str);
 
             igSeparator();
 
@@ -130,14 +131,13 @@ app_win_menubar_emulation(
 
             igBeginDisabled(app->settings.emulation.fast_forward);
             for (x = 0; x < array_length(speeds); ++x) {
-                char const *bind;
-
-                bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SPEED_X0_25 + x]);
-                if (igMenuItem_Bool(speeds_str[x], bind ?: "", app->settings.emulation.speed >= speeds[x] - 0.01 && app->settings.emulation.speed <= speeds[x] + 0.01, true)) {
+                bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_SPEED_X0_25 + x]);
+                if (igMenuItem_Bool(speeds_str[x], bind_str ?: "", app->settings.emulation.speed >= speeds[x] - 0.01 && app->settings.emulation.speed <= speeds[x] + 0.01, true)) {
                     app->settings.emulation.speed = speeds[x];
                     app->settings.emulation.fast_forward = false;
                     app_emulator_settings(app);
                 }
+                free(bind_str);
             }
             igEndDisabled();
 
@@ -237,24 +237,27 @@ app_win_menubar_emulation(
 
         igSeparator();
 
-        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_PAUSE]);
-        if (igMenuItem_Bool("Pause", bind ?: "", !app->emulation.is_running, app->emulation.is_started)) {
+        bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_PAUSE]);
+        if (igMenuItem_Bool("Pause", bind_str ?: "", !app->emulation.is_running, app->emulation.is_started)) {
             if (app->emulation.is_running) {
                 app_emulator_pause(app);
             } else {
                 app_emulator_run(app);
             }
         }
+        free(bind_str);
 
-        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_STOP]);
-        if (igMenuItem_Bool("Stop", bind ?: "", false, app->emulation.is_started)) {
+        bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_STOP]);
+        if (igMenuItem_Bool("Stop", bind_str ?: "", false, app->emulation.is_started)) {
             app_emulator_stop(app);
         }
+        free(bind_str);
 
-        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_RESET]);
-        if (igMenuItem_Bool("Reset", bind ?: "", false, app->emulation.is_started)) {
+        bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_RESET]);
+        if (igMenuItem_Bool("Reset", bind_str ?: "", false, app->emulation.is_started)) {
             app_emulator_reset(app);
         }
+        free(bind_str);
 
         igSeparator();
 
@@ -272,7 +275,7 @@ void
 app_win_menubar_video(
     struct app *app
 ) {
-    char const *bind;
+    char *bind_str;
 
     if (igBeginMenu("Video", true)) {
 
@@ -312,10 +315,11 @@ app_win_menubar_video(
         igSeparator();
 
         /* Take a screenshot */
-        bind = SDL_GetKeyName(app->binds.keyboard[BIND_EMULATOR_SCREENSHOT]);
-        if (igMenuItem_Bool("Take Screenshot", bind ?: "", false, app->emulation.is_started)) {
+        bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT]);
+        if (igMenuItem_Bool("Take Screenshot", bind_str ?: "", false, app->emulation.is_started)) {
             app_emulator_screenshot(app);
         }
+        free(bind_str);
 
         /* Pixel Color Effect */
         if (igBeginMenu("Color Effect", true)) {

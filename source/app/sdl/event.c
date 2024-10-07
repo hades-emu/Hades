@@ -10,6 +10,7 @@
 #include <SDL2/SDL.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
+#include "SDL_keycode.h"
 #include "hades.h"
 #include "app/app.h"
 
@@ -133,12 +134,29 @@ app_sdl_handle_events(
             };
             case SDL_KEYDOWN:
             case SDL_KEYUP: {
+                struct keyboard_binding bind;
                 size_t i;
 
-                /* Ignore repeat keys */
+                // Ignore repeat keys
                 if (event.key.repeat) {
                     break;
                 }
+
+                if (
+                       event.key.keysym.sym == SDLK_LCTRL
+                    || event.key.keysym.sym == SDLK_RCTRL
+                    || event.key.keysym.sym == SDLK_LALT
+                    || event.key.keysym.sym == SDLK_RALT
+                    || event.key.keysym.sym == SDLK_LSHIFT
+                    || event.key.keysym.sym == SDLK_RSHIFT
+                ) {
+                    break;
+                }
+
+                bind.key = event.key.keysym.sym;
+                bind.ctrl = event.key.keysym.mod & KMOD_CTRL;
+                bind.alt = event.key.keysym.mod & KMOD_ALT;
+                bind.shift = event.key.keysym.mod & KMOD_SHIFT;
 
                 /*
                 ** Ignore keys if the settings are open except the special case where we are creating new bindings.
@@ -148,7 +166,10 @@ app_sdl_handle_events(
                         // The `Escape` key is used to clear a bind.
                         if (event.key.keysym.sym == SDLK_ESCAPE) {
                             if (app->ui.settings.keybindings_editor.keyboard_target) {
-                                *app->ui.settings.keybindings_editor.keyboard_target = SDLK_UNKNOWN;
+                                app->ui.settings.keybindings_editor.keyboard_target->key = SDLK_UNKNOWN;
+                                app->ui.settings.keybindings_editor.keyboard_target->ctrl = false;
+                                app->ui.settings.keybindings_editor.keyboard_target->alt = false;
+                                app->ui.settings.keybindings_editor.keyboard_target->shift = false;
                                 app->ui.settings.keybindings_editor.keyboard_target = NULL;
                             } else if (app->ui.settings.keybindings_editor.controller_target) {
                                 *app->ui.settings.keybindings_editor.controller_target = SDL_CONTROLLER_BUTTON_INVALID;
@@ -157,8 +178,8 @@ app_sdl_handle_events(
                                 app->ui.settings.open = false;
                             }
                         } else if (app->ui.settings.keybindings_editor.keyboard_target) {
-                            app_bindings_keyboard_clear(app, event.key.keysym.sym);
-                            *app->ui.settings.keybindings_editor.keyboard_target = event.key.keysym.sym;
+                            app_bindings_keyboard_binding_clear(app, &bind);
+                            *app->ui.settings.keybindings_editor.keyboard_target = bind;
                             app->ui.settings.keybindings_editor.keyboard_target = NULL;
                         }
                     }
@@ -167,12 +188,12 @@ app_sdl_handle_events(
 
                 for (i = BIND_MIN; i < BIND_MAX; ++i) {
                     // Normal binds
-                    if (app->binds.keyboard[i] == event.key.keysym.sym) {
+                    if (app_bindings_keyboard_binding_match(&app->binds.keyboard[i], &bind)) {
                         app_bindings_handle(app, i, event.type == SDL_KEYDOWN);
                     }
 
                     // Alternative binds
-                    if (app->binds.keyboard_alt[i] == event.key.keysym.sym) {
+                    if (app_bindings_keyboard_binding_match(&app->binds.keyboard_alt[i], &bind)) {
                         app_bindings_handle(app, i, event.type == SDL_KEYDOWN);
                     }
                 }
@@ -188,7 +209,7 @@ app_sdl_handle_events(
                 */
                 if (app->ui.settings.open) {
                     if (event.type == SDL_CONTROLLERBUTTONDOWN && app->ui.settings.keybindings_editor.controller_target) {
-                        app_bindings_controller_clear(app, event.cbutton.button);
+                        app_bindings_controller_binding_clear(app, event.cbutton.button);
                         *app->ui.settings.keybindings_editor.controller_target = event.cbutton.button;
                         app->ui.settings.keybindings_editor.controller_target = NULL;
                     }
