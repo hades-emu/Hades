@@ -84,6 +84,7 @@ main(
 #ifdef WITH_DEBUGGER
     pthread_t dbg_thread;
 #endif
+    uint64_t sdl_counters[2];
 
     memset(&app, 0, sizeof(app));
     app.emulation.gba = gba_create();
@@ -156,11 +157,14 @@ main(
     );
 #endif
 
+    sdl_counters[0] = SDL_GetPerformanceCounter();
+    sdl_counters[1] = sdl_counters[0];
+
     while (app.run) {
-        uint64_t sdl_counters[2];
         float elapsed_ms;
 
-        sdl_counters[0] = SDL_GetPerformanceCounter();
+        sdl_counters[0] = sdl_counters[1];
+        sdl_counters[1] = SDL_GetPerformanceCounter();
 
         app_emulator_process_all_notifs(&app);
 
@@ -222,7 +226,6 @@ main(
             app.ui.win.resize_with_ratio = false;
         }
 
-        sdl_counters[1] = SDL_GetPerformanceCounter();
         elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
 
         // Handle the power-save mode.
