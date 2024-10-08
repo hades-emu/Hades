@@ -19,7 +19,10 @@ char const *SHADER_FRAG_GREY_SCALE = GLSL(
 
     uniform sampler2D u_screen_map;
 
-    void main() {
+    void
+    main(
+        void
+    ) {
         vec4 color = texture(u_screen_map, v_uv);
         float avg = (color.r + color.g + color.b) / 3.0;
         frag_color = vec4(avg, avg, avg, 1.0);

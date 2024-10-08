@@ -19,7 +19,10 @@ char const *SHADER_FRAG_LCD_GRID = GLSL(
 
     uniform sampler2D u_screen_map;
 
-    void main() {
+    void
+    main(
+        void
+    ) {
         vec4 color = texture(u_screen_map, v_uv);
         vec4 lcd = vec4(1.0);
 
