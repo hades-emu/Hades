@@ -216,7 +216,6 @@ app_bindings_handle(
     switch (bind) {
         case BIND_EMULATOR_SETTINGS: {
             app->ui.settings.open ^= true;
-            app->ui.settings.menu = 0;
             break;
         };
         default: break;

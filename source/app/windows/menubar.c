@@ -84,7 +84,6 @@ app_win_menubar_file(
         bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_SETTINGS]);
         if (igMenuItem_Bool("Settings", bind_str, false, true)) {
             app->ui.settings.open = true;
-            app->ui.settings.menu = 0;
         }
         free(bind_str);
 
