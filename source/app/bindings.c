@@ -38,6 +38,7 @@ app_bindings_setup_default(
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_RESET], SDL_GetKeyFromName("R"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_MUTE], SDL_GetKeyFromName("M"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_PAUSE], SDL_GetKeyFromName("P"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SETTINGS], SDL_GetKeyFromName("Escape"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT], SDL_GetKeyFromName("F12"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_HOLD], SDL_GetKeyFromName("Space"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_TOGGLE], SDL_GetKeyFromName("Space"), true, false, false);
@@ -206,14 +207,18 @@ app_bindings_handle(
         default: break;
     }
 
-    /* The next binds are only triggered when the key is pressed, not when it is released. */
+    // The next binds are only triggered when the key is pressed, not when it is released.
     if (!pressed) {
         return;
     }
 
-    /* Bindings that can be used outside of a game */
+    // Bindings that can be used both in and outside of a game
     switch (bind) {
-        // So far, none
+        case BIND_EMULATOR_SETTINGS: {
+            app->ui.settings.open ^= true;
+            app->ui.settings.menu = 0;
+            break;
+        };
         default: break;
     }
 
@@ -221,7 +226,7 @@ app_bindings_handle(
         return;
     }
 
-    /* Bindings that cannot be used outside of a game */
+    // Bindings that can only be used in game.
     switch (bind) {
         case BIND_EMULATOR_MUTE:                app->settings.audio.mute ^= 1; break;
         case BIND_EMULATOR_SCREENSHOT:          app_emulator_screenshot(app); break;
