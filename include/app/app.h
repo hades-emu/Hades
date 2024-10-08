@@ -86,15 +86,8 @@ enum bind_actions {
     BIND_EMULATOR_PAUSE,
     BIND_EMULATOR_STOP,
     BIND_EMULATOR_RESET,
-    BIND_EMULATOR_SPEED_X0_25,
-    BIND_EMULATOR_SPEED_X0_50,
-    BIND_EMULATOR_SPEED_X1,
-    BIND_EMULATOR_SPEED_X2,
-    BIND_EMULATOR_SPEED_X3,
-    BIND_EMULATOR_SPEED_X4,
-    BIND_EMULATOR_SPEED_X5,
-    BIND_EMULATOR_FAST_FORWARD_TOGGLE,
-    BIND_EMULATOR_FAST_FORWARD_HOLD,
+    BIND_EMULATOR_ALT_SPEED_HOLD,
+    BIND_EMULATOR_ALT_SPEED_TOGGLE,
     BIND_EMULATOR_QUICKSAVE_1,
     BIND_EMULATOR_QUICKSAVE_2,
     BIND_EMULATOR_QUICKSAVE_3,
@@ -166,11 +159,19 @@ struct settings {
         // BIOS Path
         char *bios_path;
 
-        // Fast forward
-        bool fast_forward;
-
         // Speed
+        //   <= 0: Unlimited
+        //   1.0: 60fps
+        //   2.0: 120fps
+        //   etc.
         float speed;
+
+        // Alternative speed
+        //   <= 0: Unlimited
+        //   1.0: 60fps
+        //   2.0: 120fps
+        //   etc.
+        float alt_speed;
 
         // Skip BIOS
         bool skip_bios;
@@ -272,6 +273,9 @@ struct app {
 
         // Current FPS
         float fps;
+
+        // Set to true when the alternative speed should be used
+        bool use_alt_speed;
 
         // The current quicksave request
         struct {

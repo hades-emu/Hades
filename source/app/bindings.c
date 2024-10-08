@@ -39,8 +39,8 @@ app_bindings_setup_default(
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_MUTE], SDL_GetKeyFromName("M"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_PAUSE], SDL_GetKeyFromName("P"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT], SDL_GetKeyFromName("F12"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_HOLD], SDL_GetKeyFromName("Space"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE], SDL_GetKeyFromName("Space"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_HOLD], SDL_GetKeyFromName("Space"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_TOGGLE], SDL_GetKeyFromName("Space"), true, false, false);
 
     for (i = 0; i < MAX_QUICKSAVES && i < 10; ++i) {
         app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_QUICKSAVE_1 + i], SDL_GetKeyFromName("F1") + i, false, false, false);
@@ -68,10 +68,9 @@ app_bindings_setup_default(
     app->binds.controller[BIND_GBA_START] = SDL_CONTROLLER_BUTTON_START;
     app->binds.controller[BIND_GBA_SELECT] = SDL_CONTROLLER_BUTTON_BACK;
     app->binds.controller[BIND_EMULATOR_SCREENSHOT] = SDL_CONTROLLER_BUTTON_GUIDE;
-    app->binds.controller[BIND_EMULATOR_SPEED_X1] = SDL_CONTROLLER_BUTTON_LEFTSTICK;
-    app->binds.controller[BIND_EMULATOR_SPEED_X2] = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
+    app->binds.controller[BIND_EMULATOR_ALT_SPEED_TOGGLE] = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
 #if SDL_VERSION_ATLEAST(2, 0, 14)
-    app->binds.controller[BIND_EMULATOR_FAST_FORWARD_HOLD] = SDL_CONTROLLER_BUTTON_TOUCHPAD;
+    app->binds.controller[BIND_EMULATOR_ALT_SPEED_HOLD] = SDL_CONTROLLER_BUTTON_TOUCHPAD;
 #endif
 
     app->binds.controller_alt[BIND_GBA_A] = SDL_CONTROLLER_BUTTON_Y;
@@ -199,8 +198,8 @@ app_bindings_handle(
         case BIND_GBA_R:                        app_emulator_key(app, KEY_R, pressed); break;
         case BIND_GBA_SELECT:                   app_emulator_key(app, KEY_SELECT, pressed); break;
         case BIND_GBA_START:                    app_emulator_key(app, KEY_START, pressed); break;
-        case BIND_EMULATOR_FAST_FORWARD_HOLD: {
-            app->settings.emulation.fast_forward = pressed;
+        case BIND_EMULATOR_ALT_SPEED_HOLD: {
+            app->emulation.use_alt_speed = pressed;
             app_emulator_settings(app);
             break;
         };
@@ -229,29 +228,8 @@ app_bindings_handle(
         case BIND_EMULATOR_PAUSE:               app->emulation.is_running ? app_emulator_pause(app) : app_emulator_run(app); break;
         case BIND_EMULATOR_STOP:                app_emulator_stop(app); break;
         case BIND_EMULATOR_RESET:               app_emulator_reset(app); break;
-        case BIND_EMULATOR_SPEED_X0_25:
-        case BIND_EMULATOR_SPEED_X0_50:
-        case BIND_EMULATOR_SPEED_X1:
-        case BIND_EMULATOR_SPEED_X2:
-        case BIND_EMULATOR_SPEED_X3:
-        case BIND_EMULATOR_SPEED_X4:
-        case BIND_EMULATOR_SPEED_X5: {
-            float speeds[] = {
-                0.25f,
-                0.50f,
-                1.00f,
-                2.00f,
-                3.00f,
-                4.00f,
-                5.00f,
-            };
-            app->settings.emulation.fast_forward = false;
-            app->settings.emulation.speed = speeds[bind - BIND_EMULATOR_SPEED_X0_25];
-            app_emulator_settings(app);
-            break;
-        };
-        case BIND_EMULATOR_FAST_FORWARD_TOGGLE: {
-            app->settings.emulation.fast_forward ^= true;
+        case BIND_EMULATOR_ALT_SPEED_TOGGLE: {
+            app->emulation.use_alt_speed ^= true;
             app_emulator_settings(app);
             break;
         }

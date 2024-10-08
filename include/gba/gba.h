@@ -82,7 +82,7 @@ struct gba_settings {
     bool fast_forward;
 
     // Speed. 0.5 = 30fps, 1 = 60fps, 2 = 120fps, etc.
-    // Can't be 0 unless `fast_forward` is true.
+    // Can't be <= 0.0 unless `fast_forward` is true.
     float speed;
 
     struct {

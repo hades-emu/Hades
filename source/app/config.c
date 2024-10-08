@@ -77,11 +77,11 @@ app_config_load(
         double d;
 
         if (mjson_get_number(data, data_len, "$.emulation.speed", &d)) {
-            app->settings.emulation.speed = max(0.0, min(d, 5.0));
+            app->settings.emulation.speed = d;
         }
 
-        if (mjson_get_bool(data, data_len, "$.emulation.fast_forward", &b)) {
-            app->settings.emulation.fast_forward = b;
+        if (mjson_get_number(data, data_len, "$.emulation.alt_speed", &d)) {
+            app->settings.emulation.alt_speed = d;
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.backup_storage.autodetect", &b)) {
@@ -291,7 +291,7 @@ app_config_save(
             "emulation": {
                 "skip_bios": %B,
                 "speed": %g,
-                "fast_forward": %B,
+                "alt_speed": %g,
                 "backup_storage": {
                     "autodetect": %B,
                     "type": %d
@@ -338,7 +338,7 @@ app_config_save(
         app->file.recent_roms[9],
         (int)app->settings.emulation.skip_bios,
         app->settings.emulation.speed,
-        (int)app->settings.emulation.fast_forward,
+        app->settings.emulation.alt_speed,
         (int)app->settings.emulation.backup_storage.autodetect,
         (int)app->settings.emulation.backup_storage.type,
         (int)app->settings.emulation.gpio_device.autodetect,

@@ -96,52 +96,64 @@ app_win_menubar_emulation(
     char *bind_str;
 
     if (igBeginMenu("Emulation", true)) {
+        size_t i;
 
-        if (igBeginMenu("Speed", app->emulation.is_started)) {
-            uint32_t x;
+        float *speeds_ptr[] = {
+            &app->settings.emulation.speed,
+            &app->settings.emulation.alt_speed,
+        };
 
-            bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_FAST_FORWARD_TOGGLE]);
-            if (igMenuItem_Bool("Fast Forward", bind_str ?: "", app->settings.emulation.fast_forward, true)) {
-                app->settings.emulation.fast_forward ^= true;
-                app_emulator_settings(app);
-            }
-            free(bind_str);
+        char const *speeds_name[] = {
+            "Speed",
+            "Alternative Speed"
+        };
 
-            igSeparator();
+        // Speed & Alt speed
+        for (i = 0; i < array_length(speeds_ptr); ++i) {
+            if (igBeginMenu(speeds_name[i], app->emulation.is_started)) {
+                uint32_t x;
 
-            char const *speeds_str[] = {
-                "25%  (15fps)",
-                "50%  (30fps)",
-                "100% (60fps)",
-                "200% (120fps)",
-                "300% (180fps)",
-                "400% (240fps)",
-                "500% (300fps)",
-            };
+                static char const *speeds_str[] = {
+                    "25%  (15fps)",
+                    "50%  (30fps)",
+                    "100% (60fps)",
+                    "150% (90fps)",
+                    "200% (120fps)",
+                    "300% (180fps)",
+                    "400% (240fps)",
+                    "500% (300fps)",
+                    "Fast forward",
+                };
 
-            float speeds[] = {
-                0.25f,
-                0.50f,
-                1.00f,
-                2.00f,
-                3.00f,
-                4.00f,
-                5.00f,
-            };
+                static float speeds_value[] = {
+                    0.25f,
+                    0.50f,
+                    1.00f,
+                    1.50f,
+                    2.00f,
+                    3.00f,
+                    4.00f,
+                    5.00f,
+                    -1.00f,
+                };
 
-            igBeginDisabled(app->settings.emulation.fast_forward);
-            for (x = 0; x < array_length(speeds); ++x) {
-                bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_SPEED_X0_25 + x]);
-                if (igMenuItem_Bool(speeds_str[x], bind_str ?: "", app->settings.emulation.speed >= speeds[x] - 0.01 && app->settings.emulation.speed <= speeds[x] + 0.01, true)) {
-                    app->settings.emulation.speed = speeds[x];
-                    app->settings.emulation.fast_forward = false;
-                    app_emulator_settings(app);
+                for (x = 0; x < array_length(speeds_value); ++x) {
+                    bool is_equal;
+
+                    if (speeds_value[x] <= 0.0) {
+                        is_equal = *speeds_ptr[i] <= 0;
+                    } else {
+                        is_equal = *speeds_ptr[i] >= speeds_value[x] - 0.01 && *speeds_ptr[i] <= speeds_value[x] + 0.01;
+                    }
+
+                    if (igMenuItem_Bool(speeds_str[x], NULL, is_equal, true)) {
+                        *speeds_ptr[i] = speeds_value[x];
+                        app_emulator_settings(app);
+                    }
                 }
-                free(bind_str);
-            }
-            igEndDisabled();
 
-            igEndMenu();
+                igEndMenu();
+            }
         }
 
         igSeparator();

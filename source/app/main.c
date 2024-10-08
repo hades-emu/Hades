@@ -53,7 +53,7 @@ app_settings_default(
     free(settings->emulation.bios_path);
 
     settings->emulation.speed = 1.0;
-    settings->emulation.fast_forward = false;
+    settings->emulation.alt_speed = -1.0;
     settings->emulation.backup_storage.autodetect = true;
     settings->emulation.backup_storage.type = BACKUP_NONE;
     settings->emulation.gpio_device.autodetect = true;

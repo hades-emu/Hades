@@ -43,26 +43,6 @@ static char const *aspect_ratio_names[ASPECT_RATIO_LEN] = {
     [ASPECT_RATIO_STRETCH] = "Stretch",
 };
 
-char const *speeds_str[] = {
-    "25% (15fps)",
-    "50% (30fps)",
-    "100% (60fps)",
-    "200% (120fps)",
-    "300% (180fps)",
-    "400% (240fps)",
-    "500% (300fps)",
-};
-
-float speeds[] = {
-    0.25f,
-    0.50f,
-    1.00f,
-    2.00f,
-    3.00f,
-    4.00f,
-    5.00f,
-};
-
 static char const * const display_size_names[] = {
     "x1",
     "x2",
@@ -88,15 +68,8 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_PAUSE] = "Pause",
     [BIND_EMULATOR_STOP] = "Stop",
     [BIND_EMULATOR_RESET] = "Reset",
-    [BIND_EMULATOR_SPEED_X0_25] = "Speed 25% (15fps)",
-    [BIND_EMULATOR_SPEED_X0_50] = "Speed 50% (30fps)",
-    [BIND_EMULATOR_SPEED_X1] = "Speed 100% (60fps)",
-    [BIND_EMULATOR_SPEED_X2] = "Speed 200% (120fps)",
-    [BIND_EMULATOR_SPEED_X3] = "Speed 300% (180fps)",
-    [BIND_EMULATOR_SPEED_X4] = "Speed 400% (240fps)",
-    [BIND_EMULATOR_SPEED_X5] = "Speed 500% (300fps)",
-    [BIND_EMULATOR_FAST_FORWARD_TOGGLE] = "Fast Forward (Toggle)",
-    [BIND_EMULATOR_FAST_FORWARD_HOLD] = "Fast Forward (Hold)",
+    [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "Alt. Speed (Toggle)",
+    [BIND_EMULATOR_ALT_SPEED_HOLD] = "Alt. Speed (Hold)",
     [BIND_EMULATOR_QUICKSAVE_1] = "Quicksave 1",
     [BIND_EMULATOR_QUICKSAVE_2] = "Quicksave 2",
     [BIND_EMULATOR_QUICKSAVE_3] = "Quicksave 3",
@@ -136,15 +109,8 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_PAUSE] = "pause",
     [BIND_EMULATOR_STOP] = "stop",
     [BIND_EMULATOR_RESET] = "reset",
-    [BIND_EMULATOR_SPEED_X0_25] = "speed_x0_25",
-    [BIND_EMULATOR_SPEED_X0_50] = "speed_x0_50",
-    [BIND_EMULATOR_SPEED_X1] = "speed_x1",
-    [BIND_EMULATOR_SPEED_X2] = "speed_x2",
-    [BIND_EMULATOR_SPEED_X3] = "speed_x3",
-    [BIND_EMULATOR_SPEED_X4] = "speed_x4",
-    [BIND_EMULATOR_SPEED_X5] = "speed_x5",
-    [BIND_EMULATOR_FAST_FORWARD_TOGGLE] = "fast_forward_toggle",
-    [BIND_EMULATOR_FAST_FORWARD_HOLD] = "fast_forward_hold",
+    [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "alternative_speed_toggle",
+    [BIND_EMULATOR_ALT_SPEED_HOLD] = "alternative_speed_hold",
     [BIND_EMULATOR_QUICKSAVE_1] = "quicksave_1",
     [BIND_EMULATOR_QUICKSAVE_2] = "quicksave_2",
     [BIND_EMULATOR_QUICKSAVE_3] = "quicksave_3",
@@ -173,9 +139,6 @@ app_win_settings_emulation(
     struct app *app
 ) {
     ImGuiViewport *vp;
-    char buffer[16];
-    float speed;
-    uint32_t i;
 
     vp = igGetMainViewport();
 
@@ -232,48 +195,81 @@ app_win_settings_emulation(
     igSeparatorText("Speed");
 
     if (igBeginTable("##EmulationSettingsSpeed", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        size_t i;
+
+        float *speeds[] = {
+            &app->settings.emulation.speed,
+            &app->settings.emulation.alt_speed,
+        };
+
+        char const *speeds_name[] = {
+            "Speed",
+            "Alternative Speed"
+        };
+
+        char const *labels_name[] = {
+            "##EmulationSettingsSpeedSlider",
+            "##EmulationSettingsAltSpeedSlider",
+        };
+
         igTableSetupColumn("##EmulationSettingsSpeedLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##EmulationSettingsSpeedValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-        // Fast Forward
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Fast Forward");
-
-        igTableNextColumn();
-        if (igCheckbox("##FastForward", &app->settings.emulation.fast_forward)) {
-            app_emulator_settings(app);
-        }
-
-        // Speed
-        igBeginDisabled(app->settings.emulation.fast_forward);
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Speed");
-
-        igTableNextColumn();
-
-        speed = app->settings.emulation.speed;
+        // Speed & Alt speed
         for (i = 0; i < array_length(speeds); ++i) {
-            if (app->settings.emulation.speed >= speeds[i] - 0.01 && app->settings.emulation.speed <= speeds[i] + 0.01) {
-                speed = speeds[i];
-                break;
+            char label[32];
+            int new_speed;
+            int min_speed;
+            int max_speed;
+            int fast_forward_speed;
+
+            // Adjust the speed to be a percentage rounded to the nearest multiple of 5.
+            new_speed = *speeds[i] * 100.0;
+            new_speed = new_speed + 2;
+            new_speed -= new_speed % 5;
+
+            // Minimum and maximum adjustable speed
+            min_speed = 10;
+            max_speed = 500;
+
+            // Adjust the "fast-forward" speed (which is represented as `speed <= 0.0`) as a number
+            // above `max_speed` to enable it by dragging the slider to the right as far as possible.
+            fast_forward_speed = max_speed + 1;
+
+            igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+            igTableNextColumn();
+            igTextWrapped(speeds_name[i]);
+
+            igTableNextColumn();
+
+            if (new_speed <= 0) {
+                new_speed = fast_forward_speed;
+                snprintf(label, sizeof(label), "Fast forward");
+            } else {
+                // The 4 % are here to escape it twice, ensuring that igSliderFloat doesn't fail when
+                // parsing the format string.
+                snprintf(label, sizeof(label), "%i%%%%", new_speed);
             }
-        }
 
-        snprintf(buffer, sizeof(buffer), "%.0f%%", speed * 100.f);
-
-        if (igBeginCombo("##Speed", buffer, ImGuiComboFlags_None)) {
-            for (i = 0; i < array_length(speeds_str); ++i) {
-                if (igSelectable_Bool(speeds_str[i], speed >= speeds[i] - 0.01 && speed <= speeds[i] + 0.01, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
-                    app->settings.emulation.speed = speeds[i];
-                    app->settings.emulation.fast_forward = false;
-                    app_emulator_settings(app);
+            if (igSliderInt(
+                labels_name[i],
+                &new_speed,
+                min_speed,
+                fast_forward_speed,
+                label,
+                ImGuiSliderFlags_AlwaysClamp
+            )) {
+                if (new_speed >= fast_forward_speed || new_speed <= 0)
+                    *speeds[i] = -1.0;
+                else {
+                    // Round to nearest multiple of 5 and normalize
+                    new_speed = new_speed + 2;
+                    new_speed -= new_speed % 5;
+                    *speeds[i] = new_speed / 100.0;
                 }
+                app_emulator_settings(app);
             }
-            igEndCombo();
         }
-        igEndDisabled();
 
         igEndTable();
     }

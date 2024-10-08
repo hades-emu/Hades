@@ -182,10 +182,19 @@ app_emulator_fill_gba_settings(
     struct app const *app,
     struct gba_settings *settings
 ) {
+    float speed;
+
     memset(settings, 0, sizeof(*settings));
 
-    settings->fast_forward = app->settings.emulation.fast_forward;
-    settings->speed = app->settings.emulation.speed;
+    speed = app->emulation.use_alt_speed ? app->settings.emulation.alt_speed : app->settings.emulation.speed;
+
+    if (speed <= 0.0) {
+        settings->fast_forward = true;
+        settings->speed = 0.0;
+    } else {
+        settings->fast_forward = false;
+        settings->speed = speed;
+    }
 
     settings->ppu.enable_oam = app->settings.video.enable_oam;
     memcpy(settings->ppu.enable_bg_layers, app->settings.video.enable_bg_layers, sizeof(settings->ppu.enable_bg_layers));
