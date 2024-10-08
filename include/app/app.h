@@ -86,9 +86,10 @@ enum bind_actions {
     BIND_EMULATOR_PAUSE,
     BIND_EMULATOR_STOP,
     BIND_EMULATOR_RESET,
+    BIND_EMULATOR_SHOW_FPS,
+    BIND_EMULATOR_SETTINGS,
     BIND_EMULATOR_ALT_SPEED_HOLD,
     BIND_EMULATOR_ALT_SPEED_TOGGLE,
-    BIND_EMULATOR_SETTINGS,
     BIND_EMULATOR_QUICKSAVE_1,
     BIND_EMULATOR_QUICKSAVE_2,
     BIND_EMULATOR_QUICKSAVE_3,
@@ -160,6 +161,12 @@ struct settings {
         // BIOS Path
         char *bios_path;
 
+        // Skip BIOS
+        bool skip_bios;
+
+        // Show FPS
+        bool show_fps;
+
         // Speed
         //   <= 0: Unlimited
         //   1.0: 60fps
@@ -173,9 +180,6 @@ struct settings {
         //   2.0: 120fps
         //   etc.
         float alt_speed;
-
-        // Skip BIOS
-        bool skip_bios;
 
         // Backup storage
         struct {

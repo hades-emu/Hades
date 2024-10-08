@@ -76,6 +76,14 @@ app_config_load(
         int b;
         double d;
 
+        if (mjson_get_bool(data, data_len, "$.emulation.skip_bios", &b)) {
+            app->settings.emulation.skip_bios = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.show_fps", &b)) {
+            app->settings.emulation.show_fps = b;
+        }
+
         if (mjson_get_number(data, data_len, "$.emulation.speed", &d)) {
             app->settings.emulation.speed = d;
         }
@@ -98,10 +106,6 @@ app_config_load(
 
         if (mjson_get_number(data, data_len, "$.emulation.gpio.type", &d)) {
             app->settings.emulation.gpio_device.type = max(GPIO_MIN, min((int)d, GPIO_MAX));
-        }
-
-        if (mjson_get_bool(data, data_len, "$.emulation.skip_bios", &b)) {
-            app->settings.emulation.skip_bios = b;
         }
     }
 
@@ -294,6 +298,7 @@ app_config_save(
             // Emulation
             "emulation": {
                 "skip_bios": %B,
+                "show_fps": %B,
                 "speed": %g,
                 "alt_speed": %g,
                 "backup_storage": {
@@ -342,6 +347,7 @@ app_config_save(
         app->file.recent_roms[8],
         app->file.recent_roms[9],
         (int)app->settings.emulation.skip_bios,
+        (int)app->settings.emulation.show_fps,
         app->settings.emulation.speed,
         app->settings.emulation.alt_speed,
         (int)app->settings.emulation.backup_storage.autodetect,

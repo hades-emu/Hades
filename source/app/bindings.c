@@ -40,6 +40,7 @@ app_bindings_setup_default(
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_RESET], SDL_GetKeyFromName("R"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_MUTE], SDL_GetKeyFromName("M"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_PAUSE], SDL_GetKeyFromName("P"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SHOW_FPS], SDL_GetKeyFromName("F"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SETTINGS], SDL_GetKeyFromName("Escape"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT], SDL_GetKeyFromName("F12"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_HOLD], SDL_GetKeyFromName("Space"), false, false, false);
@@ -216,11 +217,10 @@ app_bindings_handle(
 
     // Bindings that can be used both in and outside of a game
     switch (bind) {
-        case BIND_EMULATOR_SETTINGS: {
-            app->ui.settings.open ^= true;
-            break;
-        };
-        default: break;
+        case BIND_EMULATOR_MUTE:                app->settings.audio.mute ^= true; break;
+        case BIND_EMULATOR_SHOW_FPS:            app->settings.emulation.show_fps ^= true; break;
+        case BIND_EMULATOR_SETTINGS:            app->ui.settings.open ^= true; break;
+        default:                                break;
     }
 
     if (!app->emulation.is_started) {
@@ -229,7 +229,6 @@ app_bindings_handle(
 
     // Bindings that can only be used in game.
     switch (bind) {
-        case BIND_EMULATOR_MUTE:                app->settings.audio.mute ^= 1; break;
         case BIND_EMULATOR_SCREENSHOT:          app_emulator_screenshot(app); break;
         case BIND_EMULATOR_PAUSE:               app->emulation.is_running ? app_emulator_pause(app) : app_emulator_run(app); break;
         case BIND_EMULATOR_STOP:                app_emulator_stop(app); break;

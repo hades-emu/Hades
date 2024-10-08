@@ -68,9 +68,10 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_PAUSE] = "Pause",
     [BIND_EMULATOR_STOP] = "Stop",
     [BIND_EMULATOR_RESET] = "Reset",
+    [BIND_EMULATOR_SHOW_FPS] = "Show FPS",
+    [BIND_EMULATOR_SETTINGS] = "Settings",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "Alt. Speed (Toggle)",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "Alt. Speed (Hold)",
-    [BIND_EMULATOR_SETTINGS] = "Settings",
     [BIND_EMULATOR_QUICKSAVE_1] = "Quicksave 1",
     [BIND_EMULATOR_QUICKSAVE_2] = "Quicksave 2",
     [BIND_EMULATOR_QUICKSAVE_3] = "Quicksave 3",
@@ -110,9 +111,10 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_PAUSE] = "pause",
     [BIND_EMULATOR_STOP] = "stop",
     [BIND_EMULATOR_RESET] = "reset",
+    [BIND_EMULATOR_SHOW_FPS] = "show_fps",
+    [BIND_EMULATOR_SETTINGS] = "settings",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "alternative_speed_toggle",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "alternative_speed_hold",
-    [BIND_EMULATOR_SETTINGS] = "settings",
     [BIND_EMULATOR_QUICKSAVE_1] = "quicksave_1",
     [BIND_EMULATOR_QUICKSAVE_2] = "quicksave_2",
     [BIND_EMULATOR_QUICKSAVE_3] = "quicksave_3",
@@ -326,6 +328,23 @@ app_win_settings_emulation(
         igTableNextColumn();
         igCombo_Str_arr("##GPIODeviceType", (int *)&app->settings.emulation.gpio_device.type, gpio_device_names, array_length(gpio_device_names), 0);
         igEndDisabled();
+
+        igEndTable();
+    }
+
+    igSeparatorText("Misc");
+
+    if (igBeginTable("##EmulationSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##EmulationSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##EmulationSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Show FPS
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Show FPS");
+
+        igTableNextColumn();
+        igCheckbox("##ShowFPS", &app->settings.emulation.show_fps);
 
         igEndTable();
     }
