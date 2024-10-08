@@ -254,7 +254,7 @@ app_win_menubar_emulation(
         igSeparator();
 
         bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_PAUSE]);
-        if (igMenuItem_Bool("Pause", bind_str ?: "", !app->emulation.is_running, app->emulation.is_started)) {
+        if (igMenuItem_Bool("Pause", bind_str, !app->emulation.is_running, app->emulation.is_started)) {
             if (app->emulation.is_running) {
                 app_emulator_pause(app);
             } else {
@@ -264,13 +264,13 @@ app_win_menubar_emulation(
         free(bind_str);
 
         bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_STOP]);
-        if (igMenuItem_Bool("Stop", bind_str ?: "", false, app->emulation.is_started)) {
+        if (igMenuItem_Bool("Stop", bind_str, false, app->emulation.is_started)) {
             app_emulator_stop(app);
         }
         free(bind_str);
 
         bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_RESET]);
-        if (igMenuItem_Bool("Reset", bind_str ?: "", false, app->emulation.is_started)) {
+        if (igMenuItem_Bool("Reset", bind_str, false, app->emulation.is_started)) {
             app_emulator_reset(app);
         }
         free(bind_str);
@@ -332,7 +332,7 @@ app_win_menubar_video(
 
         /* Take a screenshot */
         bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT]);
-        if (igMenuItem_Bool("Take Screenshot", bind_str ?: "", false, app->emulation.is_started)) {
+        if (igMenuItem_Bool("Take Screenshot", bind_str, false, app->emulation.is_started)) {
             app_emulator_screenshot(app);
         }
         free(bind_str);
@@ -397,11 +397,14 @@ void
 app_win_menubar_audio(
     struct app *app
 ) {
+    char *bind_str;
+
     if (igBeginMenu("Audio", true)) {
-        /* VSync */
-        if (igMenuItem_Bool("Mute", NULL, app->settings.audio.mute, true)) {
+        bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_MUTE]);
+        if (igMenuItem_Bool("Mute", bind_str, app->settings.audio.mute, true)) {
             app->settings.audio.mute ^= 1;
         }
+        free(bind_str);
 
         igSeparator();
 
