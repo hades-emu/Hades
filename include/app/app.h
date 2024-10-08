@@ -239,6 +239,9 @@ struct settings {
     } audio;
 
     struct {
+        // Start the last played game on startup, when no game is provided
+        bool start_last_played_game_on_startup;
+
         // Pause when the window is inactive
         bool pause_when_window_inactive;
 

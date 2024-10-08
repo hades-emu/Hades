@@ -602,6 +602,14 @@ app_win_settings_misc(
         igTableSetupColumn("##MiscSettingsInterfaceLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##MiscSettingsInterfaceValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
+        // Start the last played game on startup, when no game is provided
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Start the last played game on startup");
+
+        igTableNextColumn();
+        igCheckbox("##StartLastPlayedGameOnStartup", &app->settings.misc.start_last_played_game_on_startup);
+
         // Pause when the window is inactive
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();

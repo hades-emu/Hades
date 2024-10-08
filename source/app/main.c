@@ -125,7 +125,7 @@ main(
         );
     }
 
-    /* Start the gba thread */
+    // Start the gba thread
     pthread_create(
         &gba_thread,
         NULL,
@@ -133,14 +133,21 @@ main(
         app.emulation.gba
     );
 
+    // Start the game provided in arguments
     if (app.args.rom_path) {
         app_emulator_configure_and_run(&app, app.args.rom_path, NULL);
+    } else if ( // Start the last played game
+           app.settings.misc.start_last_played_game_on_startup
+        && app.file.recent_roms[0]
+        && strlen(app.file.recent_roms[0])
+    ) {
+        app_emulator_configure_and_run(&app, app.file.recent_roms[0], NULL);
     }
 
 #ifdef WITH_DEBUGGER
     signal(SIGINT, &sighandler);
 
-    /* Start the debugger thread */
+    // Start the debugger thread
     pthread_create(
         &dbg_thread,
         NULL,
@@ -164,10 +171,8 @@ main(
         }
 #endif
 
-        /*
-        ** When used with a debugger, Hades can run without a GUI.
-        ** This is mostly useful for the CI and automated testing.
-        */
+        // When used with a debugger, Hades can run without a GUI.
+        // This is mostly useful CI and automated testing.
         if (!app.args.with_gui) {
             continue;
         }
@@ -183,15 +188,11 @@ main(
                 app.emulation.fps = gba_shared_reset_frame_counter(app.emulation.gba) / (float)(now - app.ui.ticks_last_frame) * 1000.0;
                 app.ui.ticks_last_frame = now;
 
-                /*
-                ** We also want to store the content of the backup storage
-                ** on the disk every second (if it is dirty).
-                */
+                // We also want to store the content of the backup storage
+                // on the disk every second (if it is dirty).
                 app_emulator_update_backup(&app);
 
-                /*
-                ** We also update the Window's name with the game title
-                */
+                // We also update the Window's name with the game title
                 if (app.emulation.game_entry && app.emulation.game_entry->title) {
                     SDL_SetWindowTitle(app.sdl.window, app.emulation.game_entry->title);
                 } else {
@@ -200,15 +201,13 @@ main(
             }
         }
 
-        /* The window needs to be resized */
+        // The window needs to be resized
         if (app.ui.win.resize) {
             uint32_t new_width;
             uint32_t new_height;
 
-            /*
-            ** Do we wanna resize it to the aspect ratio given in `app.ui.win.resize_ratio`?
-            ** Otherwise, use `app.video.display_size`.
-            */
+            // Do we wanna resize it to the aspect ratio given in `app.ui.win.resize_ratio`?
+            // Otherwise, use `app.video.display_size`.
             if (app.ui.win.resize_with_ratio) {
                 new_width = GBA_SCREEN_WIDTH * app.ui.win.resize_ratio * app.ui.scale;
                 new_height = app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.ui.win.resize_ratio * app.ui.scale;
@@ -226,11 +225,9 @@ main(
         sdl_counters[1] = SDL_GetPerformanceCounter();
         elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
 
-        /*
-        ** Handle the power-save mode.
-        **
-        ** Required because imgui uses quite a lot of CPU even when nothing is happening.
-        */
+        // Handle the power-save mode.
+        //
+        // Required because imgui uses quite a lot of CPU even when nothing is happening.
         if (app.emulation.is_started && app.emulation.is_running) {
             // If the emulator is running without vsync, cap the gui's FPS to 4x the display's refresh rate
             if (!app.settings.video.vsync) {

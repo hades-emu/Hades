@@ -159,6 +159,10 @@ app_config_load(
     {
         int b;
 
+        if (mjson_get_bool(data, data_len, "$.misc.start_last_played_game_on_startup", &b)) {
+            app->settings.misc.start_last_played_game_on_startup = b;
+        }
+
         if (mjson_get_bool(data, data_len, "$.misc.pause_when_window_inactive", &b)) {
             app->settings.misc.pause_when_window_inactive = b;
         }
@@ -320,6 +324,7 @@ app_config_save(
 
             // Misc
             "misc": {
+                "start_last_played_game_on_startup": %B,
                 "pause_when_window_inactive": %B,
                 "pause_when_game_resets": %B,
                 "hide_cursor_when_mouse_inactive": %B
@@ -351,6 +356,7 @@ app_config_save(
         (int)app->settings.video.pixel_scaling_filter,
         (int)app->settings.audio.mute,
         app->settings.audio.level,
+        (int)app->settings.misc.start_last_played_game_on_startup,
         (int)app->settings.misc.pause_when_window_inactive,
         (int)app->settings.misc.pause_when_game_resets,
         (int)app->settings.misc.hide_cursor_when_mouse_inactive
