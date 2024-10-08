@@ -13,9 +13,6 @@
 **   - https://densinh.github.io/DenSinH/emulation/2021/02/01/gba-eeprom.html
 */
 
-#define _GNU_SOURCE
-#include <string.h>
-#include <errno.h>
 #include "gba/gba.h"
 
 uint8_t

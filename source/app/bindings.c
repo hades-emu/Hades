@@ -7,6 +7,8 @@
 **
 \******************************************************************************/
 
+#define _GNU_SOURCE
+
 #include <SDL2/SDL.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
