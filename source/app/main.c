@@ -67,7 +67,7 @@ app_settings_default(
     settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
     settings->video.vsync = false;
     settings->video.display_size = 3;
-    settings->video.aspect_ratio = ASPECT_RATIO_RESIZE;
+    settings->video.aspect_ratio = ASPECT_RATIO_BORDERS;
     settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
     settings->audio.mute = false;
     settings->audio.level = 1.0f;
@@ -94,8 +94,7 @@ main(
     app.emulation.is_started = false;
     app.emulation.is_running = false;
     app.audio.resample_frequency = 48000;
-    app.ui.win.resize = true;
-    app.ui.win.resize_with_ratio = false;
+    app.ui.display.request_resize = true;
     app_settings_default(&app.settings);
     app_bindings_setup_default(&app);
 
@@ -205,25 +204,10 @@ main(
             }
         }
 
-        // The window needs to be resized
-        if (app.ui.win.resize) {
-            uint32_t new_width;
-            uint32_t new_height;
-
-            // Do we wanna resize it to the aspect ratio given in `app.ui.win.resize_ratio`?
-            // Otherwise, use `app.video.display_size`.
-            if (app.ui.win.resize_with_ratio) {
-                new_width = GBA_SCREEN_WIDTH * app.ui.win.resize_ratio * app.ui.scale;
-                new_height = app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.ui.win.resize_ratio * app.ui.scale;
-            } else {
-                new_width = GBA_SCREEN_WIDTH * app.settings.video.display_size * app.ui.scale;
-                new_height = app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.settings.video.display_size * app.ui.scale;
-            }
-
-            SDL_SetWindowMinimumSize(app.sdl.window, GBA_SCREEN_WIDTH * app.ui.scale, app.ui.menubar_size.y + GBA_SCREEN_HEIGHT * app.ui.scale);
-            SDL_SetWindowSize(app.sdl.window, new_width, new_height);
-            app.ui.win.resize = false;
-            app.ui.win.resize_with_ratio = false;
+        // Handle window resize request
+        if (app.ui.display.request_resize) {
+            app_sdl_video_resize_window(&app);
+            app.ui.display.request_resize = false;
         }
 
         elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;

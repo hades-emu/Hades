@@ -78,24 +78,24 @@ app_sdl_video_init(
     }
 #endif
 
-    /*
-    ** Create the SDL window
-    **
-    ** The window is resized after the first frame to take into account the height of the menubar,
-    ** unknown at this stage.
-    ** The size given here is merely a guess as to what the real size will be, hence the magical +19.f for the window's height.
-    */
-    app->ui.game.width = GBA_SCREEN_WIDTH * app->settings.video.display_size * app->ui.scale;
-    app->ui.game.height = GBA_SCREEN_HEIGHT * app->settings.video.display_size * app->ui.scale;
-    app->ui.win.width = app->ui.game.width;
-    app->ui.win.height = app->ui.game.height + 19.f * app->ui.scale;
+    // Initialise the window area.
+    //
+    // The window is resized after the first frame to take into account the height of the menubar,
+    // unknown at this stage.
+    //
+    // The size given here is merely a guess as to what the real size will be, hence the magical +19.f for the window's height.
+    app->ui.menubar_size.y = 19.f;
+    app->ui.display.win.width = GBA_SCREEN_WIDTH * app->settings.video.display_size * app->ui.scale;
+    app->ui.display.win.height = (GBA_SCREEN_HEIGHT * app->settings.video.display_size + app->ui.menubar_size.y) * app->ui.scale;
+    app_win_game_refresh_game_area(app);
 
+    // Create the SDL window
     app->sdl.window = SDL_CreateWindow(
         "Hades",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        app->ui.win.width,
-        app->ui.win.height,
+        app->ui.display.win.width,
+        app->ui.display.win.height,
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
 
@@ -103,7 +103,6 @@ app_sdl_video_init(
         logln(HS_ERROR, "Failed to create the window: %s", SDL_GetError());
         exit(EXIT_FAILURE);
     }
-
 
     /* Create the OpenGL context */
     app->gfx.gl_context = SDL_GL_CreateContext(app->sdl.window);
@@ -187,6 +186,19 @@ app_sdl_video_init(
 
     /* Setup the Native File Dialog extension */
     NFD_Init();
+}
+
+void
+app_sdl_video_resize_window(
+    struct app *app
+) {
+    uint32_t w;
+    uint32_t h;
+
+    w = GBA_SCREEN_WIDTH * app->settings.video.display_size * app->ui.scale;
+    h = GBA_SCREEN_HEIGHT * app->settings.video.display_size * app->ui.scale + app->ui.menubar_size.y;
+
+    SDL_SetWindowSize(app->sdl.window, w, h);
 }
 
 void

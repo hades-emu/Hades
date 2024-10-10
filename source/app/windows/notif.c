@@ -109,7 +109,7 @@ app_win_notifications(
             NULL
         );
         igSetNextWindowPos(
-            (ImVec2){.x = app->ui.win.width - NOTIFICATION_PADDING_X * app->ui.scale, .y = app->ui.win.height - offset - NOTIFICATION_PADDING_Y * app->ui.scale},
+            (ImVec2){.x = app->ui.display.win.width - NOTIFICATION_PADDING_X * app->ui.scale, .y = app->ui.display.win.height - offset - NOTIFICATION_PADDING_Y * app->ui.scale},
             ImGuiCond_Always,
             (ImVec2){.x = 1., .y = 1.}
         );

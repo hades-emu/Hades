@@ -13,6 +13,49 @@
 #include "hades.h"
 #include "app/app.h"
 
+/*
+** Recalculate the game inner and outer game area based on the window area and the desired aspect ratio.
+*/
+void
+app_win_game_refresh_game_area(
+    struct app *app
+) {
+    app->ui.display.game.outer.x = 0;
+    app->ui.display.game.outer.y = app->ui.menubar_size.y;
+    app->ui.display.game.outer.width = app->ui.display.win.width - app->ui.display.game.outer.x;
+    app->ui.display.game.outer.height = app->ui.display.win.height - app->ui.display.game.outer.y;
+
+    // Apply the aspect ratio setting
+    switch (app->settings.video.aspect_ratio) {
+        case ASPECT_RATIO_BORDERS: {
+            float game_scale;
+
+            game_scale = min(
+                app->ui.display.game.outer.width / (float)GBA_SCREEN_WIDTH,
+                app->ui.display.game.outer.height / (float)GBA_SCREEN_HEIGHT
+            );
+
+            app->ui.display.game.inner.x = app->ui.display.game.outer.x + (app->ui.display.game.outer.width  - (GBA_SCREEN_WIDTH  * game_scale)) * 0.5f;
+            app->ui.display.game.inner.y = app->ui.display.game.outer.y + (app->ui.display.game.outer.height - (GBA_SCREEN_HEIGHT * game_scale)) * 0.5f;
+            app->ui.display.game.inner.width = GBA_SCREEN_WIDTH * game_scale;
+            app->ui.display.game.inner.height = GBA_SCREEN_HEIGHT * game_scale;
+            break;
+        };
+        case ASPECT_RATIO_STRETCH: {
+            // Stretch means the inner and outer game area are the same.
+            app->ui.display.game.inner.x = app->ui.display.game.outer.x;
+            app->ui.display.game.inner.y = app->ui.display.game.outer.y;
+            app->ui.display.game.inner.width = app->ui.display.game.outer.width;
+            app->ui.display.game.inner.height = app->ui.display.game.outer.height;
+            break;
+        };
+        default: {
+            panic(HS_INFO, "Invalid aspect ratio %u", app->settings.video.aspect_ratio);
+            break;
+        };
+    }
+}
+
 static
 void
 app_win_game_pause_text(
@@ -42,10 +85,6 @@ void
 app_win_game(
     struct app *app
 ) {
-    float game_pos_x;
-    float game_pos_y;
-    float game_size_x;
-    float game_size_y;
     GLuint in_texture;
     GLuint out_texture;
     float tint;
@@ -109,34 +148,18 @@ app_win_game(
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Calculate the game size depending on the aspect ratio
-    switch (app->settings.video.aspect_ratio) {
-        case ASPECT_RATIO_RESIZE:
-        case ASPECT_RATIO_BORDERS: {
-            float game_scale;
-
-            game_scale = min(app->ui.game.width / (float)GBA_SCREEN_WIDTH, app->ui.game.height / (float)GBA_SCREEN_HEIGHT);
-            game_pos_x = (app->ui.game.width  - (GBA_SCREEN_WIDTH  * game_scale)) * 0.5f;
-            game_pos_y = (app->ui.game.height - (GBA_SCREEN_HEIGHT * game_scale)) * 0.5f;
-            game_size_x = GBA_SCREEN_WIDTH * game_scale;
-            game_size_y = GBA_SCREEN_HEIGHT * game_scale;
-            break;
-        };
-        case ASPECT_RATIO_STRETCH:
-        default: {
-            game_pos_x = 0;
-            game_pos_y = 0;
-            game_size_x = app->ui.game.width;
-            game_size_y = app->ui.game.height;
-            break;
-        };
-    }
-
     igPushStyleVar_Vec2(ImGuiStyleVar_WindowPadding, (ImVec2){.x = 0, .y = 0});
     igPushStyleVar_Float(ImGuiStyleVar_WindowBorderSize, 0);
 
-    igSetNextWindowPos((ImVec2){.x = game_pos_x, .y = (float)app->ui.menubar_size.y + game_pos_y}, ImGuiCond_Always, (ImVec2){.x = 0, .y = 0});
-    igSetNextWindowSize((ImVec2){.x = game_size_x, .y = game_size_y}, ImGuiCond_Always);
+    igSetNextWindowPos(
+        (ImVec2){.x = app->ui.display.game.inner.x, .y = app->ui.display.game.inner.y},
+        ImGuiCond_Always,
+        (ImVec2){.x = 0, .y = 0}
+    );
+    igSetNextWindowSize(
+        (ImVec2){.x = app->ui.display.game.inner.width, .y = app->ui.display.game.inner.height},
+        ImGuiCond_Always
+    );
 
     igBegin(
         "Game",
@@ -150,7 +173,7 @@ app_win_game(
 
     igImage(
         (void *)(uintptr_t)out_texture,
-        (ImVec2){.x = game_size_x, .y = game_size_y},
+        (ImVec2){.x = app->ui.display.game.inner.width, .y = app->ui.display.game.inner.height},
         (ImVec2){.x = 0, .y = 0},
         (ImVec2){.x = 1, .y = 1},
         (ImVec4){.x = tint, .y = tint, .z = tint, .w = 1},

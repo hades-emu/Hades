@@ -297,8 +297,6 @@ app_win_menubar_video(
         /* Display Size */
         if (igBeginMenu("Display size", true)) {
             uint32_t x;
-            int width;
-            int height;
 
             static char const * const display_sizes[] = {
                 "x1",
@@ -308,19 +306,16 @@ app_win_menubar_video(
                 "x5",
             };
 
-            SDL_GetWindowSize(app->sdl.window, &width, &height);
-            height = max(0, height - app->ui.menubar_size.y);
-
             for (x = 1; x <= 5; ++x) {
                 if (igMenuItem_Bool(
                     display_sizes[x - 1],
                     NULL,
-                    width == GBA_SCREEN_WIDTH * x * app->ui.scale && height == GBA_SCREEN_HEIGHT * x * app->ui.scale,
+                       app->ui.display.game.outer.width == GBA_SCREEN_WIDTH * x * app->ui.scale
+                    && app->ui.display.game.outer.height == GBA_SCREEN_HEIGHT * x * app->ui.scale,
                     true
                 )) {
                     app->settings.video.display_size = x;
-                    app->ui.win.resize = true;
-                    app->ui.win.resize_with_ratio = false;
+                    app->ui.display.request_resize = true;
                 }
             }
 

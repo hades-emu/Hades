@@ -58,13 +58,12 @@ enum pixel_scaling_filter_kind {
 };
 
 enum aspect_ratio {
-    ASPECT_RATIO_RESIZE = 0,
-    ASPECT_RATIO_BORDERS = 1,
-    ASPECT_RATIO_STRETCH = 2,
+    ASPECT_RATIO_BORDERS = 0,
+    ASPECT_RATIO_STRETCH = 1,
 
     ASPECT_RATIO_LEN,
     ASPECT_RATIO_MIN = 0,
-    ASPECT_RATIO_MAX = 2,
+    ASPECT_RATIO_MAX = 1,
 };
 
 enum bind_actions {
@@ -198,7 +197,7 @@ struct settings {
         // Display size
         uint32_t display_size;
 
-        // Aspect Ratio (Black borders, Auto-Resize, etc.)
+        // Aspect Ratio (Black borders, Stretch, etc.)
         enum aspect_ratio aspect_ratio;
 
         // VSync
@@ -351,7 +350,8 @@ struct app {
             bool exist;
         } qsaves[MAX_QUICKSAVES];
 
-        bool flush_qsaves_cache; // Set to true if the `mtime` and `exist` field of `qsaves` needs to be refreshed.
+        // Set to true if both the `mtime` and `exist` field of `qsaves` needs to be refreshed.
+        bool flush_qsaves_cache;
     } file;
 
     struct {
@@ -359,7 +359,7 @@ struct app {
     } audio;
 
     struct {
-        /* ImGui internal stuff */
+        // ImGui internal stuff
         struct ImGuiIO *ioptr;
 
         struct {
@@ -367,57 +367,69 @@ struct app {
             struct ImFont *big;
         } fonts;
 
-        /* High resolution */
+        // High resolution
         float dpi;
         uint32_t scale;
 
-        /* Display refresh rate */
+        // Display refresh rate
         uint32_t refresh_rate;
 
-        /* How many frames before going back to power save mode? */
+        // How many frames before going back to power save mode?
         uint32_t power_save_fcounter;
 
-        /* Temporary value used to measure the FPS. */
+        // Temporary value used to measure the FPS.
         uint32_t ticks_last_frame;
 
-        /* Temporary value used to measure the time since the last mouse movement (in ms) */
+        // Temporary value used to measure the time since the last mouse movement (in ms)
         float time_elapsed_since_last_mouse_motion_ms;
 
-        /*
-        ** The size of the `game` window.
-        ** Usually the size of the window minus the menubar's height (if it is visible).
-        */
-        struct {
-            int width;
-            int height;
-        } game;
-
-        /* Size of the FPS counter within the menubar. */
+        // Width of the FPS counter within the menubar.
         float menubar_fps_width;
 
-        /* Size of the menu bar */
+        // Size of the menu bar
         ImVec2 menubar_size;
 
         struct {
-            int width;
-            int height;
-            bool maximized;
+            // The game area is made of two sub areas: the inner game area and the outer game area.
+            //
+            // The outer game area is a subset of the window area that represents where the game should be drawn.
+            // It's basically the same as the window area but doesn't include any visible UI elements (such as the menubar).
+            // The inner game area is a subset of the outer game area and trully represent the area where the game is drawn.
+            //
+            // The difference between the two is that the outer game area matches the aspect ratio of the window, which might not
+            // be the same than the one of the GBA. If they mismatch and the aspect ratio is set to "black borders", then the
+            // inner game area will be the subset where the game is drawn, without the black borders, while the outer game area
+            // will also include the black borders around the game.
+            //
+            // In other words, the inner game area is contained within the outer one, and can only be smaller or equal.
+            struct {
+                struct {
+                    uint32_t x;
+                    uint32_t y;
+                    uint32_t width;
+                    uint32_t height;
+                } inner;
 
-            /* Used when resizing, to know if the new window is bigger or smaller than the previous one. */
-            uint32_t old_area;
+                struct {
+                    uint32_t x;
+                    uint32_t y;
+                    uint32_t width;
+                    uint32_t height;
+                } outer;
+            } game;
 
-            /* Indicates if the window needs to be resized */
-            bool resize;
+            // The size of the window area.
+            // Exactly equal to the size of the window
+            struct {
+                uint32_t width;
+                uint32_t height;
+            } win;
 
-            /*
-            ** Indicates if the user wants to resize the windows to the given ratio.
-            ** Otherwise, `video->display_size` is taken
-            **/
-            bool resize_with_ratio;
-            float resize_ratio;
-        } win;
+            // Set when the window needs to be resized to fit a specific aspect ratio
+            bool request_resize;
+        } display;
 
-        /* The error message to print, if any. */
+        // The error message to print, if any.
         struct {
             char *msg;
             bool active;
@@ -483,6 +495,7 @@ void app_sdl_video_init(struct app *app);
 void app_sdl_video_cleanup(struct app *app);
 void app_sdl_video_render_frame(struct app *app);
 void app_sdl_video_rebuild_pipeline(struct app *app);
+void app_sdl_video_resize_window(struct app *app);
 
 /* app/shaders/frag-color-correction.c */
 extern char const *SHADER_FRAG_COLOR_CORRECTION;
@@ -504,6 +517,7 @@ extern char const *SHADER_VERTEX_COMMON;
 
 /* app/windows/game.c */
 void app_win_game(struct app *app);
+void app_win_game_refresh_game_area(struct app *app);
 
 /* app/windows/menubar.c */
 void app_win_menubar(struct app *app);

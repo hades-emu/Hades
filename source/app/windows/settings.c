@@ -38,7 +38,6 @@ static char const *pixel_scaling_filters_names[PIXEL_SCALING_FILTER_LEN] = {
 };
 
 static char const *aspect_ratio_names[ASPECT_RATIO_LEN] = {
-    [ASPECT_RATIO_RESIZE] = "Auto-Resize",
     [ASPECT_RATIO_BORDERS] = "Black Borders",
     [ASPECT_RATIO_STRETCH] = "Stretch",
 };
@@ -391,7 +390,11 @@ app_win_settings_video(
 
         display_size = -1;
         for (i = 1; i < array_length(display_size_names) + 1; ++i) {
-            if (vp->WorkSize.x == GBA_SCREEN_WIDTH * i * app->ui.scale && vp->WorkSize.y == GBA_SCREEN_HEIGHT * i * app->ui.scale) {
+
+            if (
+                   app->ui.display.game.outer.width == GBA_SCREEN_WIDTH * i * app->ui.scale
+                && app->ui.display.game.outer.height == GBA_SCREEN_HEIGHT * i * app->ui.scale
+            ) {
                 display_size = i;
                 break;
             }
@@ -404,8 +407,7 @@ app_win_settings_video(
                 is_selected = (display_size == i);
                 if (igSelectable_Bool(display_size_names[i - 1], is_selected, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
                     app->settings.video.display_size = i;
-                    app->ui.win.resize = true;
-                    app->ui.win.resize_with_ratio = false;
+                    app->ui.display.request_resize = true;
                 }
 
                 if (is_selected) {
@@ -422,12 +424,7 @@ app_win_settings_video(
 
         igTableNextColumn();
         if (igCombo_Str_arr("##AspectRatio", (int *)&app->settings.video.aspect_ratio, aspect_ratio_names, ASPECT_RATIO_LEN, 0)) {
-            // Force a resize of the window if the "auto-resize" option is selected
-            if (app->settings.video.aspect_ratio == ASPECT_RATIO_RESIZE) {
-                app->ui.win.resize = true;
-                app->ui.win.resize_with_ratio = true;
-                app->ui.win.resize_ratio = min(app->ui.game.width / ((float)GBA_SCREEN_WIDTH * app->ui.scale), app->ui.game.height / ((float)GBA_SCREEN_HEIGHT * app->ui.scale));
-            }
+            app_win_game_refresh_game_area(app);
         }
 
         igEndTable();
