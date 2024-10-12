@@ -63,12 +63,13 @@ app_settings_default(
     memset(settings->audio.enable_psg_channels, true, sizeof(settings->audio.enable_psg_channels));
     memset(settings->audio.enable_fifo_channels, true, sizeof(settings->audio.enable_fifo_channels));
     settings->emulation.bios_path = strdup("./bios.bin");
-    settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
-    settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
-    settings->video.vsync = false;
+    settings->video.display_mode = DISPLAY_MODE_WINDOWED;
     settings->video.display_size = 3;
     settings->video.aspect_ratio = ASPECT_RATIO_BORDERS;
+    settings->video.vsync = false;
     settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
+    settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
+    settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
     settings->audio.mute = false;
     settings->audio.level = 1.0f;
     settings->misc.hide_cursor_when_mouse_inactive = true;

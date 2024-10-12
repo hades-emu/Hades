@@ -28,6 +28,16 @@
 
 struct ImGuiIO;
 
+enum display_mode {
+    DISPLAY_MODE_WINDOWED = 0,
+    DISPLAY_MODE_BORDERLESS = 1,
+    DISPLAY_MODE_FULLSCREEN = 2,
+
+    DISPLAY_MODE_LEN,
+    DISPLAY_MODE_MIN = 0,
+    DISPLAY_MODE_MAX = 2,
+};
+
 enum texture_filter_kind {
     TEXTURE_FILTER_NEAREST = 0,
     TEXTURE_FILTER_LINEAR = 1,
@@ -194,6 +204,9 @@ struct settings {
     } emulation;
 
     struct {
+        // Display mode
+        enum display_mode display_mode;
+
         // Display size
         uint32_t display_size;
 
@@ -496,6 +509,7 @@ void app_sdl_video_cleanup(struct app *app);
 void app_sdl_video_render_frame(struct app *app);
 void app_sdl_video_rebuild_pipeline(struct app *app);
 void app_sdl_video_resize_window(struct app *app);
+void app_sdl_video_update_display_mode(struct app *app);
 
 /* app/shaders/frag-color-correction.c */
 extern char const *SHADER_FRAG_COLOR_CORRECTION;

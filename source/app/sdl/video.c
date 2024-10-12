@@ -11,6 +11,7 @@
 #include <cimgui.h>
 #include <cimgui_impl.h>
 #include <nfd.h>
+#include "SDL_video.h"
 #include "hades.h"
 #include "app/app.h"
 #include "gba/gba.h"
@@ -24,6 +25,7 @@ app_sdl_video_init(
     char const *glsl_version;
     SDL_DisplayMode mode;
     ImFontConfig *cfg;
+    uint32_t win_flags;
     int err;
 
     memset(&mode, 0, sizeof(mode));
@@ -89,6 +91,14 @@ app_sdl_video_init(
     app->ui.display.win.height = (GBA_SCREEN_HEIGHT * app->settings.video.display_size + app->ui.menubar_size.y) * app->ui.scale;
     app_win_game_refresh_game_area(app);
 
+    win_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+
+    switch (app->settings.video.display_mode) {
+        case DISPLAY_MODE_BORDERLESS:       win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP; break;
+        case DISPLAY_MODE_FULLSCREEN:       win_flags |= SDL_WINDOW_FULLSCREEN; break;
+        default:                            break;
+    }
+
     // Create the SDL window
     app->sdl.window = SDL_CreateWindow(
         "Hades",
@@ -96,7 +106,7 @@ app_sdl_video_init(
         SDL_WINDOWPOS_CENTERED,
         app->ui.display.win.width,
         app->ui.display.win.height,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
+        win_flags
     );
 
     if (!app->sdl.window) {
@@ -199,6 +209,29 @@ app_sdl_video_resize_window(
     h = GBA_SCREEN_HEIGHT * app->settings.video.display_size * app->ui.scale + app->ui.menubar_size.y;
 
     SDL_SetWindowSize(app->sdl.window, w, h);
+}
+
+void
+app_sdl_video_update_display_mode(
+    struct app *app
+) {
+    uint32_t win_flags;
+
+    switch (app->settings.video.display_mode) {
+        case DISPLAY_MODE_FULLSCREEN:           win_flags = SDL_WINDOW_FULLSCREEN; break;
+        case DISPLAY_MODE_BORDERLESS:           win_flags = SDL_WINDOW_FULLSCREEN_DESKTOP; break;
+        case DISPLAY_MODE_WINDOWED: {
+            win_flags = 0;
+            app->ui.display.request_resize = true;
+            break;
+        };
+        default: {
+            panic(HS_INFO, "Invalid display mode %u", app->settings.video.display_mode);
+            break;
+        }
+    }
+
+    SDL_SetWindowFullscreen(app->sdl.window, win_flags);
 }
 
 void

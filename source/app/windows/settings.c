@@ -42,6 +42,12 @@ static char const *aspect_ratio_names[ASPECT_RATIO_LEN] = {
     [ASPECT_RATIO_STRETCH] = "Stretch",
 };
 
+static char const *display_mode_names[DISPLAY_MODE_LEN] = {
+    [DISPLAY_MODE_WINDOWED] = "Windowed",
+    [DISPLAY_MODE_BORDERLESS] = "Borderless",
+    [DISPLAY_MODE_FULLSCREEN] = "Fullscreen",
+};
+
 static char const * const display_size_names[] = {
     "x1",
     "x2",
@@ -371,14 +377,14 @@ app_win_settings_video(
         igTableSetupColumn("##VideoSettingsDisplayLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##VideoSettingsDisplayValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-        // VSync
+        // Display Mode
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
-        igTextWrapped("VSync");
+        igTextWrapped("Display Mode");
 
         igTableNextColumn();
-        if (igCheckbox("##VSync", &app->settings.video.vsync)) {
-            SDL_GL_SetSwapInterval(app->settings.video.vsync);
+        if (igCombo_Str_arr("##DisplayMode", (int *)&app->settings.video.display_mode, display_mode_names, DISPLAY_MODE_LEN, 0)) {
+            app_sdl_video_update_display_mode(app);
         }
 
         // Display Size
@@ -425,6 +431,16 @@ app_win_settings_video(
         igTableNextColumn();
         if (igCombo_Str_arr("##AspectRatio", (int *)&app->settings.video.aspect_ratio, aspect_ratio_names, ASPECT_RATIO_LEN, 0)) {
             app_win_game_refresh_game_area(app);
+        }
+
+        // VSync
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("VSync");
+
+        igTableNextColumn();
+        if (igCheckbox("##VSync", &app->settings.video.vsync)) {
+            SDL_GL_SetSwapInterval(app->settings.video.vsync);
         }
 
         igEndTable();
