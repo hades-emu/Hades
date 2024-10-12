@@ -75,6 +75,10 @@ app_settings_default(
     settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
     settings->audio.mute = false;
     settings->audio.level = 1.0f;
+    settings->misc.menubar_mode = MENUBAR_MODE_FIXED_ABOVE_GAME;
+    settings->misc.start_last_played_game_on_startup = false;
+    settings->misc.pause_when_window_inactive = false;
+    settings->misc.pause_when_game_resets = false;
     settings->misc.hide_cursor_when_mouse_inactive = true;
 }
 
@@ -99,6 +103,7 @@ main(
     app.emulation.is_running = false;
     app.audio.resample_frequency = 48000;
     app.ui.display.request_resize = true;
+    app.ui.menubar.visibility = 1.0;
     app_settings_default(&app.settings);
     app_bindings_setup_default(&app);
 
@@ -245,21 +250,45 @@ main(
             }
         }
 
-        // Hide the cursor if the game is running and the mouse is inactive for a while
-        if (app.settings.misc.hide_cursor_when_mouse_inactive && app.emulation.is_started && app.emulation.is_running) {
-            int show_cursor;
+        // Handle all the stuff that must disappear after a few seconds if the UI isn't active
+        if (app.emulation.is_started && app.emulation.is_running && !igGetHoveredID() && !igGetFocusID() && !app.ui.settings.open) {
 
-            show_cursor = SDL_DISABLE;
-            if (app.ui.time_elapsed_since_last_mouse_motion_ms <= 2000.0) { // 2s
+            if (app.ui.time_elapsed_since_last_mouse_motion_ms <= 2000.0) {
                 app.ui.time_elapsed_since_last_mouse_motion_ms += elapsed_ms;
-                show_cursor = SDL_ENABLE;
             }
 
-            if (SDL_ShowCursor(SDL_QUERY) != show_cursor) {
-                SDL_ShowCursor(show_cursor);
+            // Hide the cursor if the mouse is inactive for a while
+            if (app.settings.misc.hide_cursor_when_mouse_inactive) {
+                bool show_cursor;
+                bool is_cursor_visible;
+
+                is_cursor_visible = igGetMouseCursor() != ImGuiMouseCursor_None;
+                show_cursor = (app.ui.time_elapsed_since_last_mouse_motion_ms < 2000.0);
+
+                if (show_cursor != is_cursor_visible) {
+                    igSetMouseCursor(show_cursor ? ImGuiMouseCursor_Arrow : ImGuiMouseCursor_None);
+                }
+            }
+
+            // Hide the menubar if it's hovering over the game, isn't focused and the mouse is inactive for a while
+            // We set `visibility` to go from 1.0 to 0.0 over 50ms, after the mouse is inactive after 1950ms.
+            if (app.settings.misc.menubar_mode == MENUBAR_MODE_HOVER_OVER_GAME) {
+                if (app.ui.time_elapsed_since_last_mouse_motion_ms < 1950.0) {
+                    app.ui.menubar.visibility = 1.0f;
+                } else if (app.ui.time_elapsed_since_last_mouse_motion_ms >= 1950.0 && app.ui.time_elapsed_since_last_mouse_motion_ms <= 2000.0) {
+                    app.ui.menubar.visibility = (2000.0 - app.ui.time_elapsed_since_last_mouse_motion_ms) / 50.0;
+                } else {
+                    app.ui.menubar.visibility = 0.0f;
+                }
             }
         } else {
             app.ui.time_elapsed_since_last_mouse_motion_ms = 0;
+
+            if (igGetMouseCursor() == ImGuiMouseCursor_None) {
+                igSetMouseCursor(ImGuiMouseCursor_Arrow);
+            }
+
+            app.ui.menubar.visibility = 1.0f;
         }
 
         // Flush the quick save cache

@@ -20,8 +20,15 @@ void
 app_win_game_refresh_game_area(
     struct app *app
 ) {
+
     app->ui.display.game.outer.x = 0;
-    app->ui.display.game.outer.y = app->ui.menubar_size.y;
+    app->ui.display.game.outer.y = 0;
+
+    // Ensure the outer window is below the menubar
+    if (app->settings.misc.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME) {
+        app->ui.display.game.outer.y += app->ui.menubar.size.y * app->ui.menubar.visibility;
+    }
+
     app->ui.display.game.outer.width = app->ui.display.win.width - app->ui.display.game.outer.x;
     app->ui.display.game.outer.height = app->ui.display.win.height - app->ui.display.game.outer.y;
 

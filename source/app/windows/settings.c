@@ -48,6 +48,11 @@ static char const *display_mode_names[DISPLAY_MODE_LEN] = {
     [DISPLAY_MODE_FULLSCREEN] = "Fullscreen",
 };
 
+static char const *menubar_mode_names[MENUBAR_MODE_LEN] = {
+    [MENUBAR_MODE_FIXED_ABOVE_GAME] = "Fixed above game",
+    [MENUBAR_MODE_HOVER_OVER_GAME] = "Hover over game",
+};
+
 static char const * const display_size_names[] = {
     "x1",
     "x2",
@@ -73,8 +78,8 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_PAUSE] = "Pause",
     [BIND_EMULATOR_STOP] = "Stop",
     [BIND_EMULATOR_RESET] = "Reset",
-    [BIND_EMULATOR_SHOW_FPS] = "Show FPS",
-    [BIND_EMULATOR_SETTINGS] = "Settings",
+    [BIND_EMULATOR_SHOW_FPS] = "Toggle FPS",
+    [BIND_EMULATOR_SETTINGS] = "Toggle Settings",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "Alt. Speed (Toggle)",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "Alt. Speed (Hold)",
     [BIND_EMULATOR_QUICKSAVE_1] = "Quicksave 1",
@@ -116,8 +121,8 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_PAUSE] = "pause",
     [BIND_EMULATOR_STOP] = "stop",
     [BIND_EMULATOR_RESET] = "reset",
-    [BIND_EMULATOR_SHOW_FPS] = "show_fps",
-    [BIND_EMULATOR_SETTINGS] = "settings",
+    [BIND_EMULATOR_SHOW_FPS] = "toggle_show_fps",
+    [BIND_EMULATOR_SETTINGS] = "toggle_settings",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "alternative_speed_toggle",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "alternative_speed_hold",
     [BIND_EMULATOR_QUICKSAVE_1] = "quicksave_1",
@@ -642,6 +647,16 @@ app_win_settings_misc(
         igTableSetupColumn("##MiscSettingsInterfaceLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##MiscSettingsInterfaceValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
+        // Menubar Mode
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Menubar Mode");
+
+        igTableNextColumn();
+        if (igCombo_Str_arr("##Menubar Mode", (int *)&app->settings.misc.menubar_mode, menubar_mode_names, array_length(menubar_mode_names), 0)) {
+            app->ui.display.request_resize = true;
+        }
+
         // Start the last played game on startup, when no game is provided
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
@@ -674,10 +689,7 @@ app_win_settings_misc(
         igTextWrapped("Hide cursor when the mouse is inactive");
 
         igTableNextColumn();
-        if (igCheckbox("##HideCursorWhenMouseInactive", &app->settings.misc.hide_cursor_when_mouse_inactive)) {
-            app->ui.time_elapsed_since_last_mouse_motion_ms = 0;
-            SDL_ShowCursor(SDL_ENABLE);
-        }
+        igCheckbox("##HideCursorWhenMouseInactive", &app->settings.misc.hide_cursor_when_mouse_inactive);
 
         igEndTable();
     }

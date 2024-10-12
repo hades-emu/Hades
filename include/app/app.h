@@ -28,6 +28,15 @@
 
 struct ImGuiIO;
 
+enum menubar_mode {
+    MENUBAR_MODE_FIXED_ABOVE_GAME = 0,
+    MENUBAR_MODE_HOVER_OVER_GAME = 1,
+
+    MENUBAR_MODE_LEN,
+    MENUBAR_MODE_MIN = 0,
+    MENUBAR_MODE_MAX = 1,
+};
+
 enum display_mode {
     DISPLAY_MODE_WINDOWED = 0,
     DISPLAY_MODE_BORDERLESS = 1,
@@ -258,6 +267,9 @@ struct settings {
     } audio;
 
     struct {
+        // Menubar mode (fixed above game or hover over game)
+        enum menubar_mode menubar_mode;
+
         // Start the last played game on startup, when no game is provided
         bool start_last_played_game_on_startup;
 
@@ -399,11 +411,17 @@ struct app {
         // Temporary value used to measure the time since the last mouse movement (in ms)
         float time_elapsed_since_last_mouse_motion_ms;
 
-        // Width of the FPS counter within the menubar.
-        float menubar_fps_width;
+        struct {
+            // 1.0 if the menubar is visible, 0.0 if not, and something in between if the
+            // menubar is fading away
+            float visibility;
 
-        // Size of the menu bar
-        ImVec2 menubar_size;
+            // Width of the FPS counter within the menubar.
+            float fps_width;
+
+            // Size of the menu bar
+            ImVec2 size;
+        } menubar;
 
         struct {
             // The game area is made of two sub areas: the inner game area and the outer game area.

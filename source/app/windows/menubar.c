@@ -495,10 +495,10 @@ app_win_menubar_fps_counter(
 
         spacing = igGetStyle()->ItemSpacing.x;
 
-        igSameLine(igGetWindowWidth() - (app->ui.menubar_fps_width + spacing * 2), 1);
+        igSameLine(igGetWindowWidth() - (app->ui.menubar.fps_width + spacing * 2), 1);
         igText("FPS: %.1f (%.1f%%)", app->emulation.fps, app->emulation.fps / 60.0 * 100.0);
         igGetItemRectSize(&out);
-        app->ui.menubar_fps_width = out.x;
+        app->ui.menubar.fps_width = out.x;
     }
 }
 
@@ -506,29 +506,41 @@ void
 app_win_menubar(
     struct app *app
 ) {
-    if (igBeginMainMenuBar()) {
+    float vp_y;
 
-        /* File */
+    if (app->ui.menubar.visibility <= 0.0f) {
+        return ;
+    }
+
+    // Hacking ImGui a bit to nicely fade the menubar away
+    vp_y = igGetMainViewport()->Pos.y;
+    igGetMainViewport()->Pos.y -= (1.0f - app->ui.menubar.visibility) * app->ui.menubar.size.y;
+
+    if (igBeginMainMenuBar()) {
+        // File
         app_win_menubar_file(app);
 
-        /* Emulation */
+        // Emulation
         app_win_menubar_emulation(app);
 
-        /* Video */
+        // Video
         app_win_menubar_video(app);
 
-        /* Audio */
+        // Audio
         app_win_menubar_audio(app);
 
-        /* Help */
+        // Help
         app_win_menubar_help(app);
 
-        /* FPS */
+        // FPS
         app_win_menubar_fps_counter(app);
 
-        /* Capture the height of the menu bar */
-        igGetWindowSize(&app->ui.menubar_size);
+        // Capture the height of the menu bar
+        igGetWindowSize(&app->ui.menubar.size);
 
         igEndMainMenuBar();
     }
+
+    // Restore the viewport's position
+    igGetMainViewport()->Pos.y = vp_y;
 }

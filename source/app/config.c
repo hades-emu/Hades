@@ -171,6 +171,12 @@ app_config_load(
     // Misc
     {
         int b;
+        double d;
+
+        if (mjson_get_number(data, data_len, "$.misc.menubar_mode", &d)) {
+            app->settings.misc.menubar_mode = (int)d;
+            app->settings.misc.menubar_mode = max(MENUBAR_MODE_MIN, min(app->settings.misc.menubar_mode, MENUBAR_MODE_MAX));
+        }
 
         if (mjson_get_bool(data, data_len, "$.misc.start_last_played_game_on_startup", &b)) {
             app->settings.misc.start_last_played_game_on_startup = b;
@@ -340,6 +346,7 @@ app_config_save(
 
             // Misc
             "misc": {
+                "menubar_mode": %d,
                 "start_last_played_game_on_startup": %B,
                 "pause_when_window_inactive": %B,
                 "pause_when_game_resets": %B,
@@ -375,6 +382,7 @@ app_config_save(
         (int)app->settings.video.pixel_scaling_filter,
         (int)app->settings.audio.mute,
         app->settings.audio.level,
+        (int)app->settings.misc.menubar_mode,
         (int)app->settings.misc.start_last_played_game_on_startup,
         (int)app->settings.misc.pause_when_window_inactive,
         (int)app->settings.misc.pause_when_game_resets,
