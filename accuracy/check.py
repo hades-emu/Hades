@@ -132,6 +132,7 @@ def main():
             "skip_bios": true,
             "speed": 1,
             "fast_forward": true,
+            "prefetch_buffer": true,
             "backup_storage": {{
               "autodetect": true,
               "type": 0

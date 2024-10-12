@@ -434,6 +434,11 @@ gba_process_message(
             memcpy(&gba->settings, &msg_settings->settings, sizeof(struct gba_settings));
 
             sched_update_speed(gba);
+
+            // If necessary, disable the prefetch buffer
+            if (!gba->settings.prefetch_buffer) {
+                memset(&gba->memory.pbuffer, 0, sizeof(struct prefetch_buffer));
+            }
             break;
         };
         case MESSAGE_QUICKSAVE: {

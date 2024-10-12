@@ -791,8 +791,17 @@ mem_io_write8(
         };
         case IO_REG_WAITCNT:
         case IO_REG_WAITCNT + 1: {
+            bool old_pbuffer_enabled;
+
             io->waitcnt.bytes[addr - IO_REG_WAITCNT] = val;
-            gba->memory.pbuffer.enabled = io->waitcnt.gamepak_prefetch;
+            old_pbuffer_enabled = gba->memory.pbuffer.enabled;
+
+            if (old_pbuffer_enabled ^ io->waitcnt.gamepak_prefetch) {
+                memset(&gba->memory.pbuffer, 0, sizeof(struct prefetch_buffer));
+            }
+
+            gba->memory.pbuffer.enabled = gba->settings.prefetch_buffer && io->waitcnt.gamepak_prefetch;
+
             mem_update_waitstates(gba);
             break;
         };

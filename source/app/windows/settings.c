@@ -343,6 +343,14 @@ app_win_settings_emulation(
         igTableSetupColumn("##EmulationSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##EmulationSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
+        // Emulate the Prefetch Buffer
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Emulate the Prefetch Buffer");
+
+        igTableNextColumn();
+        igCheckbox("##PrefetchBuffer", &app->settings.emulation.prefetch_buffer);
+
         // Show FPS
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();

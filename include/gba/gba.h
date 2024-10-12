@@ -85,6 +85,9 @@ struct gba_settings {
     // Can't be <= 0.0 unless `fast_forward` is true.
     float speed;
 
+    // Enable the emulation of the prefetch buffer
+    bool prefetch_buffer;
+
     struct {
         bool enable_bg_layers[4];
         bool enable_oam;

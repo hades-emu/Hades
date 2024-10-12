@@ -190,6 +190,9 @@ struct settings {
         //   etc.
         float alt_speed;
 
+        // Enable the emulation of the prefetch buffer
+        bool prefetch_buffer;
+
         // Backup storage
         struct {
             bool autodetect;

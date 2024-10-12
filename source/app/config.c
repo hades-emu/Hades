@@ -92,6 +92,10 @@ app_config_load(
             app->settings.emulation.alt_speed = d;
         }
 
+        if (mjson_get_bool(data, data_len, "$.emulation.prefetch_buffer", &b)) {
+            app->settings.emulation.prefetch_buffer = b;
+        }
+
         if (mjson_get_bool(data, data_len, "$.emulation.backup_storage.autodetect", &b)) {
             app->settings.emulation.backup_storage.autodetect = b;
         }
@@ -306,6 +310,7 @@ app_config_save(
                 "show_fps": %B,
                 "speed": %g,
                 "alt_speed": %g,
+                "prefetch_buffer": %B,
                 "backup_storage": {
                     "autodetect": %B,
                     "type": %d
@@ -356,6 +361,7 @@ app_config_save(
         (int)app->settings.emulation.show_fps,
         app->settings.emulation.speed,
         app->settings.emulation.alt_speed,
+        (int)app->settings.emulation.prefetch_buffer,
         (int)app->settings.emulation.backup_storage.autodetect,
         (int)app->settings.emulation.backup_storage.type,
         (int)app->settings.emulation.gpio_device.autodetect,
