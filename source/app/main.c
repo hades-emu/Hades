@@ -58,6 +58,9 @@ app_settings_default(
     settings->emulation.speed = 1.0;
     settings->emulation.alt_speed = -1.0;
     settings->emulation.prefetch_buffer = true;
+    settings->emulation.start_last_played_game_on_startup = false;
+    settings->emulation.pause_when_window_inactive = false;
+    settings->emulation.pause_when_game_resets = false;
     settings->emulation.backup_storage.autodetect = true;
     settings->emulation.backup_storage.type = BACKUP_NONE;
     settings->emulation.gpio_device.autodetect = true;
@@ -66,6 +69,7 @@ app_settings_default(
     memset(settings->video.enable_bg_layers, true, sizeof(settings->video.enable_bg_layers));
     memset(settings->audio.enable_psg_channels, true, sizeof(settings->audio.enable_psg_channels));
     memset(settings->audio.enable_fifo_channels, true, sizeof(settings->audio.enable_fifo_channels));
+    settings->video.menubar_mode = MENUBAR_MODE_FIXED_ABOVE_GAME;
     settings->video.display_mode = DISPLAY_MODE_WINDOWED;
     settings->video.display_size = 3;
     settings->video.aspect_ratio = ASPECT_RATIO_BORDERS;
@@ -73,13 +77,9 @@ app_settings_default(
     settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
     settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
     settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
+    settings->video.hide_cursor_when_mouse_inactive = true;
     settings->audio.mute = false;
     settings->audio.level = 1.0f;
-    settings->misc.menubar_mode = MENUBAR_MODE_FIXED_ABOVE_GAME;
-    settings->misc.start_last_played_game_on_startup = false;
-    settings->misc.pause_when_window_inactive = false;
-    settings->misc.pause_when_game_resets = false;
-    settings->misc.hide_cursor_when_mouse_inactive = true;
 }
 
 int
@@ -146,7 +146,7 @@ main(
     if (app.args.rom_path) {
         app_emulator_configure_and_run(&app, app.args.rom_path, NULL);
     } else if ( // Start the last played game
-           app.settings.misc.start_last_played_game_on_startup
+           app.settings.emulation.start_last_played_game_on_startup
         && app.file.recent_roms[0]
         && strlen(app.file.recent_roms[0])
     ) {
@@ -258,7 +258,7 @@ main(
             }
 
             // Hide the cursor if the mouse is inactive for a while
-            if (app.settings.misc.hide_cursor_when_mouse_inactive) {
+            if (app.settings.video.hide_cursor_when_mouse_inactive) {
                 bool show_cursor;
                 bool is_cursor_visible;
 
@@ -272,7 +272,7 @@ main(
 
             // Hide the menubar if it's hovering over the game, isn't focused and the mouse is inactive for a while
             // We set `visibility` to go from 1.0 to 0.0 over 50ms, after the mouse is inactive after 1950ms.
-            if (app.settings.misc.menubar_mode == MENUBAR_MODE_HOVER_OVER_GAME) {
+            if (app.settings.video.menubar_mode == MENUBAR_MODE_HOVER_OVER_GAME) {
                 if (app.ui.time_elapsed_since_last_mouse_motion_ms < 1950.0) {
                     app.ui.menubar.visibility = 1.0f;
                 } else if (app.ui.time_elapsed_since_last_mouse_motion_ms >= 1950.0 && app.ui.time_elapsed_since_last_mouse_motion_ms <= 2000.0) {

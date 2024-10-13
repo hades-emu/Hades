@@ -96,6 +96,18 @@ app_config_load(
             app->settings.emulation.prefetch_buffer = b;
         }
 
+        if (mjson_get_bool(data, data_len, "$.emulation.start_last_played_game_on_startup", &b)) {
+            app->settings.emulation.start_last_played_game_on_startup = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.pause_when_window_inactive", &b)) {
+            app->settings.emulation.pause_when_window_inactive = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.pause_when_game_resets", &b)) {
+            app->settings.emulation.pause_when_game_resets = b;
+        }
+
         if (mjson_get_bool(data, data_len, "$.emulation.backup_storage.autodetect", &b)) {
             app->settings.emulation.backup_storage.autodetect = b;
         }
@@ -117,6 +129,11 @@ app_config_load(
     {
         int b;
         double d;
+
+        if (mjson_get_number(data, data_len, "$.video.menubar_mode", &d)) {
+            app->settings.video.menubar_mode = (int)d;
+            app->settings.video.menubar_mode = max(MENUBAR_MODE_MIN, min(app->settings.video.menubar_mode, MENUBAR_MODE_MAX));
+        }
 
         if (mjson_get_number(data, data_len, "$.video.display_mode", &d)) {
             app->settings.video.display_mode = (int)d;
@@ -151,6 +168,10 @@ app_config_load(
             app->settings.video.pixel_scaling_filter = (int)d;
             app->settings.video.pixel_scaling_filter = max(PIXEL_SCALING_FILTER_MIN, min(app->settings.video.pixel_scaling_filter, PIXEL_SCALING_FILTER_MAX));
         }
+
+        if (mjson_get_bool(data, data_len, "$.video.hide_cursor_when_mouse_inactive", &b)) {
+            app->settings.video.hide_cursor_when_mouse_inactive = b;
+        }
     }
 
     // Video
@@ -165,33 +186,6 @@ app_config_load(
         if (mjson_get_number(data, data_len, "$.audio.level", &d)) {
             app->settings.audio.level = d;
             app->settings.audio.level = max(0.f, min(app->settings.audio.level, 1.f));
-        }
-    }
-
-    // Misc
-    {
-        int b;
-        double d;
-
-        if (mjson_get_number(data, data_len, "$.misc.menubar_mode", &d)) {
-            app->settings.misc.menubar_mode = (int)d;
-            app->settings.misc.menubar_mode = max(MENUBAR_MODE_MIN, min(app->settings.misc.menubar_mode, MENUBAR_MODE_MAX));
-        }
-
-        if (mjson_get_bool(data, data_len, "$.misc.start_last_played_game_on_startup", &b)) {
-            app->settings.misc.start_last_played_game_on_startup = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.misc.pause_when_window_inactive", &b)) {
-            app->settings.misc.pause_when_window_inactive = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.misc.pause_when_game_resets", &b)) {
-            app->settings.misc.pause_when_game_resets = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.misc.hide_cursor_when_mouse_inactive", &b)) {
-            app->settings.misc.hide_cursor_when_mouse_inactive = b;
         }
     }
 
@@ -317,6 +311,9 @@ app_config_save(
                 "speed": %g,
                 "alt_speed": %g,
                 "prefetch_buffer": %B,
+                "start_last_played_game_on_startup": %B,
+                "pause_when_window_inactive": %B,
+                "pause_when_game_resets": %B,
                 "backup_storage": {
                     "autodetect": %B,
                     "type": %d
@@ -329,13 +326,15 @@ app_config_save(
 
             // Video
             "video": {
+                "menubar_mode": %d,
                 "display_mode": %d,
                 "display_size": %d,
                 "aspect_ratio": %d,
                 "vsync": %B,
                 "texture_filter": %d,
                 "pixel_color_filter": %d,
-                "pixel_scaling_filter": %d
+                "pixel_scaling_filter": %d,
+                "hide_cursor_when_mouse_inactive": %B
             },
 
             // Audio
@@ -343,15 +342,6 @@ app_config_save(
                 "mute": %B,
                 "level": %g
             },
-
-            // Misc
-            "misc": {
-                "menubar_mode": %d,
-                "start_last_played_game_on_startup": %B,
-                "pause_when_window_inactive": %B,
-                "pause_when_game_resets": %B,
-                "hide_cursor_when_mouse_inactive": %B
-            }
         }),
         app->settings.emulation.bios_path,
         app->file.recent_roms[0],
@@ -369,10 +359,14 @@ app_config_save(
         app->settings.emulation.speed,
         app->settings.emulation.alt_speed,
         (int)app->settings.emulation.prefetch_buffer,
+        (int)app->settings.emulation.start_last_played_game_on_startup,
+        (int)app->settings.emulation.pause_when_window_inactive,
+        (int)app->settings.emulation.pause_when_game_resets,
         (int)app->settings.emulation.backup_storage.autodetect,
         (int)app->settings.emulation.backup_storage.type,
         (int)app->settings.emulation.gpio_device.autodetect,
         (int)app->settings.emulation.gpio_device.type,
+        (int)app->settings.video.menubar_mode,
         (int)app->settings.video.display_mode,
         (int)app->settings.video.display_size,
         (int)app->settings.video.aspect_ratio,
@@ -380,13 +374,9 @@ app_config_save(
         (int)app->settings.video.texture_filter,
         (int)app->settings.video.pixel_color_filter,
         (int)app->settings.video.pixel_scaling_filter,
+        (int)app->settings.video.hide_cursor_when_mouse_inactive,
         (int)app->settings.audio.mute,
-        app->settings.audio.level,
-        (int)app->settings.misc.menubar_mode,
-        (int)app->settings.misc.start_last_played_game_on_startup,
-        (int)app->settings.misc.pause_when_window_inactive,
-        (int)app->settings.misc.pause_when_game_resets,
-        (int)app->settings.misc.hide_cursor_when_mouse_inactive
+        app->settings.audio.level
     );
 
     if (!data) {

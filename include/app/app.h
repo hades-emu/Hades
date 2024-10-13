@@ -152,7 +152,6 @@ enum menu_kind {
     MENU_VIDEO,
     MENU_AUDIO,
     MENU_BINDINGS,
-    MENU_MISC,
 
     MENU_MAX,
 };
@@ -202,6 +201,15 @@ struct settings {
         // Enable the emulation of the prefetch buffer
         bool prefetch_buffer;
 
+        // Start the last played game on startup, when no game is provided
+        bool start_last_played_game_on_startup;
+
+        // Pause when the window is inactive
+        bool pause_when_window_inactive;
+
+        // Pause when the game resets
+        bool pause_when_game_resets;
+
         // Backup storage
         struct {
             bool autodetect;
@@ -216,6 +224,9 @@ struct settings {
     } emulation;
 
     struct {
+        // Menubar mode (fixed above game or hover over game)
+        enum menubar_mode menubar_mode;
+
         // Display mode
         enum display_mode display_mode;
 
@@ -236,6 +247,9 @@ struct settings {
 
         // Pixel Scaling Filter (LCD Grid, xBRZ, etc.)
         enum pixel_scaling_filter_kind pixel_scaling_filter;
+
+        // Hide the cursor after a few seconds of inactivity
+        bool hide_cursor_when_mouse_inactive;
 
         /*
         ** Debug
@@ -265,23 +279,6 @@ struct settings {
         // Enable FIFO Channel
         bool enable_fifo_channels[2];
     } audio;
-
-    struct {
-        // Menubar mode (fixed above game or hover over game)
-        enum menubar_mode menubar_mode;
-
-        // Start the last played game on startup, when no game is provided
-        bool start_last_played_game_on_startup;
-
-        // Pause when the window is inactive
-        bool pause_when_window_inactive;
-
-        // Pause when the game resets
-        bool pause_when_game_resets;
-
-        // Hide the cursor after a few seconds of inactivity
-        bool hide_cursor_when_mouse_inactive;
-    } misc;
 };
 
 struct app {

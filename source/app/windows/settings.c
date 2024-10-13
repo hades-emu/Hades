@@ -17,7 +17,6 @@ static char const *menu_names[MENU_MAX] = {
     [MENU_VIDEO] = "Video",
     [MENU_AUDIO] = "Audio",
     [MENU_BINDINGS] = "Bindings",
-    [MENU_MISC] = "Misc",
 };
 
 static char const *texture_filters_names[TEXTURE_FILTER_LEN] = {
@@ -364,6 +363,32 @@ app_win_settings_emulation(
         igTableNextColumn();
         igCheckbox("##ShowFPS", &app->settings.emulation.show_fps);
 
+        // Start the last played game on startup, when no game is provided
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Start the last played game on startup");
+
+        igTableNextColumn();
+        igCheckbox("##StartLastPlayedGameOnStartup", &app->settings.emulation.start_last_played_game_on_startup);
+
+        // Pause when the window is inactive
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Pause when the window is inactive");
+
+        igTableNextColumn();
+        igCheckbox("##PauseWhenWindowInactive", &app->settings.emulation.pause_when_window_inactive);
+
+#ifdef WITH_DEBUGGER
+        // Pause when the game resets
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Pause when the game resets");
+
+        igTableNextColumn();
+        igCheckbox("##PauseWhenGameResets", &app->settings.emulation.pause_when_game_resets);
+#endif
+
         igEndTable();
     }
 }
@@ -389,6 +414,16 @@ app_win_settings_video(
     if (igBeginTable("##VideoSettingsDisplay", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
         igTableSetupColumn("##VideoSettingsDisplayLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##VideoSettingsDisplayValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Menubar Mode
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Menubar Mode");
+
+        igTableNextColumn();
+        if (igCombo_Str_arr("##MenubarMode", (int *)&app->settings.video.menubar_mode, menubar_mode_names, array_length(menubar_mode_names), 0)) {
+            app->ui.display.request_resize = true;
+        }
 
         // Display Mode
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -494,6 +529,23 @@ app_win_settings_video(
         if (igCombo_Str_arr("##ScalingFilter", (int *)&app->settings.video.pixel_scaling_filter, pixel_scaling_filters_names, PIXEL_SCALING_FILTER_LEN, 0)) {
             app_sdl_video_rebuild_pipeline(app);
         }
+
+        igEndTable();
+    }
+
+    igSeparatorText("Misc");
+
+    if (igBeginTable("##VideoSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##VideoSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##VideoSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Hide the cursor when the mouse is inactive
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Hide cursor when the mouse is inactive");
+
+        igTableNextColumn();
+        igCheckbox("##HideCursorWhenMouseInactive", &app->settings.video.hide_cursor_when_mouse_inactive);
 
         igEndTable();
     }
@@ -625,74 +677,6 @@ app_win_settings_audio(
         igEndTable();
     }
 #endif
-}
-
-static
-void
-app_win_settings_misc(
-    struct app *app
-) {
-    ImGuiViewport *vp;
-
-    vp = igGetMainViewport();
-
-    igTextWrapped("Misc Settings");
-    igSpacing();
-    igSeparator();
-    igSpacing();
-
-    igSeparatorText("Interface");
-
-    if (igBeginTable("##MiscSettingsInterface", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##MiscSettingsInterfaceLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##MiscSettingsInterfaceValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
-
-        // Menubar Mode
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Menubar Mode");
-
-        igTableNextColumn();
-        if (igCombo_Str_arr("##Menubar Mode", (int *)&app->settings.misc.menubar_mode, menubar_mode_names, array_length(menubar_mode_names), 0)) {
-            app->ui.display.request_resize = true;
-        }
-
-        // Start the last played game on startup, when no game is provided
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Start the last played game on startup");
-
-        igTableNextColumn();
-        igCheckbox("##StartLastPlayedGameOnStartup", &app->settings.misc.start_last_played_game_on_startup);
-
-        // Pause when the window is inactive
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Pause when the window is inactive");
-
-        igTableNextColumn();
-        igCheckbox("##PauseWhenWindowInactive", &app->settings.misc.pause_when_window_inactive);
-
-#ifdef WITH_DEBUGGER
-        // Pause when the game resets
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Pause when the game resets");
-
-        igTableNextColumn();
-        igCheckbox("##PauseWhenGameResets", &app->settings.misc.pause_when_game_resets);
-#endif
-
-        // Hide the cursor when the mouse is inactive
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Hide cursor when the mouse is inactive");
-
-        igTableNextColumn();
-        igCheckbox("##HideCursorWhenMouseInactive", &app->settings.misc.hide_cursor_when_mouse_inactive);
-
-        igEndTable();
-    }
 }
 
 static
@@ -859,7 +843,6 @@ static void (*menu_callbacks[MENU_MAX])(struct app *) = {
     [MENU_VIDEO] =                  &app_win_settings_video,
     [MENU_AUDIO] =                  &app_win_settings_audio,
     [MENU_BINDINGS] =               &app_win_settings_bindings,
-    [MENU_MISC] =                   &app_win_settings_misc,
 };
 
 void
