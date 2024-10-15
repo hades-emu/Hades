@@ -39,7 +39,7 @@ hs_convert_to_wchar(
     int wlen;
 
     len = strlen(str);
-    wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, 0, 0);
+    wlen = MultiByteToWideChar(CP_UTF8, 0, str, len, NULL, 0);
 
     wstr = malloc(sizeof(wchar_t) * (wlen + 1));
     hs_assert(wstr);

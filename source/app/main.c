@@ -104,6 +104,7 @@ main(
     app.audio.resample_frequency = 48000;
     app.ui.display.request_resize = true;
     app.ui.menubar.visibility = 1.0;
+    app.ui.first_frame = true;
     app_settings_default(&app.settings);
     app_bindings_setup_default(&app);
 
@@ -214,7 +215,9 @@ main(
         }
 
         // Handle window resize request
-        if (app.ui.display.request_resize) {
+        // There's a bug on Linux/Wayland that prevents us from resizing the window during
+        // the first frame, hence why we wait in that case.
+        if (app.ui.display.request_resize && !app.ui.first_frame) {
             app_sdl_video_resize_window(&app);
             app.ui.display.request_resize = false;
         }
@@ -304,6 +307,8 @@ main(
 
             app.file.flush_qsaves_cache = false;
         }
+
+        app.ui.first_frame = false;
     }
 
     app_emulator_exit(&app);

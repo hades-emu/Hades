@@ -30,7 +30,7 @@ app_sdl_video_init(
 
     memset(&mode, 0, sizeof(mode));
 
-    /* Decide which OpenGL version to use */
+    // Decide which OpenGL version to use
 #if __APPLE__
     // GL 3.2 Core + GLSL 150
     glsl_version = "#version 150";
@@ -47,43 +47,27 @@ app_sdl_video_init(
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #endif
 
-    /* Prepare OpenGL stuff */
+    // Prepare OpenGL stuff
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    /* Get the display's DPI */
+    // Get the display's DPI
     SDL_GetDisplayDPI(0, &app->ui.dpi, NULL, NULL);
 
-    /* Get the display's refresh rate */
+    // Get the display's refresh rate
     SDL_GetDisplayMode(0, 0, &mode);
     app->ui.refresh_rate = (uint32_t)mode.refresh_rate;
 
-    /* Setup ImGui DPI and scaling factors */
-#if __APPLE__
-    /*
-    ** On my MacBook (12.3.1) it looks like the system is already scaling the window in a nice, pixel-perfect way.
-    **
-    ** If we use our scaling on top of it, the windows gets blurry and ugly very quick so we hard-code the scaling to 1 to
-    ** avoid that.
-    */
+    // Assume a scale of 1 before the window is initialized.
+    // We can't properly retrieve the display's scale before we create the window
     app->ui.scale = 1;
-#else
-    float dpi_factor;
-
-    dpi_factor = app->ui.dpi / 96.f;
-    if (dpi_factor >= (int)dpi_factor + 0.5f) {
-        app->ui.scale = (int)dpi_factor + 1;
-    } else {
-        app->ui.scale = (int)dpi_factor ? (int)dpi_factor : 1;
-    }
-#endif
 
     // Initialise the window area.
     //
-    // The window is resized after the first frame to take into account the height of the menubar,
-    // unknown at this stage.
+    // The window is resized after the first frame to take into account the new scale and
+    // the height of the menubar, unknown at this stage.
     //
     // The size given here is merely a guess as to what the real size will be, hence the magical +19.f for the window's height.
     app->ui.menubar.size.y = app->settings.video.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME ? 19.f * app->ui.scale : 0.f;
@@ -91,7 +75,7 @@ app_sdl_video_init(
     app->ui.display.win.height = (GBA_SCREEN_HEIGHT * app->settings.video.display_size * app->ui.scale) + app->ui.menubar.size.y;
     app_win_game_refresh_game_area(app);
 
-    win_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    win_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 
     switch (app->settings.video.display_mode) {
         case DISPLAY_MODE_BORDERLESS:       win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP; break;
@@ -114,14 +98,35 @@ app_sdl_video_init(
         exit(EXIT_FAILURE);
     }
 
-    /* Create the OpenGL context */
+
+#if defined(__APPLE__)
+    // On my MacBook (12.3.1) it looks like the system is already scaling the window in a nice, pixel-perfect way.
+    //
+    // If we use our scaling on top of it, the windows gets blurry and ugly very quick so we hard-code the scaling to 1 to
+    // avoid that.
+    app->ui.scale = 1;
+#else
+    int screen_w;
+    int pixel_w;
+
+    // Calculate the scale of the window
+    SDL_GetWindowSize(app->sdl.window, &screen_w, NULL);
+    SDL_GL_GetDrawableSize(app->sdl.window, &pixel_w, NULL);
+    app->ui.scale = (uint32_t)round((float)pixel_w / (float)screen_w);
+    app->ui.scale = app->ui.scale ?: 1;
+#endif
+
+    // Resize the window to match the newfound scale.
+    app_sdl_video_resize_window(app);
+
+    // Create the OpenGL context
     app->gfx.gl_context = SDL_GL_CreateContext(app->sdl.window);
     SDL_GL_MakeCurrent(app->sdl.window, app->gfx.gl_context);
 
-    /* Enable VSync */
+    // Enable VSync
     SDL_GL_SetSwapInterval(app->settings.video.vsync);
 
-    /* Initialize OpenGL */
+    // Initialize OpenGL
     err = glewInit();
 
     if (err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY) {
@@ -129,23 +134,23 @@ app_sdl_video_init(
         exit(EXIT_FAILURE);
     }
 
-    /* Setup ImGui */
+    // Setup ImGui
     igCreateContext(NULL);
     igStyleColorsDark(NULL);
 
-    /* Set ImGui options */
+    // Set ImGui options
     app->ui.ioptr = igGetIO();
     app->ui.ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     app->ui.ioptr->IniFilename = NULL;
 
     cfg = ImFontConfig_ImFontConfig();
-    cfg->SizePixels = 13.f * app->ui.scale;
-    cfg->GlyphOffset.y = 13.f * app->ui.scale;
+    cfg->SizePixels = 13.f * round(app->ui.scale);
+    cfg->GlyphOffset.y = 13.f * round(app->ui.scale);
     app->ui.fonts.normal = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
 
     cfg = ImFontConfig_ImFontConfig();
-    cfg->SizePixels = 13.f * app->ui.scale * 3.;
-    cfg->GlyphOffset.y = 13.f * app->ui.scale * 3.;
+    cfg->SizePixels = 13.f * round(app->ui.scale * 3.);
+    cfg->GlyphOffset.y = 13.f * round(app->ui.scale * 3.);
     app->ui.fonts.big = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
 
     ImGuiStyle_ScaleAllSizes(igGetStyle(), app->ui.scale);
@@ -153,13 +158,13 @@ app_sdl_video_init(
     ImGui_ImplSDL2_InitForOpenGL(app->sdl.window, app->gfx.gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    /* Build all the available shaders */
+    // Build all the available shaders
     app->gfx.program_color_correction = build_shader_program("color_correction", SHADER_FRAG_COLOR_CORRECTION, SHADER_VERTEX_COMMON);
     app->gfx.program_grey_scale = build_shader_program("grey_scale", SHADER_FRAG_GREY_SCALE, SHADER_VERTEX_COMMON);
     app->gfx.program_lcd_grid_with_rgb_stripes = build_shader_program("lcd_grid_with_rgb_stripes", SHADER_FRAG_LCD_GRID_WITH_RGB_STRIPES, SHADER_VERTEX_COMMON);
     app->gfx.program_lcd_grid = build_shader_program("lcd_grid", SHADER_FRAG_LCD_GRID, SHADER_VERTEX_COMMON);
 
-    /* Create the OpenGL objects required to build the pipeline */
+    // Create the OpenGL objects required to build the pipeline
     glGenTextures(1, &app->gfx.game_texture);
     glGenTextures(1, &app->gfx.pixel_color_texture);
     glGenTextures(1, &app->gfx.pixel_scaling_texture);
@@ -177,7 +182,7 @@ app_sdl_video_init(
         -1., 1.,        0., 1.,     // Top left
     };
 
-    /* Setup the OpenGL objects */
+    // Setup the OpenGL objects
     glBindVertexArray(app->gfx.vao);
     glBindBuffer(GL_ARRAY_BUFFER, app->gfx.vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -186,15 +191,15 @@ app_sdl_video_init(
     glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * sizeof(float), (void *)(2 * sizeof(float))); // UV
     glEnableVertexAttribArray(1);
 
-    /* Build the OpenGL pipeline. */
+    // Build the OpenGL pipeline.
     app_sdl_video_rebuild_pipeline(app);
 
-    /* Setup the game controller stuff */
+    // Setup the game controller stuff
     app->sdl.controller.ptr = NULL;
     app->sdl.controller.connected = false;
     app->sdl.controller.joystick.idx = -1;
 
-    /* Setup the Native File Dialog extension */
+    // Setup the Native File Dialog extension
     NFD_Init();
 }
 

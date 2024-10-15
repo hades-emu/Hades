@@ -8,13 +8,20 @@
 \******************************************************************************/
 
 #include <SDL2/SDL.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include "app/app.h"
 
 void
 app_sdl_init(
     struct app *app
 ) {
+    // On Linux, hint at SDL that we are using Wayland if WAYLAND_DISPLAY is set.
+#if defined(__LINUX__) && SDL_VERSION_ATLEAST(2, 0, 22)
+    if (getenv("WAYLAND_DISPLAY")) {
+        SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland");
+    }
+#endif
+
     /* Initialize the SDL */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO) < 0) {
         logln(HS_ERROR, "Failed to init the SDL: %s", SDL_GetError());

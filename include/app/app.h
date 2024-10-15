@@ -408,6 +408,9 @@ struct app {
         // Temporary value used to measure the time since the last mouse movement (in ms)
         float time_elapsed_since_last_mouse_motion_ms;
 
+        // Used to avoid a bug on Linux/Wayland that prevents us from resizing the window during the first frame.
+        bool first_frame;
+
         struct {
             // 1.0 if the menubar is visible, 0.0 if not, and something in between if the
             // menubar is fading away
