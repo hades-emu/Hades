@@ -93,6 +93,7 @@ main(
     pthread_t dbg_thread;
 #endif
     uint64_t sdl_counters[2];
+    uint64_t last_rescale_recalculation_ms;
 
     memset(&app, 0, sizeof(app));
     app.emulation.gba = gba_create();
@@ -102,9 +103,7 @@ main(
     app.emulation.is_started = false;
     app.emulation.is_running = false;
     app.audio.resample_frequency = 48000;
-    app.ui.display.request_resize = true;
     app.ui.menubar.visibility = 1.0;
-    app.ui.first_frame = true;
     app_settings_default(&app.settings);
     app_bindings_setup_default(&app);
 
@@ -122,7 +121,7 @@ main(
         logln(HS_INFO, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
         logln(
             HS_INFO,
-            "Dpi: %s%.1f%s, Scale factor: %s%u%s, Refresh Rate: %s%uHz%s.",
+            "Dpi: %s%.1f%s, Scale factor: %s%.2f%s, Refresh Rate: %s%uHz%s.",
             g_light_magenta,
             app.ui.dpi,
             g_reset,
@@ -217,9 +216,31 @@ main(
         // Handle window resize request
         // There's a bug on Linux/Wayland that prevents us from resizing the window during
         // the first frame, hence why we wait in that case.
-        if (app.ui.display.request_resize && !app.ui.first_frame) {
+        if (app.ui.display.resize_request_timer && !--app.ui.display.resize_request_timer) {
             app_sdl_video_resize_window(&app);
-            app.ui.display.request_resize = false;
+        }
+
+        // Recalculate the scale every 100ms
+        //
+        // We do this periodically to avoid glitching when the window is in-between two monitors.
+        // It might look like a weird idea, but overall this adds a lot of stability to the hidpi system.
+        //
+        // This also prevents us from calling `app_sdl_video_calculate_scale()` every frame, which
+        // would be quite costly.
+        last_rescale_recalculation_ms = (uint64_t)((float)sdl_counters[0] / (float)SDL_GetPerformanceFrequency() * 1000.f);
+        if (last_rescale_recalculation_ms - app.ui.display.last_scale_calculation_ms > 100) {
+            float scale;
+
+            app.ui.display.last_scale_calculation_ms = last_rescale_recalculation_ms;
+            scale = app_sdl_video_calculate_scale(&app);
+
+            // If the scale changed significantly
+            if (scale - app.ui.scale > 0.01 || scale - app.ui.scale < -0.01) {
+                app_sdl_video_update_scale(&app, scale);
+
+                // Request a resize to ensure the window matches the new scale
+                app.ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
+            }
         }
 
         elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
@@ -307,8 +328,6 @@ main(
 
             app.file.flush_qsaves_cache = false;
         }
-
-        app.ui.first_frame = false;
     }
 
     app_emulator_exit(&app);

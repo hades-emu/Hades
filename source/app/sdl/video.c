@@ -24,7 +24,6 @@ app_sdl_video_init(
 ) {
     char const *glsl_version;
     SDL_DisplayMode mode;
-    ImFontConfig *cfg;
     uint32_t win_flags;
     int err;
 
@@ -71,8 +70,8 @@ app_sdl_video_init(
     //
     // The size given here is merely a guess as to what the real size will be, hence the magical +19.f for the window's height.
     app->ui.menubar.size.y = app->settings.video.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME ? 19.f * app->ui.scale : 0.f;
-    app->ui.display.win.width = GBA_SCREEN_WIDTH * app->settings.video.display_size * app->ui.scale;
-    app->ui.display.win.height = (GBA_SCREEN_HEIGHT * app->settings.video.display_size * app->ui.scale) + app->ui.menubar.size.y;
+    app->ui.display.win.width = GBA_SCREEN_WIDTH * app->settings.video.display_size;
+    app->ui.display.win.height = GBA_SCREEN_HEIGHT * app->settings.video.display_size + app->ui.menubar.size.y;
     app_win_game_refresh_game_area(app);
 
     win_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -98,27 +97,6 @@ app_sdl_video_init(
         exit(EXIT_FAILURE);
     }
 
-
-#if defined(__APPLE__)
-    // On my MacBook (12.3.1) it looks like the system is already scaling the window in a nice, pixel-perfect way.
-    //
-    // If we use our scaling on top of it, the windows gets blurry and ugly very quick so we hard-code the scaling to 1 to
-    // avoid that.
-    app->ui.scale = 1;
-#else
-    int screen_w;
-    int pixel_w;
-
-    // Calculate the scale of the window
-    SDL_GetWindowSize(app->sdl.window, &screen_w, NULL);
-    SDL_GL_GetDrawableSize(app->sdl.window, &pixel_w, NULL);
-    app->ui.scale = (uint32_t)round((float)pixel_w / (float)screen_w);
-    app->ui.scale = app->ui.scale ?: 1;
-#endif
-
-    // Resize the window to match the newfound scale.
-    app_sdl_video_resize_window(app);
-
     // Create the OpenGL context
     app->gfx.gl_context = SDL_GL_CreateContext(app->sdl.window);
     SDL_GL_MakeCurrent(app->sdl.window, app->gfx.gl_context);
@@ -143,20 +121,17 @@ app_sdl_video_init(
     app->ui.ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     app->ui.ioptr->IniFilename = NULL;
 
-    cfg = ImFontConfig_ImFontConfig();
-    cfg->SizePixels = 13.f * round(app->ui.scale);
-    cfg->GlyphOffset.y = 13.f * round(app->ui.scale);
-    app->ui.fonts.normal = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
-
-    cfg = ImFontConfig_ImFontConfig();
-    cfg->SizePixels = 13.f * round(app->ui.scale * 3.);
-    cfg->GlyphOffset.y = 13.f * round(app->ui.scale * 3.);
-    app->ui.fonts.big = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
-
-    ImGuiStyle_ScaleAllSizes(igGetStyle(), app->ui.scale);
-
     ImGui_ImplSDL2_InitForOpenGL(app->sdl.window, app->gfx.gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
+
+    // Copy the default style so we can easily rescale ImGui to something different
+    memcpy(&app->ui.default_style, igGetStyle(), sizeof(*igGetStyle()));
+
+    // Update all scale-related objects, such as the ImGui fonts and style.
+    app_sdl_video_update_scale(app, app_sdl_video_calculate_scale(app));
+
+    // Request a resize to ensure the window matches the new scale
+    app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
 
     // Build all the available shaders
     app->gfx.program_color_correction = build_shader_program("color_correction", SHADER_FRAG_COLOR_CORRECTION, SHADER_VERTEX_COMMON);
@@ -203,6 +178,25 @@ app_sdl_video_init(
     NFD_Init();
 }
 
+/*
+** Calculate the UI's scale by dividing the window's size in logical points by its size in pixels.
+*/
+float
+app_sdl_video_calculate_scale(
+    struct app *app
+) {
+    int screen_w;
+    int pixel_w;
+
+    SDL_GetWindowSize(app->sdl.window, &screen_w, NULL);
+    SDL_GL_GetDrawableSize(app->sdl.window, &pixel_w, NULL);
+
+    return ((float)pixel_w / (float)screen_w);
+}
+
+/*
+** Resize the window to match the size choosen in the settings and the monitor's scale.
+*/
 void
 app_sdl_video_resize_window(
     struct app *app
@@ -210,13 +204,76 @@ app_sdl_video_resize_window(
     uint32_t w;
     uint32_t h;
 
-    w = GBA_SCREEN_WIDTH * app->settings.video.display_size * app->ui.scale;
-    h = GBA_SCREEN_HEIGHT * app->settings.video.display_size * app->ui.scale;
+    w = round((float)(GBA_SCREEN_WIDTH * app->settings.video.display_size) / app->ui.scale);
+    h = round((float)(GBA_SCREEN_HEIGHT * app->settings.video.display_size) / app->ui.scale);
 
     // If relevant, expand the window by the size of the menubar
     h += app->settings.video.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME ? app->ui.menubar.size.y : 0;
 
     SDL_SetWindowSize(app->sdl.window, w, h);
+}
+
+/*
+** Update thes scale and anything that hardcodes the scale somehow.
+**
+** Currently this includes the ImGui fonts and style.
+*/
+void
+app_sdl_video_update_scale(
+    struct app *app,
+    float scale
+) {
+    ImFontConfig *cfg;
+    struct ImGuiStyle *style;
+
+    app->ui.scale = scale;
+
+    ImFontAtlas_Clear(app->ui.ioptr->Fonts);
+
+    cfg = ImFontConfig_ImFontConfig();
+    cfg->SizePixels = round(13.f * app->ui.scale);
+    cfg->GlyphOffset.y = round(13.f * app->ui.scale);
+    cfg->RasterizerDensity = app->ui.scale * 2.f;
+    app->ui.fonts.normal = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
+
+    cfg = ImFontConfig_ImFontConfig();
+    cfg->SizePixels = round(13.f * app->ui.scale * 3.);
+    cfg->GlyphOffset.y =  round(13.f * app->ui.scale * 3.);
+    cfg->RasterizerDensity = app->ui.scale * 6.f;
+    app->ui.fonts.big = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
+
+    ImFontAtlas_Build(app->ui.ioptr->Fonts);
+    ImGui_ImplOpenGL3_DestroyDeviceObjects();
+
+    style = igGetStyle();
+
+    // Restore default style size
+    style->WindowPadding = app->ui.default_style.WindowPadding;
+    style->WindowRounding = app->ui.default_style.WindowRounding;
+    style->WindowMinSize = app->ui.default_style.WindowMinSize;
+    style->ChildRounding = app->ui.default_style.ChildRounding;
+    style->PopupRounding = app->ui.default_style.PopupRounding;
+    style->FramePadding = app->ui.default_style.FramePadding;
+    style->FrameRounding = app->ui.default_style.FrameRounding;
+    style->ItemSpacing = app->ui.default_style.ItemSpacing;
+    style->ItemInnerSpacing = app->ui.default_style.ItemInnerSpacing;
+    style->CellPadding = app->ui.default_style.CellPadding;
+    style->TouchExtraPadding = app->ui.default_style.TouchExtraPadding;
+    style->IndentSpacing = app->ui.default_style.IndentSpacing;
+    style->ColumnsMinSpacing = app->ui.default_style.ColumnsMinSpacing;
+    style->ScrollbarSize = app->ui.default_style.ScrollbarSize;
+    style->ScrollbarRounding = app->ui.default_style.ScrollbarRounding;
+    style->GrabMinSize = app->ui.default_style.GrabMinSize;
+    style->GrabRounding = app->ui.default_style.GrabRounding;
+    style->LogSliderDeadzone = app->ui.default_style.LogSliderDeadzone;
+    style->TabRounding = app->ui.default_style.TabRounding;
+    style->TabMinWidthForCloseButton = (style->TabMinWidthForCloseButton != FLT_MAX) ? app->ui.default_style.TabMinWidthForCloseButton : FLT_MAX;
+    style->SeparatorTextPadding = app->ui.default_style.SeparatorTextPadding;
+    style->DisplayWindowPadding = app->ui.default_style.DisplayWindowPadding;
+    style->DisplaySafeAreaPadding = app->ui.default_style.DisplaySafeAreaPadding;
+    style->MouseCursorScale = app->ui.default_style.MouseCursorScale;
+
+    ImGuiStyle_ScaleAllSizes(style, app->ui.scale);
 }
 
 void
@@ -230,7 +287,7 @@ app_sdl_video_update_display_mode(
         case DISPLAY_MODE_BORDERLESS:           win_flags = SDL_WINDOW_FULLSCREEN_DESKTOP; break;
         case DISPLAY_MODE_WINDOWED: {
             win_flags = 0;
-            app->ui.display.request_resize = true;
+            app->ui.display.resize_request_timer = true;
             break;
         };
         default: {

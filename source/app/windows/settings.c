@@ -422,7 +422,7 @@ app_win_settings_video(
 
         igTableNextColumn();
         if (igCombo_Str_arr("##MenubarMode", (int *)&app->settings.video.menubar_mode, menubar_mode_names, array_length(menubar_mode_names), 0)) {
-            app->ui.display.request_resize = true;
+            app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
         }
 
         // Display Mode
@@ -444,10 +444,9 @@ app_win_settings_video(
 
         display_size = -1;
         for (i = 1; i < array_length(display_size_names) + 1; ++i) {
-
             if (
-                   app->ui.display.game.outer.width == GBA_SCREEN_WIDTH * i * app->ui.scale
-                && app->ui.display.game.outer.height == GBA_SCREEN_HEIGHT * i * app->ui.scale
+                   app->ui.display.game.outer.width == GBA_SCREEN_WIDTH * i
+                && app->ui.display.game.outer.height == GBA_SCREEN_HEIGHT * i
             ) {
                 display_size = i;
                 break;
@@ -461,7 +460,7 @@ app_win_settings_video(
                 is_selected = (display_size == i);
                 if (igSelectable_Bool(display_size_names[i - 1], is_selected, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
                     app->settings.video.display_size = i;
-                    app->ui.display.request_resize = true;
+                    app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
                 }
 
                 if (is_selected) {

@@ -20,7 +20,6 @@ void
 app_win_game_refresh_game_area(
     struct app *app
 ) {
-
     app->ui.display.game.outer.x = 0;
     app->ui.display.game.outer.y = 0;
 

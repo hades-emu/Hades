@@ -26,6 +26,8 @@
 #define POWER_SAVE_FRAME_DELAY      30
 #define MAX_GFX_PROGRAMS            10
 
+#define DEFAULT_RESIZE_TIMER        3
+
 struct ImGuiIO;
 
 enum menubar_mode {
@@ -394,7 +396,11 @@ struct app {
 
         // High resolution
         float dpi;
-        uint32_t scale;
+        float scale;
+
+        // Default style of ImGui.
+        // Used when rescaling the application.
+        struct ImGuiStyle default_style;
 
         // Display refresh rate
         uint32_t refresh_rate;
@@ -407,9 +413,6 @@ struct app {
 
         // Temporary value used to measure the time since the last mouse movement (in ms)
         float time_elapsed_since_last_mouse_motion_ms;
-
-        // Used to avoid a bug on Linux/Wayland that prevents us from resizing the window during the first frame.
-        bool first_frame;
 
         struct {
             // 1.0 if the menubar is visible, 0.0 if not, and something in between if the
@@ -459,8 +462,11 @@ struct app {
                 uint32_t height;
             } win;
 
-            // Set when the window needs to be resized to fit a specific aspect ratio
-            bool request_resize;
+            // Timer, in frames, until the window needs to be resized to fit a specific aspect ratio
+            int resize_request_timer;
+
+            // Set to the last time the scale was calculated.
+            uint64_t last_scale_calculation_ms;
         } display;
 
         // The error message to print, if any.
@@ -531,6 +537,8 @@ void app_sdl_video_render_frame(struct app *app);
 void app_sdl_video_rebuild_pipeline(struct app *app);
 void app_sdl_video_resize_window(struct app *app);
 void app_sdl_video_update_display_mode(struct app *app);
+void app_sdl_video_update_scale(struct app *app, float scale);
+float app_sdl_video_calculate_scale(struct app *app);
 
 /* app/shaders/frag-color-correction.c */
 extern char const *SHADER_FRAG_COLOR_CORRECTION;

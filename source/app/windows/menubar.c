@@ -310,12 +310,12 @@ app_win_menubar_video(
                 if (igMenuItem_Bool(
                     display_sizes[x - 1],
                     NULL,
-                       app->ui.display.game.outer.width == GBA_SCREEN_WIDTH * x * app->ui.scale
-                    && app->ui.display.game.outer.height == GBA_SCREEN_HEIGHT * x * app->ui.scale,
+                       app->ui.display.game.outer.width == GBA_SCREEN_WIDTH * x
+                    && app->ui.display.game.outer.height == GBA_SCREEN_HEIGHT * x,
                     true
                 )) {
                     app->settings.video.display_size = x;
-                    app->ui.display.request_resize = true;
+                    app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
                 }
             }
 
