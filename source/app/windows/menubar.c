@@ -46,7 +46,18 @@ app_win_menubar_file(
             uint32_t x;
 
             for (x = 0; x < array_length(app->file.recent_roms) && app->file.recent_roms[x]; ++x) {
-                if (igMenuItem_Bool(hs_basename(app->file.recent_roms[x]), NULL, false, true)) {
+                char label[128];
+                char const *basename;
+
+                basename = hs_basename(app->file.recent_roms[x]);
+
+                if (!strlen(basename)) {
+                    continue;
+                }
+
+                snprintf(label, sizeof(label), "%s##%u", basename, x);
+
+                if (igMenuItem_Bool(label, NULL, false, true)) {
                     char *path;
 
                     // app->file.recent_roms[] is modified by `app_emulator_configure_and_run()` so we need to copy
