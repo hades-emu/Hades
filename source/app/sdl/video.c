@@ -82,6 +82,8 @@ app_sdl_video_init(
         default:                            break;
     }
 
+    printf("Creating window with size %ux%u\n", app->ui.display.win.width, app->ui.display.win.height);
+
     // Create the SDL window
     app->sdl.window = SDL_CreateWindow(
         "Hades",
@@ -185,6 +187,10 @@ float
 app_sdl_video_calculate_scale(
     struct app *app
 ) {
+    // MacOS handles most of the heavy lifting on its own
+#if defined(__APPLE__)
+    return 1.0f;
+#else
     int screen_w;
     int pixel_w;
 
@@ -192,6 +198,7 @@ app_sdl_video_calculate_scale(
     SDL_GL_GetDrawableSize(app->sdl.window, &pixel_w, NULL);
 
     return ((float)pixel_w / (float)screen_w);
+#endif
 }
 
 /*
@@ -209,6 +216,8 @@ app_sdl_video_resize_window(
 
     // If relevant, expand the window by the size of the menubar
     h += app->settings.video.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME ? app->ui.menubar.size.y : 0;
+
+    printf("Resizing to %ux%u\n", w, h);
 
     SDL_SetWindowSize(app->sdl.window, w, h);
 }
