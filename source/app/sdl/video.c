@@ -82,8 +82,6 @@ app_sdl_video_init(
         default:                            break;
     }
 
-    printf("Creating window with size %ux%u\n", app->ui.display.win.width, app->ui.display.win.height);
-
     // Create the SDL window
     app->sdl.window = SDL_CreateWindow(
         "Hades",
@@ -216,8 +214,6 @@ app_sdl_video_resize_window(
 
     // If relevant, expand the window by the size of the menubar
     h += app->settings.video.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME ? app->ui.menubar.size.y : 0;
-
-    printf("Resizing to %ux%u\n", w, h);
 
     SDL_SetWindowSize(app->sdl.window, w, h);
 }
