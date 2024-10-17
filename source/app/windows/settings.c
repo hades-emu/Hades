@@ -445,8 +445,8 @@ app_win_settings_video(
         display_size = -1;
         for (i = 1; i < array_length(display_size_names) + 1; ++i) {
             if (
-                   app->ui.display.game.outer.width == GBA_SCREEN_WIDTH * i
-                && app->ui.display.game.outer.height == GBA_SCREEN_HEIGHT * i
+                   app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * i / app->ui.scale)
+                && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * i / app->ui.scale)
             ) {
                 display_size = i;
                 break;
