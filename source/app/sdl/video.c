@@ -238,13 +238,13 @@ app_sdl_video_update_scale(
     cfg = ImFontConfig_ImFontConfig();
     cfg->SizePixels = round(13.f * app->ui.scale);
     cfg->GlyphOffset.y = round(13.f * app->ui.scale);
-    cfg->RasterizerDensity = app->ui.scale * 2.f;
+    cfg->RasterizerDensity = round(app->ui.scale * 2.f);
     app->ui.fonts.normal = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
 
     cfg = ImFontConfig_ImFontConfig();
     cfg->SizePixels = round(13.f * app->ui.scale * 3.);
     cfg->GlyphOffset.y =  round(13.f * app->ui.scale * 3.);
-    cfg->RasterizerDensity = app->ui.scale * 2.f;
+    cfg->RasterizerDensity = round(app->ui.scale * 2.f);
     app->ui.fonts.big = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
 
     ImFontAtlas_Build(app->ui.ioptr->Fonts);
