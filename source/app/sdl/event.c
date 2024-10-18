@@ -160,12 +160,12 @@ app_sdl_handle_events(
                 for (i = BIND_MIN; i < BIND_MAX; ++i) {
                     // Normal binds
                     if (app_bindings_keyboard_binding_match(&app->binds.keyboard[i], &bind)) {
-                        app_bindings_handle(app, i, event.type == SDL_KEYDOWN);
+                        app_bindings_process(app, i, event.type == SDL_KEYDOWN);
                     }
 
                     // Alternative binds
                     if (app_bindings_keyboard_binding_match(&app->binds.keyboard_alt[i], &bind)) {
-                        app_bindings_handle(app, i, event.type == SDL_KEYDOWN);
+                        app_bindings_process(app, i, event.type == SDL_KEYDOWN);
                     }
                 }
 
@@ -190,12 +190,12 @@ app_sdl_handle_events(
                 for (i = BIND_MIN; i < BIND_MAX; ++i) {
                     // Normal binds
                     if (app->binds.controller[i] == event.cbutton.button) {
-                        app_bindings_handle(app, i, event.type == SDL_CONTROLLERBUTTONDOWN);
+                        app_bindings_process(app, i, event.type == SDL_CONTROLLERBUTTONDOWN);
                     }
 
                     // Alternative binds
                     if (app->binds.controller_alt[i] == event.cbutton.button) {
-                        app_bindings_handle(app, i, event.type == SDL_CONTROLLERBUTTONDOWN);
+                        app_bindings_process(app, i, event.type == SDL_CONTROLLERBUTTONDOWN);
                     }
                 }
                 break;
@@ -213,16 +213,16 @@ app_sdl_handle_events(
                 state_b = (event.jaxis.value <= INT16_MIN / 2);
                 if (event.jaxis.axis == 0 && state_a != app->sdl.controller.joystick.right) {
                     app->sdl.controller.joystick.right = state_a;
-                    app_bindings_handle(app, BIND_GBA_RIGHT, state_a);
+                    app_bindings_process(app, BIND_GBA_RIGHT, state_a);
                 } else if (event.jaxis.axis == 0 && state_b != app->sdl.controller.joystick.left) {
                     app->sdl.controller.joystick.left = state_b;
-                    app_bindings_handle(app, BIND_GBA_LEFT, state_b);
+                    app_bindings_process(app, BIND_GBA_LEFT, state_b);
                 } else if (event.jaxis.axis == 1 && state_a != app->sdl.controller.joystick.down) {
                     app->sdl.controller.joystick.down = state_a;
-                    app_bindings_handle(app, BIND_GBA_DOWN, state_a);
+                    app_bindings_process(app, BIND_GBA_DOWN, state_a);
                 } else if (event.jaxis.axis == 1 && state_b != app->sdl.controller.joystick.up) {
                     app->sdl.controller.joystick.up = state_b;
-                    app_bindings_handle(app, BIND_GBA_UP, state_b);
+                    app_bindings_process(app, BIND_GBA_UP, state_b);
                 }
                 break;
             }

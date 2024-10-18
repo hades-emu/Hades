@@ -582,7 +582,7 @@ void app_bindings_keyboard_binding_clear(struct app *app, struct keyboard_bindin
 bool app_bindings_keyboard_binding_match(struct keyboard_binding const *, struct keyboard_binding const *);
 char *app_bindings_keyboard_binding_to_str(struct keyboard_binding const *bind);
 void app_bindings_controller_binding_clear(struct app *app, SDL_GameControllerButton btn);
-void app_bindings_handle(struct app *app, enum bind_actions bind, bool pressed);
+void app_bindings_process(struct app *app, enum bind_actions bind, bool pressed);
 
 /* config.c */
 void app_config_load(struct app *app);

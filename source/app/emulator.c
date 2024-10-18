@@ -144,7 +144,7 @@ app_emulator_process_all_notifs(
 }
 
 void
-app_emulator_wait_for_notif(
+app_emulator_wait_for_notification(
     struct app *app,
     enum notification_kind kind
 ) {
@@ -597,7 +597,7 @@ app_emulator_configure_and_run(
 
     extension = strrchr(rom_path, '.');
 
-    // We consider anything that isn't ending with `.gba` or `.bin` as an archive.
+    // We consider anything that isn't ending with `.gba` or `.bin` an archive.
     // XXX: Should we build a hard-coded list instead?
     if (extension) {
         basename_len = extension - rom_path;
@@ -696,17 +696,15 @@ app_emulator_configure_and_run(
 
     memcpy(&event.config, app->emulation.launch_config, sizeof(event.config));
 
-    /*
-    ** Process all notifications before sending the reset message to make sure the NOTIFICATION_RESET we will
-    ** receive comes from the correct reset message.
-    */
+    // Process all notifications before sending the reset message to make sure the NOTIFICATION_RESET we will
+    // receive comes from the correct reset message.
 
     app_emulator_process_all_notifs(app);
     channel_lock(&app->emulation.gba->channels.messages);
     channel_push(&app->emulation.gba->channels.messages, &event.header);
     channel_release(&app->emulation.gba->channels.messages);
 
-    app_emulator_wait_for_notif(app, NOTIFICATION_RESET);
+    app_emulator_wait_for_notification(app, NOTIFICATION_RESET);
 
     app_config_push_recent_rom(app, rom_path);
 
@@ -790,6 +788,9 @@ app_emulator_pause(
 
 /*
 ** Exit the emulation.
+**
+** NOTE: The emulator thread will stop and exit when processing this message.
+** This message is used when shutting down Hades.
 */
 void
 app_emulator_exit(

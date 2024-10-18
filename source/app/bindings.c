@@ -117,7 +117,7 @@ app_bindings_keyboard_binding_match(
 ** Return the user-printable name of the given bind.
 ** Eg: `Ctrl-Alt-P`.
 **
-** The return value must be freed.
+** The return value should be passed to `free()`.
 */
 char *
 app_bindings_keyboard_binding_to_str(
@@ -141,7 +141,7 @@ app_bindings_keyboard_binding_to_str(
 }
 
 /*
-** Clear any existing keyboard bindings matching the given key.
+** Clear any existing keyboard bindings matching the one given in argument.
 */
 void
 app_bindings_keyboard_binding_clear(
@@ -162,7 +162,7 @@ app_bindings_keyboard_binding_clear(
 }
 
 /*
-** Clear any existing controller bindings matching the given key.
+** Clear any existing controller bindings matching the one given in argument.
 */
 void
 app_bindings_controller_binding_clear(
@@ -183,10 +183,10 @@ app_bindings_controller_binding_clear(
 }
 
 /*
-** Handle a given binding.
+** Process a given binding, doing the action it represents.
 */
 void
-app_bindings_handle(
+app_bindings_process(
     struct app *app,
     enum bind_actions bind,
     bool pressed
