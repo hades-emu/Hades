@@ -260,6 +260,16 @@ struct settings {
         // Hide the cursor after a few seconds of inactivity
         bool hide_cursor_when_mouse_inactive;
 
+        // If set, use the system screenshot directory.
+        // Otherwise, use the one specified by `screenshot_dir`.
+        // TODO: Move this elsewhere
+        bool use_system_screenshot_dir_path;
+
+        // Screenshot directory
+        // Only relevant if `use_system_screenshot_dir` is set.
+        // TODO: Move this elsewhere
+        char *screenshot_dir_path;
+
         /*
         ** Debug
         */

@@ -80,6 +80,8 @@ app_settings_default(
     settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
     settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
     settings->video.hide_cursor_when_mouse_inactive = true;
+    settings->video.use_system_screenshot_dir_path = true;
+    settings->video.screenshot_dir_path = strdup("./screenshots/");
     settings->audio.mute = false;
     settings->audio.level = 1.0f;
 }

@@ -583,6 +583,44 @@ app_win_settings_video(
         igTableSetupColumn("##VideoSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##VideoSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
+        // Use System Directory For Screenshots
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Use System Directory For Screenshots");
+
+        igTableNextColumn();
+        igCheckbox("##UseSystemDirectoryForScreenshots", &app->settings.video.use_system_screenshot_dir_path);
+
+        // Screenshot Directory
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Screenshot Directory");
+
+        igBeginDisabled(app->settings.video.use_system_screenshot_dir_path);
+
+        igTableNextColumn();
+        igBeginDisabled(true);
+        igInputText("##ScreenshotDirectory", app->settings.video.screenshot_dir_path, strlen(app->settings.video.screenshot_dir_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
+        igEndDisabled();
+        igSameLine(0.0f, -1.0f);
+        if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
+            nfdresult_t result;
+            nfdchar_t *path;
+
+            result = NFD_PickFolder(
+                &path,
+                app->settings.video.screenshot_dir_path
+            );
+
+            if (result == NFD_OKAY) {
+                free(app->settings.video.screenshot_dir_path);
+                app->settings.video.screenshot_dir_path = strdup(path);
+                NFD_FreePath(path);
+            }
+        }
+
+        igEndDisabled();
+
         // Hide the cursor when the mouse is inactive
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();

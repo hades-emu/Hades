@@ -154,5 +154,8 @@ char const *
 app_path_screenshots(
     struct app *app
 ) {
-    return (app->file.sys_pictures_dir_path ?: "screeenshots");
+    if (!app->settings.video.use_system_screenshot_dir_path && app->settings.video.screenshot_dir_path) {
+        return (app->settings.video.screenshot_dir_path);
+    }
+    return app->file.sys_pictures_dir_path ?: "screeenshots";
 }

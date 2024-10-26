@@ -127,6 +127,7 @@ app_config_load(
 
     // Video
     {
+        char str[4096];
         int b;
         double d;
 
@@ -180,9 +181,18 @@ app_config_load(
         if (mjson_get_bool(data, data_len, "$.video.hide_cursor_when_mouse_inactive", &b)) {
             app->settings.video.hide_cursor_when_mouse_inactive = b;
         }
+
+        if (mjson_get_bool(data, data_len, "$.video.use_system_screenshot_dir_path", &b)) {
+            app->settings.video.use_system_screenshot_dir_path = b;
+        }
+
+        if (mjson_get_string(data, data_len, "$.video.screenshot_dir_path", str, sizeof(str)) > 0) {
+            free(app->settings.video.screenshot_dir_path);
+            app->settings.video.screenshot_dir_path = strdup(str);
+        }
     }
 
-    // Video
+    // Audio
     {
         int b;
         double d;
@@ -344,7 +354,9 @@ app_config_save(
                 "texture_filter": %d,
                 "pixel_color_filter": %d,
                 "pixel_scaling_filter": %d,
-                "hide_cursor_when_mouse_inactive": %B
+                "hide_cursor_when_mouse_inactive": %B,
+                "use_system_screenshot_dir_path": %B,
+                "screenshot_dir_path": %Q
             },
 
             // Audio
@@ -387,6 +399,8 @@ app_config_save(
         (int)app->settings.video.pixel_color_filter,
         (int)app->settings.video.pixel_scaling_filter,
         (int)app->settings.video.hide_cursor_when_mouse_inactive,
+        (int)app->settings.video.use_system_screenshot_dir_path,
+        app->settings.video.screenshot_dir_path,
         (int)app->settings.audio.mute,
         app->settings.audio.level
     );
