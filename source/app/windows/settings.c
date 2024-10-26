@@ -238,7 +238,7 @@ app_win_settings_emulation(
 
             // Adjust the speed to be a percentage rounded to the nearest multiple of 5.
             new_speed = *speeds[i] * 100.0;
-            new_speed = new_speed + 2;
+            new_speed += 2;
             new_speed -= new_speed % 5;
 
             // Minimum and maximum adjustable speed
@@ -412,6 +412,9 @@ app_win_settings_video(
     igSeparatorText("Display");
 
     if (igBeginTable("##VideoSettingsDisplay", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        char label[128];
+        int32_t scale;
+
         igTableSetupColumn("##VideoSettingsDisplayLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##VideoSettingsDisplayValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
@@ -435,6 +438,48 @@ app_win_settings_video(
             app_sdl_video_update_display_mode(app);
         }
 
+        // Auto-Detect Scale
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Auto-Detect UI Scale");
+
+        igTableNextColumn();
+        if (igCheckbox("##AutoDetectScale", &app->settings.video.autodetect_scale)) {
+            app->ui.request_scale_update = true;
+        }
+
+        // Scale
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("UI Scale");
+
+        // Round to nearest multiple of 5 and normalize
+        scale = app->settings.video.scale * 100.;
+        scale += 2;
+        scale -= scale % 5;
+
+        // The 4 % are here to escape it twice, ensuring that igSliderFloat doesn't fail when
+        // parsing the format string.
+        snprintf(label, sizeof(label), "%i%%%%", scale);
+
+        igTableNextColumn();
+        igBeginDisabled(app->settings.video.autodetect_scale);
+        if (igSliderInt(
+            "##Scale",
+            &scale,
+            50,
+            200,
+            label,
+            ImGuiSliderFlags_AlwaysClamp
+        )) {
+            // Round to nearest multiple of 5 and normalize
+            scale = scale + 2;
+            scale -= scale % 5;
+            app->settings.video.scale = scale / 100.0;
+            app->ui.request_scale_update = true;
+        }
+        igEndDisabled();
+
         // Display Size
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
@@ -445,8 +490,8 @@ app_win_settings_video(
         display_size = -1;
         for (i = 1; i < array_length(display_size_names) + 1; ++i) {
             if (
-                   app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * i / app->ui.scale)
-                && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * i / app->ui.scale)
+                   app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * i / app->ui.display_scale)
+                && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * i / app->ui.display_scale)
             ) {
                 display_size = i;
                 break;

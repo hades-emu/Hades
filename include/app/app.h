@@ -232,6 +232,13 @@ struct settings {
         // Display mode
         enum display_mode display_mode;
 
+        // Auto-detect the scale
+        bool autodetect_scale;
+
+        // Scale to use for the UI if `autodetect_scale` is false.
+        // Must be > 0.0
+        float scale;
+
         // Display size
         uint32_t display_size;
 
@@ -394,16 +401,22 @@ struct app {
             struct ImFont *big;
         } fonts;
 
-        // High resolution
-        float dpi;
+        // Display's metadata
+        float display_dpi;
+        float display_scale;
+        uint32_t display_refresh_rate;
+
+        // UI Scale
+        // Usually the display scale unless overridden in the settings
         float scale;
+
+        // Set to update the UI scale to match `app.video.scale` at the
+        // end of the frame.
+        bool request_scale_update;
 
         // Default style of ImGui.
         // Used when rescaling the application.
         struct ImGuiStyle default_style;
-
-        // Display refresh rate
-        uint32_t refresh_rate;
 
         // How many frames before going back to power save mode?
         uint32_t power_save_fcounter;
@@ -537,7 +550,7 @@ void app_sdl_video_render_frame(struct app *app);
 void app_sdl_video_rebuild_pipeline(struct app *app);
 void app_sdl_video_resize_window(struct app *app);
 void app_sdl_video_update_display_mode(struct app *app);
-void app_sdl_video_update_scale(struct app *app, float scale);
+void app_sdl_video_update_scale(struct app *app);
 float app_sdl_video_calculate_scale(struct app *app);
 
 /* app/shaders/frag-color-correction.c */

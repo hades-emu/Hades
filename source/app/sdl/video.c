@@ -53,11 +53,11 @@ app_sdl_video_init(
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     // Get the display's DPI
-    SDL_GetDisplayDPI(0, &app->ui.dpi, NULL, NULL);
+    SDL_GetDisplayDPI(0, &app->ui.display_dpi, NULL, NULL);
 
     // Get the display's refresh rate
     SDL_GetDisplayMode(0, 0, &mode);
-    app->ui.refresh_rate = (uint32_t)mode.refresh_rate;
+    app->ui.display_refresh_rate = (uint32_t)mode.refresh_rate;
 
     // Assume a scale of 1 before the window is initialized.
     // We can't properly retrieve the display's scale before we create the window
@@ -128,7 +128,9 @@ app_sdl_video_init(
     memcpy(&app->ui.default_style, igGetStyle(), sizeof(*igGetStyle()));
 
     // Update all scale-related objects, such as the ImGui fonts and style.
-    app_sdl_video_update_scale(app, app_sdl_video_calculate_scale(app));
+    app->ui.display_scale = app_sdl_video_calculate_scale(app);
+    app->ui.scale = app->settings.video.autodetect_scale ? app->ui.display_scale : app->settings.video.scale;
+    app_sdl_video_update_scale(app);
 
     // Request a resize to ensure the window matches the new scale
     app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
@@ -209,8 +211,10 @@ app_sdl_video_resize_window(
     uint32_t w;
     uint32_t h;
 
-    w = round((float)(GBA_SCREEN_WIDTH * app->settings.video.display_size) / app->ui.scale);
-    h = round((float)(GBA_SCREEN_HEIGHT * app->settings.video.display_size) / app->ui.scale);
+    // Calculate the desired width and height in **screen coordinates**, not pixels, hence why we
+    // divide by the display's scale.
+    w = round((float)(GBA_SCREEN_WIDTH * app->settings.video.display_size) / app->ui.display_scale);
+    h = round((float)(GBA_SCREEN_HEIGHT * app->settings.video.display_size) / app->ui.display_scale);
 
     // If relevant, expand the window by the size of the menubar
     h += app->settings.video.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME ? app->ui.menubar.size.y : 0;
@@ -219,19 +223,16 @@ app_sdl_video_resize_window(
 }
 
 /*
-** Update thes scale and anything that hardcodes the scale somehow.
+** Update the UI scale (and everything that depends on it).
 **
 ** Currently this includes the ImGui fonts and style.
 */
 void
 app_sdl_video_update_scale(
-    struct app *app,
-    float scale
+    struct app *app
 ) {
     ImFontConfig *cfg;
     struct ImGuiStyle *style;
-
-    app->ui.scale = scale;
 
     ImFontAtlas_Clear(app->ui.ioptr->Fonts);
 

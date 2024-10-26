@@ -140,6 +140,14 @@ app_config_load(
             app->settings.video.display_mode = max(DISPLAY_MODE_MIN, min(app->settings.video.display_mode, DISPLAY_MODE_MAX));
         }
 
+        if (mjson_get_bool(data, data_len, "$.video.autodetect_scale", &b)) {
+            app->settings.video.autodetect_scale = b;
+        }
+
+        if (mjson_get_number(data, data_len, "$.video.scale", &d)) {
+            app->settings.video.scale = d;
+        }
+
         if (mjson_get_number(data, data_len, "$.video.display_size", &d)) {
             app->settings.video.display_size = (int)d;
             app->settings.video.display_size = max(1, min(app->settings.video.display_size, 5));
@@ -328,6 +336,8 @@ app_config_save(
             "video": {
                 "menubar_mode": %d,
                 "display_mode": %d,
+                "autodetect_scale": %B,
+                "scale": %g,
                 "display_size": %d,
                 "aspect_ratio": %d,
                 "vsync": %B,
@@ -368,6 +378,8 @@ app_config_save(
         (int)app->settings.emulation.gpio_device.type,
         (int)app->settings.video.menubar_mode,
         (int)app->settings.video.display_mode,
+        (int)app->settings.video.autodetect_scale,
+        app->settings.video.scale,
         (int)app->settings.video.display_size,
         (int)app->settings.video.aspect_ratio,
         (int)app->settings.video.vsync,

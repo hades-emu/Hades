@@ -72,6 +72,8 @@ app_settings_default(
     settings->video.menubar_mode = MENUBAR_MODE_FIXED_ABOVE_GAME;
     settings->video.display_mode = DISPLAY_MODE_WINDOWED;
     settings->video.display_size = 3;
+    settings->video.autodetect_scale = true;
+    settings->video.scale = 1.0f;
     settings->video.aspect_ratio = ASPECT_RATIO_BORDERS;
     settings->video.vsync = false;
     settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
@@ -123,13 +125,13 @@ main(
             HS_INFO,
             "Dpi: %s%.1f%s, Scale factor: %s%.2f%s, Refresh Rate: %s%uHz%s.",
             g_light_magenta,
-            app.ui.dpi,
+            app.ui.display_dpi,
             g_reset,
             g_light_magenta,
             app.ui.scale,
             g_reset,
             g_light_magenta,
-            app.ui.refresh_rate,
+            app.ui.display_refresh_rate,
             g_reset
         );
     }
@@ -192,6 +194,7 @@ main(
         app_sdl_handle_events(&app);
         app_sdl_video_render_frame(&app);
 
+        // Update the FPS counter and the window's title.
         if (app.emulation.is_started && app.emulation.is_running) {
             uint32_t now;
 
@@ -220,7 +223,7 @@ main(
             app_sdl_video_resize_window(&app);
         }
 
-        // Recalculate the scale every 100ms
+        // Recalculate the display scale every 100ms
         //
         // We do this periodically to avoid glitching when the window is in-between two monitors.
         // It might look like a weird idea, but overall this adds a lot of stability to the hidpi system.
@@ -229,18 +232,26 @@ main(
         // would be quite costly.
         last_rescale_recalculation_ms = (uint64_t)((float)sdl_counters[0] / (float)SDL_GetPerformanceFrequency() * 1000.f);
         if (last_rescale_recalculation_ms - app.ui.display.last_scale_calculation_ms > 100) {
-            float scale;
+            float display_scale;
 
             app.ui.display.last_scale_calculation_ms = last_rescale_recalculation_ms;
-            scale = app_sdl_video_calculate_scale(&app);
+            display_scale = app_sdl_video_calculate_scale(&app);
 
             // If the scale changed significantly
-            if (scale - app.ui.scale > 0.01 || scale - app.ui.scale < -0.01) {
-                app_sdl_video_update_scale(&app, scale);
+            if (display_scale - app.ui.display_scale > 0.01 || display_scale - app.ui.display_scale < -0.01) {
+                app.ui.display_scale = display_scale;
+                app.ui.request_scale_update |= app.settings.video.autodetect_scale;
 
                 // Request a resize to ensure the window matches the new scale
                 app.ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
             }
+        }
+
+        // Update the UI scale if needed
+        if (app.ui.request_scale_update) {
+            app.ui.scale = app.settings.video.autodetect_scale ? app.ui.display_scale : app.settings.video.scale;
+            app_sdl_video_update_scale(&app);
+            app.ui.request_scale_update = false;
         }
 
         elapsed_ms = ((float)(sdl_counters[1] - sdl_counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
@@ -251,7 +262,7 @@ main(
         if (app.emulation.is_started && app.emulation.is_running) {
             // If the emulator is running without vsync, cap the gui's FPS to 4x the display's refresh rate
             if (!app.settings.video.vsync) {
-                SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.refresh_rate)) - elapsed_ms)));
+                SDL_Delay(max(0.f, floor((1000.f / (4.0 * app.ui.display_refresh_rate)) - elapsed_ms)));
             }
 
             app.ui.power_save_fcounter = POWER_SAVE_FRAME_DELAY;
@@ -274,7 +285,8 @@ main(
             }
         }
 
-        // Handle all the stuff that must disappear after a few seconds if the UI isn't active
+        // Handle all the stuff that must disappear after a few seconds if the mouse isn't moving
+        // and the UI isn't being used.
         if (app.emulation.is_started && app.emulation.is_running && !igGetHoveredID() && !igGetFocusID() && !app.ui.settings.open) {
 
             if (app.ui.time_elapsed_since_last_mouse_motion_ms <= 2000.0) {
@@ -294,8 +306,8 @@ main(
                 }
             }
 
-            // Hide the menubar if it's hovering over the game, isn't focused and the mouse is inactive for a while
-            // We set `visibility` to go from 1.0 to 0.0 over 50ms, after the mouse is inactive after 1950ms.
+            // Hide the menubar if the mouse is inactive for a while
+            // We slowly change `visibility` to go from 1.0 to 0.0 over 50ms, after the mouse is inactive for 1950ms.
             if (app.settings.video.menubar_mode == MENUBAR_MODE_HOVER_OVER_GAME) {
                 if (app.ui.time_elapsed_since_last_mouse_motion_ms < 1950.0) {
                     app.ui.menubar.visibility = 1.0f;
