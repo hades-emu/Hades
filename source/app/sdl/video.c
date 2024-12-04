@@ -194,10 +194,15 @@ app_sdl_video_calculate_scale(
     int screen_w;
     int pixel_w;
 
-    SDL_GetWindowSize(app->sdl.window, &screen_w, NULL);
-    SDL_GL_GetDrawableSize(app->sdl.window, &pixel_w, NULL);
+    // Same thing with Wayland, most of the heavy lifting is done by the compositor
+    if (getenv("WAYLAND_DISPLAY")) {
+        return 1.0f;
+    } else {
+        SDL_GetWindowSize(app->sdl.window, &screen_w, NULL);
+        SDL_GL_GetDrawableSize(app->sdl.window, &pixel_w, NULL);
 
-    return ((float)pixel_w / (float)screen_w);
+        return ((float)pixel_w / (float)screen_w);
+    }
 #endif
 }
 
