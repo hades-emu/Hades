@@ -413,13 +413,6 @@ app_sdl_video_rebuild_pipeline(
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-struct shader_descriptor {
-    char const *path;
-    GLenum type;
-    char *src;
-    GLuint shader;
-};
-
 static
 GLuint
 build_shader_program(
