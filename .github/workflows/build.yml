@@ -39,6 +39,8 @@ jobs:
           if-no-files-found: error
 
   mac-os:
+    # Disabled for the time being, as we're having issues with the apple developer account.
+    if: false
     name: MacOS arm64 (DMG Installer)
     runs-on: macos-14
     steps:
@@ -146,7 +148,7 @@ jobs:
 
   linux-appimage:
     name: Linux x64 (AppImage)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Fetch Source Code
         uses: actions/checkout@v4
@@ -189,12 +191,7 @@ jobs:
     runs-on: ubuntu-${{ matrix.version }}
     strategy:
       matrix:
-        version: ["20.04", "22.04"]
-        include:
-          - dependency-glew: libglew2.1
-            version: "20.04"
-          - dependency-glew: libglew2.2
-            version: "22.04"
+        version: ["22.04", "24.04"]
     steps:
       - name: Fetch Source Code
         uses: actions/checkout@v4
@@ -222,7 +219,7 @@ jobs:
           maintainer: The Hades Authors
           version: 1.0.0
           arch: 'amd64'
-          depends: 'libsdl2-2.0-0, libarchive13, libgtk-3-0, ${{ matrix.dependency-glew }}'
+          depends: 'libsdl2-2.0-0, libarchive13, libgtk-3-0, libglew2.2'
           desc: 'A Nintendo Game Boy Advance Emulator.'
       - name: Test Hades
         run: |
