@@ -52,12 +52,16 @@ app_sdl_handle_events(
                         if (app->settings.emulation.pause_when_window_inactive && app->emulation.is_started && !app->emulation.is_running) {
                             app_emulator_run(app);
                         }
+                        // Reset the visibility of the menu bar
+                        app->ui.menubar.force_show = true;
                         break;
                     };
                     case SDL_WINDOWEVENT_FOCUS_LOST: {
                         if (app->settings.emulation.pause_when_window_inactive && app->emulation.is_started && app->emulation.is_running) {
                             app_emulator_pause(app);
                         }
+                        // Hide the menu bar
+                        app->ui.menubar.force_hide = true;
                         break;
                     };
                 }

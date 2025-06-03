@@ -438,6 +438,12 @@ struct app {
         float time_elapsed_since_last_mouse_motion_ms;
 
         struct {
+            // Force the menubar to be hidden on the next frame
+            bool force_hide;
+
+            // Force the menubar to be visible on the next frame
+            bool force_show;
+
             // 1.0 if the menubar is visible, 0.0 if not, and something in between if the
             // menubar is fading away
             float visibility;

@@ -291,7 +291,15 @@ main(
         // and the UI isn't being used.
         if (app.emulation.is_started && app.emulation.is_running && !igGetHoveredID() && !igGetFocusID() && !app.ui.settings.open) {
 
-            if (app.ui.time_elapsed_since_last_mouse_motion_ms <= 2000.0) {
+            if (app.ui.menubar.force_show) {
+                app.ui.time_elapsed_since_last_mouse_motion_ms = 0.0f;
+                app.ui.menubar.visibility = 1.0f;
+                app.ui.menubar.force_show = false;
+            } else if (app.ui.menubar.force_hide) {
+                app.ui.time_elapsed_since_last_mouse_motion_ms = 1950.0f;
+                app.ui.menubar.visibility = 1.0f;
+                app.ui.menubar.force_hide = false;
+            } else if (app.ui.time_elapsed_since_last_mouse_motion_ms <= 2000.0) {
                 app.ui.time_elapsed_since_last_mouse_motion_ms += elapsed_ms;
             }
 
@@ -327,6 +335,8 @@ main(
             }
 
             app.ui.menubar.visibility = 1.0f;
+            app.ui.menubar.force_hide = false;
+            app.ui.menubar.force_show = false;
         }
 
         // Flush the quick save cache
