@@ -52,19 +52,19 @@ app_settings_default(
 ) {
     free(settings->emulation.bios_path);
 
+    settings->general.show_fps = false;
+    settings->general.start_last_played_game_on_startup = false;
+    settings->general.pause_when_window_inactive = false;
+    settings->general.pause_when_game_resets = false;
     settings->emulation.bios_path = strdup("./bios.bin");
-    settings->emulation.skip_bios = false;
-    settings->emulation.show_fps = false;
+    settings->emulation.skip_bios_intro = false;
     settings->emulation.speed = 1.0;
     settings->emulation.alt_speed = -1.0;
-    settings->emulation.prefetch_buffer = true;
-    settings->emulation.start_last_played_game_on_startup = false;
-    settings->emulation.pause_when_window_inactive = false;
-    settings->emulation.pause_when_game_resets = false;
     settings->emulation.backup_storage.autodetect = true;
     settings->emulation.backup_storage.type = BACKUP_NONE;
     settings->emulation.gpio_device.autodetect = true;
     settings->emulation.gpio_device.type = GPIO_NONE;
+    settings->emulation.prefetch_buffer = true;
     settings->video.enable_oam = true;
     memset(settings->video.enable_bg_layers, true, sizeof(settings->video.enable_bg_layers));
     memset(settings->audio.enable_psg_channels, true, sizeof(settings->audio.enable_psg_channels));
@@ -150,7 +150,7 @@ main(
     if (app.args.rom_path) {
         app_emulator_configure_and_run(&app, app.args.rom_path, NULL);
     } else if ( // Start the last played game
-           app.settings.emulation.start_last_played_game_on_startup
+           app.settings.general.start_last_played_game_on_startup
         && app.file.recent_roms[0]
         && strlen(app.file.recent_roms[0])
     ) {

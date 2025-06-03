@@ -150,6 +150,7 @@ enum app_notification_kind {
 };
 
 enum menu_kind {
+    MENU_GENERAL,
     MENU_EMULATION,
     MENU_VIDEO,
     MENU_AUDIO,
@@ -177,14 +178,24 @@ struct keyboard_binding {
 
 struct settings {
     struct {
+        // Show FPS
+        bool show_fps;
+
+        // Start the last played game on startup, when no game is provided
+        bool start_last_played_game_on_startup;
+
+        // Pause when the window is inactive
+        bool pause_when_window_inactive;
+
+        // Pause when the game resets
+        bool pause_when_game_resets;
+    } general;
+    struct {
         // BIOS Path
         char *bios_path;
 
-        // Skip BIOS
-        bool skip_bios;
-
-        // Show FPS
-        bool show_fps;
+        // Skip BIOS intro
+        bool skip_bios_intro;
 
         // Speed
         //   <= 0: Unlimited
@@ -200,18 +211,6 @@ struct settings {
         //   etc.
         float alt_speed;
 
-        // Enable the emulation of the prefetch buffer
-        bool prefetch_buffer;
-
-        // Start the last played game on startup, when no game is provided
-        bool start_last_played_game_on_startup;
-
-        // Pause when the window is inactive
-        bool pause_when_window_inactive;
-
-        // Pause when the game resets
-        bool pause_when_game_resets;
-
         // Backup storage
         struct {
             bool autodetect;
@@ -223,6 +222,9 @@ struct settings {
             bool autodetect;
             enum gpio_device_types type;
         } gpio_device;
+
+        // Enable the emulation of the prefetch buffer
+        bool prefetch_buffer;
     } emulation;
 
     struct {

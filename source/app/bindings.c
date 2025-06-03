@@ -218,7 +218,7 @@ app_bindings_process(
     // Bindings that can be used both in and outside of a game
     switch (bind) {
         case BIND_EMULATOR_MUTE:                app->settings.audio.mute ^= true; break;
-        case BIND_EMULATOR_SHOW_FPS:            app->settings.emulation.show_fps ^= true; break;
+        case BIND_EMULATOR_SHOW_FPS:            app->settings.general.show_fps ^= true; break;
         case BIND_EMULATOR_SETTINGS:            app->ui.settings.open ^= true; break;
         default:                                break;
     }

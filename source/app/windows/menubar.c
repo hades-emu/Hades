@@ -496,7 +496,7 @@ app_win_menubar_fps_counter(
 ) {
     // FPS Counter
     if (
-           app->settings.emulation.show_fps
+           app->settings.general.show_fps
         && app->emulation.is_started
         && app->emulation.is_running
         && igGetWindowWidth() >= GBA_SCREEN_WIDTH * 2 * app->ui.scale

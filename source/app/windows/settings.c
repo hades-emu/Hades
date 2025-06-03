@@ -13,6 +13,7 @@
 #include "app/app.h"
 
 static char const *menu_names[MENU_MAX] = {
+    [MENU_GENERAL] = "General",
     [MENU_EMULATION] = "Emulation",
     [MENU_VIDEO] = "Video",
     [MENU_AUDIO] = "Audio",
@@ -148,6 +149,64 @@ char const * const binds_slug[] = {
 
 static
 void
+app_win_settings_general(
+    struct app *app
+) {
+    ImGuiViewport *vp;
+
+    vp = igGetMainViewport();
+
+    igTextWrapped("General Settings");
+    igSpacing();
+    igSeparator();
+    igSpacing();
+
+    igSeparatorText("Misc");
+
+    if (igBeginTable("##GeneralSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##GeneralSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##GeneralSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Show FPS
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Show FPS");
+
+        igTableNextColumn();
+        igCheckbox("##ShowFPS", &app->settings.general.show_fps);
+
+        // Start the last played game on startup, when no game is provided
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Start last played game on startup");
+
+        igTableNextColumn();
+        igCheckbox("##StartLastPlayedGameOnStartup", &app->settings.general.start_last_played_game_on_startup);
+
+        // Pause when the window is inactive
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Pause when window is inactive");
+
+        igTableNextColumn();
+        igCheckbox("##PauseWhenWindowInactive", &app->settings.general.pause_when_window_inactive);
+
+#ifdef WITH_DEBUGGER
+        // Pause when the game resets
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Pause when the game resets");
+
+        igTableNextColumn();
+        igCheckbox("##PauseWhenGameResets", &app->settings.general.pause_when_game_resets);
+#endif
+
+        igEndTable();
+    }
+}
+
+static
+void
 app_win_settings_emulation(
     struct app *app
 ) {
@@ -200,7 +259,7 @@ app_win_settings_emulation(
         igTextWrapped("Skip BIOS Intro");
 
         igTableNextColumn();
-        igCheckbox("##SkipBIOS", &app->settings.emulation.skip_bios);
+        igCheckbox("##SkipBIOS", &app->settings.emulation.skip_bios_intro);
 
         igEndTable();
     }
@@ -354,40 +413,6 @@ app_win_settings_emulation(
 
         igTableNextColumn();
         igCheckbox("##PrefetchBuffer", &app->settings.emulation.prefetch_buffer);
-
-        // Show FPS
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Show FPS");
-
-        igTableNextColumn();
-        igCheckbox("##ShowFPS", &app->settings.emulation.show_fps);
-
-        // Start the last played game on startup, when no game is provided
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Start the last played game on startup");
-
-        igTableNextColumn();
-        igCheckbox("##StartLastPlayedGameOnStartup", &app->settings.emulation.start_last_played_game_on_startup);
-
-        // Pause when the window is inactive
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Pause when the window is inactive");
-
-        igTableNextColumn();
-        igCheckbox("##PauseWhenWindowInactive", &app->settings.emulation.pause_when_window_inactive);
-
-#ifdef WITH_DEBUGGER
-        // Pause when the game resets
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Pause when the game resets");
-
-        igTableNextColumn();
-        igCheckbox("##PauseWhenGameResets", &app->settings.emulation.pause_when_game_resets);
-#endif
 
         igEndTable();
     }
@@ -921,6 +946,7 @@ app_win_settings_bindings(
 }
 
 static void (*menu_callbacks[MENU_MAX])(struct app *) = {
+    [MENU_GENERAL] =                &app_win_settings_general,
     [MENU_EMULATION] =              &app_win_settings_emulation,
     [MENU_VIDEO] =                  &app_win_settings_video,
     [MENU_AUDIO] =                  &app_win_settings_audio,

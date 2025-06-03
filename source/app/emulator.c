@@ -663,7 +663,7 @@ app_emulator_configure_and_run(
     }
 
     app->emulation.game_path = strdup(rom_path);
-    app->emulation.launch_config->skip_bios = app->settings.emulation.skip_bios;
+    app->emulation.launch_config->skip_bios = app->settings.emulation.skip_bios_intro;
     app->emulation.launch_config->audio_frequency = GBA_CYCLES_PER_SECOND / app->audio.resample_frequency;
 
     if (app->settings.emulation.backup_storage.autodetect) {
@@ -711,7 +711,7 @@ app_emulator_configure_and_run(
     logln(HS_INFO, "Game successfully loaded.");
 
 #ifdef WITH_DEBUGGER
-    if (app->settings.emulation.pause_when_game_resets) {
+    if (app->settings.general.pause_when_game_resets) {
         app_emulator_pause(app);
     } else {
         app_emulator_run(app);

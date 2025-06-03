@@ -61,7 +61,6 @@ app_config_load(
 
         recent_rom_path = strdup("$.file.recent_roms[0]");
         for (i = 0; i < MAX_RECENT_ROMS; ++i) {
-
             recent_rom_path[strlen(recent_rom_path) - 2] = '0' + i;
             if (mjson_get_string(data, data_len, recent_rom_path, str, sizeof(str)) > 0) {
                 free(app->file.recent_roms[i]);
@@ -71,41 +70,42 @@ app_config_load(
         free(recent_rom_path);
     }
 
+    // General
+    {
+        int b;
+
+        if (mjson_get_bool(data, data_len, "$.general.show_fps", &b)) {
+            app->settings.general.show_fps = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.general.start_last_played_game_on_startup", &b)) {
+            app->settings.general.start_last_played_game_on_startup = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.general.pause_when_window_inactive", &b)) {
+            app->settings.general.pause_when_window_inactive = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.general.pause_when_game_resets", &b)) {
+            app->settings.general.pause_when_game_resets = b;
+        }
+    }
+
     // Emulation
     {
         int b;
         double d;
 
         if (mjson_get_bool(data, data_len, "$.emulation.skip_bios", &b)) {
-            app->settings.emulation.skip_bios = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.emulation.show_fps", &b)) {
-            app->settings.emulation.show_fps = b;
+            app->settings.emulation.skip_bios_intro = b;
         }
 
         if (mjson_get_number(data, data_len, "$.emulation.speed", &d)) {
-            app->settings.emulation.speed = d;
+            app->settings.emulation.speed = (float)d;
         }
 
         if (mjson_get_number(data, data_len, "$.emulation.alt_speed", &d)) {
-            app->settings.emulation.alt_speed = d;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.emulation.prefetch_buffer", &b)) {
-            app->settings.emulation.prefetch_buffer = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.emulation.start_last_played_game_on_startup", &b)) {
-            app->settings.emulation.start_last_played_game_on_startup = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.emulation.pause_when_window_inactive", &b)) {
-            app->settings.emulation.pause_when_window_inactive = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.emulation.pause_when_game_resets", &b)) {
-            app->settings.emulation.pause_when_game_resets = b;
+            app->settings.emulation.alt_speed = (float)d;
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.backup_storage.autodetect", &b)) {
@@ -122,6 +122,10 @@ app_config_load(
 
         if (mjson_get_number(data, data_len, "$.emulation.gpio.type", &d)) {
             app->settings.emulation.gpio_device.type = max(GPIO_MIN, min((int)d, GPIO_MAX));
+        }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.prefetch_buffer", &b)) {
+            app->settings.emulation.prefetch_buffer = b;
         }
     }
 
@@ -146,7 +150,7 @@ app_config_load(
         }
 
         if (mjson_get_number(data, data_len, "$.video.scale", &d)) {
-            app->settings.video.scale = d;
+            app->settings.video.scale = (float)d;
         }
 
         if (mjson_get_number(data, data_len, "$.video.display_size", &d)) {
@@ -202,7 +206,7 @@ app_config_load(
         }
 
         if (mjson_get_number(data, data_len, "$.audio.level", &d)) {
-            app->settings.audio.level = d;
+            app->settings.audio.level = (float)d;
             app->settings.audio.level = max(0.f, min(app->settings.audio.level, 1.f));
         }
     }
@@ -322,16 +326,19 @@ app_config_save(
                 "recent_roms": [ %Q, %Q, %Q, %Q, %Q, %Q, %Q, %Q, %Q, %Q ]
             },
 
-            // Emulation
-            "emulation": {
-                "skip_bios": %B,
+            // General
+            "general": {
                 "show_fps": %B,
-                "speed": %g,
-                "alt_speed": %g,
-                "prefetch_buffer": %B,
                 "start_last_played_game_on_startup": %B,
                 "pause_when_window_inactive": %B,
                 "pause_when_game_resets": %B,
+            },
+
+            // Emulation
+            "emulation": {
+                "skip_bios": %B,
+                "speed": %g,
+                "alt_speed": %g,
                 "backup_storage": {
                     "autodetect": %B,
                     "type": %d
@@ -340,6 +347,7 @@ app_config_save(
                     "autodetect": %B,
                     "type": %d
                 },
+                "prefetch_buffer": %B,
             },
 
             // Video
@@ -376,18 +384,18 @@ app_config_save(
         app->file.recent_roms[7],
         app->file.recent_roms[8],
         app->file.recent_roms[9],
-        (int)app->settings.emulation.skip_bios,
-        (int)app->settings.emulation.show_fps,
+        (int)app->settings.general.show_fps,
+        (int)app->settings.general.start_last_played_game_on_startup,
+        (int)app->settings.general.pause_when_window_inactive,
+        (int)app->settings.general.pause_when_game_resets,
+        (int)app->settings.emulation.skip_bios_intro,
         app->settings.emulation.speed,
         app->settings.emulation.alt_speed,
-        (int)app->settings.emulation.prefetch_buffer,
-        (int)app->settings.emulation.start_last_played_game_on_startup,
-        (int)app->settings.emulation.pause_when_window_inactive,
-        (int)app->settings.emulation.pause_when_game_resets,
         (int)app->settings.emulation.backup_storage.autodetect,
         (int)app->settings.emulation.backup_storage.type,
         (int)app->settings.emulation.gpio_device.autodetect,
         (int)app->settings.emulation.gpio_device.type,
+        (int)app->settings.emulation.prefetch_buffer,
         (int)app->settings.video.menubar_mode,
         (int)app->settings.video.display_mode,
         (int)app->settings.video.autodetect_scale,
