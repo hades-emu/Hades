@@ -168,7 +168,7 @@ struct command g_commands[] = {
 };
 
 /*
-** Process a single notifiation, updating the content of `app->debugger` accordingly.
+** Process a single notification, updating the content of `app->debugger` accordingly.
 */
 void
 debugger_process_notif(

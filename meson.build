@@ -34,10 +34,8 @@ if get_option('static_executable')
     ldflags += ['-static']
 endif
 
-if get_option('with_debugger')
-    cflags += ['-DWITH_DEBUGGER']
-    ldflags += ['-DWITH_DEBUGGER']
-endif
+debugger_cflags = ['-DWITH_DEBUGGER']
+debugger_ldflags = ['-DWITH_DEBUGGER']
 
 cc = meson.get_compiler('c')
 
@@ -73,6 +71,21 @@ if host_machine.system() == 'windows'
         link_args: ldflags,
         install: true,
     )
+
+    if get_option('with_debugger')
+        hades = executable(
+            'Hades Debugger',
+            'source/log.c',
+            winrc,
+            win_subsystem: 'windows',
+            link_with: [libapp_dbg],
+            include_directories: [incdir, imgui_inc],
+            c_args: cflags + debugger_cflags,
+            link_args: ldflags + debuffer_ldflags,
+            install: true,
+        )
+    endif
+
 elif host_machine.system() == 'darwin'
     hades = executable(
         'hades',
@@ -83,6 +96,18 @@ elif host_machine.system() == 'darwin'
         link_args: ldflags,
         install: true,
     )
+
+    if get_option('with_debugger')
+        hades_dbg = executable(
+            'hades-dbg',
+            'source/log.c',
+            link_with: [libapp_dbg],
+            include_directories: [incdir, imgui_inc],
+            c_args: cflags + debugger_cflags,
+            link_args: ldflags + debugger_ldflags,
+            install: true ,
+        )
+    endif
 
     install_data('./resource/macos/Info.plist', install_dir: 'Contents')
     install_data('./resource/macos/hades.icns', install_dir: 'Contents/Resources')
@@ -97,6 +122,18 @@ elif host_machine.system() == 'linux'  # Linux
         install: true,
     )
 
+    if get_option('with_debugger')
+        hades_dbg = executable(
+            'hades-dbg',
+            'source/log.c',
+            link_with: [libapp_dbg],
+            include_directories: [incdir, imgui_inc],
+            c_args: cflags + debugger_cflags,
+            link_args: ldflags + debugger_ldflags,
+            install: true,
+        )
+    endif
+
     install_data('./resource/linux/hades.desktop', install_dir: 'share/applications')
     install_data('./resource/linux/hades.png', install_dir: 'share/icons/hicolor/256x256/apps')
 else # Not supported officially, but there's no reason not to try and build them anyway
@@ -107,6 +144,16 @@ else # Not supported officially, but there's no reason not to try and build them
         include_directories: [incdir, imgui_inc],
         c_args: cflags,
         link_args: ldflags,
+        install: true,
+    )
+
+    hades_dbg = executable(
+        'hades-dbg',
+        'source/log.c',
+        link_with: [libapp_dbg],
+        include_directories: [incdir, imgui_inc],
+        c_args: cflags + debugger_cflags,
+        link_args: ldflags + debugger_ldflags,
         install: true,
     )
 endif

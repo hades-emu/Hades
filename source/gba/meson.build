@@ -7,8 +7,7 @@
 ##
 ################################################################################
 
-libgba = static_library(
-    'gba',
+libgba_sources = [
     'apu/apu.c',
     'apu/fifo.c',
     'apu/modules.c',
@@ -54,6 +53,11 @@ libgba = static_library(
     'quicksave.c',
     'scheduler.c',
     'timer.c',
+]
+
+libgba = static_library(
+    'libgba',
+    libgba_sources,
     include_directories: incdir,
     dependencies: [
         cc.find_library('m', required: true, static: static_dependencies),
@@ -61,3 +65,16 @@ libgba = static_library(
     c_args: cflags,
     link_args: ldflags,
 )
+
+if get_option('with_debugger')
+    libgba_dbg = static_library(
+        'libgba_dbg',
+        libgba_sources,
+        include_directories: incdir,
+        dependencies: [
+            cc.find_library('m', required: true, static: static_dependencies),
+        ],
+        c_args: cflags + debugger_cflags,
+        link_args: ldflags + debugger_ldflags,
+    )
+endif

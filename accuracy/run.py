@@ -30,7 +30,7 @@ def main():
     parser.add_argument(
         '--binary',
         nargs='?',
-        default='./hades',
+        default='./hades-dbg',
         help="Path to Hades' binary",
     )
 

@@ -107,7 +107,7 @@ main(
     app.emulation.is_started = false;
     app.emulation.is_running = false;
     app.audio.resample_frequency = 48000;
-    app.ui.menubar.visibility = 1.0;
+    app.ui.menubar.visibility = 1.0f;
     app_settings_default(&app.settings);
     app_bindings_setup_default(&app);
 
