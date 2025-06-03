@@ -42,6 +42,7 @@ app_bindings_setup_default(
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_PAUSE], SDL_GetKeyFromName("P"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SHOW_FPS], SDL_GetKeyFromName("F"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SETTINGS], SDL_GetKeyFromName("Escape"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_FULLSCREEN], SDL_GetKeyFromName("F11"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT], SDL_GetKeyFromName("F12"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_HOLD], SDL_GetKeyFromName("Space"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_TOGGLE], SDL_GetKeyFromName("Space"), true, false, false);
@@ -219,6 +220,11 @@ app_bindings_process(
     switch (bind) {
         case BIND_EMULATOR_MUTE:                app->settings.audio.mute ^= true; break;
         case BIND_EMULATOR_SHOW_FPS:            app->settings.general.show_fps ^= true; break;
+        case BIND_EMULATOR_FULLSCREEN: {
+            app->settings.video.display_mode = app->settings.video.display_mode == DISPLAY_MODE_WINDOWED ? DISPLAY_MODE_BORDERLESS : DISPLAY_MODE_WINDOWED;
+            app_sdl_video_update_display_mode(app);
+            break;
+        };
         case BIND_EMULATOR_SETTINGS:            app->ui.settings.open ^= true; break;
         default:                                break;
     }
