@@ -39,8 +39,6 @@ jobs:
           if-no-files-found: error
 
   mac-os:
-    # Disabled for the time being, as we're having issues with the apple developer account.
-    if: false
     name: MacOS arm64 (DMG Installer)
     runs-on: macos-14
     steps:
