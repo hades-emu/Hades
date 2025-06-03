@@ -157,5 +157,5 @@ app_path_screenshots(
     if (!app->settings.video.use_system_screenshot_dir_path && app->settings.video.screenshot_dir_path) {
         return (app->settings.video.screenshot_dir_path);
     }
-    return app->file.sys_pictures_dir_path ?: "screeenshots";
+    return app->file.sys_pictures_dir_path ?: "screenshots";
 }
