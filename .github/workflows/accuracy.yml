@@ -32,32 +32,6 @@ jobs:
           shred -u ags.zip
           mv AGB_*.gba ags.gba
 
-          # Download mGBA Suite
-          wget -q https://s3.amazonaws.com/mgba/suite-latest.zip -O suite.zip
-          unzip suite.zip
-          mv suite*.gba mgba-suite.gba
-
-          # Download the remaining testing ROMs
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/arm/arm.gba -O jsmolka-arm.gba
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/bios/bios.gba -O jsmolka-bios.gba
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/memory/memory.gba -O jsmolka-memory.gba
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/nes/nes.gba -O jsmolka-nes.gba
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/thumb/thumb.gba -O jsmolka-thumb.gba
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/unsafe/unsafe.gba -O jsmolka-unsafe.gba
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/save/flash64.gba -O jsmolka-flash64.gba
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/save/flash128.gba -O jsmolka-flash128.gba
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/save/none.gba -O jsmolka-none.gba
-          wget -q https://raw.githubusercontent.com/jsmolka/gba-tests/master/save/sram.gba -O jsmolka-sram.gba
-          wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/dma-start-delay.gba -O hades-dma-start-delay.gba
-          wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/dma-latch.gba -O hades-dma-latch.gba
-          wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/bios-openbus.gba -O hades-bios-openbus.gba
-          wget -q https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/timer-basic.gba -O hades-timer-basic.gba
-          wget -q https://raw.githubusercontent.com/nba-emu/hw-test/master/dma/start-delay/start-delay.gba -O nba-dma-start-delay.gba
-          wget -q https://raw.githubusercontent.com/nba-emu/hw-test/master/dma/latch/latch.gba -O nba-dma-latch.gba
-          wget -q https://raw.githubusercontent.com/nba-emu/hw-test/master/timer/reload/reload.gba -O nba-timer-reload.gba
-          wget -q https://raw.githubusercontent.com/nba-emu/hw-test/master/timer/start-stop/start-stop.gba -O nba-timer-start-stop.gba
-          wget -q https://raw.githubusercontent.com/nba-emu/hw-test/master/irq/irq-delay/irq-delay.gba -O nba-irq-delay.gba
-
           # Clear-out all secrets to not leak them to the later steps
           unset BIOS_DATA BIOS_KEY AGS_URL AGS_KEY ags_url
         env:
@@ -84,7 +58,7 @@ jobs:
           ninja -C build
       - name: Check Accuracy
         run: |
-          python3 ./accuracy/check.py --binary ./build/hades --roms ./roms/
+          python3 ./accuracy/check.py --binary ./build/hades --roms ./roms/ --download
 
           # GitHub upload-artifact@v4 doesn't include hidden files and directories
           # https://github.com/actions/upload-artifact/issues/602
