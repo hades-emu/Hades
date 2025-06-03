@@ -58,7 +58,7 @@ jobs:
           ninja -C build
       - name: Check Accuracy
         run: |
-          python3 ./accuracy/run.py --binary ./build/hades --roms ./roms/ --download
+          python3 ./accuracy/run.py --binary ./build/hades-dbg --roms ./roms/ --download
 
           # GitHub upload-artifact@v4 doesn't include hidden files and directories
           # https://github.com/actions/upload-artifact/issues/602
