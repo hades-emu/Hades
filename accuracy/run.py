@@ -2,13 +2,12 @@
 
 import os
 import shutil
-import filecmp
 import textwrap
 import argparse
 import subprocess
 import tempfile
-from enum import Enum
 from pathlib import Path
+from test import TestResult
 
 
 GREEN = '\033[32m'
@@ -18,38 +17,6 @@ BOLD = '\033[1m'
 RESET = '\033[0m'
 
 
-class TestResult(Enum):
-    PASS = 0
-    SKIP = 1
-    FAIL = 2
-
-
-class Test():
-    def __init__(self, name: str, rom: str, code: str, screenshot: str, skip: bool = False):
-        self.name = name
-
-        self.rom = rom
-        self.code = textwrap.dedent(code)
-        self.screenshot = screenshot
-        self.skip = skip
-
-    def run(self, hades_path: Path, rom_directory: Path, config_path: Path, tests_screenshots_directory: Path, verbose: bool):
-        module_path = Path(os.path.realpath(__file__)).parent
-
-        subprocess.run(
-            [hades_path, rom_directory / self.rom, '--without-gui', '--config', config_path],
-            input=self.code,
-            stdout=None if verbose else subprocess.DEVNULL,
-            stderr=None if verbose else subprocess.DEVNULL,
-            text=True,
-            encoding='utf-8',
-            check=True,
-        )
-
-        if not filecmp.cmp(tests_screenshots_directory / self.screenshot, module_path / 'expected' / self.screenshot, shallow=False):
-            raise RuntimeError("The screenshot taken during the test doesn't match the expected one.")
-
-
 def main():
     from suite import TESTS_SUITE
 
@@ -57,7 +24,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         prog='Hades Accuracy Checker',
-        description='Tests the accuracy of Hades, a Gameboy Advance Emulator',
+        description='Tests the accuracy of Hades, a GameBoy Advance Emulator',
     )
 
     parser.add_argument(
@@ -82,6 +49,13 @@ def main():
     )
 
     parser.add_argument(
+        '--download',
+        '-d',
+        action='store_true',
+        help="Download the available test ROMS",
+    )
+
+    parser.add_argument(
         '--verbose',
         '-v',
         action='store_true',
@@ -103,11 +77,23 @@ def main():
         exit(1)
 
     for test in TESTS_SUITE:
-        if not (rom_directory / test.rom).exists():
-            print(f"Skipping test \"{test.name}\" because ROM {test.rom} is missing from the ROM directory.")
-            test.skip = True
+        if not test.rom.path(rom_directory).exists():
+            if args.download:
+                try:
+                    if test.rom.url is None:
+                        print(f"Skipping test \"{test.name}\" because ROM \"{test.rom.filename}\" is missing from the ROM directory.")
+                        test.skip = True
+                        continue
 
-    # Ensure Hades is built with the debugger
+                    print(f"Downloading test rom \"{test.rom.filename}\".")
+                    test.rom.download(rom_directory)
+                except RuntimeError as e:
+                    print(f"An error occurred while downloading {test.rom.filename}: {e}")
+            else:
+                print(f"Skipping test \"{test.name}\" because ROM \"{test.rom.filename}\" is missing from the ROM directory. Try downloading it using the \"--download\" flag.")
+                test.skip = True
+
+    # Ensure Hades was built with its debugger
     try:
         subprocess.run(
             [hades_binary, '--without-gui', '--help'],
@@ -129,8 +115,9 @@ def main():
             "bios": "{bios}"
           }},
           "emulation": {{
+            "pause_when_game_resets": true,
             "skip_bios": true,
-            "speed": 1,
+            "speed": 0,
             "fast_forward": true,
             "prefetch_buffer": true,
             "backup_storage": {{
@@ -142,9 +129,6 @@ def main():
               "type": 0
             }}
           }},
-          "misc": {{
-            "pause_when_game_resets": true
-          }}
         }}
     ''').encode('utf-8'))
     config.flush()
@@ -166,7 +150,7 @@ def main():
                 result = TestResult.SKIP
                 continue
 
-            test.run(hades_binary, rom_directory, config.name, tests_screenshots_directory, args.verbose)
+            test.run(hades_binary, rom_directory, Path(config.name), tests_screenshots_directory, args.verbose)
             result = TestResult.PASS
         except Exception as e:
             if args.verbose:
