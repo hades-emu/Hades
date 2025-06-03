@@ -40,6 +40,7 @@ app_bindings_setup_default(
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_RESET], SDL_GetKeyFromName("R"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_MUTE], SDL_GetKeyFromName("M"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_PAUSE], SDL_GetKeyFromName("P"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_STOP], SDL_GetKeyFromName("Q"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SHOW_FPS], SDL_GetKeyFromName("F"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SETTINGS], SDL_GetKeyFromName("Escape"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_FULLSCREEN], SDL_GetKeyFromName("F11"), false, false, false);
