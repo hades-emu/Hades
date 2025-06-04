@@ -66,19 +66,20 @@ app_sdl_audio_init(
 
     app->sdl.audio_device = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
 
-    if (!app->sdl.audio_device) {
+    if (app->sdl.audio_device) {
+        app->audio.resample_frequency = have.freq;
+        SDL_PauseAudioDevice(app->sdl.audio_device, SDL_FALSE);
+    } else {
         logln(HS_ERROR, "Failed to initialize the audio device: %s", SDL_GetError());
-        exit(EXIT_FAILURE);
+        app->audio.resample_frequency = want.freq;
     }
-
-    app->audio.resample_frequency = have.freq;
-
-    SDL_PauseAudioDevice(app->sdl.audio_device, SDL_FALSE);
 }
 
 void
 app_sdl_audio_cleanup(
-    struct app *app
+    struct app const *app
 ) {
-    SDL_CloseAudioDevice(app->sdl.audio_device);
+    if (app->sdl.audio_device) {
+        SDL_CloseAudioDevice(app->sdl.audio_device);
+    }
 }

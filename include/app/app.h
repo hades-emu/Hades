@@ -582,7 +582,7 @@ struct app {
 
 /* app/sdl/audio.c */
 void app_sdl_audio_init(struct app *app);
-void app_sdl_audio_cleanup(struct app *app);
+void app_sdl_audio_cleanup(struct app const *app);
 
 /* app/sdl/event.c */
 void app_sdl_handle_events(struct app *app);
