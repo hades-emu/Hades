@@ -104,6 +104,15 @@ app_config_load(
             app->settings.general.directories.backup.path = strdup(str);
         }
 
+        if (mjson_get_bool(data, data_len, "$.general.directories.quicksave.use_dedicated_directory", &b)) {
+            app->settings.general.directories.quicksave.use_dedicated_directory = b;
+        }
+
+        if (mjson_get_string(data, data_len, "$.general.directories.quicksave.path", str, sizeof(str)) > 0) {
+            free(app->settings.general.directories.quicksave.path);
+            app->settings.general.directories.quicksave.path = strdup(str);
+        }
+
         if (mjson_get_bool(data, data_len, "$.general.directories.screenshot.use_system_directory", &b)) {
             app->settings.general.directories.screenshot.use_system_directory = b;
         }
@@ -351,6 +360,10 @@ app_config_save(
                         "use_dedicated_directory": %B,
                         "path": %Q
                     },
+                    "quicksave": {
+                        "use_dedicated_directory": %B,
+                        "path": %Q
+                    },
                     "screenshot": {
                         "use_system_directory": %B,
                         "path": %Q
@@ -412,6 +425,8 @@ app_config_save(
         (int)app->settings.general.window.hide_cursor_when_mouse_inactive,
         (int)app->settings.general.directories.backup.use_dedicated_directory,
         app->settings.general.directories.backup.path,
+        (int)app->settings.general.directories.quicksave.use_dedicated_directory,
+        app->settings.general.directories.quicksave.path,
         (int)app->settings.general.directories.screenshot.use_system_directory,
         app->settings.general.directories.screenshot.path,
         (int)app->settings.emulation.skip_bios_intro,

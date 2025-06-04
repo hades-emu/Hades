@@ -258,7 +258,7 @@ app_win_settings_general(
         igInputText("##SaveDirectory", app->settings.general.directories.backup.path, strlen(app->settings.general.directories.backup.path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
-        if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
+        if (igButton("Choose##SaveDirectoryButton", (ImVec2){ 50.f, 0.f})) {
             nfdresult_t result;
             nfdchar_t *path;
 
@@ -267,6 +267,41 @@ app_win_settings_general(
             if (result == NFD_OKAY) {
                 free(app->settings.general.directories.backup.path);
                 app->settings.general.directories.backup.path = strdup(path);
+                NFD_FreePath(path);
+            }
+        }
+
+        igEndDisabled();
+
+        // Use a Dedicated Quicksave Directory
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Use dedicated directory for quicksaves");
+
+        igTableNextColumn();
+        igCheckbox("##UseDedicatedDirQuickSavesFiles", &app->settings.general.directories.quicksave.use_dedicated_directory);
+
+        // Quicksave Directory
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Quicksave Directory");
+
+        igBeginDisabled(!app->settings.general.directories.quicksave.use_dedicated_directory);
+
+        igTableNextColumn();
+        igBeginDisabled(true);
+        igInputText("##QuickSaveDirectory", app->settings.general.directories.quicksave.path, strlen(app->settings.general.directories.quicksave.path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
+        igEndDisabled();
+        igSameLine(0.0f, -1.0f);
+        if (igButton("Choose##QuickSaveDirectoryButton", (ImVec2){ 50.f, 0.f})) {
+            nfdresult_t result;
+            nfdchar_t *path;
+
+            result = NFD_PickFolder(&path, app->settings.general.directories.quicksave.path);
+
+            if (result == NFD_OKAY) {
+                free(app->settings.general.directories.quicksave.path);
+                app->settings.general.directories.quicksave.path = strdup(path);
                 NFD_FreePath(path);
             }
         }
@@ -293,7 +328,7 @@ app_win_settings_general(
         igInputText("##ScreenshotDirectory", app->settings.general.directories.screenshot.path, strlen(app->settings.general.directories.screenshot.path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
-        if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
+        if (igButton("Choose##ScreenshotDirectoryButton", (ImVec2){ 50.f, 0.f})) {
             nfdresult_t result;
             nfdchar_t *path;
 
@@ -342,7 +377,7 @@ app_win_settings_emulation(
         igInputText("##BiosPath", app->settings.emulation.bios_path, strlen(app->settings.emulation.bios_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
-        if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
+        if (igButton("Choose##BiosButton", (ImVec2){ 50.f, 0.f})) {
             nfdresult_t result;
             nfdchar_t *path;
 
@@ -1049,7 +1084,7 @@ app_win_settings(
             igEndChild();
         }
 
-        if (igButton("Close", (ImVec2){ 0.f, 0.f})) {
+        if (igButton("Close##SettingsMenuCloseButton", (ImVec2){ 0.f, 0.f})) {
             app->ui.settings.open = false;
         }
 

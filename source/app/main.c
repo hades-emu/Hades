@@ -59,6 +59,8 @@ app_settings_default(
     settings->general.window.hide_cursor_when_mouse_inactive = true;
     settings->general.directories.backup.use_dedicated_directory = false;
     settings->general.directories.backup.path = strdup("./saves/");
+    settings->general.directories.quicksave.use_dedicated_directory = false;
+    settings->general.directories.quicksave.path = strdup("./saves/");
     settings->general.directories.screenshot.use_system_directory = true;
     settings->general.directories.screenshot.path = strdup("./screenshots/");
     settings->emulation.bios_path = strdup("./bios.bin");

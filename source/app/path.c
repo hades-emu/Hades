@@ -193,3 +193,59 @@ app_path_backup(
         return hs_format("%.*s/%.*s.sav", (int)dirname_len, rom, (int)basename_len, rom_basename);
     }
 }
+
+void
+app_path_update_quicksave_paths(
+    struct app *app,
+    char const *rom
+) {
+    char const *dirname;
+    char const *rom_basename;
+    char const *rom_ext;
+    size_t dirname_len;
+    size_t basename_len;
+    size_t i;
+
+    rom_basename = strrchr(rom, HS_PATH_SEPARATOR);
+
+    // The path contains a '/'
+    if (rom_basename) {
+        dirname_len = rom_basename - rom;
+        ++rom_basename; // Skip the '/' and point to the first char of the basename
+    } else {
+        dirname_len = 0;
+        rom_basename = rom;
+    }
+
+    rom_ext = strrchr(rom_basename, '.');
+    basename_len = rom_ext - rom_basename;
+
+    if (app->settings.general.directories.quicksave.use_dedicated_directory) {
+        if (!hs_fexists(app->settings.general.directories.quicksave.path)) {
+            hs_mkdir(app->settings.general.directories.quicksave.path);
+        }
+        dirname = app->settings.general.directories.quicksave.path;
+        dirname_len = strlen(dirname);
+    } else {
+        dirname = rom;
+    }
+
+    for (i = 0; i < MAX_QUICKSAVES; ++i) {
+        free(app->file.qsaves[i].path);
+        free(app->file.qsaves[i].mtime);
+
+        app->file.qsaves[i].mtime = NULL;
+        app->file.qsaves[i].path = hs_format(
+            "%.*s/%.*s.%zu.hds",
+            (int)dirname_len,
+            dirname,
+            (int)basename_len,
+            rom_basename,
+            i + 1
+        );
+
+        printf("RES: [%s]\n", app->file.qsaves[i].path);
+    }
+
+    app->file.flush_qsaves_cache = true;
+}

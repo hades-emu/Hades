@@ -583,8 +583,6 @@ app_emulator_configure_and_run(
     char *backup_path;
     char *extension;
     bool is_archive;
-    size_t basename_len;
-    size_t i;
     uint8_t *code;
 
     app_emulator_unconfigure(app);
@@ -599,30 +597,15 @@ app_emulator_configure_and_run(
     // We consider anything that isn't ending with `.gba` or `.bin` an archive.
     // XXX: Should we build a hard-coded list instead?
     if (extension) {
-        basename_len = extension - rom_path;
         is_archive = (bool)(strcmp(extension, ".gba") && strcmp(extension, ".bin"));
     } else {
-        basename_len = strlen(rom_path);
         is_archive = false;
     }
 
-    for (i = 0; i < MAX_QUICKSAVES; ++i) {
-        free(app->file.qsaves[i].path);
-        free(app->file.qsaves[i].mtime);
-
-        app->file.qsaves[i].mtime = NULL;
-        app->file.qsaves[i].path = hs_format(
-            "%.*s.%zu.hds",
-            (int)basename_len,
-            rom_path,
-            i + 1
-        );
-    }
-
-    app->file.flush_qsaves_cache = true;
-
     backup_path = app_path_backup(app, rom_path);
     logln(HS_INFO, "Using save file \"%s%s%s\".", g_light_green, backup_path, g_reset);
+
+    app_path_update_quicksave_paths(app, rom_path);
 
     if (app_emulator_configure_bios(app)
         || (is_archive ? app_emulator_configure_rom_archive(app, rom_path) : app_emulator_configure_rom(app, rom_path))

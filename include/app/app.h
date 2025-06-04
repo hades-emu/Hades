@@ -210,6 +210,16 @@ struct settings {
             } backup;
 
             struct {
+                // If set, use a dedicated quicksave directory.
+                // Otherwise, use the same directory as the ROM.
+                bool use_dedicated_directory;
+
+                // Quicksave directory.
+                // Only relevant if the above option is set.
+                char *path;
+            } quicksave;
+
+            struct {
                 // If set, use the system screenshot directory.
                 // Otherwise, use the one specified by `screenshot_dir`.
                 bool use_system_directory;
@@ -671,3 +681,4 @@ void app_paths_update(struct app *app);
 char const *app_path_config(struct app const *app);
 char const *app_path_screenshots(struct app const *app);
 char *app_path_backup(struct app const *app, char const *rom);
+void app_path_update_quicksave_paths(struct app *app, char const *rom);
