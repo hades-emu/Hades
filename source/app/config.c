@@ -95,6 +95,10 @@ app_config_load(
             app->settings.general.window.hide_cursor_when_mouse_inactive = b;
         }
 
+        if (mjson_get_bool(data, data_len, "$.general.window.hide_pause_overlay", &b)) {
+            app->settings.general.window.hide_pause_overlay = b;
+        }
+
         if (mjson_get_bool(data, data_len, "$.general.directories.backup.use_dedicated_directory", &b)) {
             app->settings.general.directories.backup.use_dedicated_directory = b;
         }
@@ -353,7 +357,8 @@ app_config_save(
                 },
                 "window": {
                     "pause_game_when_window_loses_focus": %B,
-                    "hide_cursor_when_mouse_inactive": %B
+                    "hide_cursor_when_mouse_inactive": %B,
+                    "hide_pause_overlay": %B
                 },
                 "directories": {
                     "backup": {
@@ -423,6 +428,7 @@ app_config_save(
         (int)app->settings.general.startup.pause_when_game_resets,
         (int)app->settings.general.window.pause_game_when_window_loses_focus,
         (int)app->settings.general.window.hide_cursor_when_mouse_inactive,
+        (int)app->settings.general.window.hide_pause_overlay,
         (int)app->settings.general.directories.backup.use_dedicated_directory,
         app->settings.general.directories.backup.path,
         (int)app->settings.general.directories.quicksave.use_dedicated_directory,

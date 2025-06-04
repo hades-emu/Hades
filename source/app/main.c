@@ -57,6 +57,7 @@ app_settings_default(
     settings->general.startup.pause_when_game_resets = false;
     settings->general.window.pause_game_when_window_loses_focus = false;
     settings->general.window.hide_cursor_when_mouse_inactive = true;
+    settings->general.window.hide_pause_overlay = false;
     settings->general.directories.backup.use_dedicated_directory = false;
     settings->general.directories.backup.path = strdup("./saves/");
     settings->general.directories.quicksave.use_dedicated_directory = false;

@@ -229,6 +229,14 @@ app_win_settings_general(
         igTableNextColumn();
         igCheckbox("##HideCursorWhenMouseInactive", &app->settings.general.window.hide_cursor_when_mouse_inactive);
 
+        // Hide the pause overlay
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Hide pause overlay");
+
+        igTableNextColumn();
+        igCheckbox("##HidePauseOverlay", &app->settings.general.window.hide_pause_overlay);
+
         igEndTable();
     }
 

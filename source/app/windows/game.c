@@ -65,7 +65,7 @@ app_win_game_refresh_game_area(
 static
 void
 app_win_game_pause_text(
-    struct app *app
+    struct app const *app
 ) {
     igPushFont(app->ui.fonts.big);
     {
@@ -95,8 +95,8 @@ app_win_game(
     GLuint out_texture;
     float tint;
 
-    // Adjust the tint if the game is paused
-    tint = app->emulation.is_running ? 1.0 : 0.1;
+    // Adjust the tint if the game is paused and we wanna show the pause overlay
+    tint = !app->emulation.is_running && !app->settings.general.window.hide_pause_overlay ? 0.1 : 1.0;
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, app->gfx.game_texture);
@@ -186,7 +186,7 @@ app_win_game(
         (ImVec4){.x = 0, .y = 0, .z = 0, .w = 0}
     );
 
-    if (!app->emulation.is_running) {
+    if (!app->emulation.is_running && !app->settings.general.window.hide_pause_overlay) {
         app_win_game_pause_text(app);
     }
 

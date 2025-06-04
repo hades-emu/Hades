@@ -196,6 +196,9 @@ struct settings {
 
             // Hide the cursor after a few seconds of inactivity
             bool hide_cursor_when_mouse_inactive;
+
+            // Hide the pause overlay
+            bool hide_pause_overlay;
         } window;
 
         struct {
