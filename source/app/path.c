@@ -159,3 +159,34 @@ app_path_screenshots(
     }
     return app->file.sys_pictures_dir_path ?: "screenshots";
 }
+
+char *
+app_path_backup(
+    struct app const *app,
+    char const *rom
+) {
+    char const *rom_basename;
+    char const *rom_ext;
+    size_t dirname_len;
+    size_t basename_len;
+
+    rom_basename = strrchr(rom, '/');
+
+    // The path contains a '/'
+    if (rom_basename) {
+        dirname_len = rom_basename - rom;
+        ++rom_basename; // Skip the '/' and point to the first char of the basename
+    } else {
+        dirname_len = 0;
+        rom_basename = rom;
+    }
+
+    rom_ext = strrchr(rom_basename, '.');
+    basename_len = rom_ext - rom_basename;
+
+    if (app->settings.general.use_dedicated_backup_dir) {
+        return hs_format("%s/%.*s.sav", app->settings.general.dedicated_backup_dir_path, (int)basename_len, rom_basename);
+    } else {
+        return hs_format("%.*s/%.*s.sav", (int)dirname_len, rom, (int)basename_len, rom_basename);
+    }
+}

@@ -4,6 +4,8 @@
 /build.*
 /build-*
 /games
+/saves
+/quicksaves
 /demos
 *.gba
 *.bin

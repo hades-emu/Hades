@@ -190,6 +190,14 @@ struct settings {
 
         // Pause when the game resets
         bool pause_when_game_resets;
+
+        // Set when using a dedicated backup directory instead of
+        // placing the backup file next to the game.
+        bool use_dedicated_backup_dir;
+
+        // If the above option is set, the path pointing to the
+        // dedicated backup directory.
+        char *dedicated_backup_dir_path;
     } general;
     struct {
         // BIOS Path
@@ -653,3 +661,4 @@ void app_emulator_set_watchpoints_list(struct app *app, struct watchpoint *watch
 void app_paths_update(struct app *app);
 char const *app_path_config(struct app *app);
 char const *app_path_screenshots(struct app *app);
+char *app_path_backup(struct app const *app, char const *rom);

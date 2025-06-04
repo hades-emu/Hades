@@ -72,6 +72,7 @@ app_config_load(
 
     // General
     {
+        char str[4096];
         int b;
 
         if (mjson_get_bool(data, data_len, "$.general.show_fps", &b)) {
@@ -88,6 +89,15 @@ app_config_load(
 
         if (mjson_get_bool(data, data_len, "$.general.pause_when_game_resets", &b)) {
             app->settings.general.pause_when_game_resets = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.general.use_dedicated_backup_dir", &b)) {
+            app->settings.general.use_dedicated_backup_dir = b;
+        }
+
+        if (mjson_get_string(data, data_len, "$.general.dedicated_backup_dir_path", str, sizeof(str)) > 0) {
+            free(app->settings.general.dedicated_backup_dir_path);
+            app->settings.general.dedicated_backup_dir_path = strdup(str);
         }
     }
 
@@ -332,6 +342,8 @@ app_config_save(
                 "start_last_played_game_on_startup": %B,
                 "pause_when_window_inactive": %B,
                 "pause_when_game_resets": %B,
+                "use_dedicated_backup_dir": %B,
+                "dedicated_backup_dir_path": %Q
             },
 
             // Emulation
@@ -347,7 +359,7 @@ app_config_save(
                     "autodetect": %B,
                     "type": %d
                 },
-                "prefetch_buffer": %B,
+                "prefetch_buffer": %B
             },
 
             // Video
@@ -388,6 +400,8 @@ app_config_save(
         (int)app->settings.general.start_last_played_game_on_startup,
         (int)app->settings.general.pause_when_window_inactive,
         (int)app->settings.general.pause_when_game_resets,
+        (int)app->settings.general.use_dedicated_backup_dir,
+        app->settings.general.dedicated_backup_dir_path,
         (int)app->settings.emulation.skip_bios_intro,
         app->settings.emulation.speed,
         app->settings.emulation.alt_speed,

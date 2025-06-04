@@ -56,6 +56,8 @@ app_settings_default(
     settings->general.start_last_played_game_on_startup = false;
     settings->general.pause_when_window_inactive = false;
     settings->general.pause_when_game_resets = false;
+    settings->general.use_dedicated_backup_dir = false;
+    settings->general.dedicated_backup_dir_path = strdup("./saves/");
     settings->emulation.bios_path = strdup("./bios.bin");
     settings->emulation.skip_bios_intro = false;
     settings->emulation.speed = 1.0;

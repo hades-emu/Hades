@@ -205,6 +205,53 @@ app_win_settings_general(
 
         igEndTable();
     }
+
+    igSeparatorText("Directories");
+
+    if (igBeginTable("##GeneralSettingsDirectories", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##GeneralSettingsDirectoriesLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##GeneralSettingsDirectoriesValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Use a dedicated backup directory
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Use dedicated directory for save files");
+
+        igTableNextColumn();
+        igCheckbox("##UseDedicatedDirSaveFiles", &app->settings.general.use_dedicated_backup_dir);
+
+        // Save Directory
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Save Directory");
+
+        igBeginDisabled(!app->settings.general.use_dedicated_backup_dir);
+
+        igTableNextColumn();
+        igBeginDisabled(true);
+        igInputText("##SaveDirectory", app->settings.general.dedicated_backup_dir_path, strlen(app->settings.general.dedicated_backup_dir_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
+        igEndDisabled();
+        igSameLine(0.0f, -1.0f);
+        if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
+            nfdresult_t result;
+            nfdchar_t *path;
+
+            result = NFD_PickFolder(
+                &path,
+                app->settings.general.dedicated_backup_dir_path
+            );
+
+            if (result == NFD_OKAY) {
+                free(app->settings.general.dedicated_backup_dir_path);
+                app->settings.general.dedicated_backup_dir_path = strdup(path);
+                NFD_FreePath(path);
+            }
+        }
+
+        igEndDisabled();
+
+        igEndTable();
+    }
 }
 
 static

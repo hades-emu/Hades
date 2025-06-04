@@ -443,7 +443,7 @@ app_emulator_configure_rom(
 
 static
 bool
-app_emulator_configure_backupe_storage(
+app_emulator_configure_backup_storage(
     struct app *app,
     char const *backup_path
 ) {
@@ -502,7 +502,6 @@ app_emulator_import_backup_storage(
     size_t read_len;
     FILE *backup;
     void *data;
-
 
     backup = hs_fopen(backup_path_to_import, "rb");
     if (!backup) {
@@ -622,15 +621,12 @@ app_emulator_configure_and_run(
 
     app->file.flush_qsaves_cache = true;
 
-    backup_path = hs_format(
-        "%.*s.sav",
-        (int)basename_len,
-        rom_path
-    );
+    backup_path = app_path_backup(app, rom_path);
+    logln(HS_INFO, "Using save file \"%s%s%s\".", g_light_green, backup_path, g_reset);
 
     if (app_emulator_configure_bios(app)
         || (is_archive ? app_emulator_configure_rom_archive(app, rom_path) : app_emulator_configure_rom(app, rom_path))
-        || (backup_to_import ? app_emulator_import_backup_storage(app, backup_to_import, backup_path) : app_emulator_configure_backupe_storage(app, backup_path))
+        || (backup_to_import ? app_emulator_import_backup_storage(app, backup_to_import, backup_path) : app_emulator_configure_backup_storage(app, backup_path))
     ) {
         app_emulator_unconfigure(app);
         return (true);
