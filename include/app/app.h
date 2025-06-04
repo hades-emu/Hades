@@ -182,23 +182,45 @@ struct settings {
         // Show FPS
         bool show_fps;
 
-        // Start the last played game on startup, when no game is provided
-        bool start_last_played_game_on_startup;
+        struct {
+            // Start the last played game on startup, when no game is provided
+            bool start_last_played_game;
 
-        // Pause when the window is inactive
-        bool pause_when_window_inactive;
+            // Pause when the game resets
+            bool pause_when_game_resets;
+        } startup;
 
-        // Pause when the game resets
-        bool pause_when_game_resets;
+        struct {
+            // Pause when the window loses focus
+            bool pause_game_when_window_loses_focus;
 
-        // Set when using a dedicated backup directory instead of
-        // placing the backup file next to the game.
-        bool use_dedicated_backup_dir;
+            // Hide the cursor after a few seconds of inactivity
+            bool hide_cursor_when_mouse_inactive;
+        } window;
 
-        // If the above option is set, the path pointing to the
-        // dedicated backup directory.
-        char *dedicated_backup_dir_path;
+        struct {
+            struct {
+                // If set, use a dedicated backup directory.
+                // Otherwise, use the same directory as the ROM.
+                bool use_dedicated_directory;
+
+                // Backup directory.
+                // Only relevant if the above option is set.
+                char *path;
+            } backup;
+
+            struct {
+                // If set, use the system screenshot directory.
+                // Otherwise, use the one specified by `screenshot_dir`.
+                bool use_system_directory;
+
+                // Screenshot directory
+                // Only relevant if the above option is set.
+                char *path;
+            } screenshot;
+        } directories;
     } general;
+
     struct {
         // BIOS Path
         char *bios_path;
@@ -267,19 +289,6 @@ struct settings {
 
         // Pixel Scaling Filter (LCD Grid, xBRZ, etc.)
         enum pixel_scaling_filter_kind pixel_scaling_filter;
-
-        // Hide the cursor after a few seconds of inactivity
-        bool hide_cursor_when_mouse_inactive;
-
-        // If set, use the system screenshot directory.
-        // Otherwise, use the one specified by `screenshot_dir`.
-        // TODO: Move this elsewhere
-        bool use_system_screenshot_dir_path;
-
-        // Screenshot directory
-        // Only relevant if `use_system_screenshot_dir` is set.
-        // TODO: Move this elsewhere
-        char *screenshot_dir_path;
 
         /*
         ** Debug
@@ -659,6 +668,6 @@ void app_emulator_set_watchpoints_list(struct app *app, struct watchpoint *watch
 
 /* path.c */
 void app_paths_update(struct app *app);
-char const *app_path_config(struct app *app);
-char const *app_path_screenshots(struct app *app);
+char const *app_path_config(struct app const *app);
+char const *app_path_screenshots(struct app const *app);
 char *app_path_backup(struct app const *app, char const *rom);

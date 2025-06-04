@@ -133,7 +133,7 @@ app_paths_update(
 
 char const *
 app_path_config(
-    struct app *app
+    struct app const *app
 ) {
     if (app->args.config_path) {
         return (app->args.config_path);
@@ -152,10 +152,10 @@ app_path_config(
 
 char const *
 app_path_screenshots(
-    struct app *app
+    struct app const *app
 ) {
-    if (!app->settings.video.use_system_screenshot_dir_path && app->settings.video.screenshot_dir_path) {
-        return (app->settings.video.screenshot_dir_path);
+    if (!app->settings.general.directories.screenshot.use_system_directory && app->settings.general.directories.screenshot.path) {
+        return (app->settings.general.directories.screenshot.path);
     }
     return app->file.sys_pictures_dir_path ?: "screenshots";
 }
@@ -170,7 +170,7 @@ app_path_backup(
     size_t dirname_len;
     size_t basename_len;
 
-    rom_basename = strrchr(rom, '/');
+    rom_basename = strrchr(rom, HS_PATH_SEPARATOR);
 
     // The path contains a '/'
     if (rom_basename) {
@@ -184,8 +184,11 @@ app_path_backup(
     rom_ext = strrchr(rom_basename, '.');
     basename_len = rom_ext - rom_basename;
 
-    if (app->settings.general.use_dedicated_backup_dir) {
-        return hs_format("%s/%.*s.sav", app->settings.general.dedicated_backup_dir_path, (int)basename_len, rom_basename);
+    if (app->settings.general.directories.backup.use_dedicated_directory) {
+        if (!hs_fexists(app->settings.general.directories.backup.path)) {
+            hs_mkdir(app->settings.general.directories.backup.path);
+        }
+        return hs_format("%s/%.*s.sav", app->settings.general.directories.backup.path, (int)basename_len, rom_basename);
     } else {
         return hs_format("%.*s/%.*s.sav", (int)dirname_len, rom, (int)basename_len, rom_basename);
     }

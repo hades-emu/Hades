@@ -27,6 +27,8 @@
 #include <synchapi.h>
 #include <shellapi.h>
 
+#define HS_PATH_SEPARATOR       '\\'
+
 #define hs_isatty(x)            false
 
 static inline
@@ -198,6 +200,8 @@ hs_open_url(
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
+
+#define HS_PATH_SEPARATOR       '/'
 
 #define hs_isatty(x)            isatty(x)
 #define hs_mkdir(path)          mkdir((path), 0755);

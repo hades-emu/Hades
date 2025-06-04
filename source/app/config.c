@@ -79,25 +79,38 @@ app_config_load(
             app->settings.general.show_fps = b;
         }
 
-        if (mjson_get_bool(data, data_len, "$.general.start_last_played_game_on_startup", &b)) {
-            app->settings.general.start_last_played_game_on_startup = b;
+        if (mjson_get_bool(data, data_len, "$.general.startup.start_last_played_game", &b)) {
+            app->settings.general.startup.start_last_played_game = b;
         }
 
-        if (mjson_get_bool(data, data_len, "$.general.pause_when_window_inactive", &b)) {
-            app->settings.general.pause_when_window_inactive = b;
+        if (mjson_get_bool(data, data_len, "$.general.startup.pause_when_game_resets", &b)) {
+            app->settings.general.startup.pause_when_game_resets = b;
         }
 
-        if (mjson_get_bool(data, data_len, "$.general.pause_when_game_resets", &b)) {
-            app->settings.general.pause_when_game_resets = b;
+        if (mjson_get_bool(data, data_len, "$.general.window.pause_game_when_window_loses_focus", &b)) {
+            app->settings.general.window.pause_game_when_window_loses_focus = b;
         }
 
-        if (mjson_get_bool(data, data_len, "$.general.use_dedicated_backup_dir", &b)) {
-            app->settings.general.use_dedicated_backup_dir = b;
+        if (mjson_get_bool(data, data_len, "$.general.window.hide_cursor_when_mouse_inactive", &b)) {
+            app->settings.general.window.hide_cursor_when_mouse_inactive = b;
         }
 
-        if (mjson_get_string(data, data_len, "$.general.dedicated_backup_dir_path", str, sizeof(str)) > 0) {
-            free(app->settings.general.dedicated_backup_dir_path);
-            app->settings.general.dedicated_backup_dir_path = strdup(str);
+        if (mjson_get_bool(data, data_len, "$.general.directories.backup.use_dedicated_directory", &b)) {
+            app->settings.general.directories.backup.use_dedicated_directory = b;
+        }
+
+        if (mjson_get_string(data, data_len, "$.general.directories.backup.path", str, sizeof(str)) > 0) {
+            free(app->settings.general.directories.backup.path);
+            app->settings.general.directories.backup.path = strdup(str);
+        }
+
+        if (mjson_get_bool(data, data_len, "$.general.directories.screenshot.use_system_directory", &b)) {
+            app->settings.general.directories.screenshot.use_system_directory = b;
+        }
+
+        if (mjson_get_string(data, data_len, "$.general.directories.screenshot.path", str, sizeof(str)) > 0) {
+            free(app->settings.general.directories.screenshot.path);
+            app->settings.general.directories.screenshot.path = strdup(str);
         }
     }
 
@@ -141,7 +154,6 @@ app_config_load(
 
     // Video
     {
-        char str[4096];
         int b;
         double d;
 
@@ -190,19 +202,6 @@ app_config_load(
         if (mjson_get_number(data, data_len, "$.video.pixel_scaling_filter", &d)) {
             app->settings.video.pixel_scaling_filter = (int)d;
             app->settings.video.pixel_scaling_filter = max(PIXEL_SCALING_FILTER_MIN, min(app->settings.video.pixel_scaling_filter, PIXEL_SCALING_FILTER_MAX));
-        }
-
-        if (mjson_get_bool(data, data_len, "$.video.hide_cursor_when_mouse_inactive", &b)) {
-            app->settings.video.hide_cursor_when_mouse_inactive = b;
-        }
-
-        if (mjson_get_bool(data, data_len, "$.video.use_system_screenshot_dir_path", &b)) {
-            app->settings.video.use_system_screenshot_dir_path = b;
-        }
-
-        if (mjson_get_string(data, data_len, "$.video.screenshot_dir_path", str, sizeof(str)) > 0) {
-            free(app->settings.video.screenshot_dir_path);
-            app->settings.video.screenshot_dir_path = strdup(str);
         }
     }
 
@@ -339,11 +338,24 @@ app_config_save(
             // General
             "general": {
                 "show_fps": %B,
-                "start_last_played_game_on_startup": %B,
-                "pause_when_window_inactive": %B,
-                "pause_when_game_resets": %B,
-                "use_dedicated_backup_dir": %B,
-                "dedicated_backup_dir_path": %Q
+                "startup": {
+                    "start_last_played_game": %B,
+                    "pause_when_game_resets": %B
+                },
+                "window": {
+                    "pause_game_when_window_loses_focus": %B,
+                    "hide_cursor_when_mouse_inactive": %B
+                },
+                "directories": {
+                    "backup": {
+                        "use_dedicated_directory": %B,
+                        "path": %Q
+                    },
+                    "screenshot": {
+                        "use_system_directory": %B,
+                        "path": %Q
+                    }
+                }
             },
 
             // Emulation
@@ -374,9 +386,6 @@ app_config_save(
                 "texture_filter": %d,
                 "pixel_color_filter": %d,
                 "pixel_scaling_filter": %d,
-                "hide_cursor_when_mouse_inactive": %B,
-                "use_system_screenshot_dir_path": %B,
-                "screenshot_dir_path": %Q
             },
 
             // Audio
@@ -397,11 +406,14 @@ app_config_save(
         app->file.recent_roms[8],
         app->file.recent_roms[9],
         (int)app->settings.general.show_fps,
-        (int)app->settings.general.start_last_played_game_on_startup,
-        (int)app->settings.general.pause_when_window_inactive,
-        (int)app->settings.general.pause_when_game_resets,
-        (int)app->settings.general.use_dedicated_backup_dir,
-        app->settings.general.dedicated_backup_dir_path,
+        (int)app->settings.general.startup.start_last_played_game,
+        (int)app->settings.general.startup.pause_when_game_resets,
+        (int)app->settings.general.window.pause_game_when_window_loses_focus,
+        (int)app->settings.general.window.hide_cursor_when_mouse_inactive,
+        (int)app->settings.general.directories.backup.use_dedicated_directory,
+        app->settings.general.directories.backup.path,
+        (int)app->settings.general.directories.screenshot.use_system_directory,
+        app->settings.general.directories.screenshot.path,
         (int)app->settings.emulation.skip_bios_intro,
         app->settings.emulation.speed,
         app->settings.emulation.alt_speed,
@@ -420,9 +432,6 @@ app_config_save(
         (int)app->settings.video.texture_filter,
         (int)app->settings.video.pixel_color_filter,
         (int)app->settings.video.pixel_scaling_filter,
-        (int)app->settings.video.hide_cursor_when_mouse_inactive,
-        (int)app->settings.video.use_system_screenshot_dir_path,
-        app->settings.video.screenshot_dir_path,
         (int)app->settings.audio.mute,
         app->settings.audio.level
     );

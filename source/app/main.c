@@ -53,11 +53,14 @@ app_settings_default(
     free(settings->emulation.bios_path);
 
     settings->general.show_fps = false;
-    settings->general.start_last_played_game_on_startup = false;
-    settings->general.pause_when_window_inactive = false;
-    settings->general.pause_when_game_resets = false;
-    settings->general.use_dedicated_backup_dir = false;
-    settings->general.dedicated_backup_dir_path = strdup("./saves/");
+    settings->general.startup.start_last_played_game = false;
+    settings->general.startup.pause_when_game_resets = false;
+    settings->general.window.pause_game_when_window_loses_focus = false;
+    settings->general.window.hide_cursor_when_mouse_inactive = true;
+    settings->general.directories.backup.use_dedicated_directory = false;
+    settings->general.directories.backup.path = strdup("./saves/");
+    settings->general.directories.screenshot.use_system_directory = true;
+    settings->general.directories.screenshot.path = strdup("./screenshots/");
     settings->emulation.bios_path = strdup("./bios.bin");
     settings->emulation.skip_bios_intro = false;
     settings->emulation.speed = 1.0;
@@ -81,9 +84,6 @@ app_settings_default(
     settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
     settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
     settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
-    settings->video.hide_cursor_when_mouse_inactive = true;
-    settings->video.use_system_screenshot_dir_path = true;
-    settings->video.screenshot_dir_path = strdup("./screenshots/");
     settings->audio.mute = false;
     settings->audio.level = 1.0f;
 }
@@ -152,7 +152,7 @@ main(
     if (app.args.rom_path) {
         app_emulator_configure_and_run(&app, app.args.rom_path, NULL);
     } else if ( // Start the last played game
-           app.settings.general.start_last_played_game_on_startup
+           app.settings.general.startup.start_last_played_game
         && app.file.recent_roms[0]
         && strlen(app.file.recent_roms[0])
     ) {
@@ -306,7 +306,7 @@ main(
             }
 
             // Hide the cursor if the mouse is inactive for a while
-            if (app.settings.video.hide_cursor_when_mouse_inactive) {
+            if (app.settings.general.window.hide_cursor_when_mouse_inactive) {
                 bool show_cursor;
                 bool is_cursor_visible;
 

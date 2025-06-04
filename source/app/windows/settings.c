@@ -163,11 +163,11 @@ app_win_settings_general(
     igSeparator();
     igSpacing();
 
-    igSeparatorText("Misc");
+    igSeparatorText("General");
 
-    if (igBeginTable("##GeneralSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##GeneralSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##GeneralSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+    if (igBeginTable("##GeneralSettingsGeneral", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##GeneralSettingsGeneralLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##GeneralSettingsGeneralValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
         // Show FPS
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -177,21 +177,22 @@ app_win_settings_general(
         igTableNextColumn();
         igCheckbox("##ShowFPS", &app->settings.general.show_fps);
 
+        igEndTable();
+    }
+
+    igSeparatorText("Start-Up");
+
+    if (igBeginTable("##GeneralSettingsStartUp", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##GeneralSettingsStartUpLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##GeneralSettingsStartUpValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
         // Start the last played game on startup, when no game is provided
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
         igTextWrapped("Start last played game on startup");
 
         igTableNextColumn();
-        igCheckbox("##StartLastPlayedGameOnStartup", &app->settings.general.start_last_played_game_on_startup);
-
-        // Pause when the window is inactive
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Pause when window is inactive");
-
-        igTableNextColumn();
-        igCheckbox("##PauseWhenWindowInactive", &app->settings.general.pause_when_window_inactive);
+        igCheckbox("##StartLastPlayedGame", &app->settings.general.startup.start_last_played_game);
 
 #ifdef WITH_DEBUGGER
         // Pause when the game resets
@@ -200,8 +201,33 @@ app_win_settings_general(
         igTextWrapped("Pause when the game resets");
 
         igTableNextColumn();
-        igCheckbox("##PauseWhenGameResets", &app->settings.general.pause_when_game_resets);
+        igCheckbox("##PauseWhenGameResets", &app->settings.general.startup.pause_when_game_resets);
 #endif
+
+        igEndTable();
+    }
+
+    igSeparatorText("Window");
+
+    if (igBeginTable("##VideoSettingsWindow", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##VideoSettingsWindowLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##VideoSettingsWindowValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Pause when the window loses focus
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Pause when window loses focus");
+
+        igTableNextColumn();
+        igCheckbox("##PauseWhenWindowInactive", &app->settings.general.window.pause_game_when_window_loses_focus);
+
+        // Hide the cursor after a few seconds of inactivity
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Hide cursor when mouse is inactive");
+
+        igTableNextColumn();
+        igCheckbox("##HideCursorWhenMouseInactive", &app->settings.general.window.hide_cursor_when_mouse_inactive);
 
         igEndTable();
     }
@@ -212,38 +238,70 @@ app_win_settings_general(
         igTableSetupColumn("##GeneralSettingsDirectoriesLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
         igTableSetupColumn("##GeneralSettingsDirectoriesValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
 
-        // Use a dedicated backup directory
+        // Use a Dedicated Backup Directory
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
         igTextWrapped("Use dedicated directory for save files");
 
         igTableNextColumn();
-        igCheckbox("##UseDedicatedDirSaveFiles", &app->settings.general.use_dedicated_backup_dir);
+        igCheckbox("##UseDedicatedDirSaveFiles", &app->settings.general.directories.backup.use_dedicated_directory);
 
-        // Save Directory
+        // Backup Directory
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
         igTextWrapped("Save Directory");
 
-        igBeginDisabled(!app->settings.general.use_dedicated_backup_dir);
+        igBeginDisabled(!app->settings.general.directories.backup.use_dedicated_directory);
 
         igTableNextColumn();
         igBeginDisabled(true);
-        igInputText("##SaveDirectory", app->settings.general.dedicated_backup_dir_path, strlen(app->settings.general.dedicated_backup_dir_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
+        igInputText("##SaveDirectory", app->settings.general.directories.backup.path, strlen(app->settings.general.directories.backup.path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
             nfdresult_t result;
             nfdchar_t *path;
 
-            result = NFD_PickFolder(
-                &path,
-                app->settings.general.dedicated_backup_dir_path
-            );
+            result = NFD_PickFolder(&path, app->settings.general.directories.backup.path);
 
             if (result == NFD_OKAY) {
-                free(app->settings.general.dedicated_backup_dir_path);
-                app->settings.general.dedicated_backup_dir_path = strdup(path);
+                free(app->settings.general.directories.backup.path);
+                app->settings.general.directories.backup.path = strdup(path);
+                NFD_FreePath(path);
+            }
+        }
+
+        igEndDisabled();
+
+        // Use the System Directory for Screenshots
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Use System Directory For Screenshots");
+
+        igTableNextColumn();
+        igCheckbox("##UseSystemDirectoryForScreenshots", &app->settings.general.directories.screenshot.use_system_directory);
+
+        // Screenshot Directory
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Screenshot Directory");
+
+        igBeginDisabled(app->settings.general.directories.screenshot.use_system_directory);
+
+        igTableNextColumn();
+        igBeginDisabled(true);
+        igInputText("##ScreenshotDirectory", app->settings.general.directories.screenshot.path, strlen(app->settings.general.directories.screenshot.path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
+        igEndDisabled();
+        igSameLine(0.0f, -1.0f);
+        if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
+            nfdresult_t result;
+            nfdchar_t *path;
+
+            result = NFD_PickFolder(&path, app->settings.general.directories.screenshot.path);
+
+            if (result == NFD_OKAY) {
+                free(app->settings.general.directories.screenshot.path);
+                app->settings.general.directories.screenshot.path= strdup(path);
                 NFD_FreePath(path);
             }
         }
@@ -647,61 +705,6 @@ app_win_settings_video(
         if (igCombo_Str_arr("##ScalingFilter", (int *)&app->settings.video.pixel_scaling_filter, pixel_scaling_filters_names, PIXEL_SCALING_FILTER_LEN, 0)) {
             app_sdl_video_rebuild_pipeline(app);
         }
-
-        igEndTable();
-    }
-
-    igSeparatorText("Misc");
-
-    if (igBeginTable("##VideoSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##VideoSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##VideoSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
-
-        // Use System Directory For Screenshots
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Use System Directory For Screenshots");
-
-        igTableNextColumn();
-        igCheckbox("##UseSystemDirectoryForScreenshots", &app->settings.video.use_system_screenshot_dir_path);
-
-        // Screenshot Directory
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Screenshot Directory");
-
-        igBeginDisabled(app->settings.video.use_system_screenshot_dir_path);
-
-        igTableNextColumn();
-        igBeginDisabled(true);
-        igInputText("##ScreenshotDirectory", app->settings.video.screenshot_dir_path, strlen(app->settings.video.screenshot_dir_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
-        igEndDisabled();
-        igSameLine(0.0f, -1.0f);
-        if (igButton("Choose", (ImVec2){ 50.f, 0.f})) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_PickFolder(
-                &path,
-                app->settings.video.screenshot_dir_path
-            );
-
-            if (result == NFD_OKAY) {
-                free(app->settings.video.screenshot_dir_path);
-                app->settings.video.screenshot_dir_path = strdup(path);
-                NFD_FreePath(path);
-            }
-        }
-
-        igEndDisabled();
-
-        // Hide the cursor when the mouse is inactive
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Hide cursor when the mouse is inactive");
-
-        igTableNextColumn();
-        igCheckbox("##HideCursorWhenMouseInactive", &app->settings.video.hide_cursor_when_mouse_inactive);
 
         igEndTable();
     }
