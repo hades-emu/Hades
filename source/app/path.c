@@ -243,8 +243,6 @@ app_path_update_quicksave_paths(
             rom_basename,
             i + 1
         );
-
-        printf("RES: [%s]\n", app->file.qsaves[i].path);
     }
 
     app->file.flush_qsaves_cache = true;
