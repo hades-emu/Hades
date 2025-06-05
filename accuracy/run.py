@@ -112,14 +112,18 @@ def main():
     config.write(textwrap.dedent(f'''
         {{
           "file": {{
-            "bios": "{bios}"
+            "bios": "{bios}",
+          }},
+          "general": {{
+            "startup": {{
+              "start_last_played_game": false,
+              "pause_when_game_resets": true,
+            }},
           }},
           "emulation": {{
-            "pause_when_game_resets": true,
             "skip_bios": true,
             "speed": 0,
-            "fast_forward": true,
-            "prefetch_buffer": true,
+            "alt_speed": 0,
             "backup_storage": {{
               "autodetect": true,
               "type": 0
@@ -127,7 +131,8 @@ def main():
             "gpio": {{
               "autodetect": true,
               "type": 0
-            }}
+            }},
+            "prefetch_buffer": true,
           }},
         }}
     ''').encode('utf-8'))
