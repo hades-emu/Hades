@@ -585,6 +585,7 @@ app_emulator_configure_and_run(
     bool is_archive;
     uint8_t *code;
 
+    app_emulator_stop(app);
     app_emulator_unconfigure(app);
 
     logln(HS_INFO, "Loading game at \"%s%s%s\".", g_light_green, rom_path, g_reset);
