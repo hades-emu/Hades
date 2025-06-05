@@ -53,6 +53,49 @@ hs_convert_to_wchar(
 }
 
 static inline
+char *
+hs_convert_from_wchar(
+    wchar_t const *wstr
+) {
+    char *str;
+    int wlen;
+
+    wlen = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
+    if (wlen == 0) {
+        return (NULL);
+    }
+
+    str = malloc(wlen);
+    hs_assert(str);
+
+    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, wlen, NULL, NULL);
+    return (str);
+}
+
+static inline
+char *
+hs_abspath(
+    char const *path
+) {
+    wchar_t *wpath;
+    wchar_t wabspath[MAX_PATH];
+    char *abspath;
+
+    wpath = hs_convert_to_wchar(path);
+    abspath = NULL;
+
+    if (!GetFullPathNameW(wpath, MAX_PATH, wabspath, NULL)) {
+        goto out;
+    }
+
+    abspath = hs_convert_from_wchar(wabspath);
+
+out:
+    free(wpath);
+    return (abspath);
+}
+
+static inline
 FILE *
 hs_fopen(
     char const *path,
@@ -208,6 +251,7 @@ hs_open_url(
 #define hs_fopen(path, mode)    fopen((char const *)(path), (mode))
 #define hs_usleep(x)            usleep(x)
 #define hs_fexists(path)        (access((path), F_OK) == 0)
+#define hs_abspath(path)        realpath((path), NULL)
 
 static inline
 char const *
