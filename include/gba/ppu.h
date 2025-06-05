@@ -124,6 +124,9 @@ struct ppu {
     uint32_t win_masks_hash[2];             // The min/max for that windows. Kept to avoid rebuilding the mask across scanlines. */
 
     bool video_capture_enabled;             // Set when the DMA video capture is enabled
+
+    bool skip_current_frame;
+    uint32_t current_frame_skip_counter;
 };
 
 /* gba/ppu/background/bitmap.c */

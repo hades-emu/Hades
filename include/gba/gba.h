@@ -88,6 +88,12 @@ struct gba_settings {
     // Enable the emulation of the prefetch buffer
     bool prefetch_buffer;
 
+    // Enable frame skipping
+    bool enable_frame_skipping;
+
+    // How many frame to skip
+    uint32_t frame_skip_counter;
+
     struct {
         bool enable_bg_layers[4];
         bool enable_oam;

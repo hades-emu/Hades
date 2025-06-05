@@ -198,6 +198,9 @@ app_emulator_fill_gba_settings(
 
     settings->prefetch_buffer = app->settings.emulation.prefetch_buffer;
 
+    settings->enable_frame_skipping = app->settings.video.enable_frame_skip;
+    settings->frame_skip_counter = app->settings.video.frame_skip_counter;
+
     settings->ppu.enable_oam = app->settings.video.enable_oam;
     memcpy(settings->ppu.enable_bg_layers, app->settings.video.enable_bg_layers, sizeof(settings->ppu.enable_bg_layers));
 

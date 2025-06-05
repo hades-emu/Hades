@@ -202,6 +202,14 @@ app_config_load(
             app->settings.video.vsync = b;
         }
 
+        if (mjson_get_bool(data, data_len, "$.video.enable_frame_skip", &b)) {
+            app->settings.video.enable_frame_skip = b;
+        }
+
+        if (mjson_get_number(data, data_len, "$.video.frame_skip_counter", &d)) {
+            app->settings.video.frame_skip_counter = (int)d;
+        }
+
         if (mjson_get_number(data, data_len, "$.video.texture_filter", &d)) {
             app->settings.video.texture_filter = (int)d;
             app->settings.video.texture_filter = max(TEXTURE_FILTER_MIN, min(app->settings.video.texture_filter, TEXTURE_FILTER_MAX));
@@ -401,6 +409,8 @@ app_config_save(
                 "display_size": %d,
                 "aspect_ratio": %d,
                 "vsync": %B,
+                "enable_frame_skip": %B,
+                "frame_skip_counter": %d,
                 "texture_filter": %d,
                 "pixel_color_filter": %d,
                 "pixel_scaling_filter": %d,
@@ -450,6 +460,8 @@ app_config_save(
         (int)app->settings.video.display_size,
         (int)app->settings.video.aspect_ratio,
         (int)app->settings.video.vsync,
+        (int)app->settings.video.enable_frame_skip,
+        (int)app->settings.video.frame_skip_counter,
         (int)app->settings.video.texture_filter,
         (int)app->settings.video.pixel_color_filter,
         (int)app->settings.video.pixel_scaling_filter,

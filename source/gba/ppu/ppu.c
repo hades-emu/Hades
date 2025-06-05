@@ -333,6 +333,13 @@ ppu_hdraw(
     if (io->vcount.raw >= GBA_SCREEN_REAL_HEIGHT) {
         io->vcount.raw = 0;
         atomic_fetch_add(&gba->shared_data.frame_counter, 1);
+
+        if (gba->settings.enable_frame_skipping && gba->settings.frame_skip_counter > 0) {
+            gba->ppu.current_frame_skip_counter = (gba->ppu.current_frame_skip_counter + 1) % gba->settings.frame_skip_counter;
+            gba->ppu.skip_current_frame = (gba->ppu.current_frame_skip_counter != 0);
+        } else {
+            gba->ppu.skip_current_frame = false;
+        }
     } else if (io->vcount.raw == GBA_SCREEN_HEIGHT) {
         /*
         ** Now that the frame is finished, we can copy the current framebuffer to
@@ -387,15 +394,17 @@ ppu_hblank(
     if (io->vcount.raw < GBA_SCREEN_HEIGHT) {
         struct scanline scanline;
 
-        ppu_initialize_scanline(gba, &scanline);
+        if (!gba->ppu.skip_current_frame) {
+            ppu_initialize_scanline(gba, &scanline);
 
-        if (!gba->io.dispcnt.blank) {
-            ppu_window_build_masks(gba, io->vcount.raw);
-            ppu_prerender_oam(gba, &scanline, io->vcount.raw);
-            ppu_render_scanline(gba, &scanline);
+            if (!gba->io.dispcnt.blank) {
+                ppu_window_build_masks(gba, io->vcount.raw);
+                ppu_prerender_oam(gba, &scanline, io->vcount.raw);
+                ppu_render_scanline(gba, &scanline);
+            }
+
+            ppu_draw_scanline(gba, &scanline);
         }
-
-        ppu_draw_scanline(gba, &scanline);
 
         ppu_step_affine_internal_registers(gba);
     }

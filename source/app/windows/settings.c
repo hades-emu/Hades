@@ -713,6 +713,47 @@ app_win_settings_video(
         igEndTable();
     }
 
+    igSeparatorText("Frame Skip");
+
+    if (igBeginTable("##VideoSettingsFrameSkip", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##VideoSettingsFrameSkipLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##VideoSettingsFrameSkipValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Enable Frame Skip
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Enable Frame Skip");
+
+        igTableNextColumn();
+        if (igCheckbox("##FrameSkip", &app->settings.video.enable_frame_skip)) {
+            app_emulator_settings(app);
+        }
+
+        igBeginDisabled(!app->settings.video.enable_frame_skip);
+
+        // Frame Skip Counter
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Frame Skip");
+
+        igTableNextColumn();
+
+        if (igSliderInt(
+            "##VideoSettingsFrameSkipSlider",
+            (int *)&app->settings.video.frame_skip_counter,
+            1,
+            10,
+            NULL,
+            ImGuiSliderFlags_AlwaysClamp
+        )) {
+            app_emulator_settings(app);
+        }
+
+        igEndDisabled();
+
+        igEndTable();
+    }
+
     igSeparatorText("Filters");
 
     if (igBeginTable("##VideoSettingsFilters", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {

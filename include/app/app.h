@@ -294,6 +294,12 @@ struct settings {
         // VSync
         bool vsync;
 
+        // Enable Frame Skip
+        bool enable_frame_skip;
+
+        // How many frame to skip
+        uint32_t frame_skip_counter;
+
         // Texture Filter (Linear, Nearest)
         enum texture_filter_kind texture_filter;
 
