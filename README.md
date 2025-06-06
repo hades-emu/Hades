@@ -2,6 +2,7 @@
 
 ![license](https://img.shields.io/github/license/hades-emu/hades)
 [![Build](https://github.com/hades-emu/hades/actions/workflows/build.yml/badge.svg)](https://github.com/hades-emu/hades/actions/workflows/build.yml)
+[![Discord](https://img.shields.io/discord/1380316885979234424?label=discord&logo=discord&color=%235865F2)](https://discord.com/invite/zBHkV836AK)
 
 <p align="center"><a href="https://hades-emu.org/"><img src="https://i.imgur.com/4OrVpX2.png"></a></p>
 <p align="center"><i>A Nintendo Game Boy Advance Emulator</i></p>
@@ -38,11 +39,11 @@ It is the third 🥉 software emulator to pass the AGS Aging Cartridge used to t
 
 ## Installation
 
-Follow the instructions on our [officiel website](https://hades-emu.org/download) to download and install Hades.
+Follow the instructions on our [officiel website](https://hades-emu.org/download) to download and install Hades the latest release of Hades.
 
 ## Build
 
-The build dependencies are:
+To build Hades, you first need to install those dependencies:
 
   - `meson`
   - `ninja`
@@ -65,7 +66,7 @@ On Fedora, you can install all those dependencies with:
 $ dnf install meson ninja-build gcc SDL2-devel glew-devel gtk3-devel libarchive-devel
 ```
 
-To build Hades, run:
+Finally, to build Hades, run:
 
 ```bash
 git submodule update --init --recursive
