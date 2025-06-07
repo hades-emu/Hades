@@ -102,6 +102,7 @@ dma_run_channel(
             case 0b01:      dst_step = -unit_size; break;
             case 0b10:      dst_step = 0; break;
             case 0b11:      dst_step = unit_size; break;
+            default:        __unreachable;
         }
     }
 
@@ -110,6 +111,7 @@ dma_run_channel(
         case 0b01:      src_step = -unit_size; break;
         case 0b10:      src_step = 0; break;
         case 0b11:      src_step = 0; break;
+        default:        __unreachable;
     }
 
     logln(
@@ -135,18 +137,23 @@ dma_run_channel(
         ** will be non-sequential, no matter if it is the source or destination address.
         ** It looks like it can't be both, even if they access the ROM at the same time (in which case
         ** src has the priority).
+        **
+        ** On top of that, ROM access from DMA can only use incrementing addresses,regardless of the content of the
+        ** control register.
         */
         if (!rom_accessed) {
             bool src_in_rom;
             bool dst_in_rom;
 
-            src_in_rom = (channel->internal_src >= CART_0_START);
-            dst_in_rom = (channel->internal_dst >= CART_0_START);
+            src_in_rom = (channel->internal_src >= CART_0_START && channel->internal_src < SRAM_START);
+            dst_in_rom = (channel->internal_dst >= CART_0_START && channel->internal_dst < SRAM_START);
             rom_accessed = src_in_rom | dst_in_rom;
             if (src_in_rom) {
                 access_src = NON_SEQUENTIAL;
+                src_step = unit_size;
             } else if (dst_in_rom) {
                 access_dst = NON_SEQUENTIAL;
+                dst_step = unit_size;
             }
         }
 
