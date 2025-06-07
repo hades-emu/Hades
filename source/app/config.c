@@ -28,8 +28,8 @@ app_config_load(
     struct app *app
 ) {
     char const *path;
-    char data[4096];
     FILE *config_file;
+    char *data;
     size_t data_len;
 
     path = app_path_config(app);
@@ -39,14 +39,23 @@ app_config_load(
         return;
     }
 
-    data_len = fread(data, 1, sizeof(data) - 1, config_file);
+    fseek(config_file, 0, SEEK_END);
+    data_len = ftell(config_file);
+    rewind(config_file);
 
-    if (data_len == 0 && ferror(config_file)) {
-        logln(HS_ERROR, "Failed to read \"%s\": %s", path, strerror(errno));
+    data = calloc(1, data_len);
+    hs_assert(data);
+
+    if (fread(data, 1, data_len, config_file) != data_len) {
+        app_new_notification(
+            app,
+            UI_NOTIFICATION_ERROR,
+            "Failed to read %s: %s.",
+            path,
+            strerror(errno)
+        );
         goto end;
     }
-
-    data[data_len] = '\0';
 
     // File
     {
@@ -276,7 +285,7 @@ app_config_load(
                 tmp.key = SDL_GetKeyFromName(str);
                 if (tmp.key == SDLK_UNKNOWN) {
                     // Set the binding for that key to be invalid.
-                    app_bindings_keyboard_binding_clear(app, &tmp);
+                    keyboard_layers[layer][bind] = tmp;
                     continue;
                 }
 
@@ -325,6 +334,7 @@ app_config_load(
     }
 
 end:
+    free(data);
     fclose(config_file);
 }
 
