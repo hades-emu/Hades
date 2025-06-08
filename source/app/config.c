@@ -33,7 +33,7 @@ app_config_load(
     size_t data_len;
 
     path = app_path_config(app);
-    config_file = hs_fopen(path, "r");
+    config_file = hs_fopen(path, "rb");
     if (!config_file) {
         logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
         return;
