@@ -1113,25 +1113,23 @@ app_win_settings(
     )) {
         uint32_t i;
 
-        if (igBeginChild_Str("##SettingsMenu", (ImVec2){ vp->WorkSize.x / 4.f, 0.f}, ImGuiChildFlags_Border , ImGuiWindowFlags_None)) {
-            for (i = 0; i < MENU_MAX; ++i) {
-                if (igSelectable_Bool(menu_names[i], app->ui.settings.menu == i, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f})) {
-                    app->ui.settings.menu = i;
-                }
+        igBeginChild_Str("##SettingsMenu", (ImVec2){ vp->WorkSize.x / 4.f, 0.f}, ImGuiChildFlags_Border , ImGuiWindowFlags_None);
+        for (i = 0; i < MENU_MAX; ++i) {
+            if (igSelectable_Bool(menu_names[i], app->ui.settings.menu == i, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f})) {
+                app->ui.settings.menu = i;
             }
-            igEndChild();
         }
+        igEndChild();
 
         igSameLine(0.0f, -1.0f);
 
         igBeginGroup();
 
-        if (igBeginChild_Str("##SettingsVariables", (ImVec2){ 0.f, -igGetFrameHeightWithSpacing()}, ImGuiChildFlags_Border, ImGuiWindowFlags_None)) {
-            if (menu_callbacks[app->ui.settings.menu]) {
-                menu_callbacks[app->ui.settings.menu](app);
-            }
-            igEndChild();
+        igBeginChild_Str("##SettingsVariables", (ImVec2){ 0.f, -igGetFrameHeightWithSpacing()}, ImGuiChildFlags_Border, ImGuiWindowFlags_None);
+        if (menu_callbacks[app->ui.settings.menu]) {
+            menu_callbacks[app->ui.settings.menu](app);
         }
+        igEndChild();
 
         if (igButton("Close##SettingsMenuCloseButton", (ImVec2){ 0.f, 0.f})) {
             app->ui.settings.open = false;
