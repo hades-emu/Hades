@@ -49,8 +49,8 @@ static char const *display_mode_names[DISPLAY_MODE_LEN] = {
 };
 
 static char const *menubar_mode_names[MENUBAR_MODE_LEN] = {
-    [MENUBAR_MODE_FIXED_ABOVE_GAME] = "Fixed above game",
-    [MENUBAR_MODE_HOVER_OVER_GAME] = "Hover over game",
+    [MENUBAR_MODE_PINNED] = "Pinned, above game",
+    [MENUBAR_MODE_AUTO_HIDE] = "Hide automatically",
 };
 
 static char const * const display_size_names[] = {

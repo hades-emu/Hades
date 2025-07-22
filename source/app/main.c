@@ -77,7 +77,7 @@ app_settings_default(
     memset(settings->video.enable_bg_layers, true, sizeof(settings->video.enable_bg_layers));
     memset(settings->audio.enable_psg_channels, true, sizeof(settings->audio.enable_psg_channels));
     memset(settings->audio.enable_fifo_channels, true, sizeof(settings->audio.enable_fifo_channels));
-    settings->video.menubar_mode = MENUBAR_MODE_FIXED_ABOVE_GAME;
+    settings->video.menubar_mode = MENUBAR_MODE_PINNED;
     settings->video.display_mode = DISPLAY_MODE_WINDOWED;
     settings->video.display_size = 3;
     settings->video.autodetect_scale = true;
@@ -323,7 +323,7 @@ main(
 
             // Hide the menubar if the mouse is inactive for a while
             // We slowly change `visibility` to go from 1.0 to 0.0 over 50ms, after the mouse is inactive for 1950ms.
-            if (app.settings.video.menubar_mode == MENUBAR_MODE_HOVER_OVER_GAME) {
+            if (app.settings.video.menubar_mode == MENUBAR_MODE_AUTO_HIDE) {
                 if (app.ui.time_elapsed_since_last_mouse_motion_ms < 1950.0) {
                     app.ui.menubar.visibility = 1.0f;
                 } else if (app.ui.time_elapsed_since_last_mouse_motion_ms >= 1950.0 && app.ui.time_elapsed_since_last_mouse_motion_ms <= 2000.0) {

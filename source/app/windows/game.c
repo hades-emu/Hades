@@ -24,7 +24,7 @@ app_win_game_refresh_game_area(
     app->ui.display.game.outer.y = 0;
 
     // Ensure the outer window is below the menubar
-    if (app->settings.video.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME) {
+    if (app->settings.video.menubar_mode == MENUBAR_MODE_PINNED) {
         app->ui.display.game.outer.y += app->ui.menubar.size.y * app->ui.menubar.visibility;
     }
 

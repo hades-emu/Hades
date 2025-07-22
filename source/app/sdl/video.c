@@ -69,7 +69,7 @@ app_sdl_video_init(
     // the height of the menubar, unknown at this stage.
     //
     // The size given here is merely a guess as to what the real size will be, hence the magical +19.f for the window's height.
-    app->ui.menubar.size.y = app->settings.video.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME ? 19.f * app->ui.scale : 0.f;
+    app->ui.menubar.size.y = app->settings.video.menubar_mode == MENUBAR_MODE_PINNED ? 19.f * app->ui.scale : 0.f;
     app->ui.display.win.width = GBA_SCREEN_WIDTH * app->settings.video.display_size;
     app->ui.display.win.height = GBA_SCREEN_HEIGHT * app->settings.video.display_size + app->ui.menubar.size.y;
     app_win_game_refresh_game_area(app);
@@ -222,7 +222,7 @@ app_sdl_video_resize_window(
     h = round((float)(GBA_SCREEN_HEIGHT * app->settings.video.display_size) / app->ui.display_scale);
 
     // If relevant, expand the window by the size of the menubar
-    h += app->settings.video.menubar_mode == MENUBAR_MODE_FIXED_ABOVE_GAME ? app->ui.menubar.size.y : 0;
+    h += app->settings.video.menubar_mode == MENUBAR_MODE_PINNED ? app->ui.menubar.size.y : 0;
 
     SDL_SetWindowSize(app->sdl.window, w, h);
 }
