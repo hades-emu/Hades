@@ -39,7 +39,7 @@ It is the third 🥉 software emulator to pass the AGS Aging Cartridge used to t
 
 ## Installation
 
-Follow the instructions on our [officiel website](https://hades-emu.org/download) to download and install Hades the latest release of Hades.
+Follow the instructions on our [official website](https://hades-emu.org/download) to download and install Hades the latest release of Hades.
 
 ## Build
 
