@@ -112,6 +112,10 @@ app_sdl_handle_events(
             case SDL_KEYDOWN:
             case SDL_KEYUP: {
                 struct keyboard_binding bind;
+                bool is_ctrl_mod_key;
+                bool is_alt_mod_key;
+                bool is_shift_mod_key;
+                bool is_mod_key;
                 size_t i;
 
                 // Ignore repeat keys
@@ -119,46 +123,36 @@ app_sdl_handle_events(
                     break;
                 }
 
-                if (
-                       event.key.keysym.sym == SDLK_LCTRL
-                    || event.key.keysym.sym == SDLK_RCTRL
-                    || event.key.keysym.sym == SDLK_LALT
-                    || event.key.keysym.sym == SDLK_RALT
-                    || event.key.keysym.sym == SDLK_LSHIFT
-                    || event.key.keysym.sym == SDLK_RSHIFT
-                ) {
-                    break;
-                }
+                is_ctrl_mod_key = (event.key.keysym.sym == SDLK_LCTRL) || (event.key.keysym.sym == SDLK_RCTRL);
+                is_alt_mod_key = (event.key.keysym.sym == SDLK_LALT) || (event.key.keysym.sym == SDLK_RALT);
+                is_shift_mod_key = (event.key.keysym.sym == SDLK_LSHIFT) || (event.key.keysym.sym == SDLK_RSHIFT);
+                is_mod_key = is_ctrl_mod_key || is_alt_mod_key || is_shift_mod_key;
 
                 bind.key = event.key.keysym.sym;
-                bind.ctrl = event.key.keysym.mod & KMOD_CTRL;
-                bind.alt = event.key.keysym.mod & KMOD_ALT;
-                bind.shift = event.key.keysym.mod & KMOD_SHIFT;
+                bind.ctrl = (event.key.keysym.mod & KMOD_CTRL) && !is_ctrl_mod_key;
+                bind.alt = (event.key.keysym.mod & KMOD_ALT) && !is_alt_mod_key;
+                bind.shift = (event.key.keysym.mod & KMOD_SHIFT) && !is_shift_mod_key;
 
-                /*
-                ** Ignore keys if the settings are open except the special case where we are creating new bindings.
-                */
+                // Ignore keys if the settings are open except the special case where we are creating new bindings.
                 if (app->ui.settings.open) {
-                    if (event.type == SDL_KEYDOWN) {
-                        // The `Escape` key is used to clear a bind.
-                        if (event.key.keysym.sym == SDLK_ESCAPE) {
-                            if (app->ui.settings.keybindings_editor.keyboard_target) {
-                                app->ui.settings.keybindings_editor.keyboard_target->key = SDLK_UNKNOWN;
-                                app->ui.settings.keybindings_editor.keyboard_target->ctrl = false;
-                                app->ui.settings.keybindings_editor.keyboard_target->alt = false;
-                                app->ui.settings.keybindings_editor.keyboard_target->shift = false;
-                                app->ui.settings.keybindings_editor.keyboard_target = NULL;
-                            } else if (app->ui.settings.keybindings_editor.controller_target) {
-                                *app->ui.settings.keybindings_editor.controller_target = SDL_CONTROLLER_BUTTON_INVALID;
-                                app->ui.settings.keybindings_editor.controller_target = NULL;
-                            } else {
-                                app->ui.settings.open = false;
-                            }
-                        } else if (app->ui.settings.keybindings_editor.keyboard_target) {
-                            app_bindings_keyboard_binding_clear(app, &bind);
-                            *app->ui.settings.keybindings_editor.keyboard_target = bind;
+                    // The `Escape` key is used to either close the settings menu or to clear a bind.
+                    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+                        if (app->ui.settings.keybindings_editor.keyboard_target) {
+                            app->ui.settings.keybindings_editor.keyboard_target->key = SDLK_UNKNOWN;
+                            app->ui.settings.keybindings_editor.keyboard_target->ctrl = false;
+                            app->ui.settings.keybindings_editor.keyboard_target->alt = false;
+                            app->ui.settings.keybindings_editor.keyboard_target->shift = false;
                             app->ui.settings.keybindings_editor.keyboard_target = NULL;
+                        } else if (app->ui.settings.keybindings_editor.controller_target) {
+                            *app->ui.settings.keybindings_editor.controller_target = SDL_CONTROLLER_BUTTON_INVALID;
+                            app->ui.settings.keybindings_editor.controller_target = NULL;
+                        } else {
+                            app->ui.settings.open = false;
                         }
+                    } else if (app->ui.settings.keybindings_editor.keyboard_target && ((event.type == SDL_KEYDOWN && !is_mod_key) || (event.type == SDL_KEYUP && is_mod_key))) {
+                        app_bindings_keyboard_binding_clear(app, &bind);
+                        *app->ui.settings.keybindings_editor.keyboard_target = bind;
+                        app->ui.settings.keybindings_editor.keyboard_target = NULL;
                     }
                     break ;
                 }
