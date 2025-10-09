@@ -15,7 +15,7 @@
 
 #include <stdatomic.h>
 #include <GL/glew.h>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <cimgui.h>
 #include "gba/gba.h"
 
@@ -40,13 +40,12 @@ enum menubar_mode {
 };
 
 enum display_mode {
-    DISPLAY_MODE_WINDOWED = 0,
-    DISPLAY_MODE_BORDERLESS = 1,
-    DISPLAY_MODE_FULLSCREEN = 2,
+    DISPLAY_MODE_WINDOW = 0,
+    DISPLAY_MODE_BORDERLESS_FULLSCREEN = 1,
 
     DISPLAY_MODE_LEN,
     DISPLAY_MODE_MIN = 0,
-    DISPLAY_MODE_MAX = 2,
+    DISPLAY_MODE_MAX = 1,
 };
 
 enum texture_filter_kind {
@@ -346,7 +345,7 @@ struct app {
         char const *rom_path;
         char const *bios_path;
         char const *config_path;
-        bool with_gui;
+        bool without_gui;
     } args;
 
     struct {
@@ -382,22 +381,23 @@ struct app {
 
     struct {
         SDL_Window *window;
-        SDL_AudioDeviceID audio_device;
+        uint64_t counters[2];
 
-        // Game controller
+        // Gamepad
         struct {
-            SDL_GameController *ptr;
+            SDL_Gamepad *ptr;
             bool connected;
+            bool can_rumble;
+
             struct {
                 SDL_JoystickID idx;
                 SDL_Joystick *ptr;
-                bool can_rumble;
                 bool up;
                 bool down;
                 bool right;
                 bool left;
             } joystick;
-        } controller;
+        } gamepad;
     } sdl;
 
     struct {
@@ -432,35 +432,26 @@ struct app {
             char *mtime;
             bool exist;
         } qsaves[MAX_QUICKSAVES];
-
-        // Set to true if both the `mtime` and `exist` field of `qsaves` needs to be refreshed.
-        bool flush_qsaves_cache;
     } file;
 
     struct {
+        SDL_AudioStream *stream;
+        int16_t buffer[4096];
         uint32_t resample_frequency;
     } audio;
 
     struct {
         // ImGui internal stuff
-        struct ImGuiIO *ioptr;
+        ImGuiIO *ioptr;
 
-        struct {
-            struct ImFont *normal;
-            struct ImFont *big;
-        } fonts;
-
-        // Display's metadata
-        float display_dpi;
-        float display_scale;
-        uint32_t display_refresh_rate;
+        // Display's content scale
+        float display_content_scale;
 
         // UI Scale
         // Usually the display scale unless overridden in the settings
         float scale;
 
-        // Set to update the UI scale to match `app.video.scale` at the
-        // end of the frame.
+        // Set to update the UI scale at the end of the frame.
         bool request_scale_update;
 
         // Default style of ImGui.
@@ -529,12 +520,6 @@ struct app {
                 uint32_t width;
                 uint32_t height;
             } win;
-
-            // Timer, in frames, until the window needs to be resized to fit a specific aspect ratio
-            int resize_request_timer;
-
-            // Set to the last time the scale was calculated.
-            uint64_t last_scale_calculation_ms;
         } display;
 
         // The error message to print, if any.
@@ -550,7 +535,7 @@ struct app {
 
             struct {
                 struct keyboard_binding *keyboard_target;
-                SDL_GameControllerButton *controller_target;
+                SDL_GamepadButton *gamepad_target;
             } keybindings_editor;
         } settings;
 
@@ -560,11 +545,18 @@ struct app {
     struct {
         struct keyboard_binding keyboard[BIND_MAX];
         struct keyboard_binding keyboard_alt[BIND_MAX];
-        SDL_GameControllerButton controller[BIND_MAX];
-        SDL_GameControllerButton controller_alt[BIND_MAX];
+        SDL_GamepadButton gamepad[BIND_MAX];
+        SDL_GamepadButton gamepad_alt[BIND_MAX];
     } binds;
 
     struct settings settings;
+
+    struct {
+        pthread_t gba;
+#ifdef WITH_DEBUGGER
+        pthread_t dbg;
+#endif
+    } threads;
 
 #if WITH_DEBUGGER
     struct {
@@ -586,62 +578,27 @@ struct app {
 #endif
 };
 
-/* app/sdl/audio.c */
-void app_sdl_audio_init(struct app *app);
-void app_sdl_audio_cleanup(struct app const *app);
-
-/* app/sdl/event.c */
-void app_sdl_handle_events(struct app *app);
-void app_sdl_set_rumble(struct app *app, bool enable);
-
-/* app/sdl/init.c */
-void app_sdl_init(struct app *app);
-void app_sdl_cleanup(struct app *app);
-
-/* app/sdl/video.c */
-void app_sdl_video_init(struct app *app);
-void app_sdl_video_cleanup(struct app *app);
-void app_sdl_video_render_frame(struct app *app);
-void app_sdl_video_rebuild_pipeline(struct app *app);
-void app_sdl_video_resize_window(struct app *app);
-void app_sdl_video_update_display_mode(struct app *app);
-void app_sdl_video_update_scale(struct app *app);
-float app_sdl_video_calculate_scale(struct app *app);
-
-/* app/shaders/frag-color-correction.c */
+/* shaders/ */
 extern char const *SHADER_FRAG_COLOR_CORRECTION;
-
-/* app/shaders/frag-gameboy.c */
-extern char const *SHADER_FRAG_GAMEBOY;
-
-/* app/shaders/frag-grey-scale.c */
 extern char const *SHADER_FRAG_GREY_SCALE;
-
-/* app/shaders/frag-lcd-grid-with-rgb-stripes.c */
 extern char const *SHADER_FRAG_LCD_GRID_WITH_RGB_STRIPES;
-
-/* app/shaders/frag-lcd-grid.c */
 extern char const *SHADER_FRAG_LCD_GRID;
-
-/* app/shaders/vertex-common.c */
 extern char const *SHADER_VERTEX_COMMON;
 
-/* app/windows/game.c */
+/* windows/ */
 void app_win_game(struct app *app);
 void app_win_game_refresh_game_area(struct app *app);
-
-/* app/windows/menubar.c */
 void app_win_menubar(struct app *app);
-
-/* app/windows/notif.c */
 void app_new_notification(struct app *app, enum app_notification_kind, char const *msg, ...);
 void app_win_notifications(struct app *app);
-
-/* app/windows/settings.c */
 void app_win_settings(struct app *app);
 
 /* args.c */
-void app_args_parse(struct app *app, int argc, char * const argv[]);
+SDL_AppResult app_args_parse(struct app *app, int argc, char * const argv[]);
+
+/* audio.c */
+void app_sdl_audio_init(struct app *app);
+void app_sdl_audio_cleanup(struct app const *app);
 
 /* bindings.c */
 void app_bindings_setup_default(struct app *app);
@@ -649,10 +606,12 @@ void app_bindings_keyboard_binding_build(struct keyboard_binding *, SDL_Keycode 
 void app_bindings_keyboard_binding_clear(struct app *app, struct keyboard_binding const *binding);
 bool app_bindings_keyboard_binding_match(struct keyboard_binding const *, struct keyboard_binding const *);
 char *app_bindings_keyboard_binding_to_str(struct keyboard_binding const *bind);
-void app_bindings_controller_binding_clear(struct app *app, SDL_GameControllerButton btn);
+void app_bindings_gamepad_binding_clear(struct app *app, SDL_GamepadButton btn);
 void app_bindings_process(struct app *app, enum bind_actions bind, bool pressed);
 
 /* config.c */
+void app_config_default_settings(struct app *app);
+void app_config_default_bindings(struct app *app);
 void app_config_load(struct app *app);
 void app_config_save(struct app *app);
 void app_config_push_recent_rom(struct app *app, char const *path);
@@ -668,7 +627,7 @@ void app_emulator_exit(struct app *app);
 void app_emulator_key(struct app *app, enum keys key, bool pressed);
 void app_emulator_settings(struct app *app);
 void app_emulator_export_save_to_path(struct app *app, char const *);
-void app_emulator_update_backup(struct app *app);
+void app_emulator_write_save_to_disk(struct app *app);
 void app_emulator_screenshot(struct app *app);
 void app_emulator_screenshot_path(struct app *app, char const *);
 void app_emulator_quicksave(struct app *app, size_t idx);
@@ -685,9 +644,25 @@ void app_emulator_set_watchpoints_list(struct app *app, struct watchpoint *watch
 
 #endif
 
+/* event.c */
+void app_sdl_handle_events(struct app *app, SDL_Event *event);
+void app_sdl_set_rumble(struct app const *app, bool enable);
+
 /* path.c */
 void app_paths_update(struct app *app);
 char const *app_path_config(struct app const *app);
 char const *app_path_screenshots(struct app const *app);
 char *app_path_backup(struct app const *app, char const *rom);
 void app_path_update_quicksave_paths(struct app *app, char const *rom);
+void app_path_refresh_quicksave_cache(struct app *app);
+
+/* video.c */
+void app_sdl_video_init(struct app *app);
+void app_sdl_video_cleanup(struct app *app);
+void app_sdl_video_render_frame(struct app *app);
+void app_sdl_video_rebuild_pipeline(struct app *app);
+void app_sdl_video_resize_window(struct app *app);
+void app_sdl_video_update_display_mode(struct app *app);
+void app_sdl_video_update_scale(struct app *app);
+float app_sdl_video_calculate_scale(struct app *app);
+void app_sdl_video_update_win_title(struct app const *app);

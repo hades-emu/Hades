@@ -15,9 +15,6 @@ AppDir:
     version: 1.0.0
     exec: usr/bin/hades
     exec_args: $@
-  runtime:
-    env:
-      GDK_BACKEND: 'x11'
   apt:
     arch:
     - amd64
@@ -35,11 +32,11 @@ AppDir:
     - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security universe
     - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security multiverse
     include:
-    - libsdl2-2.0-0
     - libarchive13
     - libgtk-3-0
     - libgtk-3-common
     - libglew2.2
+    - libpipewire-0.3.0
 
   files:
     include: []

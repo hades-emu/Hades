@@ -11,7 +11,8 @@
 #include <cimgui.h>
 #include <cimgui_impl.h>
 #include <nfd.h>
-#include "SDL_video.h"
+#include <math.h>
+
 #include "hades.h"
 #include "app/app.h"
 #include "gba/gba.h"
@@ -30,10 +31,24 @@ app_sdl_video_init(
     memset(&mode, 0, sizeof(mode));
 
     // Decide which OpenGL version to use
-#if __APPLE__
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    // GL ES 2.0 + GLSL 100 (WebGL 1.0)
+    glsl_version = "#version 100";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(IMGUI_IMPL_OPENGL_ES3)
+    // GL ES 3.0 + GLSL 300 es (WebGL 2.0)
+    glsl_version = "#version 300 es";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(__APPLE__)
     // GL 3.2 Core + GLSL 150
     glsl_version = "#version 150";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
@@ -48,65 +63,46 @@ app_sdl_video_init(
 
     // Prepare OpenGL stuff
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    // Get the display's DPI
-    SDL_GetDisplayDPI(0, &app->ui.display_dpi, NULL, NULL);
+    win_flags = SDL_WINDOW_HIDDEN;
+    win_flags |= SDL_WINDOW_OPENGL;
+    win_flags |= SDL_WINDOW_RESIZABLE;
+    win_flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
-    // Get the display's refresh rate
-    SDL_GetDisplayMode(0, 0, &mode);
-    app->ui.display_refresh_rate = (uint32_t)mode.refresh_rate;
-
-    // Assume a scale of 1 before the window is initialized.
-    // We can't properly retrieve the display's scale before we create the window
-    app->ui.scale = 1;
-
-    // Initialise the window area.
-    //
-    // The window is resized after the first frame to take into account the new scale and
-    // the height of the menubar, unknown at this stage.
-    //
-    // The size given here is merely a guess as to what the real size will be, hence the magical +19.f for the window's height.
-    app->ui.menubar.size.y = app->settings.video.menubar_mode == MENUBAR_MODE_PINNED ? 19.f * app->ui.scale : 0.f;
-    app->ui.display.win.width = GBA_SCREEN_WIDTH * app->settings.video.display_size;
-    app->ui.display.win.height = GBA_SCREEN_HEIGHT * app->settings.video.display_size + app->ui.menubar.size.y;
-    app_win_game_refresh_game_area(app);
-
-    win_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
-
-    switch (app->settings.video.display_mode) {
-        case DISPLAY_MODE_BORDERLESS:       win_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP; break;
-        case DISPLAY_MODE_FULLSCREEN:       win_flags |= SDL_WINDOW_FULLSCREEN; break;
-        default:                            break;
+    if (app->settings.video.display_mode == DISPLAY_MODE_BORDERLESS_FULLSCREEN) {
+        win_flags |= SDL_WINDOW_FULLSCREEN;
     }
 
     // Create the SDL window
-    app->sdl.window = SDL_CreateWindow(
-        "Hades",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        app->ui.display.win.width,
-        app->ui.display.win.height,
-        win_flags
-    );
-
+    // The size is currently arbitrary as we need to know the window's display and its content scale to accurately
+    // calculate the final size.
+    // This also explains why the window is created hidden.
+    app->sdl.window = SDL_CreateWindow("Hades", GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, win_flags );
     if (!app->sdl.window) {
         logln(HS_ERROR, "Failed to create the window: %s", SDL_GetError());
         exit(EXIT_FAILURE);
     }
+
+    // Set initial values for the game and window areas.
+    app->ui.display.win.width = GBA_SCREEN_WIDTH;
+    app->ui.display.win.height = GBA_SCREEN_HEIGHT;
+    app_win_game_refresh_game_area(app);
 
     // Create the OpenGL context
     app->gfx.gl_context = SDL_GL_CreateContext(app->sdl.window);
     SDL_GL_MakeCurrent(app->sdl.window, app->gfx.gl_context);
 
     // Enable VSync
-    SDL_GL_SetSwapInterval(app->settings.video.vsync);
+    SDL_SetRenderVSync(SDL_GetRenderer(app->sdl.window), app->settings.video.vsync ? 1 : SDL_RENDERER_VSYNC_DISABLED);
+
+    // Center the window
+    SDL_SetWindowPosition(app->sdl.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
     // Initialize OpenGL
     err = glewInit();
-
     if (err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY) {
         logln(HS_ERROR, "Failed to initialize OpenGL.");
         exit(EXIT_FAILURE);
@@ -117,23 +113,18 @@ app_sdl_video_init(
     igStyleColorsDark(NULL);
 
     // Set ImGui options
-    app->ui.ioptr = igGetIO();
+    app->ui.ioptr = igGetIO_Nil();
     app->ui.ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     app->ui.ioptr->IniFilename = NULL;
 
-    ImGui_ImplSDL2_InitForOpenGL(app->sdl.window, app->gfx.gl_context);
+    ImGui_ImplSDL3_InitForOpenGL(app->sdl.window, app->gfx.gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Copy the default style so we can easily rescale ImGui to something different
     memcpy(&app->ui.default_style, igGetStyle(), sizeof(*igGetStyle()));
 
-    // Update all scale-related objects, such as the ImGui fonts and style.
-    app->ui.display_scale = app_sdl_video_calculate_scale(app);
-    app->ui.scale = app->settings.video.autodetect_scale ? app->ui.display_scale : app->settings.video.scale;
+    // Update the display scale to match the window's display scale
     app_sdl_video_update_scale(app);
-
-    // Request a resize to ensure the window matches the new scale
-    app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
 
     // Build all the available shaders
     app->gfx.program_color_correction = build_shader_program("color_correction", SHADER_FRAG_COLOR_CORRECTION, SHADER_VERTEX_COMMON);
@@ -171,143 +162,26 @@ app_sdl_video_init(
     // Build the OpenGL pipeline.
     app_sdl_video_rebuild_pipeline(app);
 
-    // Setup the game controller stuff
-    app->sdl.controller.ptr = NULL;
-    app->sdl.controller.connected = false;
-    app->sdl.controller.joystick.idx = -1;
+    // Setup the game gamepad stuff
+    app->sdl.gamepad.ptr = NULL;
+    app->sdl.gamepad.connected = false;
+    app->sdl.gamepad.joystick.idx = -1;
 
     // Setup the Native File Dialog extension
     NFD_Init();
-}
 
-/*
-** Calculate the UI's scale by dividing the window's size in logical points by its size in pixels.
-*/
-float
-app_sdl_video_calculate_scale(
-    struct app *app
-) {
-    // MacOS handles most of the heavy lifting on its own
-#if defined(__APPLE__)
-    return 1.0f;
-#else
-    int screen_w;
-    int pixel_w;
-
-    // Same thing with Wayland, most of the heavy lifting is done by the compositor
-    if (getenv("WAYLAND_DISPLAY")) {
-        return 1.0f;
-    } else {
-        SDL_GetWindowSize(app->sdl.window, &screen_w, NULL);
-        SDL_GL_GetDrawableSize(app->sdl.window, &pixel_w, NULL);
-
-        return ((float)pixel_w / (float)screen_w);
-    }
-#endif
-}
-
-/*
-** Resize the window to match the size choosen in the settings and the monitor's scale.
-*/
-void
-app_sdl_video_resize_window(
-    struct app *app
-) {
-    uint32_t w;
-    uint32_t h;
-
-    // Calculate the desired width and height in **screen coordinates**, not pixels, hence why we
-    // divide by the display's scale.
-    w = round((float)(GBA_SCREEN_WIDTH * app->settings.video.display_size) / app->ui.display_scale);
-    h = round((float)(GBA_SCREEN_HEIGHT * app->settings.video.display_size) / app->ui.display_scale);
-
-    // If relevant, expand the window by the size of the menubar
-    h += app->settings.video.menubar_mode == MENUBAR_MODE_PINNED ? app->ui.menubar.size.y : 0;
-
-    SDL_SetWindowSize(app->sdl.window, w, h);
-}
-
-/*
-** Update the UI scale (and everything that depends on it).
-**
-** Currently this includes the ImGui fonts and style.
-*/
-void
-app_sdl_video_update_scale(
-    struct app *app
-) {
-    ImFontConfig *cfg;
-    struct ImGuiStyle *style;
-
-    ImFontAtlas_Clear(app->ui.ioptr->Fonts);
-
-    cfg = ImFontConfig_ImFontConfig();
-    cfg->SizePixels = round(13.f * app->ui.scale);
-    cfg->GlyphOffset.y = round(13.f * app->ui.scale);
-    cfg->RasterizerDensity = round(app->ui.scale * 2.f);
-    app->ui.fonts.normal = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
-
-    cfg = ImFontConfig_ImFontConfig();
-    cfg->SizePixels = round(13.f * app->ui.scale * 3.);
-    cfg->GlyphOffset.y =  round(13.f * app->ui.scale * 3.);
-    cfg->RasterizerDensity = round(app->ui.scale * 2.f);
-    app->ui.fonts.big = ImFontAtlas_AddFontDefault(app->ui.ioptr->Fonts, cfg);
-
-    ImFontAtlas_Build(app->ui.ioptr->Fonts);
-    ImGui_ImplOpenGL3_DestroyDeviceObjects();
-
-    style = igGetStyle();
-
-    // Restore default style size
-    style->WindowPadding = app->ui.default_style.WindowPadding;
-    style->WindowRounding = app->ui.default_style.WindowRounding;
-    style->WindowMinSize = app->ui.default_style.WindowMinSize;
-    style->ChildRounding = app->ui.default_style.ChildRounding;
-    style->PopupRounding = app->ui.default_style.PopupRounding;
-    style->FramePadding = app->ui.default_style.FramePadding;
-    style->FrameRounding = app->ui.default_style.FrameRounding;
-    style->ItemSpacing = app->ui.default_style.ItemSpacing;
-    style->ItemInnerSpacing = app->ui.default_style.ItemInnerSpacing;
-    style->CellPadding = app->ui.default_style.CellPadding;
-    style->TouchExtraPadding = app->ui.default_style.TouchExtraPadding;
-    style->IndentSpacing = app->ui.default_style.IndentSpacing;
-    style->ColumnsMinSpacing = app->ui.default_style.ColumnsMinSpacing;
-    style->ScrollbarSize = app->ui.default_style.ScrollbarSize;
-    style->ScrollbarRounding = app->ui.default_style.ScrollbarRounding;
-    style->GrabMinSize = app->ui.default_style.GrabMinSize;
-    style->GrabRounding = app->ui.default_style.GrabRounding;
-    style->LogSliderDeadzone = app->ui.default_style.LogSliderDeadzone;
-    style->TabRounding = app->ui.default_style.TabRounding;
-    style->TabMinWidthForCloseButton = (style->TabMinWidthForCloseButton != FLT_MAX) ? app->ui.default_style.TabMinWidthForCloseButton : FLT_MAX;
-    style->SeparatorTextPadding = app->ui.default_style.SeparatorTextPadding;
-    style->DisplayWindowPadding = app->ui.default_style.DisplayWindowPadding;
-    style->DisplaySafeAreaPadding = app->ui.default_style.DisplaySafeAreaPadding;
-    style->MouseCursorScale = app->ui.default_style.MouseCursorScale;
-
-    ImGuiStyle_ScaleAllSizes(style, app->ui.scale);
-}
-
-void
-app_sdl_video_update_display_mode(
-    struct app *app
-) {
-    uint32_t win_flags;
-
-    switch (app->settings.video.display_mode) {
-        case DISPLAY_MODE_FULLSCREEN:           win_flags = SDL_WINDOW_FULLSCREEN; break;
-        case DISPLAY_MODE_BORDERLESS:           win_flags = SDL_WINDOW_FULLSCREEN_DESKTOP; break;
-        case DISPLAY_MODE_WINDOWED: {
-            win_flags = 0;
-            app->ui.display.resize_request_timer = true;
-            break;
-        };
-        default: {
-            panic(HS_INFO, "Invalid display mode %u", app->settings.video.display_mode);
-            break;
-        }
+    // Now that initialization is finished, we can render a fake, invisible frame.
+    // This will be used to have an accurate size for the menubar if it's pinned.
+    if (app->settings.video.menubar_mode == MENUBAR_MODE_PINNED) {
+        app_sdl_video_render_frame(app);
     }
 
-    SDL_SetWindowFullscreen(app->sdl.window, win_flags);
+    // We can now resize the window as we now have all the information needed to compute its correct and final size.
+    app_sdl_video_resize_window(app);
+
+    // And finally we show the window
+    SDL_ShowWindow(app->sdl.window);
+    SDL_SyncWindow(app->sdl.window);
 }
 
 void
@@ -528,7 +402,7 @@ app_sdl_video_cleanup(
 
     // Shutdown ImGui
     ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
     igDestroyContext(NULL);
 
     // Cleanup OpenGL
@@ -542,9 +416,9 @@ app_sdl_video_cleanup(
     glDeleteTextures(1, &app->gfx.game_texture);
     glDeleteTextures(1, &app->gfx.pixel_color_texture);
     glDeleteTextures(1, &app->gfx.pixel_scaling_texture);
-    SDL_GL_DeleteContext(app->gfx.gl_context);
+    SDL_GL_DestroyContext(app->gfx.gl_context);
 
-    // Close the Wingowd
+    // Close the Window
     SDL_DestroyWindow(app->sdl.window);
 }
 
@@ -554,7 +428,7 @@ app_sdl_video_render_frame(
 ) {
     /* Create the new frame */
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
     igNewFrame();
 
     /* Render the ImGui stuff */
@@ -588,4 +462,84 @@ app_sdl_video_render_frame(
     ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
     SDL_GL_SwapWindow(app->sdl.window);
+}
+
+/*
+** Resize the window to match the size chosen in the settings, taking into account the display's content scale.
+*/
+void
+app_sdl_video_resize_window(
+    struct app *app
+) {
+    uint32_t w;
+    uint32_t h;
+
+    // Calculate the desired width and height in **screen coordinates**, not pixels, hence why we
+    // divide by the display's scale.
+    w = round((float)(GBA_SCREEN_WIDTH * app->settings.video.display_size) / app->ui.display_content_scale);
+    h = round((float)(GBA_SCREEN_HEIGHT * app->settings.video.display_size) / app->ui.display_content_scale);
+
+    // If relevant, expand the window by the size of the menubar
+    h += app->settings.video.menubar_mode == MENUBAR_MODE_PINNED ? app->ui.menubar.size.y : 0;
+
+    SDL_SetWindowSize(app->sdl.window, w, h);
+}
+
+/*
+** Update the UI scale (and everything that depends on it).
+**
+** Currently this includes the ImGui fonts and style.
+**
+** https://wiki.libsdl.org/SDL3/README-highdpi
+*/
+void
+app_sdl_video_update_scale(
+    struct app *app
+) {
+    ImGuiStyle *style;
+
+    style = igGetStyle();
+
+    // Retrieve the content scale
+    // This function being called when the window's display is changed, we have to refresh the cached value.
+    app->ui.display_content_scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(app->sdl.window));
+    app->ui.scale = app->settings.video.autodetect_scale ? app->ui.display_content_scale : app->settings.video.scale;
+
+    // Restore the default style
+    memcpy(style, &app->ui.default_style, sizeof(struct ImGuiStyle));
+
+    // Scale the style
+    ImGuiStyle_ScaleAllSizes(style, app->ui.scale);
+    style->FontScaleDpi = app->ui.scale;
+}
+
+void
+app_sdl_video_update_display_mode(
+    struct app *app
+) {
+    switch (app->settings.video.display_mode) {
+        case DISPLAY_MODE_BORDERLESS_FULLSCREEN: {
+            SDL_SetWindowFullscreen(app->sdl.window, true);
+            break;
+        };
+        case DISPLAY_MODE_WINDOW: {
+            SDL_SetWindowFullscreen(app->sdl.window, false);
+            app_sdl_video_resize_window(app);
+            break;
+        };
+        default: {
+            panic(HS_INFO, "Invalid display mode %u", app->settings.video.display_mode);
+        };
+    }
+}
+
+void
+app_sdl_video_update_win_title(
+    struct app const *app
+) {
+    if (app->emulation.is_started && app->emulation.game_entry && app->emulation.game_entry->title) {
+        SDL_SetWindowTitle(app->sdl.window, app->emulation.game_entry->title);
+    } else {
+        SDL_SetWindowTitle(app->sdl.window, "Hades");
+    }
 }

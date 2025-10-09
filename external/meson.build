@@ -14,7 +14,7 @@
 cflags += [
     '-DIMGUI_IMPL_API=extern "C"  ',
     '-DCIMGUI_USE_OPENGL3',
-    '-DCIMGUI_USE_SDL2',
+    '-DCIMGUI_USE_SDL3',
 ]
 
 imgui_inc = include_directories(
@@ -24,7 +24,7 @@ imgui_inc = include_directories(
 )
 
 imgui_dep = [
-    dependency('sdl2', version: '>=2', required: true, static: static_dependencies or get_option('static_sdl2')),
+    dependency('sdl3', version: '>=3', required: true, static: static_dependencies or get_option('static_sdl3')),
     dependency('glew', required: true, static: static_dependencies or get_option('static_glew')),
 ]
 
@@ -59,7 +59,7 @@ imgui = static_library(
     'cimgui/imgui/imgui_tables.cpp',
     'cimgui/imgui/imgui_widgets.cpp',
     'cimgui/imgui/backends/imgui_impl_opengl3.cpp',
-    'cimgui/imgui/backends/imgui_impl_sdl2.cpp',
+    'cimgui/imgui/backends/imgui_impl_sdl3.cpp',
     include_directories: imgui_inc,
     dependencies: imgui_dep,
     c_args: cflags,

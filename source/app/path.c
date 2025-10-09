@@ -245,5 +245,18 @@ app_path_update_quicksave_paths(
         );
     }
 
-    app->file.flush_qsaves_cache = true;
+    app_path_refresh_quicksave_cache(app);
+}
+
+void
+app_path_refresh_quicksave_cache(
+    struct app *app
+) {
+    size_t i;
+
+    for (i = 0; i < MAX_QUICKSAVES; ++i) {
+        free(app->file.qsaves[i].mtime);
+        app->file.qsaves[i].exist = hs_fexists(app->file.qsaves[i].path);
+        app->file.qsaves[i].mtime = hs_fmtime(app->file.qsaves[i].path);
+    }
 }

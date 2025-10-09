@@ -13,6 +13,7 @@
 #include <cimgui.h>
 #include <nfd.h>
 #include <stdio.h>
+#include <math.h>
 #include "hades.h"
 #include "app/app.h"
 #include "compat.h"
@@ -173,8 +174,6 @@ app_win_menubar_emulation(
         igSeparator();
 
         if (igBeginMenu("Quick Save", app->emulation.is_started)) {
-            size_t i;
-
             for (i = 0; i < MAX_QUICKSAVES; ++i) {
                 char *text;
 
@@ -197,8 +196,6 @@ app_win_menubar_emulation(
         }
 
         if (igBeginMenu("Quick Load", app->emulation.is_started)) {
-            size_t i;
-
             for (i = 0; i < MAX_QUICKSAVES; ++i) {
                 char *text;
 
@@ -321,12 +318,12 @@ app_win_menubar_video(
                 if (igMenuItem_Bool(
                     display_sizes[x - 1],
                     NULL,
-                       app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * x / app->ui.display_scale)
-                    && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * x / app->ui.display_scale),
+                       app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * x / app->ui.display_content_scale)
+                    && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * x / app->ui.display_content_scale),
                     true
                 )) {
                     app->settings.video.display_size = x;
-                    app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
+                    app_sdl_video_resize_window(app);
                 }
             }
 
@@ -425,7 +422,7 @@ app_win_menubar_audio(
 static
 void
 app_win_menubar_help(
-    struct app *app
+    struct app const *app
 ) {
     bool open_about;
 
