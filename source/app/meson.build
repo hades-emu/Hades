@@ -13,10 +13,6 @@ libapp_extra_cflags = [
 libapp_extra_deps = []
 
 libapp_sources = [
-    'sdl/audio.c',
-    'sdl/event.c',
-    'sdl/init.c',
-    'sdl/video.c',
     'shaders/frag-color-correction.c',
     'shaders/frag-grey-scale.c',
     'shaders/frag-lcd-grid-with-rgb-stripes.c',
@@ -24,14 +20,17 @@ libapp_sources = [
     'shaders/vertex-common.c',
     'windows/game.c',
     'windows/menubar.c',
-    'windows/notif.c',
+    'windows/notification.c',
     'windows/settings.c',
     'args.c',
+    'audio.c',
+    'bindings.c',
     'config.c',
     'emulator.c',
-    'bindings.c',
+    'event.c',
     'main.c',
     'path.c',
+    'video.c',
 ]
 
 libapp_dbg_sources = [

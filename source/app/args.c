@@ -44,7 +44,7 @@ print_usage(
 /*
 ** Parse the given command line arguments.
 */
-void
+SDL_AppResult
 app_args_parse(
     struct app *app,
     int argc,
@@ -97,13 +97,11 @@ app_args_parse(
                 switch (option_index) {
                     case CLI_HELP: { // --help
                         print_usage(stdout, name);
-                        exit(EXIT_SUCCESS);
-                        break;
+                        return SDL_APP_SUCCESS;
                     };
                     case CLI_VERSION: { // --version
                         printf("Hades v" HADES_VERSION "\n");
-                        exit(EXIT_SUCCESS);
-                        break;
+                        return SDL_APP_SUCCESS;
                     };
                     case CLI_BIOS: { // --bios
                         app->args.bios_path = optarg;
@@ -126,7 +124,7 @@ app_args_parse(
                                 break;
                             } else {
                                 print_usage(stderr, name);
-                                exit(EXIT_FAILURE);
+                                return SDL_APP_FAILURE;
                             }
                         } else {
                             color = 0;
@@ -134,13 +132,12 @@ app_args_parse(
                         break;
                     };
                     case CLI_WITHOUT_GUI: {
-                        app->args.with_gui = false;
+                        app->args.without_gui = true;
                         break;
                     };
                     default: {
                         print_usage(stderr, name);
-                        exit(EXIT_FAILURE);
-                        break;
+                        return SDL_APP_FAILURE;
                     };
                 }
                 break;
@@ -155,18 +152,15 @@ app_args_parse(
             };
             case 'h': {
                 print_usage(stdout, name);
-                exit(EXIT_SUCCESS);
-                break;
+                return SDL_APP_SUCCESS;
             };
             case 'v': {
                 printf("Hades v" HADES_VERSION "\n");
-                exit(EXIT_SUCCESS);
-                break;
+                return SDL_APP_SUCCESS;
             };
             default: {
                 print_usage(stderr, name);
-                exit(EXIT_FAILURE);
-                break;
+                return SDL_APP_FAILURE;
             };
         }
     }
@@ -181,7 +175,7 @@ app_args_parse(
         };
         default: {
             print_usage(stderr, name);
-            exit(EXIT_FAILURE);
+            return SDL_APP_FAILURE;
         };
     }
 
@@ -195,4 +189,6 @@ app_args_parse(
             disable_colors();
             break;
     }
+
+    return SDL_APP_CONTINUE;
 }

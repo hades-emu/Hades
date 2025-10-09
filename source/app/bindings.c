@@ -9,79 +9,97 @@
 
 #define _GNU_SOURCE
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <cimgui.h>
-#include <cimgui_impl.h>
-#include "SDL_keycode.h"
 #include "app/app.h"
 
-void
-app_bindings_setup_default(
-    struct app *app
-) {
-    size_t i;
+char const * const binds_pretty_name[] = {
+    [BIND_GBA_A] = "A",
+    [BIND_GBA_B] = "B",
+    [BIND_GBA_L] = "L",
+    [BIND_GBA_R] = "R",
+    [BIND_GBA_UP] = "Up",
+    [BIND_GBA_DOWN] = "Down",
+    [BIND_GBA_LEFT] = "Left",
+    [BIND_GBA_RIGHT] = "Right",
+    [BIND_GBA_START] = "Start",
+    [BIND_GBA_SELECT] = "Select",
 
-    for (i = BIND_MIN; i < BIND_MAX; ++i) {
-        app_bindings_keyboard_binding_build(&app->binds.keyboard[i], SDLK_UNKNOWN, false, false, false);
-        app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[i], SDLK_UNKNOWN, false, false, false);
-    }
+    [BIND_EMULATOR_RESET] = "Reset",
+    [BIND_EMULATOR_MUTE] = "Mute",
+    [BIND_EMULATOR_PAUSE] = "Pause",
+    [BIND_EMULATOR_STOP] = "Stop",
+    [BIND_EMULATOR_SHOW_FPS] = "Toggle FPS",
+    [BIND_EMULATOR_FULLSCREEN] = "Toggle Fullscreen",
+    [BIND_EMULATOR_SCREENSHOT] = "Screenshot",
+    [BIND_EMULATOR_SETTINGS] = "Toggle Settings",
+    [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "Alt. Speed (Toggle)",
+    [BIND_EMULATOR_ALT_SPEED_HOLD] = "Alt. Speed (Hold)",
+    [BIND_EMULATOR_QUICKSAVE_1] = "Quicksave 1",
+    [BIND_EMULATOR_QUICKSAVE_2] = "Quicksave 2",
+    [BIND_EMULATOR_QUICKSAVE_3] = "Quicksave 3",
+    [BIND_EMULATOR_QUICKSAVE_4] = "Quicksave 4",
+    [BIND_EMULATOR_QUICKSAVE_5] = "Quicksave 5",
+    [BIND_EMULATOR_QUICKSAVE_6] = "Quicksave 6",
+    [BIND_EMULATOR_QUICKSAVE_7] = "Quicksave 7",
+    [BIND_EMULATOR_QUICKSAVE_8] = "Quicksave 8",
+    [BIND_EMULATOR_QUICKSAVE_9] = "Quicksave 9",
+    [BIND_EMULATOR_QUICKSAVE_10] = "Quicksave 10",
+    [BIND_EMULATOR_QUICKLOAD_1] = "Quickload 1",
+    [BIND_EMULATOR_QUICKLOAD_2] = "Quickload 2",
+    [BIND_EMULATOR_QUICKLOAD_3] = "Quickload 3",
+    [BIND_EMULATOR_QUICKLOAD_4] = "Quickload 4",
+    [BIND_EMULATOR_QUICKLOAD_5] = "Quickload 5",
+    [BIND_EMULATOR_QUICKLOAD_6] = "Quickload 6",
+    [BIND_EMULATOR_QUICKLOAD_7] = "Quickload 7",
+    [BIND_EMULATOR_QUICKLOAD_8] = "Quickload 8",
+    [BIND_EMULATOR_QUICKLOAD_9] = "Quickload 9",
+    [BIND_EMULATOR_QUICKLOAD_10] = "Quickload 10",
+};
 
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_A], SDL_GetKeyFromName("P"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_B], SDL_GetKeyFromName("L"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_L], SDL_GetKeyFromName("E"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_R], SDL_GetKeyFromName("O"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_UP], SDL_GetKeyFromName("W"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_DOWN], SDL_GetKeyFromName("S"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_LEFT], SDL_GetKeyFromName("A"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_RIGHT], SDL_GetKeyFromName("D"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_START], SDL_GetKeyFromName("Return"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_SELECT], SDL_GetKeyFromName("Backspace"), false, false, false);
+char const * const binds_slug[] = {
+    [BIND_GBA_A] = "a",
+    [BIND_GBA_B] = "b",
+    [BIND_GBA_L] = "l",
+    [BIND_GBA_R] = "r",
+    [BIND_GBA_UP] = "up",
+    [BIND_GBA_DOWN] = "down",
+    [BIND_GBA_LEFT] = "left",
+    [BIND_GBA_RIGHT] = "right",
+    [BIND_GBA_START] = "start",
+    [BIND_GBA_SELECT] = "select",
 
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_RESET], SDL_GetKeyFromName("R"), true, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_MUTE], SDL_GetKeyFromName("M"), true, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_PAUSE], SDL_GetKeyFromName("P"), true, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_STOP], SDL_GetKeyFromName("Q"), true, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SHOW_FPS], SDL_GetKeyFromName("F"), true, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SETTINGS], SDL_GetKeyFromName("Escape"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_FULLSCREEN], SDL_GetKeyFromName("F11"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT], SDL_GetKeyFromName("F12"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_HOLD], SDL_GetKeyFromName("Space"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_TOGGLE], SDL_GetKeyFromName("Space"), true, false, false);
-
-    for (i = 0; i < MAX_QUICKSAVES && i < 10; ++i) {
-        app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_QUICKSAVE_1 + i], SDL_GetKeyFromName("F1") + i, false, false, false);
-        app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_QUICKLOAD_1 + i], SDL_GetKeyFromName("F1") + i, false, true, false);
-    }
-
-    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_UP], SDL_GetKeyFromName("Up"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_DOWN], SDL_GetKeyFromName("Down"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_LEFT], SDL_GetKeyFromName("Left"), false, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_RIGHT], SDL_GetKeyFromName("Right"), false, false, false);
-
-    for (i = BIND_MIN; i < BIND_MAX; ++i) {
-        app->binds.controller[i] = SDL_CONTROLLER_BUTTON_INVALID;
-        app->binds.controller_alt[i] = SDL_CONTROLLER_BUTTON_INVALID;
-    }
-
-    app->binds.controller[BIND_GBA_A] = SDL_CONTROLLER_BUTTON_A;
-    app->binds.controller[BIND_GBA_B] = SDL_CONTROLLER_BUTTON_B;
-    app->binds.controller[BIND_GBA_L] = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
-    app->binds.controller[BIND_GBA_R] = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
-    app->binds.controller[BIND_GBA_UP] = SDL_CONTROLLER_BUTTON_DPAD_UP;
-    app->binds.controller[BIND_GBA_DOWN] = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
-    app->binds.controller[BIND_GBA_LEFT] = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
-    app->binds.controller[BIND_GBA_RIGHT] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
-    app->binds.controller[BIND_GBA_START] = SDL_CONTROLLER_BUTTON_START;
-    app->binds.controller[BIND_GBA_SELECT] = SDL_CONTROLLER_BUTTON_BACK;
-    app->binds.controller[BIND_EMULATOR_SCREENSHOT] = SDL_CONTROLLER_BUTTON_GUIDE;
-    app->binds.controller[BIND_EMULATOR_ALT_SPEED_TOGGLE] = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
-#if SDL_VERSION_ATLEAST(2, 0, 14)
-    app->binds.controller[BIND_EMULATOR_ALT_SPEED_HOLD] = SDL_CONTROLLER_BUTTON_TOUCHPAD;
-#endif
-
-    app->binds.controller_alt[BIND_GBA_A] = SDL_CONTROLLER_BUTTON_Y;
-    app->binds.controller_alt[BIND_GBA_B] = SDL_CONTROLLER_BUTTON_X;
-}
+    [BIND_EMULATOR_RESET] = "reset",
+    [BIND_EMULATOR_MUTE] = "mute",
+    [BIND_EMULATOR_PAUSE] = "pause",
+    [BIND_EMULATOR_STOP] = "stop",
+    [BIND_EMULATOR_SHOW_FPS] = "toggle_show_fps",
+    [BIND_EMULATOR_FULLSCREEN] = "fullscreen",
+    [BIND_EMULATOR_SCREENSHOT] = "screenshot",
+    [BIND_EMULATOR_SETTINGS] = "toggle_settings",
+    [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "alternative_speed_toggle",
+    [BIND_EMULATOR_ALT_SPEED_HOLD] = "alternative_speed_hold",
+    [BIND_EMULATOR_QUICKSAVE_1] = "quicksave_1",
+    [BIND_EMULATOR_QUICKSAVE_2] = "quicksave_2",
+    [BIND_EMULATOR_QUICKSAVE_3] = "quicksave_3",
+    [BIND_EMULATOR_QUICKSAVE_4] = "quicksave_4",
+    [BIND_EMULATOR_QUICKSAVE_5] = "quicksave_5",
+    [BIND_EMULATOR_QUICKSAVE_6] = "quicksave_6",
+    [BIND_EMULATOR_QUICKSAVE_7] = "quicksave_7",
+    [BIND_EMULATOR_QUICKSAVE_8] = "quicksave_8",
+    [BIND_EMULATOR_QUICKSAVE_9] = "quicksave_9",
+    [BIND_EMULATOR_QUICKSAVE_10] = "quicksave_10",
+    [BIND_EMULATOR_QUICKLOAD_1] = "quickload_1",
+    [BIND_EMULATOR_QUICKLOAD_2] = "quickload_2",
+    [BIND_EMULATOR_QUICKLOAD_3] = "quickload_3",
+    [BIND_EMULATOR_QUICKLOAD_4] = "quickload_4",
+    [BIND_EMULATOR_QUICKLOAD_5] = "quickload_5",
+    [BIND_EMULATOR_QUICKLOAD_6] = "quickload_6",
+    [BIND_EMULATOR_QUICKLOAD_7] = "quickload_7",
+    [BIND_EMULATOR_QUICKLOAD_8] = "quickload_8",
+    [BIND_EMULATOR_QUICKLOAD_9] = "quickload_9",
+    [BIND_EMULATOR_QUICKLOAD_10] = "quickload_10",
+};
 
 /*
 ** Setup the content of `bind` to match when `key` is pressed with the given modifiers.
@@ -164,22 +182,22 @@ app_bindings_keyboard_binding_clear(
 }
 
 /*
-** Clear any existing controller bindings matching the one given in argument.
+** Clear any existing gamepad bindings matching the one given in argument.
 */
 void
-app_bindings_controller_binding_clear(
+app_bindings_gamepad_binding_clear(
     struct app *app,
-    SDL_GameControllerButton btn
+    SDL_GamepadButton btn
 ) {
     size_t i;
 
     for (i = BIND_MIN; i < BIND_MAX; ++i) {
-        if (app->binds.controller[i] == btn) {
-            app->binds.controller[i] = SDL_CONTROLLER_BUTTON_INVALID;
+        if (app->binds.gamepad[i] == btn) {
+            app->binds.gamepad[i] = SDL_GAMEPAD_BUTTON_INVALID;
         }
 
-        if (app->binds.controller_alt[i] == btn) {
-            app->binds.controller_alt[i] = SDL_CONTROLLER_BUTTON_INVALID;
+        if (app->binds.gamepad_alt[i] == btn) {
+            app->binds.gamepad_alt[i] = SDL_GAMEPAD_BUTTON_INVALID;
         }
     }
 }
@@ -222,7 +240,7 @@ app_bindings_process(
         case BIND_EMULATOR_MUTE:                app->settings.audio.mute ^= true; break;
         case BIND_EMULATOR_SHOW_FPS:            app->settings.general.show_fps ^= true; break;
         case BIND_EMULATOR_FULLSCREEN: {
-            app->settings.video.display_mode = app->settings.video.display_mode == DISPLAY_MODE_WINDOWED ? DISPLAY_MODE_BORDERLESS : DISPLAY_MODE_WINDOWED;
+            app->settings.video.display_mode = app->settings.video.display_mode == DISPLAY_MODE_WINDOW ? DISPLAY_MODE_BORDERLESS_FULLSCREEN : DISPLAY_MODE_WINDOW;
             app_sdl_video_update_display_mode(app);
             break;
         };

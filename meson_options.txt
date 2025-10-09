@@ -2,5 +2,5 @@ option('with_debugger', type: 'boolean', value: false, description: 'Build hades
 option('static_executable', type: 'boolean', value: false, description: 'Build hades as a static executable.')
 option('static_dependencies', type: 'boolean', value: false, description: 'Similar to `static_executable\' but only link the external dependencies and not the system ones.')
 option('static_glew', type: 'boolean', value: false, description: 'Link statically against glew.')
-option('static_sdl2', type: 'boolean', value: false, description: 'Link statically against sdl2.')
+option('static_sdl3', type: 'boolean', value: false, description: 'Link statically against sdl3.')
 option('static_libarchive', type: 'boolean', value: false, description: 'Link statically against libarchive.')

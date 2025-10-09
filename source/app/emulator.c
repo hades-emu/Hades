@@ -91,7 +91,8 @@ qsave_err:
 qsave_finally:
             app->emulation.quicksave_request.enabled = false;
             app->emulation.quicksave_request.idx = 0;
-            app->file.flush_qsaves_cache = true;
+
+            app_path_refresh_quicksave_cache(app);
 
             if (file) {
                 fclose(file);
@@ -573,6 +574,7 @@ app_emulator_import_backup_storage(
 **   - Reset the emulator
 **   - Wait for the reset notification
 **   - Run/Pause the emulator, according to the configuration
+**   - Update the window's title with the new game's name
 **
 ** NOTE: `backup_to_import` can be NULL if there is no backup to import.
 */
@@ -691,6 +693,8 @@ app_emulator_configure_and_run(
 
     app_config_push_recent_rom(app, rom_path);
 
+    app_sdl_video_update_win_title(app);
+
     logln(HS_INFO, "Game successfully loaded.");
 
 #ifdef WITH_DEBUGGER
@@ -737,6 +741,8 @@ app_emulator_stop(
     channel_lock(&app->emulation.gba->channels.messages);
     channel_push(&app->emulation.gba->channels.messages, &event.header);
     channel_release(&app->emulation.gba->channels.messages);
+
+    app_sdl_video_update_win_title(app);
 }
 
 /*
@@ -837,7 +843,7 @@ app_emulator_settings(
 ** Write the content of the backup storage on the disk, only if it's dirty.
 */
 void
-app_emulator_update_backup(
+app_emulator_write_save_to_disk(
     struct app *app
 ) {
     bool dirty;

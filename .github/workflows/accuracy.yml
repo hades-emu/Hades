@@ -43,18 +43,25 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            meson \
             ninja-build \
-            libsdl2-dev \
             libglew-dev \
             libgtk-3-dev \
             libreadline-dev \
             libedit-dev \
             libcapstone-dev \
+            libudev-dev \
+            libpipewire-0.3-dev \
             libarchive-dev
+
+          # Install the latest version of Meson, required to build SDL3
+          pip3 install --user meson
+
+          # Install SDL3's wrap
+          mkdir subprojects
+          ~/.local/bin/meson wrap install sdl3
       - name: Build Hades w/ Debugger
         run: |
-          meson build --werror -Dwith_debugger=true
+          ~/.local/bin/meson setup build --force-fallback-for=sdl3 -Dwith_debugger=true
           ninja -C build
       - name: Check Accuracy
         run: |

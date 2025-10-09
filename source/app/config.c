@@ -13,15 +13,135 @@
 #include "app/app.h"
 #include "compat.h"
 
-static char const *controller_layers_name[] = {
-    "controller",
-    "controller_alt"
+static char const *gamepad_layers_name[] = {
+    "gamepad",
+    "gamepad_alt"
 };
 
 static char const *keyboard_layers_name[] = {
     "keyboard",
     "keyboard_alt",
 };
+
+/*
+** Default value for all options, before config and argument parsing.
+*/
+void
+app_config_default_settings(
+    struct app *app
+) {
+    struct settings *settings;
+
+    settings = &app->settings;
+    settings->general.show_fps = false;
+    settings->general.startup.start_last_played_game = false;
+    settings->general.startup.pause_when_game_resets = false;
+    settings->general.window.pause_game_when_window_loses_focus = false;
+    settings->general.window.hide_cursor_when_mouse_inactive = true;
+    settings->general.window.hide_pause_overlay = false;
+    settings->general.directories.backup.use_dedicated_directory = false;
+    settings->general.directories.backup.path = strdup("saves/");
+    settings->general.directories.quicksave.use_dedicated_directory = false;
+    settings->general.directories.quicksave.path = strdup("saves/");
+    settings->general.directories.screenshot.use_system_directory = true;
+    settings->general.directories.screenshot.path = strdup("screenshots/");
+    settings->emulation.bios_path = strdup("./bios.bin");
+    settings->emulation.skip_bios_intro = false;
+    settings->emulation.speed = 1.0;
+    settings->emulation.alt_speed = -1.0;
+    settings->emulation.backup_storage.autodetect = true;
+    settings->emulation.backup_storage.type = BACKUP_NONE;
+    settings->emulation.gpio_device.autodetect = true;
+    settings->emulation.gpio_device.type = GPIO_NONE;
+    settings->emulation.prefetch_buffer = true;
+    settings->video.enable_oam = true;
+    memset(settings->video.enable_bg_layers, true, sizeof(settings->video.enable_bg_layers));
+    memset(settings->audio.enable_psg_channels, true, sizeof(settings->audio.enable_psg_channels));
+    memset(settings->audio.enable_fifo_channels, true, sizeof(settings->audio.enable_fifo_channels));
+    settings->video.menubar_mode = MENUBAR_MODE_PINNED;
+    settings->video.display_mode = DISPLAY_MODE_WINDOW;
+    settings->video.display_size = 3;
+    settings->video.autodetect_scale = true;
+    settings->video.scale = 1.0f;
+    settings->video.aspect_ratio = ASPECT_RATIO_BORDERS;
+    settings->video.vsync = false;
+    settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
+    settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
+    settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
+    settings->audio.mute = false;
+    settings->audio.level = 1.0f;
+}
+
+/*
+** Default value for all options, before config and argument parsing.
+*/
+void
+app_config_default_bindings(
+    struct app *app
+) {
+    size_t i;
+
+    for (i = BIND_MIN; i < BIND_MAX; ++i) {
+        app_bindings_keyboard_binding_build(&app->binds.keyboard[i], SDLK_UNKNOWN, false, false, false);
+        app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[i], SDLK_UNKNOWN, false, false, false);
+    }
+
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_A], SDL_GetKeyFromName("P"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_B], SDL_GetKeyFromName("L"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_L], SDL_GetKeyFromName("E"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_R], SDL_GetKeyFromName("O"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_UP], SDL_GetKeyFromName("W"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_DOWN], SDL_GetKeyFromName("S"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_LEFT], SDL_GetKeyFromName("A"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_RIGHT], SDL_GetKeyFromName("D"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_START], SDL_GetKeyFromName("Return"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_GBA_SELECT], SDL_GetKeyFromName("Backspace"), false, false, false);
+
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_RESET], SDL_GetKeyFromName("R"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_MUTE], SDL_GetKeyFromName("M"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_PAUSE], SDL_GetKeyFromName("P"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_STOP], SDL_GetKeyFromName("Q"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SHOW_FPS], SDL_GetKeyFromName("F"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SETTINGS], SDL_GetKeyFromName("Escape"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_FULLSCREEN], SDL_GetKeyFromName("F11"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT], SDL_GetKeyFromName("F12"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_HOLD], SDL_GetKeyFromName("Space"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_ALT_SPEED_TOGGLE], SDL_GetKeyFromName("Space"), true, false, false);
+
+    for (i = 0; i < MAX_QUICKSAVES && i < 10; ++i) {
+        app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_QUICKSAVE_1 + i], SDL_GetKeyFromName("F1") + i, false, false, false);
+        app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_QUICKLOAD_1 + i], SDL_GetKeyFromName("F1") + i, false, true, false);
+    }
+
+    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_UP], SDL_GetKeyFromName("Up"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_DOWN], SDL_GetKeyFromName("Down"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_LEFT], SDL_GetKeyFromName("Left"), false, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard_alt[BIND_GBA_RIGHT], SDL_GetKeyFromName("Right"), false, false, false);
+
+    for (i = BIND_MIN; i < BIND_MAX; ++i) {
+        app->binds.gamepad[i] = SDL_GAMEPAD_BUTTON_INVALID;
+        app->binds.gamepad_alt[i] = SDL_GAMEPAD_BUTTON_INVALID;
+    }
+
+    app->binds.gamepad[BIND_GBA_A] = SDL_GAMEPAD_BUTTON_SOUTH;
+    app->binds.gamepad[BIND_GBA_B] = SDL_GAMEPAD_BUTTON_EAST;
+    app->binds.gamepad[BIND_GBA_L] = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER;
+    app->binds.gamepad[BIND_GBA_R] = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER;
+    app->binds.gamepad[BIND_GBA_UP] = SDL_GAMEPAD_BUTTON_DPAD_UP;
+    app->binds.gamepad[BIND_GBA_DOWN] = SDL_GAMEPAD_BUTTON_DPAD_DOWN;
+    app->binds.gamepad[BIND_GBA_LEFT] = SDL_GAMEPAD_BUTTON_DPAD_LEFT;
+    app->binds.gamepad[BIND_GBA_RIGHT] = SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
+    app->binds.gamepad[BIND_GBA_START] = SDL_GAMEPAD_BUTTON_START;
+    app->binds.gamepad[BIND_GBA_SELECT] = SDL_GAMEPAD_BUTTON_BACK;
+    app->binds.gamepad[BIND_EMULATOR_SCREENSHOT] = SDL_GAMEPAD_BUTTON_GUIDE;
+    app->binds.gamepad[BIND_EMULATOR_ALT_SPEED_TOGGLE] = SDL_GAMEPAD_BUTTON_RIGHT_STICK;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    app->binds.gamepad[BIND_EMULATOR_ALT_SPEED_HOLD] = SDL_GAMEPAD_BUTTON_TOUCHPAD;
+#endif
+
+    app->binds.gamepad_alt[BIND_GBA_A] = SDL_GAMEPAD_BUTTON_NORTH;
+    app->binds.gamepad_alt[BIND_GBA_B] = SDL_GAMEPAD_BUTTON_WEST;
+}
 
 void
 app_config_load(
@@ -263,9 +383,9 @@ app_config_load(
             app->binds.keyboard_alt,
         };
 
-        SDL_GameControllerButton *controller_layers[] = {
-            app->binds.controller,
-            app->binds.controller_alt,
+        SDL_GamepadButton *gamepad_layers[] = {
+            app->binds.gamepad,
+            app->binds.gamepad_alt,
         };
 
         for (layer = 0; layer < array_length(keyboard_layers_name); ++layer) {
@@ -310,25 +430,25 @@ app_config_load(
             }
         }
 
-        for (layer = 0; layer < array_length(controller_layers_name); ++layer) {
+        for (layer = 0; layer < array_length(gamepad_layers_name); ++layer) {
             for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
-                SDL_GameControllerButton button;
+                SDL_GamepadButton button;
 
-                snprintf(path, sizeof(path), "$.binds.%s.%s", controller_layers_name[layer], binds_slug[bind]);
+                snprintf(path, sizeof(path), "$.binds.%s.%s", gamepad_layers_name[layer], binds_slug[bind]);
 
                 len = mjson_get_string(data, data_len, path, str, sizeof(str));
                 if (len < 0) {
                     continue;
                 }
 
-                button = SDL_GameControllerGetButtonFromString(str);
+                button = SDL_GetGamepadButtonFromString(str);
 
                 // Clear any binding with that button and then set the binding
-                if (button != SDL_CONTROLLER_BUTTON_INVALID) {
-                    app_bindings_controller_binding_clear(app, button);
+                if (button != SDL_GAMEPAD_BUTTON_INVALID) {
+                    app_bindings_gamepad_binding_clear(app, button);
                 }
 
-                controller_layers[layer][bind] = button;
+                gamepad_layers[layer][bind] = button;
             }
         }
     }
@@ -495,9 +615,9 @@ app_config_save(
             app->binds.keyboard_alt,
         };
 
-        SDL_GameControllerButton *controller_layers[] = {
-            app->binds.controller,
-            app->binds.controller_alt,
+        SDL_GamepadButton *gamepad_layers[] = {
+            app->binds.gamepad,
+            app->binds.gamepad_alt,
         };
 
         for (layer = 0; layer < array_length(keyboard_layers_name); ++layer) {
@@ -544,12 +664,12 @@ app_config_save(
             }
         }
 
-        for (layer = 0; layer < array_length(controller_layers_name); ++layer) {
+        for (layer = 0; layer < array_length(gamepad_layers_name); ++layer) {
             for (bind = BIND_MIN; bind < BIND_MAX; ++bind) {
                 char const *button_name;
                 char *tmp_data;
 
-                button_name = SDL_GameControllerGetStringForButton(controller_layers[layer][bind]);
+                button_name = SDL_GetGamepadStringForButton(gamepad_layers[layer][bind]);
 
                 // Build a temporary JSON containing our bind
                 snprintf(
@@ -562,7 +682,7 @@ app_config_save(
                             },
                         },
                     }),
-                    controller_layers_name[layer],
+                    gamepad_layers_name[layer],
                     binds_slug[bind],
                     button_name ?: ""
                 );

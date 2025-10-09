@@ -67,7 +67,7 @@ void
 app_win_game_pause_text(
     struct app const *app
 ) {
-    igPushFont(app->ui.fonts.big);
+    igPushFont(NULL, igGetFontSize() * 3.0);
     {
         char const *text;
         ImVec2 text_size;
@@ -91,6 +91,7 @@ void
 app_win_game(
     struct app *app
 ) {
+    ImTextureRef *out_texture_ref;
     GLuint in_texture;
     GLuint out_texture;
     float tint;
@@ -105,7 +106,6 @@ app_win_game(
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, (uint8_t *)app->emulation.gba->shared_data.framebuffer.data);
     pthread_mutex_unlock(&app->emulation.gba->shared_data.framebuffer.lock);
 
-    in_texture = app->gfx.game_texture;
     out_texture = app->gfx.game_texture;
 
     glBindVertexArray(app->gfx.vao);
@@ -177,14 +177,18 @@ app_win_game(
           | ImGuiWindowFlags_NoBringToFrontOnFocus
     );
 
-    igImage(
-        (void *)(uintptr_t)out_texture,
+    out_texture_ref = ImTextureRef_ImTextureRef_TextureID(out_texture);
+
+    igImageWithBg(
+        *out_texture_ref,
         (ImVec2){.x = app->ui.display.game.inner.width, .y = app->ui.display.game.inner.height},
         (ImVec2){.x = 0, .y = 0},
         (ImVec2){.x = 1, .y = 1},
-        (ImVec4){.x = tint, .y = tint, .z = tint, .w = 1},
-        (ImVec4){.x = 0, .y = 0, .z = 0, .w = 0}
+        (ImVec4){.x = 0, .y = 0, .z = 0, .w = 0},
+        (ImVec4){.x = tint, .y = tint, .z = tint, .w = 1}
     );
+
+    ImTextureRef_destroy(out_texture_ref);
 
     if (!app->emulation.is_running && !app->settings.general.window.hide_pause_overlay) {
         app_win_game_pause_text(app);
