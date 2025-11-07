@@ -441,6 +441,10 @@ app_sdl_video_render_frame(
 
     if (app->ui.settings.open) {
         app_win_settings(app);
+
+        // One day we will set this variable only when a setting is modified, or even better: have a "Apply/Cancel"
+        // button that will save (or not) the settings accordingly; but for now, we will have to do with that :(
+        app->save_config_on_exit = true;
     }
 
     app_win_notifications(app);
