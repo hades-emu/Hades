@@ -287,7 +287,9 @@ SDL_AppQuit(
         app_sdl_audio_cleanup(app);
     }
 
-    app_config_save(app);
+    if (app->save_config_on_exit) {
+        app_config_save(app);
+    }
 
     gba_delete(app->emulation.gba);
     app->emulation.gba = NULL;

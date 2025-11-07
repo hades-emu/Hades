@@ -341,6 +341,8 @@ struct settings {
 struct app {
     atomic_bool run;
 
+    bool save_config_on_exit;
+
     struct args {
         char const *rom_path;
         char const *bios_path;
