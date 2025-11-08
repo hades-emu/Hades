@@ -22,15 +22,11 @@ jobs:
       - name: Install Dependencies
         uses: msys2/setup-msys2@v2
         with:
-          install: make mingw-w64-x86_64-ca-certificates mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-glew mingw-w64-x86_64-libarchive
+          install: make mingw-w64-x86_64-ca-certificates mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-glew mingw-w64-x86_64-libarchive mingw-w64-x86_64-sdl3
       - name: Build Hades
         run: |
-          # Install SDL3's wrap
-          mkdir subprojects
-          meson wrap install sdl3 --allow-insecure
-
           # Setup the Meson project
-          meson setup build --buildtype=release -Dstatic_executable=true --force-fallback-for=sdl3
+          meson setup build --buildtype=release -Dstatic_executable=true
 
           # Build the project
           ninja -C build
@@ -57,9 +53,21 @@ jobs:
           echo "Installing dependencies"
           brew install meson ninja create-dmg glew libarchive
 
-          # Install SDL3's wrap
-          mkdir subprojects
-          meson wrap install sdl3
+      - name: Build the SDL3
+        run: |
+          # Source & Documentation:
+          #
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-macos.md
+
+          # Clone the SDL3
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.2.26
+
+          # Build the SDL3
+          cd sdl
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
+          cmake --build build --config Release -j
+          sudo cmake --install build
 
       - name: Build Hades for arm64
         run: |
@@ -69,6 +77,7 @@ jobs:
           # a directory containing only the static archives (.a), without the .dylib next to them.
           mkdir libs-arm64
           cp /opt/homebrew/lib/*.a ./libs-arm64/
+          cp /usr/local/lib/*.a ./libs-arm64/
 
           export LDFLAGS="-L$(pwd)/libs-arm64/"
 
@@ -76,7 +85,7 @@ jobs:
           mkdir -p /tmp/build/Hades.app
 
           # Setup the Meson project
-          meson setup build --buildtype=release -Dstatic_dependencies=true --force-fallback-for=sdl3 --prefix=/tmp/build/Hades.app --bindir=Contents/MacOS
+          meson setup build --buildtype=release -Dstatic_dependencies=true --prefix=/tmp/build/Hades.app --bindir=Contents/MacOS
 
           # Build & Install the project
           ninja -C build install
@@ -89,9 +98,7 @@ jobs:
 
           echo "Hades Dependencies Check"
           otool -L /tmp/build/Hades.app/Contents/MacOS/hades | grep /opt/homebrew/ && false
-
-          # Remove the library folder created by `ninja install` which contains the SDL3.
-          rm -rf /tmp/build/Hades.app/lib/
+          otool -L /tmp/build/Hades.app/Contents/MacOS/hades | grep /usr/local/ && false
 
           # Set permissions
           chmod +x /tmp/build/Hades.app/Contents/MacOS/hades
@@ -177,6 +184,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            meson \
             ninja-build \
             libfuse2 \
             libglew-dev \
@@ -185,17 +193,35 @@ jobs:
             libudev-dev \
             libpipewire-0.3-dev
 
-          # Install the latest version of Meson, required to build SDL3
-          pip3 install --user meson
+      - name: Build the SDL3
+        run: |
+          # Source & Documentation:
+          #
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md
 
-          # Install SDL3's wrap
-          mkdir subprojects
-          ~/.local/bin/meson wrap install sdl3
+          # Install all SDL3 build dependencies
+          sudo apt-get install build-essential git make \
+            pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+            libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
+            libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
+
+          # Clone the SDL3
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.2.26
+
+          # Build the SDL3
+          cd sdl
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON
+          cmake --build build --config Release -j
+          sudo cmake --install build --prefix /usr/local
 
       - name: Build Hades
         run: |
           # Setup the Meson project
-          ~/.local/bin/meson setup build --buildtype=release --force-fallback-for=sdl3 --prefix=/usr
+          meson setup build --buildtype=release -Dstatic_sdl3=true --prefix=/usr
 
           # Build & Install the project
           DESTDIR=$(pwd)/AppDir ninja -C build install
@@ -209,6 +235,7 @@ jobs:
         uses: AppImageCrafters/build-appimage@master
         with:
           recipe: "./resource/linux/AppImageBuilder.yml"
+
       - name: Test Hades
         run: |
           sudo chown --reference=. *.AppImage
@@ -238,6 +265,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            meson \
             ninja-build \
             libglew-dev \
             libgtk-3-dev \
@@ -245,20 +273,35 @@ jobs:
             libudev-dev \
             libpipewire-0.3-dev
 
-          # Install the latest version of Meson, required to build SDL3
-          pip3 install --user meson
+      - name: Build the SDL3
+        run: |
+          # Source & Documentation:
+          #
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md
 
-          # Install SDL3's wrap
-          mkdir subprojects
-          ~/.local/bin/meson wrap install sdl3
+          # Install all SDL3 build dependencies
+          sudo apt-get install build-essential git make \
+            pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+            libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
+            libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
+
+          # Clone the SDL3
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.2.26
+
+          # Build the SDL3
+          cd sdl
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON
+          cmake --build build --config Release -j
+          sudo cmake --install build --prefix /usr/local
 
       - name: Build Hades
         run: |
-          ~/.local/bin/meson setup build --buildtype=release --force-fallback-for=sdl3 --prefix=/usr
+          meson setup build --buildtype=release -Dstatic_sdl3=true --prefix=/usr
           DESTDIR=$(pwd)/pkg-root ninja -C build install
-
-          # Remove the library folder created by `ninja install` which contains the SDL3.
-          rm -rf "$DESTDIR/pkg-root/usr/lib/"
 
           echo "Content of the package:"
           echo "---- START ----"

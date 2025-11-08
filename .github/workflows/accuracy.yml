@@ -43,6 +43,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            meson \
             ninja-build \
             libglew-dev \
             libgtk-3-dev \
@@ -53,16 +54,36 @@ jobs:
             libpipewire-0.3-dev \
             libarchive-dev
 
-          # Install the latest version of Meson, required to build SDL3
-          pip3 install --user meson
+      - name: Build the SDL3
+        run: |
+          # Source & Documentation:
+          #
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md
 
-          # Install SDL3's wrap
-          mkdir subprojects
-          ~/.local/bin/meson wrap install sdl3
+          # Install all SDL3 build dependencies
+          sudo apt-get install build-essential git make \
+            pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+            libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
+            libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
+
+          # Clone the SDL3
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.2.26
+
+          # Build the SDL3
+          cd sdl
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON
+          cmake --build build --config Release -j
+          sudo cmake --install build --prefix /usr/local
+
       - name: Build Hades w/ Debugger
         run: |
-          ~/.local/bin/meson setup build --force-fallback-for=sdl3 -Dwith_debugger=true
+          meson setup build --buildtype=release -Dwith_debugger=true
           ninja -C build
+
       - name: Check Accuracy
         run: |
           python3 ./accuracy/run.py --binary ./build/hades-dbg --roms ./roms/ --download
@@ -70,6 +91,7 @@ jobs:
           # GitHub upload-artifact@v4 doesn't include hidden files and directories
           # https://github.com/actions/upload-artifact/issues/602
           mv -v {.,}tests_screenshots
+
       - name: Collect Screenshots
         uses: actions/upload-artifact@v4
         if: always()
@@ -77,6 +99,7 @@ jobs:
           name: tests-screenshots
           path: './tests_screenshots'
           if-no-files-found: error
+
       - name: Cleanup
         if: always()
         run: |
