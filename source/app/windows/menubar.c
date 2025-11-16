@@ -318,8 +318,8 @@ app_win_menubar_video(
                 if (igMenuItem_Bool(
                     display_sizes[x - 1],
                     NULL,
-                       app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * x / app->ui.display_content_scale)
-                    && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * x / app->ui.display_content_scale),
+                       app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * x / app->ui.window_pixel_density)
+                    && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * x / app->ui.window_pixel_density),
                     true
                 )) {
                     app->settings.video.display_size = x;
@@ -496,7 +496,7 @@ app_win_menubar_fps_counter(
            app->settings.general.show_fps
         && app->emulation.is_started
         && app->emulation.is_running
-        && igGetWindowWidth() >= GBA_SCREEN_WIDTH * 2 * app->ui.scale
+        && igGetWindowWidth() >= GBA_SCREEN_WIDTH * 2
     ) {
         float spacing;
         ImVec2 out;

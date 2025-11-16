@@ -446,8 +446,11 @@ struct app {
         // ImGui internal stuff
         ImGuiIO *ioptr;
 
-        // Display's content scale
-        float display_content_scale;
+        // Window's Display Scale
+        float window_display_scale;
+
+        // Window's Pixel Density
+        float window_pixel_density;
 
         // UI Scale
         // Usually the display scale unless overridden in the settings

@@ -32,7 +32,16 @@ app_sdl_handle_events(
         };
         case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: {
             app_sdl_video_update_scale(app);
-            logln(HS_INFO, "Display scale changed to %s%.2f%s.", g_light_magenta, app->ui.display_content_scale, g_reset);
+            logln(
+                HS_INFO,
+                "Window Display Scale and Pixel Density changed to %s%.2f%s, %s%.2f%s.",
+                g_light_magenta,
+                app->ui.window_display_scale,
+                g_reset,
+                g_light_magenta,
+                app->ui.window_pixel_density,
+                g_reset
+            );
             break;
         };
         case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {

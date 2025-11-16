@@ -480,8 +480,8 @@ app_sdl_video_resize_window(
 
     // Calculate the desired width and height in **screen coordinates**, not pixels, hence why we
     // divide by the display's scale.
-    w = round((float)(GBA_SCREEN_WIDTH * app->settings.video.display_size) / app->ui.display_content_scale);
-    h = round((float)(GBA_SCREEN_HEIGHT * app->settings.video.display_size) / app->ui.display_content_scale);
+    w = round((float)(GBA_SCREEN_WIDTH * app->settings.video.display_size) / app->ui.window_pixel_density);
+    h = round((float)(GBA_SCREEN_HEIGHT * app->settings.video.display_size) / app->ui.window_pixel_density);
 
     // If relevant, expand the window by the size of the menubar
     h += app->settings.video.menubar_mode == MENUBAR_MODE_PINNED ? app->ui.menubar.size.y : 0;
@@ -504,10 +504,11 @@ app_sdl_video_update_scale(
 
     style = igGetStyle();
 
-    // Retrieve the content scale
-    // This function being called when the window's display is changed, we have to refresh the cached value.
-    app->ui.display_content_scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(app->sdl.window));
-    app->ui.scale = app->settings.video.autodetect_scale ? app->ui.display_content_scale : app->settings.video.scale;
+    // Retrieve the window's display scale & pixel density
+    // This function is called when the window's display is changed so we have to refresh the cached value.
+    app->ui.window_display_scale = SDL_GetWindowDisplayScale(app->sdl.window);
+    app->ui.window_pixel_density = SDL_GetWindowPixelDensity(app->sdl.window);
+    app->ui.scale = app->settings.video.autodetect_scale ? 1.0f : app->settings.video.scale;
 
     // Restore the default style
     memcpy(style, &app->ui.default_style, sizeof(struct ImGuiStyle));

@@ -85,7 +85,8 @@ SDL_AppInit(
         app_sdl_video_init(app);
 
         logln(HS_INFO, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
-        logln(HS_INFO, "Scale factor: %s%.2f%s", g_light_magenta, app->ui.display_content_scale, g_reset);
+        logln(HS_INFO, "Display Scale: %s%.2f%s", g_light_magenta, app->ui.window_display_scale, g_reset);
+        logln(HS_INFO, "Pixel Density: %s%.2f%s", g_light_magenta, app->ui.window_pixel_density, g_reset);
     }
 
     // Start the gba thread
