@@ -103,8 +103,8 @@ app_win_notifications(
 
         igSetNextWindowBgAlpha(alpha * 0.9);
         igSetNextWindowSizeConstraints(
-            (ImVec2){.x = NOTIFICATION_WIDTH * app->ui.scale, .y = -1},
-            (ImVec2){.x = NOTIFICATION_WIDTH * app->ui.scale, .y = -1},
+            (ImVec2){.x = NOTIFICATION_WIDTH, .y = -1},
+            (ImVec2){.x = NOTIFICATION_WIDTH, .y = -1},
             NULL,
             NULL
         );
