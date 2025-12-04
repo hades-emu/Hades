@@ -469,7 +469,7 @@ app_emulator_configure_backup_storage(
         read_len = fread(data, 1, file_len, app->emulation.backup_file);
 
         if (read_len != file_len) {
-            logln(HS_WARNING, "Failed to read the save file. Is it corrupted?");
+            logln(HS_WARN, "Failed to read the save file. Is it corrupted?");
         } else {
             logln(HS_INFO, "Save file successfully read.");
         }
@@ -477,7 +477,7 @@ app_emulator_configure_backup_storage(
         app->emulation.launch_config->backup_storage.data = data;
         app->emulation.launch_config->backup_storage.size = file_len;
     } else {
-        logln(HS_WARNING, "Failed to open the save file. A new one will be created instead.");
+        logln(HS_WARN, "Failed to open the save file. A new one will be created instead.");
 
         app->emulation.backup_file = hs_fopen(backup_path, "wb+");
 
@@ -529,7 +529,7 @@ app_emulator_import_backup_storage(
     read_len = fread(data, 1, file_len, backup);
 
     if (read_len != file_len) {
-        logln(HS_WARNING, "Failed to import the save file. Is it corrupted?");
+        logln(HS_WARN, "Failed to import the save file. Is it corrupted?");
     } else {
         app_new_notification(
             app,
@@ -545,7 +545,7 @@ app_emulator_import_backup_storage(
     app->emulation.backup_file = hs_fopen(backup_path, "rb+");
 
     if (!app->emulation.backup_file) {
-        logln(HS_WARNING, "Failed to open the save file. A new one will be created instead.");
+        logln(HS_WARN, "Failed to open the save file. A new one will be created instead.");
 
         app->emulation.backup_file = hs_fopen(backup_path, "wb+");
 
@@ -637,11 +637,9 @@ app_emulator_configure_and_run(
         );
     } else {
         logln(
-            HS_WARNING,
-            "No game with the code \"%s%.3s%s\" could be found in the Hades game database.",
-            g_light_magenta,
-            code,
-            g_reset
+            HS_WARN,
+            "No game with the code \"%.3s\" could be found in the Hades game database.",
+            code
         );
 
         app->emulation.game_entry = db_autodetect_game_features(app->emulation.launch_config->rom.data, app->emulation.launch_config->rom.size);
@@ -1011,7 +1009,7 @@ app_emulator_quickload(
     size_t size;
 
     if (app->emulation.quickload_request.enabled) {
-        logln(HS_WARNING, "A saved state is already being loaded by the emulator, ignoring the new request.");
+        logln(HS_WARN, "A saved state is already being loaded by the emulator, ignoring the new request.");
         return;
     }
 

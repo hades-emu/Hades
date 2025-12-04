@@ -1792,7 +1792,7 @@ db_autodetect_game_features(
 
     if (array_search(rom, rom_size, "EEPROM_V", 7)) {
         logln(HS_INFO, "Detected EEPROM 64K memory.");
-        logln(HS_WARNING, "If you are having issues with corrupted saves, try EEPROM 8K instead.");
+        logln(HS_WARN, "If you are having issues with corrupted saves, try EEPROM 8K instead.");
         entry->storage = BACKUP_EEPROM_64K;
     } else if (
            array_search(rom, rom_size, "SRAM_V", 5)

@@ -17,7 +17,7 @@
 bool g_verbose_global = true;
 bool g_verbose[HS_END] = {
     [HS_INFO] = true,
-    [HS_WARNING] = true,
+    [HS_WARN] = true,
     [HS_ERROR] = true,
 };
 
@@ -84,14 +84,18 @@ logln(
 
         printf("[%s] ", modules_str[module]);
 
-        if (module == HS_ERROR) {
-            printf("%s%s", g_bold, g_light_red);
+        switch (module) {
+            case HS_ERROR: printf("%s%s", g_bold, g_light_red); break;
+            case HS_WARN: printf("%s%s", g_bold, g_light_yellow); break;
+            default: break;
         }
 
         vprintf(fmt, va);
 
-        if (module == HS_ERROR) {
-            printf("%s", g_reset);
+        switch (module) {
+            case HS_ERROR:
+            case HS_WARN: printf("%s", g_reset); break;
+            default: break;
         }
 
         printf("\n");

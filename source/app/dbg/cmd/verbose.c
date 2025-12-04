@@ -21,7 +21,7 @@ struct verbosity_arg verbosities[] = {
     { "global",     &g_verbose_global       },
 
     { "info",       g_verbose + HS_INFO     },
-    { "warn",       g_verbose + HS_WARNING  },
+    { "warn",       g_verbose + HS_WARN     },
     { "err",        g_verbose + HS_ERROR    },
 
     { "io",         g_verbose + HS_IO       },

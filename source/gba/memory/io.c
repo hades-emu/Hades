@@ -7,6 +7,15 @@
 **
 \******************************************************************************/
 
+#include "gba/io.h"
+#include "gba/io.h"
+#include "gba/io.h"
+#include "gba/io.h"
+#include "gba/io.h"
+#include "gba/io.h"
+#include "gba/io.h"
+#include "gba/io.h"
+
 #include <string.h>
 #include "memory.h"
 #include "gba/gba.h"
@@ -355,6 +364,12 @@ mem_io_read8(
 
         /* System */
         case IO_REG_POSTFLG:                return (io->postflg);
+
+        /* mGBA logging system */
+#ifdef WITH_DEBUGGER
+        case IO_REG_MGBA_LOG_ENABLE:            return (io->mgba_log.enable.bytes[0]);
+        case IO_REG_MGBA_LOG_ENABLE + 1:        return (io->mgba_log.enable.bytes[1]);
+#endif
     }
     return (mem_openbus_read(gba, addr));
 }
@@ -821,6 +836,50 @@ mem_io_write8(
             }
             break;
         };
+
+        /* mGBA logging system */
+#ifdef WITH_DEBUGGER
+        case IO_REG_MGBA_LOG_BUFFER ... IO_REG_MGBA_LOG_BUFFER_END - 1: {
+            io->mgba_log.buffer[addr - IO_REG_MGBA_LOG_BUFFER] = val;
+            break;
+        }
+        case IO_REG_MGBA_LOG_FLAGS: io->mgba_log.flags.bytes[0] = val; break;
+        case IO_REG_MGBA_LOG_FLAGS + 1: {
+            io->mgba_log.flags.bytes[1] = val;
+
+            if (io->mgba_log.flags.send) {
+                enum modules module;
+                int level;
+
+                level = 1 << io->mgba_log.flags.level;
+                level &= 0x1F;
+
+                switch (level) {
+                    case MGBA_LOG_FATAL:
+                    case MGBA_LOG_ERROR:    module = HS_ERROR; break;
+                    case MGBA_LOG_WARN:     module = HS_WARN; break;
+                    case MGBA_LOG_INFO:     module = HS_INFO; break;
+                    case MGBA_LOG_DEBUG:    module = HS_DEBUG; break;
+                    default:                module = HS_INFO; break;
+                }
+
+                io->mgba_log.buffer[MGBA_LOG_BUFFER_SIZE] = 0x0;
+                logln(module, "%s", io->mgba_log.buffer);
+                memset(io->mgba_log.buffer, 0, MGBA_LOG_BUFFER_SIZE);
+
+                io->mgba_log.flags.send = false;
+            }
+            break;
+        }
+        case IO_REG_MGBA_LOG_ENABLE:
+        case IO_REG_MGBA_LOG_ENABLE + 1: {
+            io->mgba_log.enable.bytes[addr - IO_REG_MGBA_LOG_ENABLE] = val;
+            if (io->mgba_log.enable.raw == 0xC0DE) {
+                io->mgba_log.enable.raw = 0x1DEA;
+            }
+            break;
+        }
+#endif
     }
 }
 

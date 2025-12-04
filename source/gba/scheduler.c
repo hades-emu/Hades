@@ -167,7 +167,7 @@ sched_run_for(
 
         if (!elapsed) {
             if (gba->core.state != CORE_STOP) {
-                logln(HS_WARNING, "No cycles elapsed during `core_next()`.");
+                logln(HS_WARN, "No cycles elapsed during `core_next()`.");
             }
             break;
         }

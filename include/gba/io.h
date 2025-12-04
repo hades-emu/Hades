@@ -170,8 +170,27 @@ enum io_regs {
     IO_REG_HALTCNT      = 0x04000301,
     IO_REG_UNKNOWN_3    = 0x04000302,
 
+#ifdef WITH_DEBUGGER
+    IO_REG_MGBA_LOG_BUFFER      = 0x04FFF600,
+    IO_REG_MGBA_LOG_BUFFER_END  = 0x04FFF700,
+    IO_REG_MGBA_LOG_FLAGS       = 0x04FFF700,
+    IO_REG_MGBA_LOG_ENABLE      = 0x04FFF780,
+#endif
+
     IO_REG_END,
 };
+
+#ifdef WITH_DEBUGGER
+#define MGBA_LOG_BUFFER_SIZE    (IO_REG_MGBA_LOG_BUFFER_END - IO_REG_MGBA_LOG_BUFFER)
+
+enum mgba_log_level {
+    MGBA_LOG_FATAL = 0x01,
+    MGBA_LOG_ERROR = 0x02,
+    MGBA_LOG_WARN = 0x04,
+    MGBA_LOG_INFO = 0x08,
+    MGBA_LOG_DEBUG = 0x10,
+};
+#endif
 
 /*
 ** A DMA channel and the content of the different IO registers associated with it.
@@ -856,6 +875,27 @@ struct io {
             uint8_t bytes[2];
         } ime;
     } pending;
+
+#ifdef WITH_DEBUGGER
+    struct {
+        union {
+            uint16_t raw;
+            uint8_t bytes[2];
+        } enable;
+
+        union {
+            struct {
+                uint16_t level: 4;
+                uint16_t : 4;
+                uint16_t send: 1;
+            } __packed;
+            uint16_t raw;
+            uint8_t bytes[2];
+        } flags;
+
+        uint8_t buffer[MGBA_LOG_BUFFER_SIZE + 1];
+    } mgba_log ;
+#endif
 };
 
 static_assert(sizeof(((struct io *)NULL)->dispcnt) == sizeof(uint16_t));

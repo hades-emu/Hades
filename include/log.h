@@ -16,7 +16,7 @@ enum modules {
     HS_INFO      = 0,
 
     HS_ERROR,
-    HS_WARNING,
+    HS_WARN,
 
     HS_CORE,
     HS_IO,
@@ -60,7 +60,7 @@ extern bool g_verbose_global;
 static char const * const modules_str[] = {
     [HS_INFO]       = " INFO  ",
     [HS_ERROR]      = " ERROR ",
-    [HS_WARNING]    = " WARN  ",
+    [HS_WARN]       = " WARN  ",
     [HS_CORE]       = " CORE  ",
     [HS_IO]         = " IO    ",
     [HS_VIDEO]      = " VIDEO ",

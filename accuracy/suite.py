@@ -137,7 +137,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 100
+            frame 220
 
             screenshot ./.tests_screenshots/mgba_suite_memory.png
         ''',
@@ -169,7 +169,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 200
+            frame 290
 
             screenshot ./.tests_screenshots/mgba_suite_timing.png
         ''',
@@ -185,7 +185,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 150
+            frame 200
 
             screenshot ./.tests_screenshots/mgba_suite_timer_count_up.png
         ''',
@@ -214,7 +214,7 @@ TESTS_SUITE: List[Test] = [
             frame 70
             key down false
             key a true
-            frame 20
+            frame 30
             key a false
 
             screenshot ./.tests_screenshots/mgba_suite_shifter.png
@@ -244,7 +244,7 @@ TESTS_SUITE: List[Test] = [
             frame 85
             key down false
             key a true
-            frame 20
+            frame 30
             key a false
 
             screenshot ./.tests_screenshots/mgba_suite_multiply_long.png
@@ -259,7 +259,7 @@ TESTS_SUITE: List[Test] = [
             frame 95
             key down false
             key a true
-            frame 20
+            frame 80
             key a false
 
             screenshot ./.tests_screenshots/mgba_suite_bios.png
@@ -276,7 +276,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 130
+            frame 250
 
             screenshot ./.tests_screenshots/mgba_suite_dma.png
         ''',
