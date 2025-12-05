@@ -38,6 +38,7 @@ AppDir:
     - libglew2.2
     - libdecor-0-0
     - libdecor-0-plugin-1-cairo
+    - librsvg2-common  # See https://github.com/hades-emu/Hades/issues/102
 
   files:
     include: []
