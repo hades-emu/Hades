@@ -286,7 +286,7 @@ TESTS_SUITE: List[Test] = [
     # NBA Hardware Tests
     # https://github.com/nba-emu/hw-test
     Test(
-        name="NBA HW-Tests - Timer Reload",
+        name="NBA Tests - Timer Reload",
         rom=TestRoms.NBA_TIMER_RELOAD.value,
         code='''
             frame 15
@@ -296,7 +296,7 @@ TESTS_SUITE: List[Test] = [
         screenshot='nba_timer_reload.png',
     ),
     Test(
-        name="NBA HW-Tests - Timer Start/Stop",
+        name="NBA Tests - Timer Start/Stop",
         rom=TestRoms.NBA_TIMER_START_STOP.value,
         code='''
             frame 15
@@ -306,7 +306,7 @@ TESTS_SUITE: List[Test] = [
         screenshot='nba_timer_start_stop.png',
     ),
     Test(
-        name="NBA HW-Tests - DMA Latch",
+        name="NBA Tests - DMA Latch",
         rom=TestRoms.NBA_DMA_LATCH.value,
         code='''
             frame 15
@@ -316,7 +316,7 @@ TESTS_SUITE: List[Test] = [
         screenshot='nba_dma_latch.png',
     ),
     Test(
-        name="NBA HW-Tests - DMA Start Delay",
+        name="NBA Tests - DMA Start Delay",
         rom=TestRoms.NBA_DMA_START_DELAY.value,
         code='''
             frame 15
@@ -326,7 +326,7 @@ TESTS_SUITE: List[Test] = [
         screenshot='nba_dma_start_delay.png',
     ),
     Test(
-        name="NBA HW-Tests - IRQ Delay",
+        name="NBA Tests - IRQ Delay",
         rom=TestRoms.NBA_IRQ_DELAY.value,
         code='''
             frame 15
