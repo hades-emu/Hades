@@ -62,6 +62,7 @@ SDL_AppInit(
     }
 
     app_config_load(app);
+    app->config_loaded = true;
 
     logln(HS_INFO, "Welcome to Hades v" HADES_VERSION);
     logln(HS_INFO, "=========================");
@@ -288,7 +289,7 @@ SDL_AppQuit(
         app_sdl_audio_cleanup(app);
     }
 
-    if (app->save_config_on_exit) {
+    if (app->config_loaded) {
         app_config_save(app);
     }
 
