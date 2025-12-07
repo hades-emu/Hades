@@ -910,6 +910,34 @@ error:
     );
 }
 
+void
+app_emulator_screenshot_resize(
+    uint32_t *src,
+    uint32_t src_width,
+    uint32_t src_height,
+    uint32_t *dst,
+    uint32_t dst_width,
+    uint32_t dst_height
+) {
+    uint32_t i;
+    uint32_t scale_factor;
+
+    scale_factor = dst_width / src_width;
+
+    hs_assert(src_width * scale_factor == dst_width);
+    hs_assert(src_height * scale_factor == dst_height);
+
+    for (i = 0; i < dst_width * dst_height; ++i) {
+        uint32_t src_x;
+        uint32_t src_y;
+
+        src_x = (i % dst_width) / scale_factor;
+        src_y = (i / dst_width) / scale_factor;
+
+        dst[i] = src[src_y * src_width + src_x];
+    }
+}
+
 /*
 ** Take a screenshot of the game and writes it to the disk.
 */
@@ -919,17 +947,45 @@ app_emulator_screenshot_path(
     char const *path
 ) {
     int out;
+    uint32_t *rescaled_screenshot;
+    uint32_t rescaled_width;
+    uint32_t rescaled_height;
 
+    // Sanity & paranoia check, shouldn't be useful under normal circumstances
+    if (app->settings.video.display_size >= 1 && app->settings.video.display_size <= 5) {
+        rescaled_width = app->settings.video.display_size * GBA_SCREEN_WIDTH;
+        rescaled_height = app->settings.video.display_size * GBA_SCREEN_HEIGHT;
+    } else {
+        rescaled_width = GBA_SCREEN_WIDTH;
+        rescaled_height = GBA_SCREEN_HEIGHT;
+    }
+
+    rescaled_screenshot = malloc(rescaled_width * rescaled_height * sizeof(uint32_t));
+    hs_assert(rescaled_screenshot);
+
+    // Grab the framebuffer from the shared data and rescale it to the appropriate size
     pthread_mutex_lock(&app->emulation.gba->shared_data.framebuffer.lock);
-    out = stbi_write_png(
-        path,
+    app_emulator_screenshot_resize(
+        app->emulation.gba->shared_data.framebuffer.data,
         GBA_SCREEN_WIDTH,
         GBA_SCREEN_HEIGHT,
-        4,
-        app->emulation.gba->shared_data.framebuffer.data,
-        GBA_SCREEN_WIDTH * sizeof(uint32_t)
+        rescaled_screenshot,
+        rescaled_width,
+        rescaled_height
     );
     pthread_mutex_unlock(&app->emulation.gba->shared_data.framebuffer.lock);
+
+    // Write the screenshot on the disk
+    out = stbi_write_png(
+        path,
+        rescaled_width,
+        rescaled_height,
+        4,
+        rescaled_screenshot,
+        rescaled_width * sizeof(uint32_t)
+    );
+
+    free(rescaled_screenshot);
 
     if (out) {
         app_new_notification(

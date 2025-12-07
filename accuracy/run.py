@@ -134,6 +134,9 @@ def main():
             }},
             "prefetch_buffer": true,
           }},
+          "video": {{
+            "display_size": 1
+          }},
         }}
     ''').encode('utf-8'))
     config.flush()
