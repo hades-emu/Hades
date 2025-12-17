@@ -103,7 +103,6 @@ core_arm_bdt(
             if (load) {
                 if (first && wb) { // Write back before data is read
                     core->registers[rn] = base_new;
-                    first = false;
                 }
 
                 core->registers[i] = mem_read32(gba, base, access_type);
@@ -112,12 +111,12 @@ core_arm_bdt(
 
                 if (first && wb) { // Write back after data is stored
                     core->registers[rn] = base_new;
-                    first = false;
                 }
             }
 
             base += pre ? 0 : 4; // Post-increment
             access_type = SEQUENTIAL;
+            first = false;
         }
         ++i;
     }

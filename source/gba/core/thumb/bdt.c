@@ -106,11 +106,12 @@ core_thumb_stmia(
     uint32_t rb;
     ssize_t i;
 
-    count = 0;
-    rb = bitfield_get_range(op, 8, 11);
     core = &gba->core;
     core->pc += 2;
     core->prefetch_access_type = NON_SEQUENTIAL;
+
+    count = 0;
+    rb = bitfield_get_range(op, 8, 11);
 
     /*
     ** Edge case: if rlist is empty, r15 is stored instead and rb is increased by 0x40
@@ -167,10 +168,11 @@ core_thumb_ldmia(
     uint32_t rb;
     ssize_t i;
 
-    count = 0;
     core = &gba->core;
     core->pc += 2;
     core->prefetch_access_type = NON_SEQUENTIAL;
+
+    count = 0;
     rb = bitfield_get_range(op, 8, 11);
 
     /*

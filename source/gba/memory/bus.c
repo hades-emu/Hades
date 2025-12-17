@@ -121,10 +121,10 @@ mem_bus_access(
     uint32_t size,  // In bytes
     enum access_flags flags
 ) {
-    uint32_t cycles;
-    uint32_t page;
     enum access_flags access_type;
     bool is_gamepak_access;
+    uint32_t cycles;
+    uint32_t page;
 
     addr = align_on(addr, size);
     page = (addr >> 24) & 0xF;
