@@ -32,6 +32,8 @@ class TestRoms(Enum):
 
     AGS = Rom('ags', None)
 
+    AGBEEG = Rom('agbeeg', 'https://github.com/zaydlang/AGBEEG-Aging-Cartridge/releases/download/v0.0.2/AGBEEG_AGING_CARTRIDGE.gba')
+
 
 TESTS_SUITE: List[Test] = [
 
@@ -385,5 +387,16 @@ TESTS_SUITE: List[Test] = [
             screenshot ./.tests_screenshots/ags_01.png
         ''',
         screenshot='ags_01.png',
+    ),
+
+    # AGBEEG
+    Test(
+        name="AGBEEG - Aging Tests",
+        rom=TestRoms.AGBEEG.value,
+        code='''
+            frame 20
+            screenshot ./.tests_screenshots/agbeeg.png
+        ''',
+        screenshot='agbeeg.png',
     )
 ]
