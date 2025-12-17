@@ -516,7 +516,7 @@ mem_io_write8(
         case IO_REG_SOUND2CNT_L + 1: {
             io->sound2cnt_l.bytes[1] = val;
 
-            // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+            // Envelope set to decrease mode with a volume of 0 mutes the channel
             if (!gba->io.sound2cnt_l.envelope_direction && !gba->io.sound2cnt_l.envelope_initial_volume) {
                 apu_tone_stop(gba);
             }
@@ -554,9 +554,9 @@ mem_io_write8(
         case IO_REG_SOUND4CNT_L + 1: {
             io->sound4cnt_l.bytes[1] = val;
 
-            // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+            // Envelope set to decrease mode with a volume of 0 mutes the channel
             if (!gba->io.sound4cnt_l.envelope_direction && !gba->io.sound4cnt_l.envelope_initial_volume) {
-                apu_tone_and_sweep_stop(gba);
+                apu_noise_reset(gba);
             }
 
             break;

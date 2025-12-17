@@ -42,7 +42,7 @@ apu_tone_and_sweep_reset(
 
     apu_modules_envelope_reset(
         &gba->apu.tone_and_sweep.envelope,
-        gba->io.sound1cnt_h.eveloppe_step_time,
+        gba->io.sound1cnt_h.envelope_step_time,
         gba->io.sound1cnt_h.envelope_direction,
         gba->io.sound1cnt_h.envelope_initial_volume
     );
@@ -133,7 +133,7 @@ apu_tone_reset(
 
     apu_tone_stop(gba);
 
-    // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+    // Envelope set to decrease mode with a volume of 0 mutes the channel
     if (!gba->io.sound2cnt_l.envelope_direction && !gba->io.sound2cnt_l.envelope_initial_volume) {
         return;
     }
@@ -142,7 +142,7 @@ apu_tone_reset(
 
     apu_modules_envelope_reset(
         &gba->apu.tone.envelope,
-        gba->io.sound2cnt_l.eveloppe_step_time,
+        gba->io.sound2cnt_l.envelope_step_time,
         gba->io.sound2cnt_l.envelope_direction,
         gba->io.sound2cnt_l.envelope_initial_volume
     );

@@ -30,7 +30,7 @@ apu_noise_reset(
 
     apu_modules_envelope_reset(
         &gba->apu.noise.envelope,
-        gba->io.sound4cnt_l.eveloppe_step_time,
+        gba->io.sound4cnt_l.envelope_step_time,
         gba->io.sound4cnt_l.envelope_direction,
         gba->io.sound4cnt_l.envelope_initial_volume
     );

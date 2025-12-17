@@ -527,7 +527,7 @@ struct io {
         struct {
             uint16_t length: 6;
             uint16_t duty: 2;
-            uint16_t eveloppe_step_time: 3;
+            uint16_t envelope_step_time: 3;
             uint16_t envelope_direction: 1;
             uint16_t envelope_initial_volume: 4;
         } __packed;
@@ -552,7 +552,7 @@ struct io {
         struct {
             uint16_t length: 6;
             uint16_t duty: 2;
-            uint16_t eveloppe_step_time: 3;
+            uint16_t envelope_step_time: 3;
             uint16_t envelope_direction: 1;
             uint16_t envelope_initial_volume: 4;
         } __packed;
@@ -614,7 +614,7 @@ struct io {
         struct {
             uint16_t length: 6;
             uint16_t : 2;
-            uint16_t eveloppe_step_time: 3;
+            uint16_t envelope_step_time: 3;
             uint16_t envelope_direction: 1;
             uint16_t envelope_initial_volume: 4;
         } __packed;

@@ -68,7 +68,6 @@ struct rtc {
     bool sck;
     bool sio;
     bool cs;
-
     enum rtc_registers active_register;
 
     union {
