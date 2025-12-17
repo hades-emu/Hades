@@ -37,11 +37,11 @@ core_thumb_sdt_imm(
             break;
         case 0b10: // Load word
             core->registers[rd] = mem_read32_ror(gba, core->registers[rb] + (offset << 2), NON_SEQUENTIAL);
-            core_idle(gba);
+            mem_bus_idle(gba);
             break;
         case 0b11: // Load byte
             core->registers[rd] = mem_read8(gba, core->registers[rb] + offset, NON_SEQUENTIAL);
-            core_idle(gba);
+            mem_bus_idle(gba);
             break;
     }
 
@@ -76,11 +76,11 @@ core_thumb_sdt_wb_reg(
             break;
         case 0b10: // Load word
             core->registers[rd] = mem_read32_ror(gba, core->registers[rb] + core->registers[ro], NON_SEQUENTIAL);
-            core_idle(gba);
+            mem_bus_idle(gba);
             break;
         case 0b11: // Load byte
             core->registers[rd] = mem_read8(gba, core->registers[rb] + core->registers[ro], NON_SEQUENTIAL);
-            core_idle(gba);
+            mem_bus_idle(gba);
             break;
     }
 
@@ -111,7 +111,7 @@ core_thumb_sdt_h_imm(
     if (l) {
         // LDRH
         core->registers[rd] = mem_read16_ror(gba, core->registers[rb] + offset, NON_SEQUENTIAL);
-        core_idle(gba);
+        mem_bus_idle(gba);
     } else {
         // STRH
         mem_write16(gba, core->registers[rb] + offset, (uint16_t)core->registers[rd], NON_SEQUENTIAL);
@@ -150,12 +150,12 @@ core_thumb_sdt_sbh_reg(
         case 0b01:
             // Load halfword
             core->registers[rd] = mem_read16_ror(gba, addr, NON_SEQUENTIAL);
-            core_idle(gba);
+            mem_bus_idle(gba);
             break;
         case 0b10:
             // Load sign-extended byte
             core->registers[rd] = (int32_t)(int8_t)mem_read8(gba, addr, NON_SEQUENTIAL);
-            core_idle(gba);
+            mem_bus_idle(gba);
             break;
         case 0b11:
             // Load sign-extended halfword
@@ -167,7 +167,7 @@ core_thumb_sdt_sbh_reg(
                 core->registers[rd] = (int32_t)(int16_t)(uint16_t)mem_read16_ror(gba, addr, NON_SEQUENTIAL);
             }
 
-            core_idle(gba);
+            mem_bus_idle(gba);
             break;
     }
     core->pc += 2;
@@ -193,7 +193,8 @@ core_thumb_ldr_pc(
     core->registers[rd] = mem_read32_ror(gba, (core->pc & 0xFFFFFFFC) + offset, NON_SEQUENTIAL);
     core->pc += 2;
     core->prefetch_access_type = NON_SEQUENTIAL;
-    core_idle(gba);
+
+    mem_bus_idle(gba);
 }
 
 /*
@@ -216,7 +217,7 @@ core_thumb_sdt_sp(
 
     if (l) { // LDR
         core->registers[rd] = mem_read32_ror(gba, core->sp + offset, NON_SEQUENTIAL);
-        core_idle(gba);
+        mem_bus_idle(gba);
     } else { // STR
         mem_write32(gba, core->sp + offset, core->registers[rd], NON_SEQUENTIAL);
     }

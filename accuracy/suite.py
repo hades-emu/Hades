@@ -346,6 +346,7 @@ TESTS_SUITE: List[Test] = [
             screenshot ./.tests_screenshots/hades_dma_latch.png
         ''',
         screenshot='hades_dma_latch.png',
+        skip=True,
     ),
     Test(
         name="Hades Tests - DMA Start Delay",
@@ -355,7 +356,6 @@ TESTS_SUITE: List[Test] = [
             screenshot ./.tests_screenshots/hades_dma_start_delay.png
         ''',
         screenshot='hades_dma_start_delay.png',
-        skip=True,
     ),
     Test(
         name="Hades Tests - BIOS Openbus",

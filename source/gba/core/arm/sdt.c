@@ -92,8 +92,9 @@ core_arm_sdt(
             core->registers[rn] = addr;
         }
 
+        mem_bus_idle(gba);
+
         core->registers[rd] = val;
-        core_idle(gba);
 
         // Reload the pipeline of rd is pc
         if (rd == 15) {
@@ -197,7 +198,7 @@ core_arm_hsdt(
                 break;
         }
 
-        core_idle(gba);
+        mem_bus_idle(gba);
 
         /*
         ** if bit 24 or bit 21 is set (post-indexing modification or write-through),

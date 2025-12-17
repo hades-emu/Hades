@@ -342,7 +342,7 @@ gba_state_reset(
 
         memset(core, 0, sizeof(*core));
 
-        mem_update_waitstates(gba);
+        mem_bus_update_waitstates(gba);
 
         core->cpsr.mode = MODE_SYS;
         core->prefetch[0] = 0xF0000000;

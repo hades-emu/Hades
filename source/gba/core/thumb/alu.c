@@ -19,10 +19,10 @@ core_arm_mul_idle_signed(
 ) {
     uint32_t x;
     uint32_t mask;
-    uint32_t cycles;
 
-    cycles = 1;
     mask = 0xFFFFFF00;
+    mem_bus_idle(gba);
+
     for (x = 0; x < 4; ++x) {
 
         rs &= mask;
@@ -32,10 +32,8 @@ core_arm_mul_idle_signed(
         }
 
         mask <<= 8u;
-        cycles += 1;
+        mem_bus_idle(gba);
     }
-
-    core_idle_for(gba, cycles);
 }
 
 /*
@@ -451,7 +449,7 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
-            core_idle(gba);
+            mem_bus_idle(gba);
             core->prefetch_access_type = NON_SEQUENTIAL;
 
             break;
@@ -481,7 +479,7 @@ core_thumb_alu(
 
             core->registers[rd] = op1;
 
-            core_idle(gba);
+            mem_bus_idle(gba);
             core->prefetch_access_type = NON_SEQUENTIAL;
             break;
         case 0b0100:
@@ -509,7 +507,7 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
-            core_idle(gba);
+            mem_bus_idle(gba);
             core->prefetch_access_type = NON_SEQUENTIAL;
 
             break;
@@ -558,7 +556,7 @@ core_thumb_alu(
             core->cpsr.negative = bitfield_get(op1, 31);
 
             core->registers[rd] = op1;
-            core_idle(gba);
+            mem_bus_idle(gba);
             core->prefetch_access_type = NON_SEQUENTIAL;
 
             break;

@@ -37,6 +37,7 @@ libgba_sources = [
     'memory/storage/eeprom.c',
     'memory/storage/flash.c',
     'memory/storage/storage.c',
+    'memory/bus.c',
     'memory/dma.c',
     'memory/io.c',
     'memory/memory.c',

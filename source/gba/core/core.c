@@ -56,7 +56,7 @@ core_next(
 
             op = core->prefetch[0];
             core->prefetch[0] = core->prefetch[1];
-            core->prefetch[1] = mem_read16(gba, core->pc, core->prefetch_access_type);
+            core->prefetch[1] = mem_read16(gba, core->pc, core->prefetch_access_type | PIPELINE);
             gba->memory.was_last_access_from_dma = false;
 
             // Build a unique index based on the instruction's opcode, which is then used to index
@@ -74,7 +74,7 @@ core_next(
 
             op = core->prefetch[0];
             core->prefetch[0] = core->prefetch[1];
-            core->prefetch[1] = mem_read32(gba, core->pc, core->prefetch_access_type);
+            core->prefetch[1] = mem_read32(gba, core->pc, core->prefetch_access_type | PIPELINE);
             gba->memory.was_last_access_from_dma = false;
 
             // Test if the conditions required to execute the instruction are met using a Lookup Table (LUT).
@@ -100,10 +100,14 @@ core_next(
             arm_lut[idx](gba, op);
         }
     } else if (core->state == CORE_HALT) {
+        if (gba->core.pending_dma && !gba->core.is_dma_running) {
+            mem_dma_do_all_pending_transfers(gba);
+        }
+
         if (gba->scheduler.next_event > gba->scheduler.cycles) {
-            core_idle_for(gba, gba->scheduler.next_event - gba->scheduler.cycles);
+            mem_bus_wait_for(gba, gba->scheduler.next_event - gba->scheduler.cycles);
         } else {
-            core_idle(gba);
+            mem_bus_wait(gba);
         }
     }
 
@@ -113,42 +117,6 @@ end:
 #else
     (void)0;
 #endif
-}
-
-void
-core_idle(
-    struct gba *gba
-) {
-    core_idle_for(gba, 1);
-}
-
-void
-core_idle_for(
-    struct gba *gba,
-    uint32_t cycles
-) {
-    /*
-    ** As far as I understand, DMA can start as soon as the CPU is idling after their two cycles startup delay.
-    */
-    if (gba->core.pending_dma && !gba->core.is_dma_running) {
-        mem_dma_do_all_pending_transfers(gba);
-    }
-
-    gba->scheduler.cycles += cycles;
-
-    /*
-    ** Disable prefetchng during DMA.
-    **
-    ** According to Fleroviux (https://github.com/fleroviux/) this
-    ** leads to better accuracy but the reasons why aren't well known yet.
-    */
-    if (gba->memory.pbuffer.enabled && !gba->memory.gamepak_bus_in_use && !gba->core.is_dma_running) {
-        mem_prefetch_buffer_step(gba, cycles);
-    }
-
-    if (unlikely(gba->scheduler.cycles >= gba->scheduler.next_event)) {
-        sched_process_events(gba);
-    }
 }
 
 /*
@@ -167,15 +135,15 @@ core_reload_pipeline(
     core = &gba->core;
     if (core->cpsr.thumb) {
         core->pc &= 0xFFFFFFFE;
-        core->prefetch[0] = mem_read16(gba, core->pc, NON_SEQUENTIAL);
+        core->prefetch[0] = mem_read16(gba, core->pc, NON_SEQUENTIAL | PIPELINE);
         core->pc += 2;
-        core->prefetch[1] = mem_read16(gba, core->pc, SEQUENTIAL);
+        core->prefetch[1] = mem_read16(gba, core->pc, SEQUENTIAL | PIPELINE);
         core->pc += 2;
     } else {
         core->pc &= 0xFFFFFFFC;
-        core->prefetch[0] = mem_read32(gba, core->pc, NON_SEQUENTIAL);
+        core->prefetch[0] = mem_read32(gba, core->pc, NON_SEQUENTIAL | PIPELINE);
         core->pc += 4;
-        core->prefetch[1] = mem_read32(gba, core->pc, SEQUENTIAL);
+        core->prefetch[1] = mem_read32(gba, core->pc, SEQUENTIAL | PIPELINE);
         core->pc += 4;
     }
     core->prefetch_access_type = SEQUENTIAL;

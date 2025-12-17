@@ -32,46 +32,45 @@ mem_io_dma_ctl_write8(
     channel->control.gamepak_drq &= (channel->index == 3);
     new = channel->control.enable;
 
-    if (!old) {
-        // 0 -> 1, the DMA is enabled
-        if (new) {
-            channel->is_fifo = (channel->index >= 1 && channel->index <= 2 && channel->control.timing == DMA_TIMING_SPECIAL);
-            channel->is_video = (channel->index == 3 && channel->control.timing == DMA_TIMING_SPECIAL);
+    if (old == new) {
+        return;
+    }
 
-            // Find the amount of transfers the DMA will do
-            if (channel->is_fifo) {
-                channel->internal_count = 4;
-            } else {
-                channel->internal_count = channel->count.raw;
-                channel->internal_count &= count_mask[channel->index];
+    // 0 -> 1, the DMA is enabled
+    if (new) {
+        channel->is_fifo = (channel->index >= 1 && channel->index <= 2 && channel->control.timing == DMA_TIMING_SPECIAL);
+        channel->is_video = (channel->index == 3 && channel->control.timing == DMA_TIMING_SPECIAL);
 
-                // A count of 0 is treated as max length.
-                if (channel->internal_count == 0) {
-                    channel->internal_count = count_mask[channel->index] + 1;
-                }
-            }
+        // Find the amount of transfers the DMA will do
+        if (channel->is_fifo) {
+            channel->internal_count = 4;
+        } else {
+            channel->internal_count = channel->count.raw;
+            channel->internal_count &= count_mask[channel->index];
 
-            channel->internal_src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1);
-            channel->internal_src &= src_mask[channel->index];
-            channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1);
-            channel->internal_dst &= dst_mask[channel->index];
-
-            if (channel->control.timing == DMA_TIMING_NOW) {
-                mem_schedule_dma_transfers_for(gba, channel->index, DMA_TIMING_NOW);
+            // A count of 0 is treated as max length.
+            if (channel->internal_count == 0) {
+                channel->internal_count = count_mask[channel->index] + 1;
             }
         }
-    } else {
-        // 1 -> 0, the DMA is canceled
-        if (!new) {
-            if (channel->enable_event_handle != INVALID_EVENT_HANDLE) {
-                sched_cancel_event(gba, channel->enable_event_handle);
-                channel->enable_event_handle = INVALID_EVENT_HANDLE;
-            }
 
-            gba->core.pending_dma &= ~(1 << channel->index);
-            if (gba->core.is_dma_running) {
-                gba->core.reenter_dma_transfer_loop = true;
-            }
+        channel->internal_src = channel->src.raw & (channel->control.unit_size ? ~3 : ~1);
+        channel->internal_src &= src_mask[channel->index];
+        channel->internal_dst = channel->dst.raw & (channel->control.unit_size ? ~3 : ~1);
+        channel->internal_dst &= dst_mask[channel->index];
+
+        if (channel->control.timing == DMA_TIMING_NOW) {
+            mem_schedule_dma_transfers_for(gba, channel->index, DMA_TIMING_NOW);
+        }
+    } else {  // 1 -> 0, the DMA is canceled
+        if (channel->enable_event_handle != INVALID_EVENT_HANDLE) {
+            sched_cancel_event(gba, channel->enable_event_handle);
+            channel->enable_event_handle = INVALID_EVENT_HANDLE;
+        }
+
+        gba->core.pending_dma &= ~(1 << channel->index);
+        if (gba->core.is_dma_running) {
+            gba->core.reenter_dma_transfer_loop = true;
         }
     }
 }
@@ -85,8 +84,8 @@ dma_run_channel(
     struct gba *gba,
     struct dma_channel *channel
 ) {
-    enum access_types access_src;
-    enum access_types access_dst;
+    enum access_flags access_src;
+    enum access_flags access_dst;
     int32_t src_step;
     int32_t dst_step;
     int32_t unit_size;
@@ -235,7 +234,7 @@ mem_dma_do_all_pending_transfers(
     }
 
     gba->core.is_dma_running = true;
-    core_idle(gba);
+    mem_bus_wait(gba);
 
     while (gba->core.pending_dma) {
         gba->core.reenter_dma_transfer_loop = false;
@@ -257,7 +256,7 @@ mem_dma_do_all_pending_transfers(
         }
     }
 
-    core_idle(gba);
+    mem_bus_wait(gba);
     gba->core.is_dma_running = false;
 }
 
@@ -287,7 +286,7 @@ mem_schedule_dma_transfers_for(
 
     channel = &gba->io.dma[channel_idx];
 
-    /* Bypass the usual enable check for DMA3's video mode */
+    // Bypass the usual enable check for DMA3's video mode
     enabled = (channel_idx == 3 && timing == DMA_TIMING_SPECIAL) ? gba->ppu.video_capture_enabled : channel->control.enable;
 
     if (enabled && channel->control.timing == timing) {

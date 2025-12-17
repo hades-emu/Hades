@@ -14,12 +14,17 @@
 #include "gba/scheduler.h"
 
 /*
-** Access to the memory bus can either be sequential (the requested address follows the previous one)
-** or non-sequential (the requested address is unrelated to the previous one)
+** Flags used when accessing the memory bus.
 */
-enum access_types {
-    NON_SEQUENTIAL,
-    SEQUENTIAL,
+enum access_flags {
+    // Access to the memory bus can either be sequential (the requested address follows the previous one)
+    // or non-sequential (the requested address is unrelated to the previous one)
+    NON_SEQUENTIAL  = 0b0000,
+    SEQUENTIAL      = 0b0001,
+
+    // Extra flags that can be used to further more describe an access to the memory bus.
+    LOCK            = 0b0010,   // The memory bus is locked during the access
+    PIPELINE        = 0b0100,   // The access is done by the CPU's prefetch pipeline
 };
 
 /*
@@ -195,12 +200,16 @@ struct eeprom {
 struct prefetch_buffer {
     uint32_t head;
     uint32_t tail;
-    uint32_t countdown;
+    uint32_t remaining;
+    uint32_t reload;
     uint32_t size;
     uint32_t capacity;
     uint32_t insn_len;
-    uint32_t reload;
+    bool thumb;
+
     bool enabled;
+    bool active;
+    bool disabling_now;
 };
 
 /*
@@ -246,9 +255,6 @@ struct memory {
     // Set when the last memory access was done by the DMA unit.
     // Used to correctly handle invalid memory reads.
     bool was_last_access_from_dma;
-
-    // Set when the cartridge memory bus is in used
-    bool gamepak_bus_in_use;
 };
 
 /*
@@ -265,6 +271,16 @@ struct core;
 struct gba;
 struct dma_channel;
 
+/* gba/memory/bus.c */
+void mem_bus_update_waitstates(struct gba const *gba);
+void mem_bus_wait(struct gba *gba);
+void mem_bus_wait_for(struct gba *gba, uint64_t cycles);
+void mem_bus_access(struct gba *gba, uint32_t addr, uint32_t size, enum access_flags flags);
+void mem_bus_idle(struct gba *gba);
+void mem_bus_pbuffer_access(struct gba *gba, uint32_t addr, uint32_t intended_cycles, enum access_flags flags, uint32_t size);
+void mem_bus_pbuffer_step(struct gba *gba, uint32_t cycles);
+void mem_bus_pbuffer_stop(struct gba *gba);
+
 /* gba/memory/dma.c */
 void mem_io_dma_ctl_write8(struct gba *gba, struct dma_channel *, uint8_t val);
 bool mem_dma_is_fifo(struct gba const *gba, uint32_t dma_channel_idx, uint32_t fifo_idx);
@@ -278,24 +294,20 @@ uint8_t mem_io_read8(struct gba const *gba, uint32_t addr);
 void mem_io_write8(struct gba *gba, uint32_t addr, uint8_t val);
 
 /* gba/memory/memory.c */
-void mem_access(struct gba *gba, uint32_t addr, uint32_t size, enum access_types access_type);
-void mem_update_waitstates(struct gba const *gba);
-void mem_prefetch_buffer_access(struct gba *gba, uint32_t addr, uint32_t intended_cycles);
-void mem_prefetch_buffer_step(struct gba *gba, uint32_t cycles);
 uint32_t mem_openbus_read(struct gba const *gba, uint32_t addr);
-uint8_t mem_read8(struct gba *gba, uint32_t addr, enum access_types access_type);
+uint8_t mem_read8(struct gba *gba, uint32_t addr, enum access_flags access_type);
 uint8_t mem_read8_raw(struct gba *gba, uint32_t addr);
-uint16_t mem_read16(struct gba *gba, uint32_t addr, enum access_types access_type);
+uint16_t mem_read16(struct gba *gba, uint32_t addr, enum access_flags access_type);
 uint16_t mem_read16_raw(struct gba *gba, uint32_t addr);
-uint32_t mem_read16_ror(struct gba *gba, uint32_t addr, enum access_types access_type);
-uint32_t mem_read32(struct gba *gba, uint32_t addr, enum access_types access_type);
+uint32_t mem_read16_ror(struct gba *gba, uint32_t addr, enum access_flags access_type);
+uint32_t mem_read32(struct gba *gba, uint32_t addr, enum access_flags access_type);
 uint32_t mem_read32_raw(struct gba *gba, uint32_t addr);
-uint32_t mem_read32_ror(struct gba *gba, uint32_t addr, enum access_types access_type);
-void mem_write8(struct gba *gba, uint32_t addr, uint8_t val, enum access_types access_type);
+uint32_t mem_read32_ror(struct gba *gba, uint32_t addr, enum access_flags access_type);
+void mem_write8(struct gba *gba, uint32_t addr, uint8_t val, enum access_flags access_type);
 void mem_write8_raw(struct gba *gba, uint32_t addr, uint8_t val);
-void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_types access_type);
+void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_flags access_type);
 void mem_write16_raw(struct gba *gba, uint32_t addr, uint16_t val);
-void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_types access_type);
+void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_flags access_type);
 void mem_write32_raw(struct gba *gba, uint32_t addr, uint32_t val);
 
 /* gba/memory/storage/eeprom.c */

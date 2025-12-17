@@ -112,13 +112,13 @@ struct core {
     };
 
     uint32_t prefetch[2];                   // The next instruction to be executed
-    enum access_types prefetch_access_type;
+    enum access_flags prefetch_access_type;
 
     struct psr cpsr;
 
     enum core_states state;                 // 0=Run, 1=Halt, 2=Stop
 
-    bool is_dma_running;                    // Set to `true` when waiting for a DMA to complete.
+    bool is_dma_running;                    // Set to `true` when a DMA is running.
     ssize_t current_dma_idx;                // The DMA the core is currently waiting for. `NO_CURRENT_DMA` if no DMA is running.
     uint32_t pending_dma;                   // A mask of all DMA's index waiting for transfer
     bool reenter_dma_transfer_loop;
@@ -210,8 +210,6 @@ static char const * const arm_modes_name[] = {
 /* gba/core/core.c */
 void core_run(struct gba *gba);
 void core_next(struct gba *gba);
-void core_idle(struct gba *gba);
-void core_idle_for(struct gba *gba, uint32_t cycles);
 void core_reload_pipeline(struct gba *gba);
 struct psr core_spsr_get(struct core const *core, enum arm_modes mode);
 void core_spsr_set(struct core *core, enum arm_modes mode, struct psr psr);

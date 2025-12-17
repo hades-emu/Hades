@@ -91,7 +91,9 @@ debugger_cmd_break(
         );
         --app->debugger.breakpoints_len;
 
-        hs_assert(app->debugger.breakpoints);
+        if (app->debugger.breakpoints_len > 0) {
+            hs_assert(app->debugger.breakpoints);
+        }
 
         app_emulator_set_breakpoints_list(app, app->debugger.breakpoints, app->debugger.breakpoints_len);
     } else {

@@ -29,7 +29,7 @@ core_arm_bdt(
     bool pre;
     bool s;
     bool wb;
-    enum access_types access_type;
+    enum access_flags access_type;
 
     core = &gba->core;
     rn = bitfield_get_range(op, 16, 20);
@@ -123,7 +123,7 @@ core_arm_bdt(
     }
 
     if (load) {
-        core_idle(gba);
+        mem_bus_idle(gba);
 
         if (pc_in_rlist) {
             if (s) {

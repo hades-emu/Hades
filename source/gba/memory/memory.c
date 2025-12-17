@@ -16,178 +16,6 @@
 #include "gba/gpio.h"
 
 /*
-** Region        Bus   Read      Write     Cycles   Note
-** ==================================================
-** BIOS ROM      32    8/16/32   -         1/1/1
-** Work RAM 32K  32    8/16/32   8/16/32   1/1/1
-** I/O           32    8/16/32   8/16/32   1/1/1
-** OAM           32    8/16/32   16/32     1/1/1    a
-** Work RAM 256K 16    8/16/32   8/16/32   3/3/6    b
-** Palette RAM   16    8/16/32   16/32     1/1/2    a
-** VRAM          16    8/16/32   16/32     1/1/2    a
-** GamePak ROM   16    8/16/32   -         5/5/8    b/c
-** GamePak Flash 16    8/16/32   16/32     5/5/8    b/c
-** GamePak SRAM  8     8         8         5        b
-**
-** Timing Notes:
-**
-**  a   Plus 1 cycle if GBA accesses video memory at the same time.
-**  b   Default waitstate settings, see System Control chapter.
-**  c   Separate timings for sequential, and non-sequential accesses.
-**
-** Source: GBATek
-*/
-static uint32_t access_time16[2][16] = {
-    [NON_SEQUENTIAL]    = { 1, 1, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1 },
-    [SEQUENTIAL]        = { 1, 1, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1 },
-};
-
-static uint32_t access_time32[2][16] = {
-    [NON_SEQUENTIAL]    = { 1, 1, 6, 1, 1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1 },
-    [SEQUENTIAL]        = { 1, 1, 6, 1, 1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1 },
-};
-
-static uint32_t gamepak_nonseq_waitstates[4] = { 4, 3, 2, 8 };
-
-/*
-** Set the waitstates for ROM/SRAM memory according to the content of REG_WAITCNT.
-*/
-void
-mem_update_waitstates(
-    struct gba const *gba
-) {
-    struct io const *io;
-    uint32_t x;
-
-    io = &gba->io;
-
-    // 16 bit, non seq
-    access_time16[NON_SEQUENTIAL][CART_0_REGION_1] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws0_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_0_REGION_2] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws0_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_1_REGION_1] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws1_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_1_REGION_2] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws1_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_2_REGION_1] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws2_nonseq];
-    access_time16[NON_SEQUENTIAL][CART_2_REGION_2] = 1 + gamepak_nonseq_waitstates[io->waitcnt.ws2_nonseq];
-    access_time16[NON_SEQUENTIAL][SRAM_REGION]     = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
-
-    // 16 bit, seq
-    access_time16[SEQUENTIAL][CART_0_REGION_1] = 1 + (io->waitcnt.ws0_seq ? 1 : 2);
-    access_time16[SEQUENTIAL][CART_0_REGION_2] = 1 + (io->waitcnt.ws0_seq ? 1 : 2);
-    access_time16[SEQUENTIAL][CART_1_REGION_1] = 1 + (io->waitcnt.ws1_seq ? 1 : 4);
-    access_time16[SEQUENTIAL][CART_1_REGION_2] = 1 + (io->waitcnt.ws1_seq ? 1 : 4);
-    access_time16[SEQUENTIAL][CART_2_REGION_1] = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
-    access_time16[SEQUENTIAL][CART_2_REGION_2] = 1 + (io->waitcnt.ws2_seq ? 1 : 8);
-    access_time16[SEQUENTIAL][SRAM_REGION]     = 1 + gamepak_nonseq_waitstates[io->waitcnt.sram];
-
-    // Update for 32-bit too.
-    for (x = CART_0_REGION_1; x <= SRAM_REGION; ++x) {
-        access_time32[NON_SEQUENTIAL][x] = access_time16[NON_SEQUENTIAL][x] + access_time16[SEQUENTIAL][x];
-        access_time32[SEQUENTIAL][x] = 2 * access_time16[SEQUENTIAL][x];
-    }
-}
-
-/*
-** Calculate and add to the current cycle counter the amount of cycles needed for as many bus accesses
-** are needed to transfer a data of the given size and access type.
-*/
-void
-mem_access(
-    struct gba *gba,
-    uint32_t addr,
-    uint32_t size,  // In bytes
-    enum access_types access_type
-) {
-    uint32_t cycles;
-    uint32_t page;
-
-    addr = align_on(addr, size);
-    page = (addr >> 24) & 0xF;
-
-    if (unlikely(page >= CART_REGION_START && page <= CART_REGION_END && !(addr & 0x1FFFF))) {
-        access_type = NON_SEQUENTIAL;
-    }
-
-    if (size <= sizeof(uint16_t)) {
-        cycles = access_time16[access_type][page];
-    } else {
-        cycles = access_time32[access_type][page];
-    }
-
-    gba->memory.gamepak_bus_in_use = (page >= CART_REGION_START && page <= CART_REGION_END);
-    if (gba->memory.gamepak_bus_in_use && gba->memory.pbuffer.enabled && !gba->core.is_dma_running) {
-        mem_prefetch_buffer_access(gba, addr, cycles);
-    } else {
-        core_idle_for(gba, cycles);
-    }
-}
-
-void
-mem_prefetch_buffer_access(
-    struct gba *gba,
-    uint32_t addr,
-    uint32_t intended_cycles
-) {
-    struct prefetch_buffer *pbuffer;
-
-    pbuffer = &gba->memory.pbuffer;
-
-    if (pbuffer->tail == addr) {
-        if (pbuffer->size == 0) { // Finish to fetch if it isn't done yet
-            gba->memory.gamepak_bus_in_use = false;
-            core_idle_for(gba, pbuffer->countdown);
-
-            pbuffer->tail += pbuffer->insn_len;
-            --pbuffer->size;
-        } else {
-            pbuffer->tail += pbuffer->insn_len;
-            --pbuffer->size;
-
-            gba->memory.gamepak_bus_in_use = false;
-            core_idle(gba);
-        }
-    } else {
-        // Do it first or it'll screw our pbuffer settings
-        core_idle_for(gba, intended_cycles);
-
-        if (gba->core.cpsr.thumb) {
-            pbuffer->insn_len = sizeof(uint16_t);
-            pbuffer->capacity = 8;
-            pbuffer->reload = access_time16[SEQUENTIAL][(addr >> 24) & 0xF];
-        } else {
-            pbuffer->insn_len = sizeof(uint32_t);
-            pbuffer->capacity = 4;
-            pbuffer->reload = access_time32[SEQUENTIAL][(addr >> 24) & 0xF];
-        }
-
-        pbuffer->countdown = pbuffer->reload;
-        pbuffer->tail = addr + pbuffer->insn_len;
-        pbuffer->head = pbuffer->tail;
-        pbuffer->size = 0;
-    }
-}
-
-void
-mem_prefetch_buffer_step(
-    struct gba *gba,
-    uint32_t cycles
-) {
-    struct prefetch_buffer *pbuffer;
-
-    pbuffer = &gba->memory.pbuffer;
-
-    while (cycles >= pbuffer->countdown && pbuffer->size < pbuffer->capacity) {
-        cycles -= pbuffer->countdown;
-        pbuffer->head += pbuffer->insn_len;
-        pbuffer->countdown = pbuffer->reload;
-        ++pbuffer->size;
-    }
-
-    if (pbuffer->size < pbuffer->capacity) {
-        pbuffer->countdown -= cycles;
-    }
-}
-
-/*
 ** Determine the value returned by the BUS during an invalid memory access.
 **
 ** Most of this is taken from GBATek, section "GBA Unpredictable Things".
@@ -203,7 +31,7 @@ mem_openbus_read(
     shift = addr & 0x3;
 
     // On first access, open-bus during DMA transfers returns the last prefetched instruction.
-    // On subsequent transfers it returns the the last transfered data.
+    // On subsequent transfers it returns the last transferred data.
     if (gba->memory.was_last_access_from_dma) {
         return gba->memory.dma_bus >> (8 * shift);
     }
@@ -499,13 +327,13 @@ uint8_t
 mem_read8(
     struct gba *gba,
     uint32_t addr,
-    enum access_types access_type
+    enum access_flags access_type
 ) {
 #ifdef WITH_DEBUGGER
     debugger_eval_read_watchpoints(gba, addr, sizeof(uint8_t));
 #endif
 
-    mem_access(gba, addr, sizeof(uint8_t), access_type);
+    mem_bus_access(gba, addr, sizeof(uint8_t), access_type);
     return (template_read(uint8_t, gba, addr));
 }
 
@@ -524,13 +352,13 @@ uint16_t
 mem_read16(
     struct gba *gba,
     uint32_t addr,
-    enum access_types access_type
+    enum access_flags access_type
 ) {
 #ifdef WITH_DEBUGGER
     debugger_eval_read_watchpoints(gba, addr, sizeof(uint16_t));
 #endif
 
-    mem_access(gba, addr, sizeof(uint16_t), access_type);
+    mem_bus_access(gba, addr, sizeof(uint16_t), access_type);
     return (template_read(uint16_t, gba, addr));
 }
 
@@ -542,7 +370,7 @@ uint32_t
 mem_read16_ror(
     struct gba *gba,
     uint32_t addr,
-    enum access_types access_type
+    enum access_flags access_type
 ) {
     uint32_t rotate;
     uint32_t value;
@@ -551,7 +379,7 @@ mem_read16_ror(
     debugger_eval_read_watchpoints(gba, addr, sizeof(uint16_t));
 #endif
 
-    mem_access(gba, addr, sizeof(uint16_t), access_type);
+    mem_bus_access(gba, addr, sizeof(uint16_t), access_type);
 
     rotate = (addr & 0b1) * 8;
     value = template_read(uint16_t, gba, addr);
@@ -575,13 +403,13 @@ uint32_t
 mem_read32(
     struct gba *gba,
     uint32_t addr,
-    enum access_types access_type
+    enum access_flags access_type
 ) {
 #ifdef WITH_DEBUGGER
     debugger_eval_read_watchpoints(gba, addr, sizeof(uint32_t));
 #endif
 
-    mem_access(gba, addr, sizeof(uint32_t), access_type);
+    mem_bus_access(gba, addr, sizeof(uint32_t), access_type);
     return (template_read(uint32_t, gba, addr));
 }
 
@@ -593,7 +421,7 @@ uint32_t
 mem_read32_ror(
     struct gba *gba,
     uint32_t addr,
-    enum access_types access_type
+    enum access_flags access_type
 ) {
     uint32_t rotate;
     uint32_t value;
@@ -602,7 +430,7 @@ mem_read32_ror(
     debugger_eval_read_watchpoints(gba, addr, sizeof(uint32_t));
 #endif
 
-    mem_access(gba, addr, sizeof(uint32_t), access_type);
+    mem_bus_access(gba, addr, sizeof(uint32_t), access_type);
 
     rotate = (addr % 4) << 3;
     value = template_read(uint32_t, gba, addr);
@@ -627,13 +455,13 @@ mem_write8(
     struct gba *gba,
     uint32_t addr,
     uint8_t val,
-    enum access_types access_type
+    enum access_flags access_type
 ) {
 #ifdef WITH_DEBUGGER
     debugger_eval_write_watchpoints(gba, addr, sizeof(uint8_t), val);
 #endif
 
-    mem_access(gba, addr, sizeof(uint8_t), access_type);
+    mem_bus_access(gba, addr, sizeof(uint8_t), access_type);
     template_write(uint8_t, gba, addr, val);
 }
 
@@ -655,13 +483,13 @@ mem_write16(
     struct gba *gba,
     uint32_t addr,
     uint16_t val,
-    enum access_types access_type
+    enum access_flags access_type
 ) {
 #ifdef WITH_DEBUGGER
     debugger_eval_write_watchpoints(gba, addr, sizeof(uint16_t), val);
 #endif
 
-    mem_access(gba, addr, sizeof(uint16_t), access_type);
+    mem_bus_access(gba, addr, sizeof(uint16_t), access_type);
     template_write(uint16_t, gba, addr, val);
 }
 
@@ -682,12 +510,12 @@ mem_write32(
     struct gba *gba,
     uint32_t addr,
     uint32_t val,
-    enum access_types access_type
+    enum access_flags access_type
 ) {
 #ifdef WITH_DEBUGGER
     debugger_eval_write_watchpoints(gba, addr, sizeof(uint32_t), val);
 #endif
 
-    mem_access(gba, addr, sizeof(uint32_t), access_type);
+    mem_bus_access(gba, addr, sizeof(uint32_t), access_type);
     template_write(uint32_t, gba, addr, val);
 }

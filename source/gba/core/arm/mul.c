@@ -18,10 +18,10 @@ core_arm_mul_idle_signed(
 ) {
     uint32_t x;
     uint32_t mask;
-    uint32_t cycles;
 
-    cycles = 1;
     mask = 0xFFFFFF00;
+    mem_bus_idle(gba);
+
     for (x = 0; x < 4; ++x) {
 
         rs &= mask;
@@ -31,9 +31,8 @@ core_arm_mul_idle_signed(
         }
 
         mask <<= 8u;
-        cycles += 1;
+        mem_bus_idle(gba);
     }
-    core_idle_for(gba, cycles);
 }
 
 static
@@ -44,10 +43,10 @@ core_arm_mul_idle_unsigned(
 ) {
     uint32_t x;
     uint32_t mask;
-    uint32_t cycles;
 
-    cycles = 1;
     mask = 0xFFFFFF00;
+    mem_bus_idle(gba);
+
     for (x = 0; x < 4; ++x) {
 
         rs &= mask;
@@ -57,9 +56,8 @@ core_arm_mul_idle_unsigned(
         }
 
         mask <<= 8u;
-        cycles += 1;
+        mem_bus_idle(gba);
     }
-    core_idle_for(gba, cycles);
 }
 
 /*
@@ -92,7 +90,7 @@ core_arm_mul(
 
     if (a) {
         core->registers[rd] = core->registers[rm] * core->registers[rs] + core->registers[rn];
-        core_idle(gba);
+        mem_bus_idle(gba);
     } else {
         core->registers[rd] = core->registers[rm] * core->registers[rs];
     }
@@ -126,7 +124,6 @@ core_arm_mull(
     bool u;
 
     core = &gba->core;
-    core->prefetch_access_type = SEQUENTIAL;
 
     rm = bitfield_get_range(op, 0, 4);
     rs = bitfield_get_range(op, 8, 12);
@@ -136,7 +133,7 @@ core_arm_mull(
     a = bitfield_get(op, 21);
     u = bitfield_get(op, 22);
 
-    core_idle(gba);
+    mem_bus_idle(gba);
 
     switch (((uint32_t)u << 1) | a) {
         // UMULL
@@ -148,7 +145,7 @@ core_arm_mull(
         // UMLAL
         case 0b01: {
             core_arm_mul_idle_unsigned(gba, core->registers[rs]);
-            core_idle(gba);
+            mem_bus_idle(gba);
             ures = (uint64_t)core->registers[rd_lo] | ((uint64_t)core->registers[rd_hi] << 32);
             ures += (uint64_t)core->registers[rm] * (uint64_t)core->registers[rs];
             break;
@@ -163,7 +160,7 @@ core_arm_mull(
         // SMLAL
         default: {
             core_arm_mul_idle_signed(gba, core->registers[rs]);
-            core_idle(gba);
+            mem_bus_idle(gba);
             ures = (uint64_t)core->registers[rd_lo] | ((uint64_t)core->registers[rd_hi] << 32);
             ires = ures;
             ires += (int64_t)(int32_t)core->registers[rm] * (int64_t)(int32_t)core->registers[rs];
