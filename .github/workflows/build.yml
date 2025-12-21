@@ -226,6 +226,9 @@ jobs:
           # Build & Install the project
           DESTDIR=$(pwd)/AppDir ninja -C build install
 
+          # Install the AppImage run script
+          cp ./resource/linux/appimage-run.sh ./AppDir/usr/bin/
+
           echo "Content of the package:"
           echo "---- START ----"
           find "$(pwd)/AppDir" | sed -e "s/[^─][^\/]*\//   │/g" -e "s/│\([^ ]\)/├── \1/"
