@@ -15,6 +15,9 @@ AppDir:
     version: 1.0.0
     exec: usr/bin/hades
     exec_args: $@
+  runtime:
+    env:
+      SDL_VIDEO_DRIVER: 'x11'
   apt:
     arch:
     - amd64
@@ -36,9 +39,8 @@ AppDir:
     - libgtk-3-0
     - libgtk-3-common
     - libglew2.2
-    - libdecor-0-0
-    - libdecor-0-plugin-1-cairo
     - librsvg2-common  # See https://github.com/hades-emu/Hades/issues/102
+    - libwayland-client0
 
   files:
     include: []

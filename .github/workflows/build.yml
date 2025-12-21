@@ -51,7 +51,10 @@ jobs:
       - name: Install Dependencies
         run: |
           echo "Installing dependencies"
-          brew install meson ninja create-dmg glew libarchive
+          brew install meson ninja create-dmg libarchive
+
+          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/2d33764350e225962ae2f7bbaf7fa1a5464a0465/Formula/g/glew.rb
+          brew install ./glew.rb
 
       - name: Build the SDL3
         run: |
@@ -72,6 +75,14 @@ jobs:
       - name: Build Hades for arm64
         run: |
           export PKG_CONFIG_PATH="/opt/homebrew/opt/libarchive/lib/pkgconfig"
+          
+          echo "Looking for glew"
+          find / -iname "*glew*" 2> /dev/null || :
+          echo "Done"
+          
+          echo "Looking for static libs"
+          find / -iname "*.a" 2> /dev/null || :
+          echo "Done"
 
           # Circumvent a bug with meson that fails to find static dependencies of dependencies by providing
           # a directory containing only the static archives (.a), without the .dylib next to them.
@@ -225,6 +236,9 @@ jobs:
 
           # Build & Install the project
           DESTDIR=$(pwd)/AppDir ninja -C build install
+
+          # Install the AppImage run script
+          cp ./resource/linux/appimage-run.sh ./AppDir/usr/bin/
 
           echo "Content of the package:"
           echo "---- START ----"
