@@ -51,7 +51,7 @@ core_arm_bdt(
 
     /*
     ** Edge case: if rlist is empty, transfer the pc but
-    ** increment the base as if all registers were transfered.
+    ** increment the base as if all registers were transferred.
     */
     if (count == 0) {
         op |= (1 << 15);

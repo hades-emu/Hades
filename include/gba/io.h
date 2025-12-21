@@ -934,7 +934,7 @@ struct gba;
 
 /* gba/memory/io.c */
 void io_init(struct io *io);
-bool io_evaluate_keypad_cond(struct gba *gba);
+bool io_evaluate_keypad_cond(struct gba const *gba);
 void io_scan_keypad_irq(struct gba *gba);
 char const *mem_io_reg_name(uint32_t addr);
 void io_schedule_register_delayed_write(struct gba *gba, uint32_t reg);

@@ -33,7 +33,7 @@ apu_tone_and_sweep_reset(
 
     apu_tone_and_sweep_stop(gba);
 
-    // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+    // Envelope set to decrease mode with a volume of 0 mutes the channel
     if (!gba->io.sound1cnt_h.envelope_direction && !gba->io.sound1cnt_h.envelope_initial_volume) {
         return;
     }

@@ -20,7 +20,7 @@ apu_noise_reset(
 
     apu_noise_stop(gba);
 
-    // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+    // Envelope set to decrease mode with a volume of 0 mutes the channel
     if (!gba->io.sound4cnt_l.envelope_direction && !gba->io.sound4cnt_l.envelope_initial_volume) {
         return;
     }

@@ -7,17 +7,9 @@
 **
 \******************************************************************************/
 
-#include "gba/io.h"
-#include "gba/io.h"
-#include "gba/io.h"
-#include "gba/io.h"
-#include "gba/io.h"
-#include "gba/io.h"
-#include "gba/io.h"
-#include "gba/io.h"
-
 #include <string.h>
 #include "memory.h"
+#include "gba/io.h"
 #include "gba/gba.h"
 
 /*
@@ -488,7 +480,7 @@ mem_io_write8(
         case IO_REG_SOUND1CNT_H + 1: {
             io->sound1cnt_h.bytes[1] = val;
 
-            // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+            // Envelope set to decrease mode with a volume of 0 mutes the channel
             if (!gba->io.sound1cnt_h.envelope_direction && !gba->io.sound1cnt_h.envelope_initial_volume) {
                 apu_tone_and_sweep_stop(gba);
             }
@@ -884,7 +876,7 @@ mem_io_write8(
 
 bool
 io_evaluate_keypad_cond(
-    struct gba *gba
+    struct gba const *gba
 ) {
     return ((gba->io.keycnt.irq_cond && (~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF) == (gba->io.keycnt.raw & 0x3FF))  // Logical AND
         || (!gba->io.keycnt.irq_cond && ~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF)  // Logical OR

@@ -158,7 +158,7 @@ gpio_rtc_write(
                     data = ((data * 0x0802LU & 0x22110LU) | (data * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
                 }
 
-                // Do stuff depending on targetted register
+                // Do stuff depending on targeted register
                 switch (data & 0xF) {
                     case ((RTC_REG_RESET << 1) | 0): {  // Write to Reset
                         rtc->control.raw = 0;
@@ -221,7 +221,7 @@ gpio_rtc_write(
 
 uint8_t
 gpio_rtc_read(
-    struct gba *gba
+    struct gba const *gba
 ) {
     return (gba->gpio.rtc.sio << 1);
 }

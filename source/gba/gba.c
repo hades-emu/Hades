@@ -96,7 +96,6 @@ gba_send_notification_raw(
 #endif
         default: {
             unimplemented(HS_ERROR, "Unimplemented notification kind %i.", notif_header->kind);
-            break;
         }
     }
 }
@@ -319,7 +318,7 @@ gba_state_reset(
             case BACKUP_FLASH64: gba->shared_data.backup_storage.size = FLASH64_SIZE; break;
             case BACKUP_FLASH128:gba->shared_data.backup_storage.size = FLASH128_SIZE; break;
             case BACKUP_NONE: gba->shared_data.backup_storage.size = 0; break;
-            default: panic(HS_CORE, "Unknown backup type %i", gba->memory.backup_storage.type); break;
+            default: panic(HS_CORE, "Unknown backup type %i", gba->memory.backup_storage.type);
         }
 
         if (gba->shared_data.backup_storage.size) {

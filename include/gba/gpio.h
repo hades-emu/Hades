@@ -101,7 +101,7 @@ uint8_t gpio_read_u8(struct gba *gba, uint32_t);
 void gpio_write_u8(struct gba *gba, uint32_t, uint8_t);
 
 /* gpio/rtc.c */
-uint8_t gpio_rtc_read(struct gba *gba);
+uint8_t gpio_rtc_read(struct gba const *gba);
 void gpio_rtc_write(struct gba *gba, uint8_t);
 
 /* gpio/rumble.c */
