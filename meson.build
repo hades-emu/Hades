@@ -43,6 +43,11 @@ if get_option('static_executable')
     ldflags += ['-static']
 endif
 
+if get_option('with_wayland')
+    cflags += ['-DWITH_WAYLAND']
+    ldflags += ['-DWITH_WAYLAND']
+endif
+
 debugger_cflags = ['-DWITH_DEBUGGER']
 debugger_ldflags = ['-DWITH_DEBUGGER']
 

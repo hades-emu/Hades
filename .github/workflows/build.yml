@@ -51,7 +51,12 @@ jobs:
       - name: Install Dependencies
         run: |
           echo "Installing dependencies"
-          brew install meson ninja create-dmg glew libarchive
+          brew install meson ninja create-dmg libarchive
+
+          # Install glew 2.2.0 because the latest version doesn't ship with a static library anymore
+          brew tap-new hades/dependencies
+          brew extract --version=2.2.0 glew hades/dependencies
+          brew install hades/dependencies/glew@2.2.0
 
       - name: Build the SDL3
         run: |
@@ -221,7 +226,7 @@ jobs:
       - name: Build Hades
         run: |
           # Setup the Meson project
-          meson setup build --buildtype=release -Dstatic_sdl3=true --prefix=/usr
+          meson setup build --buildtype=release -Dstatic_sdl3=true -Dwith_wayland=false --prefix=/usr
 
           # Build & Install the project
           DESTDIR=$(pwd)/AppDir ninja -C build install
