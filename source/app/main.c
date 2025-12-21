@@ -71,16 +71,15 @@ SDL_AppInit(
     if (!app->args.without_gui) {
 
 #if defined(__linux__)
+#if defined(WITH_WAYLAND)
         // On Linux, hint at SDL that we are using Wayland if WAYLAND_DISPLAY is set.
         if (getenv("WAYLAND_DISPLAY")) {
             SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "wayland");
         }
+#else
+        SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "x11");
 #endif
-
-        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_AUDIO)) {
-            logln(HS_ERROR, "Failed to init the SDL: %s", SDL_GetError());
-            return SDL_APP_FAILURE;
-        }
+#endif
 
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, "Hades");
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, HADES_VERSION);
@@ -89,6 +88,11 @@ SDL_AppInit(
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Copyright (C) 2021-2024 - The Hades Authors");
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://hades-emu.org");
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "application");
+
+        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_AUDIO)) {
+            logln(HS_ERROR, "Failed to init the SDL: %s", SDL_GetError());
+            return SDL_APP_FAILURE;
+        }
 
         app_sdl_audio_init(app);
         app_sdl_video_init(app);

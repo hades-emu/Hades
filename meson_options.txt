@@ -1,4 +1,5 @@
 option('with_debugger', type: 'boolean', value: false, description: 'Build hades with its builtin debugger.')
+option('with_wayland', type: 'boolean', value: true, description: 'Will try to use wayland (if available) by default on Linux.')
 option('static_executable', type: 'boolean', value: false, description: 'Build hades as a static executable.')
 option('static_dependencies', type: 'boolean', value: false, description: 'Similar to `static_executable\' but only link the external dependencies and not the system ones.')
 option('static_glew', type: 'boolean', value: false, description: 'Link statically against glew.')
