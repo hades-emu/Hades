@@ -260,7 +260,7 @@ app_sdl_set_rumble(
     bool enable
 ) {
     if (!app->sdl.gamepad.ptr || !app->sdl.gamepad.can_rumble) {
-        return ;
+        return;
     }
 
     // Rumble for 0.25s

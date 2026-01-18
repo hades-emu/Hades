@@ -51,19 +51,18 @@ To build Hades, you first need to install those dependencies:
   - `SDL3`
   - `OpenGL`
   - `glew`
-  - `gtk3`
   - `libarchive`
 
 On the latest Ubuntu, you can install all those dependencies with:
 
 ```bash
-$ apt install meson ninja-build gcc libsdl3-dev libglew-dev libgtk-3-dev libarchive-dev
+$ apt install meson ninja-build gcc libsdl3-dev libglew-dev libarchive-dev
 ```
 
 On Fedora, you can install all those dependencies with:
 
 ```bash
-$ dnf install meson ninja-build gcc SDL3-devel glew-devel gtk3-devel libarchive-devel
+$ dnf install meson ninja-build gcc SDL3-devel glew-devel libarchive-devel
 ```
 
 Finally, to build Hades, run:

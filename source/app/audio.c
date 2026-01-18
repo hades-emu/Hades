@@ -28,7 +28,7 @@ app_sdl_audio_callback(
     len = additional_amount / sizeof(int16_t);
 
     if (len <= 0) {
-        return ;
+        return;
     }
 
     if (len > array_length(app->audio.buffer)) {

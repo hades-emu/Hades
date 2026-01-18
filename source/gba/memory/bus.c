@@ -185,7 +185,7 @@ mem_bus_pbuffer_access(
     if (!(flags & PIPELINE)) {
         mem_bus_pbuffer_stop(gba);
         mem_bus_wait_for(gba, intended_cycles);
-        return ;
+        return;
     }
 
     // When a memory read is done, first the prefetch unit checks if it is at the head of the buffer and "pops" it

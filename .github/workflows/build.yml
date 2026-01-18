@@ -193,7 +193,6 @@ jobs:
             ninja-build \
             libfuse2 \
             libglew-dev \
-            libgtk-3-dev \
             libarchive-dev \
             libudev-dev \
             libpipewire-0.3-dev
@@ -273,7 +272,6 @@ jobs:
             meson \
             ninja-build \
             libglew-dev \
-            libgtk-3-dev \
             libarchive-dev \
             libudev-dev \
             libpipewire-0.3-dev
@@ -321,7 +319,7 @@ jobs:
           maintainer: The Hades Authors
           version: 1.0.0
           arch: 'amd64'
-          depends: 'libarchive13, libgtk-3-0, libglew2.2'
+          depends: 'libarchive13, libglew2.2, libdecor-0-0'
           desc: 'A Nintendo Game Boy Advance Emulator.'
       - name: Test Hades
         run: |

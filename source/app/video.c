@@ -10,7 +10,6 @@
 #include <GL/glew.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
-#include <nfd.h>
 #include <math.h>
 
 #include "hades.h"
@@ -166,9 +165,6 @@ app_sdl_video_init(
     app->sdl.gamepad.ptr = NULL;
     app->sdl.gamepad.connected = false;
     app->sdl.gamepad.joystick.idx = -1;
-
-    // Setup the Native File Dialog extension
-    NFD_Init();
 
     // Now that initialization is finished, we can render a fake, invisible frame.
     // This will be used to have an accurate size for the menubar if it's pinned.
@@ -397,9 +393,6 @@ void
 app_sdl_video_cleanup(
     struct app *app
 ) {
-    /* Cleanup the Native File Dialog extension */
-    NFD_Quit();
-
     // Shutdown ImGui
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
