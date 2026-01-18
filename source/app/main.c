@@ -154,6 +154,7 @@ SDL_AppIterate(
     app->sdl.counters[1] = SDL_GetPerformanceCounter();
     elapsed_ms = ((float)(app->sdl.counters[1] - app->sdl.counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
 
+    app_nfd_process_events(app);
     app_emulator_process_all_notifs(app);
 
 #if WITH_DEBUGGER

@@ -32,8 +32,6 @@ AppDir:
       - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security multiverse
     include:
       - libarchive13
-      - libgtk-3-0
-      - libgtk-3-common
       - libglew2.2
       - librsvg2-common  # See https://github.com/hades-emu/Hades/issues/102
     exclude:

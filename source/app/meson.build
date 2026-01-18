@@ -29,6 +29,7 @@ libapp_sources = [
     'emulator.c',
     'event.c',
     'main.c',
+    'nfd.c',
     'path.c',
     'video.c',
 ]
@@ -69,8 +70,8 @@ libapp = static_library(
         dependency('threads', required: true, static: static_dependencies),
         dependency('libarchive', version: '>=3.0', required: true, static: static_dependencies or get_option('static_libarchive')),
     ] + imgui_dep,
-    link_with: [libgba, imgui, nfde, mjson] + libapp_extra_deps,
-    include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],
+    link_with: [libgba, imgui, mjson] + libapp_extra_deps,
+    include_directories: [incdir, imgui_inc, mjson_inc, stb_inc],
     c_args: cflags + libapp_extra_cflags,
     link_args: ldflags,
 )
@@ -85,8 +86,8 @@ if get_option('with_debugger')
             dependency('libedit', required: true, static: static_dependencies),
             dependency('capstone', required: true, static: static_dependencies),
         ] + imgui_dep,
-        link_with: [libgba_dbg, imgui, nfde, mjson] + libapp_extra_deps,
-        include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],
+        link_with: [libgba_dbg, imgui, mjson] + libapp_extra_deps,
+        include_directories: [incdir, imgui_inc, mjson_inc, stb_inc],
         c_args: cflags + libapp_extra_cflags + debugger_cflags,
         link_args: ldflags + debugger_ldflags,
     )

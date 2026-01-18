@@ -13,10 +13,11 @@
 #include <capstone/capstone.h>
 #endif
 
-#include <stdatomic.h>
-#include <GL/glew.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_dialog.h>
+#include <GL/glew.h>
 #include <cimgui.h>
+#include <stdatomic.h>
 #include "gba/gba.h"
 
 #define GLSL(src)                   "#version 330 core\n" #src
@@ -142,11 +143,24 @@ enum bind_actions {
 
 extern char const * const binds_pretty_name[];
 extern char const * const binds_slug[];
+extern SDL_DialogFileFilter const sdl_nfd_bios_filters[];
+extern SDL_DialogFileFilter const sdl_nfd_rom_filters[];
+extern SDL_DialogFileFilter const sdl_nfd_save_filters[];
 
 enum app_notification_kind {
     UI_NOTIFICATION_INFO,
     UI_NOTIFICATION_SUCCESS,
     UI_NOTIFICATION_ERROR,
+};
+
+enum nfd_event_kind {
+    NFD_BIOS_PATH,
+    NFD_ROM_PATH,
+    NFD_EXPORT_SAVE,
+    NFD_IMPORT_SAVE,
+    NFD_SAVE_DIR,
+    NFD_QUICKSAVE_DIR,
+    NFD_SCREENSHOT_DIR,
 };
 
 enum menu_kind {
@@ -165,6 +179,14 @@ struct app_notification {
     uint64_t timeout;
     uint64_t fade_time_start;
     struct app_notification *next;
+};
+
+struct nfd_event {
+    enum nfd_event_kind kind;
+    struct app *app;
+    char *path;
+
+    struct nfd_event *next;
 };
 
 struct keyboard_binding {
@@ -400,6 +422,12 @@ struct app {
                 bool left;
             } joystick;
         } gamepad;
+
+        struct {
+            pthread_mutex_t lock;
+
+            struct nfd_event *head;
+        } nfd;
     } sdl;
 
     struct {
@@ -652,6 +680,9 @@ void app_emulator_set_watchpoints_list(struct app *app, struct watchpoint *watch
 /* event.c */
 void app_sdl_handle_events(struct app *app, SDL_Event *event);
 void app_sdl_set_rumble(struct app const *app, bool enable);
+void app_nfd_process_events(struct app *app);
+void app_nfd_update_path(void *raw_event, const char * const *filelist, int filter);
+struct nfd_event *app_nfd_create_event(struct app *app, enum nfd_event_kind kind);
 
 /* path.c */
 void app_paths_update(struct app *app);

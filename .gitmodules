@@ -4,9 +4,6 @@
 [submodule "external/stb"]
 	path = external/stb
 	url = https://github.com/nothings/stb.git
-[submodule "external/nfde"]
-	path = external/nfde
-	url = https://github.com/btzy/nativefiledialog-extended.git
 [submodule "external/mjson"]
 	path = external/mjson
 	url = https://github.com/cesanta/mjson.git

@@ -90,39 +90,3 @@ mjson = static_library(
 stb_inc = include_directories(
     'stb/'
 )
-
-###############################
-##            NFDe           ##
-###############################
-
-nfde_inc = include_directories(
-    'nfde/src/include/'
-)
-
-nfde_src = []
-nfde_dep = []
-
-if host_machine.system() == 'windows'
-    nfde_src += ['nfde/src/nfd_win.cpp']
-elif host_machine.system() == 'darwin'
-    add_languages('objc')
-    nfde_src += ['nfde/src/nfd_cocoa.m']
-    nfde_dep += [
-        dependency('appleframeworks', required: true, modules: ['AppKit', 'UniformTypeIdentifiers']),
-    ]
-else
-    nfde_src += ['nfde/src/nfd_gtk.cpp']
-    nfde_dep += [
-        dependency('gtk+-3.0', required: true, static: static_dependencies),
-    ]
-endif
-
-nfde = static_library(
-    'nfde',
-    nfde_src,
-    include_directories: nfde_inc,
-    dependencies: nfde_dep,
-    c_args: cflags,
-    cpp_args: cflags,
-    link_args: ldflags,
-)

@@ -9,10 +9,10 @@
 
 #define _GNU_SOURCE
 
-#include <string.h>
+#include <SDL3/SDL_dialog.h>
 #include <cimgui.h>
-#include <nfd.h>
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include "hades.h"
 #include "app/app.h"
@@ -27,20 +27,15 @@ app_win_menubar_file(
 
     if (igBeginMenu("File", true)) {
         if (igMenuItem_Bool("Open", NULL, false, true)) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_OpenDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Rom", .spec = "gba,zip,7z,rar"}},
+            SDL_ShowOpenFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_ROM_PATH),
+                app->sdl.window,
+                sdl_nfd_rom_filters,
                 1,
-                NULL
+                NULL,
+                false
             );
-
-            if (result == NFD_OKAY) {
-                app_emulator_configure_and_run(app, path, NULL);
-                NFD_FreePath(path);
-            }
         }
 
         if (igBeginMenu("Open Recent", app->file.recent_roms[0] != NULL)) {
@@ -74,21 +69,15 @@ app_win_menubar_file(
         }
 
         if (igMenuItem_Bool("Open BIOS", NULL, false, true)) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_OpenDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "BIOS file", .spec = "bin,bios,raw"}},
+            SDL_ShowOpenFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_BIOS_PATH),
+                app->sdl.window,
+                sdl_nfd_bios_filters,
                 1,
-                NULL
+                NULL,
+                false
             );
-
-            if (result == NFD_OKAY) {
-                free(app->settings.emulation.bios_path);
-                app->settings.emulation.bios_path = strdup(path);
-                NFD_FreePath(path);
-            }
         }
 
         igSeparator();
@@ -220,42 +209,26 @@ app_win_menubar_emulation(
         igSeparator();
 
         if (igMenuItem_Bool("Import Save File", NULL, false, app->emulation.is_started && (bool)app->emulation.gba->shared_data.backup_storage.data)) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_OpenDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Save File", .spec = "sav"}},
+            SDL_ShowOpenFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_IMPORT_SAVE),
+                app->sdl.window,
+                sdl_nfd_save_filters,
                 1,
-                NULL
+                NULL,
+                false
             );
-
-            if (result == NFD_OKAY) {
-                char *game_path;
-
-                game_path = strdup(app->emulation.game_path);
-                app_emulator_configure_and_run(app, game_path, path);
-                free(game_path);
-                NFD_FreePath(path);
-            }
         }
 
         if (igMenuItem_Bool("Export Save File", NULL, false, app->emulation.is_started && (bool)app->emulation.gba->shared_data.backup_storage.data)) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_SaveDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Save File", .spec = "sav"}},
+            SDL_ShowSaveFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_EXPORT_SAVE),
+                app->sdl.window,
+                sdl_nfd_save_filters,
                 1,
-                NULL,
                 NULL
             );
-
-            if (result == NFD_OKAY) {
-                app_emulator_export_save_to_path(app, path);
-                NFD_FreePath(path);
-            }
         }
 
         igSeparator();
@@ -517,7 +490,7 @@ app_win_menubar(
     float vp_y;
 
     if (app->ui.menubar.visibility <= 0.0f) {
-        return ;
+        return;
     }
 
     // Hacking ImGui a bit to nicely fade the menubar away

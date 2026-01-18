@@ -7,8 +7,8 @@
 **
 \******************************************************************************/
 
+#include <SDL3/SDL_dialog.h>
 #include <cimgui.h>
-#include <nfd.h>
 #include <math.h>
 #include "hades.h"
 #include "app/app.h"
@@ -59,6 +59,18 @@ static char const * const display_size_names[] = {
     "x3",
     "x4",
     "x5",
+};
+
+SDL_DialogFileFilter const sdl_nfd_bios_filters[] = {
+    { "BIOS File",  "bin;bios;raw" },
+};
+
+SDL_DialogFileFilter const sdl_nfd_rom_filters[] = {
+    { "GBA Rom",  "gba;zip;7z;rar" },
+};
+
+SDL_DialogFileFilter const sdl_nfd_save_filters[] = {
+    { "GBA Save File",  "sav" },
 };
 
 static
@@ -179,16 +191,13 @@ app_win_settings_general(
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose##SaveDirectoryButton", (ImVec2){ 50.f, 0.f})) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_PickFolder(&path, app->settings.general.directories.backup.path);
-
-            if (result == NFD_OKAY) {
-                free(app->settings.general.directories.backup.path);
-                app->settings.general.directories.backup.path = strdup(path);
-                NFD_FreePath(path);
-            }
+            SDL_ShowOpenFolderDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_SAVE_DIR),
+                app->sdl.window,
+                app->settings.general.directories.backup.path,
+                false
+            );
         }
 
         igEndDisabled();
@@ -214,16 +223,13 @@ app_win_settings_general(
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose##QuickSaveDirectoryButton", (ImVec2){ 50.f, 0.f})) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_PickFolder(&path, app->settings.general.directories.quicksave.path);
-
-            if (result == NFD_OKAY) {
-                free(app->settings.general.directories.quicksave.path);
-                app->settings.general.directories.quicksave.path = strdup(path);
-                NFD_FreePath(path);
-            }
+            SDL_ShowOpenFolderDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_QUICKSAVE_DIR),
+                app->sdl.window,
+                app->settings.general.directories.quicksave.path,
+                false
+            );
         }
 
         igEndDisabled();
@@ -249,16 +255,13 @@ app_win_settings_general(
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose##ScreenshotDirectoryButton", (ImVec2){ 50.f, 0.f})) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_PickFolder(&path, app->settings.general.directories.screenshot.path);
-
-            if (result == NFD_OKAY) {
-                free(app->settings.general.directories.screenshot.path);
-                app->settings.general.directories.screenshot.path= strdup(path);
-                NFD_FreePath(path);
-            }
+            SDL_ShowOpenFolderDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_SCREENSHOT_DIR),
+                app->sdl.window,
+                app->settings.general.directories.screenshot.path,
+                false
+            );
         }
 
         igEndDisabled();
@@ -298,21 +301,15 @@ app_win_settings_emulation(
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose##BiosButton", (ImVec2){ 50.f, 0.f})) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_OpenDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "BIOS file", .spec = "bin,bios,raw"}},
+            SDL_ShowOpenFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_BIOS_PATH),
+                app->sdl.window,
+                sdl_nfd_bios_filters,
                 1,
-                NULL
+                NULL,
+                false
             );
-
-            if (result == NFD_OKAY) {
-                free(app->settings.emulation.bios_path);
-                app->settings.emulation.bios_path = strdup(path);
-                NFD_FreePath(path);
-            }
         }
 
         // Skip BIOS
