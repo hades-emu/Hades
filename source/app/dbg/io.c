@@ -37,6 +37,20 @@ debugger_io_new_register(
 
 static
 struct io_register *
+debugger_io_new_register32(
+    uint32_t addr,
+    char const *name,
+    uint32_t *ptr
+) {
+    struct io_register *reg;
+
+    reg = debugger_io_new_register(addr, 4, name);
+    reg->ptr32 = ptr;
+    return (reg);
+}
+
+static
+struct io_register *
 debugger_io_new_register16(
     uint32_t addr,
     char const *name,
@@ -258,6 +272,72 @@ debugger_io_init(
         debugger_io_new_bitfield(reg,  8, 13,  "Not used",                                  NULL);
         debugger_io_new_bitfield(reg, 14, 14,  "Length Flag",                               "(1=Stop output when length in NR41 expires)");
         debugger_io_new_bitfield(reg, 15, 15,  "Initial",                                   "(1=Restart Sound)");
+
+        {
+            size_t i;
+
+            for (i = 0; i < 4; ++i) {
+                char name[32];
+
+                snprintf(name, sizeof(name), "Timer %zu Counter/Reload", i);
+                reg = debugger_io_new_register16(IO_REG_TM0CNT + i * sizeof(uint32_t), strdup(name), &gba->io.timers[i].counter.raw);
+                debugger_io_new_bitfield(reg,  0,  15,  "Timer's reload value",             NULL);
+
+                snprintf(name, sizeof(name), "Timer %zu Control", i);
+                reg = debugger_io_new_register16(IO_REG_TM0CNT + 2 + i * sizeof(uint32_t), strdup(name), &gba->io.timers[i].control.raw);
+                debugger_io_new_bitfield(reg,  0,  1,  "Prescaler Selection (r)",           "(0=F/1, 1=F/64, 2=F/256, 3=F/1024)");
+
+                if (i == 0) {
+                    debugger_io_new_bitfield(reg,  2,  2,  "Not used",                      NULL);
+                } else {
+                    debugger_io_new_bitfield(reg,  2,  2,  "Count-up Timing",               NULL);
+                }
+
+                debugger_io_new_bitfield(reg,  3,  5,  "Not used",                          NULL);
+                debugger_io_new_bitfield(reg,  6,  6,  "Timer IRQ Enable",                  "(0=Disable, 1=IRQ on Timer overflow)");
+                debugger_io_new_bitfield(reg,  7,  7,  "Timer Start/Stop",                  "(0=Stop, 1=Operate)");
+                debugger_io_new_bitfield(reg,  8, 15,  "Not used",                          NULL);
+            }
+        }
+
+        {
+            size_t i;
+
+            for (i = 0; i < 4; ++i) {
+                char name[32];
+
+                snprintf(name, sizeof(name), "DMA %zu Source Address", i);
+                reg = debugger_io_new_register32(IO_REG_DMA0SAD + i * sizeof(uint32_t) * 3, strdup(name), &gba->io.dma[i].src.raw);
+                debugger_io_new_bitfield(reg,  0,  31,  "Source Address",                   NULL);
+
+                snprintf(name, sizeof(name), "DMA %zu Destination Address", i);
+                reg = debugger_io_new_register32(IO_REG_DMA0DAD + i * sizeof(uint32_t) * 3, strdup(name), &gba->io.dma[i].dst.raw);
+                debugger_io_new_bitfield(reg,  0,  31,  "Destination Address",              NULL);
+
+                snprintf(name, sizeof(name), "DMA %zu Word Count", i);
+                reg = debugger_io_new_register16(IO_REG_DMA0CNT + i * sizeof(uint32_t) * 3, strdup(name), &gba->io.dma[i].count.raw);
+                debugger_io_new_bitfield(reg,  0,  i < 3 ? 14 : 16,  "Word Count",          NULL);
+
+                snprintf(name, sizeof(name), "DMA %zu Control", i);
+                reg = debugger_io_new_register16(IO_REG_DMA0CTL + i * sizeof(uint32_t) * 3, strdup(name), &gba->io.dma[i].control.raw);
+                debugger_io_new_bitfield(reg,  0,  4,  "Not used",                          NULL);
+                debugger_io_new_bitfield(reg,  5,  6,  "Dst. Addr Control",                 "(0=Increment,1=Decrement,2=Fixed,3=Increment/Reload)");
+                debugger_io_new_bitfield(reg,  7,  8,  "Src. Addr Control",                 "(0=Increment,1=Decrement,2=Fixed,3=Prohibited)");
+                debugger_io_new_bitfield(reg,  9,  9,  "Repeat",                            NULL);
+                debugger_io_new_bitfield(reg, 10, 10,  "Transfer Type",                     "(0=16bit, 1=32bit)");
+
+                if (i == 3) {
+                    debugger_io_new_bitfield(reg, 11, 11,  "Game Pak DRQ",                  NULL);
+                } else {
+                    debugger_io_new_bitfield(reg, 11, 11,  "Not used",                      NULL);
+                }
+
+                debugger_io_new_bitfield(reg, 12, 13,  "Start Timing",                      "(0=Immediately, 1=VBlank, 2=HBlank, 3=Special)");
+                debugger_io_new_bitfield(reg, 14, 14,  "IRQ upon end of Word Count",        NULL);
+                debugger_io_new_bitfield(reg, 15, 15,  "Enable",                            NULL);
+            }
+        }
+
     }
 }
 

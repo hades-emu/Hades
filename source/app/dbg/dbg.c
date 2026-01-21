@@ -415,9 +415,11 @@ void
 debugger_run(
     struct app *app
 ) {
+    char *prev_input;
     char *input;
     uint32_t ptr;
 
+    prev_input = NULL;
     read_history(".hades-dbg.history");
     write_history(".hades-dbg.history");
 
@@ -429,8 +431,7 @@ debugger_run(
         panic(HS_DEBUG, "Failed to open capstone for ARM mode.");
     }
 
-    /* Push the different registers as variable */
-
+    // Push the different registers as variable
     debugger_lang_mut_variables_push(app, "r0", &app->emulation.gba->core.registers[0]);
     debugger_lang_mut_variables_push(app, "r1", &app->emulation.gba->core.registers[1]);
     debugger_lang_mut_variables_push(app, "r2", &app->emulation.gba->core.registers[2]);
@@ -447,7 +448,6 @@ debugger_run(
     debugger_lang_mut_variables_push(app, "r13", &app->emulation.gba->core.registers[13]);
     debugger_lang_mut_variables_push(app, "r14", &app->emulation.gba->core.registers[14]);
     debugger_lang_mut_variables_push(app, "r15", &app->emulation.gba->core.registers[15]);
-
     debugger_lang_mut_variables_push(app, "pc", &app->emulation.gba->core.registers[15]);
     debugger_lang_mut_variables_push(app, "lr", &app->emulation.gba->core.registers[14]);
     debugger_lang_mut_variables_push(app, "sp", &app->emulation.gba->core.registers[13]);
@@ -455,8 +455,7 @@ debugger_run(
     debugger_lang_mut_variables_push(app, "fp", &app->emulation.gba->core.registers[11]);
     debugger_lang_mut_variables_push(app, "sl", &app->emulation.gba->core.registers[10]);
 
-    /* Push all the IO registers name */
-
+    // Push all the IO registers name
     for (ptr = IO_REG_START; ptr < IO_REG_END; ptr += 2) {
         char const *name;
 
@@ -466,7 +465,7 @@ debugger_run(
         }
     }
 
-    /* Build the IO registers table */
+    // Build the IO registers table
     debugger_io_init(app->emulation.gba);
 
     debugger_process_all_notifs(app);
@@ -478,15 +477,17 @@ debugger_run(
         char *saveptr;
         char *cmd_str;
 
-        /* Skip blank lines */
+        // Skip blank lines
         if (!*input) {
             free(input);
             continue;
         }
 
-        /* Add input to history */
-        add_history(input);
-        write_history(".hades-dbg.history");
+        // Add input to history but avoid duplicates
+        if (!prev_input || strcmp(prev_input, input)) {
+            add_history(input);
+            write_history(".hades-dbg.history");
+        }
 
         cmd_str = strtok_r(input, ";", &saveptr);
 
@@ -555,7 +556,8 @@ cleanup:
             cmd_str = strtok_r(NULL, ";", &saveptr);
         }
 
-        free(input);
+        free(prev_input);
+        prev_input = input;
     }
 
     app->run = false;

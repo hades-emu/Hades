@@ -29,7 +29,8 @@ static
 void
 debugger_cmd_io_dump_binary(
     struct io_register *reg,
-    uint32_t value
+    uint32_t value,
+    uint32_t size
 ) {
     int32_t i;
 
@@ -39,7 +40,9 @@ debugger_cmd_io_dump_binary(
         g_reset
     );
 
-    for (i = reg->size * 8 - 1; i >= 0; --i) {
+    size = size ?: reg->size * 8;
+
+    for (i = size - 1; i >= 0; --i) {
         bool b;
 
         b = value & (1 << i);
@@ -56,7 +59,8 @@ static
 void
 debugger_cmd_io_dump_hex(
     struct io_register *reg,
-    uint32_t value
+    uint32_t value,
+    uint32_t size
 ) {
     int32_t i;
 
@@ -66,7 +70,9 @@ debugger_cmd_io_dump_hex(
         g_reset
     );
 
-    for (i = reg->size * 2 - 1; i >= 0; --i) {
+    size = size ?: reg->size * 2;
+
+    for (i = size - 1; i >= 0; --i) {
         uint8_t x;
 
         x = (value >> (i * 4)) & 0xF;
@@ -105,10 +111,10 @@ debugger_cmd_io_dump_reg(
         g_light_green,
         g_reset
     );
-    debugger_cmd_io_dump_binary(reg, val);
+    debugger_cmd_io_dump_binary(reg, val, 0);
 
     printf(" (");
-    debugger_cmd_io_dump_hex(reg, val);
+    debugger_cmd_io_dump_hex(reg, val, 0);
     printf(")\n");
 
     for (i = 0; i < reg->bitfield_len; ++i) {
@@ -117,13 +123,20 @@ debugger_cmd_io_dump_reg(
 
         bitfield = &reg->bitfield[i];
         value = bitfield_get_range(val, bitfield->start, bitfield->end + 1);
+
+        printf("  %s", value ? g_light_magenta : g_dark_gray);
+
+        // Print in decimal for small numbers, hex for bigs
+        if (bitfield->end - bitfield->start >= 8) {
+            printf("0x%08x", value);
+        } else {
+            printf("%10i", value);
+        }
         printf(
-            "%s%4i%s | %-30s %s\n",
-            value ? g_light_magenta : g_dark_gray,
-            value,
+            "%s | %-30s %s\n",
             g_reset,
             bitfield->label,
-            bitfield->hint
+            bitfield->hint ?: ""
         );
     }
 }
@@ -144,9 +157,9 @@ debugger_cmd_io(
         size_t i;
 
         printf(
-            "|%.12s|%.14s|%.34s|%.20s|%.8s|\n"
-            "| %-10s | %-12s | %-32s | %-18s | %-6s |\n"
-            "|%.12s|%.14s|%.34s|%.20s|%.8s|\n",
+            "|%.12s|%.14s|%.34s|%.36s|%.12s|\n"
+            "| %-10s | %-12s | %-32s | %-34s | %-10s |\n"
+            "|%.12s|%.14s|%.34s|%.36s|%.12s|\n",
             "-------------------------------------",
             "-------------------------------------",
             "-------------------------------------",
@@ -178,14 +191,14 @@ debugger_cmd_io(
                 g_reset,
                 reg->name
             );
-            debugger_cmd_io_dump_binary(reg, val);
+            debugger_cmd_io_dump_binary(reg, val, 32);
             printf(" | ");
-            debugger_cmd_io_dump_hex(reg, val);
+            debugger_cmd_io_dump_hex(reg, val, 8);
             printf(" |\n");
         }
 
         printf(
-            "|%.12s|%.14s|%.34s|%.20s|%.8s|\n",
+            "|%.12s|%.14s|%.34s|%.36s|%.12s|\n",
             "-------------------------------------",
             "-------------------------------------",
             "-------------------------------------",
