@@ -46,7 +46,7 @@ core_next(
 
     // Fire an interrupt if the IRQ line is set.
     if (core->irq_line && !gba->core.cpsr.irq_disable) {
-        logln(HS_IRQ, "Received new IRQ: 0x%04x.", gba->io.int_enabled.raw & gba->io.int_flag.raw);
+        dbgln(HS_IRQ, "Received new IRQ: 0x%04x.", gba->io.int_enabled.raw & gba->io.int_flag.raw);
         core_interrupt(gba, VEC_IRQ, MODE_IRQ, true);
     }
 
@@ -229,7 +229,7 @@ core_switch_mode(
 ) {
     if (mode != core->cpsr.mode) {
 
-        logln(
+        dbgln(
             HS_CORE,
             "Switching from %s to %s mode.",
             arm_modes_name[core->cpsr.mode],

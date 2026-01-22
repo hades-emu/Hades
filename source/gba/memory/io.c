@@ -157,7 +157,7 @@ mem_io_read8(
 ) {
     struct io const *io;
 
-    logln(HS_IO, "IO read to register %s (%#08x)", mem_io_reg_name(addr), addr);
+    dbgln(HS_IO, "IO read to register %s (%#08x)", mem_io_reg_name(addr), addr);
 
     io = &gba->io;
     switch (addr) {
@@ -369,7 +369,7 @@ mem_io_write8(
 ) {
     struct io *io;
 
-    logln(HS_IO, "IO write to register %s (%#08x) (%#02x)", mem_io_reg_name(addr), addr, val);
+    dbgln(HS_IO, "IO write to register %s (%#08x) (%#02x)", mem_io_reg_name(addr), addr, val);
 
     io = &gba->io;
     switch (addr) {

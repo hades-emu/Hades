@@ -113,7 +113,7 @@ dma_run_channel(
         default:        __unreachable;
     }
 
-    logln(
+    dbgln(
         HS_DMA,
         "DMA transfer from 0x%08x%c to 0x%08x%c (len=%#08x, unit_size=%u, channel %zu)",
         channel->internal_src,

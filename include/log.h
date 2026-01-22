@@ -76,3 +76,9 @@ void logln(enum modules module, char const *fmt, ...) __attribute__ ((format (pr
 void panic(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
 void unimplemented(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
 void disable_colors(void);
+
+#ifdef WITH_DEBUGGER
+#define dbgln(...) logln(__VA_ARGS__)
+#else
+#define dbgln(...)
+#endif

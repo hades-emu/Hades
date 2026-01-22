@@ -46,7 +46,7 @@ timer_schedule_start(
 
     timer = &gba->io.timers[timer_idx];
 
-    logln(HS_TIMER, "Timer %u started with initial value %#04x", timer_idx, timer->reload.raw);
+    dbgln(HS_TIMER, "Timer %u started with initial value %#04x", timer_idx, timer->reload.raw);
 
     if (timer->handler != INVALID_EVENT_HANDLE) {
         sched_cancel_event(gba, timer->handler);
@@ -88,7 +88,7 @@ timer_overflow(
     timer_idx = args.a1.u32;
     timer = &gba->io.timers[timer_idx];
 
-    logln(HS_TIMER, "Timer %u overflowed.", timer_idx);
+    dbgln(HS_TIMER, "Timer %u overflowed.", timer_idx);
 
     timer->counter.raw = timer->reload.raw;
 

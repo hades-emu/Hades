@@ -105,7 +105,7 @@ mem_openbus_read(
                     }                                                                       \
                     _ret = (gba)->memory.bios_bus >> _shift;                                \
                 } else {                                                                    \
-                    logln(HS_MEMORY, "Invalid BIOS read of size %zu from 0x%08x", sizeof(T), _addr); \
+                    dbgln(HS_MEMORY, "Invalid BIOS read of size %zu from 0x%08x", sizeof(T), _addr); \
                     _ret = mem_openbus_read((gba), _addr);                                  \
                 }                                                                           \
                 break;                                                                      \
@@ -178,7 +178,7 @@ mem_openbus_read(
                 break;                                                                      \
             };                                                                              \
             default: {                                                                      \
-                logln(HS_MEMORY, "Invalid read of size %zu from 0x%08x", sizeof(T), _addr); \
+                dbgln(HS_MEMORY, "Invalid read of size %zu from 0x%08x", sizeof(T), _addr); \
                 _ret = mem_openbus_read((gba), _addr);                                      \
                 break;                                                                      \
             }                                                                               \
@@ -306,7 +306,7 @@ mem_openbus_read(
                 );                                                                              \
                 break;                                                                          \
             default: {                                                                          \
-                logln(HS_MEMORY, "Invalid write of size %zu to 0x%08x", sizeof(T), _addr);      \
+                dbgln(HS_MEMORY, "Invalid write of size %zu to 0x%08x", sizeof(T), _addr);      \
                 break;                                                                          \
             };                                                                                  \
         };                                                                                      \
