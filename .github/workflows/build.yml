@@ -40,6 +40,56 @@ jobs:
           path: build/Hades.exe
           if-no-files-found: error
 
+  windows-arm:
+    name: Windows ARM64 (Portable Archive)
+    runs-on: windows-11-arm
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANGARM64
+          update: true
+          cache: true
+          release: true
+          install:
+            gcc
+            make
+          pacboy:
+            gcc-compat:p
+            toolchain:p
+            ca-certificates:p
+            meson:p
+            ninja:p
+            glew:p
+            libarchive:p
+            sdl3:p
+      - name: Verify MSYS2 Install
+        run: |
+          command="clang --version"
+          eval $command
+      - name: Fetch Source Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Hades
+        run: |
+          # Setup the Meson project
+          meson setup build --buildtype=release -Dstatic_executable=true
+
+          # Build the project
+          ninja -C build
+      - name: Test Hades
+        run: |
+          ./build/Hades.exe --help
+      - name: Collect Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hades-win-arm64
+          path: build/Hades.exe
+          if-no-files-found: error
   mac-os:
     name: MacOS arm64 (DMG Installer)
     runs-on: macos-14
