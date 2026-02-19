@@ -113,7 +113,7 @@ jobs:
           # https://github.com/libsdl-org/SDL/blob/main/docs/README-macos.md
 
           # Clone the SDL3
-          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.2.26
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.4.0
 
           # Build the SDL3
           cd sdl
@@ -261,7 +261,7 @@ jobs:
             libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
 
           # Clone the SDL3
-          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.2.26
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.4.0
 
           # Build the SDL3
           cd sdl
@@ -340,7 +340,7 @@ jobs:
             libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
 
           # Clone the SDL3
-          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.2.26
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.4.0
 
           # Build the SDL3
           cd sdl
