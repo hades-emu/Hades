@@ -164,6 +164,13 @@ app_sdl_handle_events(
                 break ;
             }
 
+            // Ignore keys if the game is running and the UI is active and focused.
+            // This ensures we can safely navigate the UI using the keyboard without moving the character in the game
+            // currently being played.
+            if (app->emulation.is_started && (igGetHoveredID() || igGetFocusID())) {
+                break;
+            }
+
             for (i = BIND_MIN; i < BIND_MAX; ++i) {
                 // Normal binds
                 if (app_bindings_keyboard_binding_match(&app->binds.keyboard[i], &bind)) {
