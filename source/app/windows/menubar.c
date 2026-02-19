@@ -88,6 +88,12 @@ app_win_menubar_file(
         }
         free(bind_str);
 
+        igSeparator();
+
+        if (igMenuItem_Bool("Exit", NULL, false, true)) {
+            app->run = false;
+        }
+
         igEndMenu();
     }
 }
