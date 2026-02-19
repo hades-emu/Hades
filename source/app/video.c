@@ -114,6 +114,7 @@ app_sdl_video_init(
     // Set ImGui options
     app->ui.ioptr = igGetIO_Nil();
     app->ui.ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    app->ui.ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
     app->ui.ioptr->IniFilename = NULL;
 
     ImGui_ImplSDL3_InitForOpenGL(app->sdl.window, app->gfx.gl_context);

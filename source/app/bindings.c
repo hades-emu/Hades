@@ -32,6 +32,7 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_SHOW_FPS] = "Toggle FPS",
     [BIND_EMULATOR_FULLSCREEN] = "Toggle Fullscreen",
     [BIND_EMULATOR_SCREENSHOT] = "Screenshot",
+    [BIND_EMULATOR_MENUBAR] = "Focus Menubar",
     [BIND_EMULATOR_SETTINGS] = "Toggle Settings",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "Alt. Speed (Toggle)",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "Alt. Speed (Hold)",
@@ -76,6 +77,7 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_SHOW_FPS] = "toggle_show_fps",
     [BIND_EMULATOR_FULLSCREEN] = "fullscreen",
     [BIND_EMULATOR_SCREENSHOT] = "screenshot",
+    [BIND_EMULATOR_MENUBAR] = "focus_menubar",
     [BIND_EMULATOR_SETTINGS] = "toggle_settings",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "alternative_speed_toggle",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "alternative_speed_hold",
@@ -242,6 +244,11 @@ app_bindings_process(
         case BIND_EMULATOR_FULLSCREEN: {
             app->settings.video.display_mode = app->settings.video.display_mode == DISPLAY_MODE_WINDOW ? DISPLAY_MODE_BORDERLESS_FULLSCREEN : DISPLAY_MODE_WINDOW;
             app_sdl_video_update_display_mode(app);
+            break;
+        };
+        case BIND_EMULATOR_MENUBAR: {
+            app->ui.focus_menubar = true;
+            app->ui.menubar.force_show = true;
             break;
         };
         case BIND_EMULATOR_SETTINGS:            app->ui.settings.open ^= true; break;

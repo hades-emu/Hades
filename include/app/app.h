@@ -108,6 +108,7 @@ enum bind_actions {
     BIND_EMULATOR_SHOW_FPS,
     BIND_EMULATOR_FULLSCREEN,
     BIND_EMULATOR_SCREENSHOT,
+    BIND_EMULATOR_MENUBAR,
     BIND_EMULATOR_SETTINGS,
     BIND_EMULATOR_ALT_SPEED_HOLD,
     BIND_EMULATOR_ALT_SPEED_TOGGLE,
@@ -486,6 +487,9 @@ struct app {
 
         // Set to update the UI scale at the end of the frame.
         bool request_scale_update;
+
+        // Set when the user wants to focus the menubar.
+        bool focus_menubar;
 
         // Default style of ImGui.
         // Used when rescaling the application.

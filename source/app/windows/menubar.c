@@ -25,6 +25,14 @@ app_win_menubar_file(
 ) {
     char *bind_str;
 
+    if (app->ui.focus_menubar) {
+        app->ui.focus_menubar = false;
+        igFocusWindow(igGetCurrentWindow(), ImGuiFocusRequestFlags_None);
+        igSetNavID(0, ImGuiNavLayer_Menu, 0, (ImRect) {});
+        igNavMoveRequestSubmit(ImGuiDir_None, ImGuiDir_None, ImGuiNavMoveFlags_None, ImGuiScrollFlags_None);
+        igOpenPopup_Str("File", ImGuiPopupFlags_None);
+    }
+
     if (igBeginMenu("File", true)) {
         if (igMenuItem_Bool("Open", NULL, false, true)) {
             SDL_ShowOpenFileDialog(
