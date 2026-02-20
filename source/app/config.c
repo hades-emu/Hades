@@ -678,7 +678,7 @@ app_config_save(
                     STR({
                         "binds": {
                             "%s": {
-                                "%s": %s
+                                "%s": "%s"
                             },
                         },
                     }),
