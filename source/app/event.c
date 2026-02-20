@@ -161,7 +161,7 @@ app_sdl_handle_events(
                     *app->ui.settings.keybindings_editor.keyboard_target = bind;
                     app->ui.settings.keybindings_editor.keyboard_target = NULL;
                 }
-                break ;
+                break;
             }
 
             // Ignore keys if the game is running and the UI is active and focused.
@@ -199,6 +199,13 @@ app_sdl_handle_events(
                     *app->ui.settings.keybindings_editor.gamepad_target = event->gbutton.button;
                     app->ui.settings.keybindings_editor.gamepad_target = NULL;
                 }
+                break;
+            }
+
+            // Ignore gamepad if the game is running and the UI is active and focused.
+            // This ensures we can safely navigate the UI using the gamepad without moving the character in the game
+            // currently being played.
+            if (app->emulation.is_started && (igGetHoveredID() || igGetFocusID())) {
                 break;
             }
 
