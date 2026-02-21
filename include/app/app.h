@@ -488,9 +488,6 @@ struct app {
         // Set to update the UI scale at the end of the frame.
         bool request_scale_update;
 
-        // Set when the user wants to focus the menubar.
-        bool focus_menubar;
-
         // Default style of ImGui.
         // Used when rescaling the application.
         struct ImGuiStyle default_style;
@@ -505,6 +502,9 @@ struct app {
         float time_elapsed_since_last_mouse_motion_ms;
 
         struct {
+            // Set when the user wants to focus the menubar.
+            bool focus;
+
             // Force the menubar to be hidden on the next frame
             bool force_hide;
 
@@ -567,6 +567,9 @@ struct app {
 
         struct {
             bool open;
+
+            // Set when the user wants to focus the menubar.
+            bool focus;
 
             uint32_t menu;
 

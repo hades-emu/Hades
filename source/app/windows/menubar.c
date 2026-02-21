@@ -24,13 +24,24 @@ app_win_menubar_file(
     struct app *app
 ) {
     char *bind_str;
+    bool focus_file_open;
 
-    if (app->ui.focus_menubar) {
-        app->ui.focus_menubar = false;
+    focus_file_open = false;
+
+    if (app->ui.menubar.focus) {
+        app->ui.menubar.focus = false;
+
+        // Focus the menubar
         igFocusWindow(igGetCurrentWindow(), ImGuiFocusRequestFlags_None);
+
+        // Reset the navigation "history" of the menubar (aka, pressing left/right will match the highlighted element)
         igSetNavID(0, ImGuiNavLayer_Menu, 0, (ImRect) {});
-        igNavMoveRequestSubmit(ImGuiDir_None, ImGuiDir_None, ImGuiNavMoveFlags_None, ImGuiScrollFlags_None);
+
+        // Open the "File" submenu
         igOpenPopup_Str("File", ImGuiPopupFlags_None);
+
+        // Ensure the first element of "File" is focused & highlighted.
+        focus_file_open = true;
     }
 
     if (igBeginMenu("File", true)) {
@@ -44,6 +55,11 @@ app_win_menubar_file(
                 NULL,
                 false
             );
+        }
+
+        if (focus_file_open) {
+            igNavMoveRequestSubmit(ImGuiDir_None, ImGuiDir_None, ImGuiNavMoveFlags_None, ImGuiScrollFlags_None);
+            focus_file_open = false;
         }
 
         if (igBeginMenu("Open Recent", app->file.recent_roms[0] != NULL)) {
@@ -93,6 +109,8 @@ app_win_menubar_file(
         bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_SETTINGS]);
         if (igMenuItem_Bool("Settings", bind_str, false, true)) {
             app->ui.settings.open = true;
+            app->ui.settings.focus = true;
+            app->ui.settings.menu = 0;
         }
         free(bind_str);
 
@@ -273,6 +291,7 @@ app_win_menubar_emulation(
 
         if (igMenuItem_Bool("Emulation Settings", NULL, false, true)) {
             app->ui.settings.open = true;
+            app->ui.settings.focus = true;
             app->ui.settings.menu = MENU_EMULATION;
         }
 
@@ -374,6 +393,7 @@ app_win_menubar_video(
 
         if (igMenuItem_Bool("Video Settings", NULL, false, true)) {
             app->ui.settings.open = true;
+            app->ui.settings.focus = true;
             app->ui.settings.menu = MENU_VIDEO;
         }
 
@@ -399,6 +419,7 @@ app_win_menubar_audio(
 
         if (igMenuItem_Bool("Audio Settings", NULL, false, true)) {
             app->ui.settings.open = true;
+            app->ui.settings.focus = true;
             app->ui.settings.menu = MENU_AUDIO;
         }
 

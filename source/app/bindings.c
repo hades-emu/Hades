@@ -204,11 +204,10 @@ app_bindings_gamepad_binding_clear(
     }
 }
 
-/*
-** Process a given binding, doing the action it represents.
-*/
+// Bindings that can only be used in game.
+static
 void
-app_bindings_process(
+app_bindings_process_in_game_binds(
     struct app *app,
     enum bind_actions bind,
     bool pressed
@@ -237,29 +236,6 @@ app_bindings_process(
         return;
     }
 
-    // Bindings that can be used both in and outside of a game
-    switch (bind) {
-        case BIND_EMULATOR_MUTE:                app->settings.audio.mute ^= true; break;
-        case BIND_EMULATOR_SHOW_FPS:            app->settings.general.show_fps ^= true; break;
-        case BIND_EMULATOR_FULLSCREEN: {
-            app->settings.video.display_mode = app->settings.video.display_mode == DISPLAY_MODE_WINDOW ? DISPLAY_MODE_BORDERLESS_FULLSCREEN : DISPLAY_MODE_WINDOW;
-            app_sdl_video_update_display_mode(app);
-            break;
-        };
-        case BIND_EMULATOR_MENUBAR: {
-            app->ui.focus_menubar = true;
-            app->ui.menubar.force_show = true;
-            break;
-        };
-        case BIND_EMULATOR_SETTINGS:            app->ui.settings.open ^= true; break;
-        default:                                break;
-    }
-
-    if (!app->emulation.is_started) {
-        return;
-    }
-
-    // Bindings that can only be used in game.
     switch (bind) {
         case BIND_EMULATOR_SCREENSHOT:          app_emulator_screenshot(app); break;
         case BIND_EMULATOR_PAUSE:               app->emulation.is_running ? app_emulator_pause(app) : app_emulator_run(app); break;
@@ -297,5 +273,85 @@ app_bindings_process(
             break;
         };
         default: break;
+    }
+}
+
+// Bindings that can be used both in and outside of a game
+static
+void
+app_bindings_process_global_binds(
+    struct app *app,
+    enum bind_actions bind,
+    bool pressed
+) {
+    // The next binds are only triggered when the key is pressed, not when it is released.
+    if (!pressed) {
+        return;
+    }
+
+    switch (bind) {
+        case BIND_EMULATOR_MUTE:                app->settings.audio.mute ^= true; break;
+        case BIND_EMULATOR_SHOW_FPS:            app->settings.general.show_fps ^= true; break;
+        case BIND_EMULATOR_FULLSCREEN: {
+            app->settings.video.display_mode = app->settings.video.display_mode == DISPLAY_MODE_WINDOW ? DISPLAY_MODE_BORDERLESS_FULLSCREEN : DISPLAY_MODE_WINDOW;
+            app_sdl_video_update_display_mode(app);
+            break;
+        };
+        default:                                break;
+    }
+}
+
+// Bindings that can be used even when navigating the UI.
+static
+void
+app_bindings_process_ui_binds(
+    struct app *app,
+    enum bind_actions bind,
+    bool pressed
+) {
+    // The next binds are only triggered when the key is pressed, not when it is released.
+    if (!pressed) {
+        return;
+    }
+
+    switch (bind) {
+        case BIND_EMULATOR_MENUBAR: {
+            app->ui.menubar.force_show = true;
+            app->ui.menubar.focus = true;
+            app->ui.ioptr->NavActive = true;
+            app->ui.ioptr->NavVisible = true;
+            break;
+        };
+        case BIND_EMULATOR_SETTINGS: {
+            app->ui.settings.open ^= true;
+            app->ui.settings.focus = true;
+            break;
+        };
+        default: break;
+    }
+}
+
+/*
+** Process a given binding, doing the action it represents.
+*/
+void
+app_bindings_process(
+    struct app *app,
+    enum bind_actions bind,
+    bool pressed
+) {
+    app_bindings_process_ui_binds(app, bind, pressed);
+
+    // Ignore the remaining bindings if the game is running and the UI is active and focused.
+    // This ensures we can safely navigate the UI using the keyboard/gamepad without moving the character in the game
+    // currently being played.
+    if (igGetHoveredID() || igGetFocusID()) {
+        return ;
+    }
+
+    app_bindings_process_global_binds(app, bind, pressed);
+
+    if (app->emulation.is_started) {
+        app_bindings_process_in_game_binds(app, bind, pressed);
     }
 }

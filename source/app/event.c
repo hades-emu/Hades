@@ -142,33 +142,28 @@ app_sdl_handle_events(
 
             // Ignore keys if the settings are open except the special case where we are creating new bindings.
             if (app->ui.settings.open) {
-                // The `Escape` key is used to either close the settings menu or to clear a bind.
                 if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_ESCAPE) {
+                    // The `Escape` key is used to clear a bind.
                     if (app->ui.settings.keybindings_editor.keyboard_target) {
                         app->ui.settings.keybindings_editor.keyboard_target->key = SDLK_UNKNOWN;
                         app->ui.settings.keybindings_editor.keyboard_target->ctrl = false;
                         app->ui.settings.keybindings_editor.keyboard_target->alt = false;
                         app->ui.settings.keybindings_editor.keyboard_target->shift = false;
                         app->ui.settings.keybindings_editor.keyboard_target = NULL;
-                    } else if (app->ui.settings.keybindings_editor.gamepad_target) {
+                        break;
+                    }
+
+                    if (app->ui.settings.keybindings_editor.gamepad_target) {
                         *app->ui.settings.keybindings_editor.gamepad_target = SDL_GAMEPAD_BUTTON_INVALID;
                         app->ui.settings.keybindings_editor.gamepad_target = NULL;
-                    } else {
-                        app->ui.settings.open = false;
+                        break;
                     }
                 } else if (app->ui.settings.keybindings_editor.keyboard_target && ((event->type == SDL_EVENT_KEY_DOWN && !is_mod_key) || (event->type == SDL_EVENT_KEY_UP && is_mod_key))) {
                     app_bindings_keyboard_binding_clear(app, &bind);
                     *app->ui.settings.keybindings_editor.keyboard_target = bind;
                     app->ui.settings.keybindings_editor.keyboard_target = NULL;
+                    break;
                 }
-                break;
-            }
-
-            // Ignore keys if the game is running and the UI is active and focused.
-            // This ensures we can safely navigate the UI using the keyboard without moving the character in the game
-            // currently being played.
-            if (app->emulation.is_started && (igGetHoveredID() || igGetFocusID())) {
-                break;
             }
 
             for (i = BIND_MIN; i < BIND_MAX; ++i) {
@@ -193,19 +188,10 @@ app_sdl_handle_events(
             app->ui.power_save_fcounter = POWER_SAVE_FRAME_DELAY;
 
             // Disable gamepad buttons if the settings are open except the special case where we are creating new bindings.
-            if (app->ui.settings.open) {
-                if (event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN && app->ui.settings.keybindings_editor.gamepad_target) {
-                    app_bindings_gamepad_binding_clear(app, event->gbutton.button);
-                    *app->ui.settings.keybindings_editor.gamepad_target = event->gbutton.button;
-                    app->ui.settings.keybindings_editor.gamepad_target = NULL;
-                }
-                break;
-            }
-
-            // Ignore gamepad if the game is running and the UI is active and focused.
-            // This ensures we can safely navigate the UI using the gamepad without moving the character in the game
-            // currently being played.
-            if (app->emulation.is_started && (igGetHoveredID() || igGetFocusID())) {
+            if (app->ui.settings.open && event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN && app->ui.settings.keybindings_editor.gamepad_target) {
+                app_bindings_gamepad_binding_clear(app, event->gbutton.button);
+                *app->ui.settings.keybindings_editor.gamepad_target = event->gbutton.button;
+                app->ui.settings.keybindings_editor.gamepad_target = NULL;
                 break;
             }
 

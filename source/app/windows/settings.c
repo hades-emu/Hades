@@ -1029,13 +1029,32 @@ app_win_settings(
           | ImGuiWindowFlags_NoResize
           | ImGuiWindowFlags_AlwaysAutoResize
           | ImGuiWindowFlags_NoTitleBar
-          | ImGuiWindowFlags_NoNavInputs
-          | ImGuiWindowFlags_NoNavFocus
     )) {
         uint32_t i;
 
         igBeginChild_Str("##SettingsMenu", (ImVec2){ vp->WorkSize.x / 4.f, 0.f}, ImGuiChildFlags_Borders, ImGuiWindowFlags_None);
         for (i = 0; i < MENU_MAX; ++i) {
+
+            // Bunch of ImGui magic to highlight the desired entry in the left menu when the settings are opened.
+            // This is especially useful when navigating the options using a gamepad.
+            if (app->ui.settings.focus && app->ui.settings.menu == i) {
+                ImGuiWindow *window;
+
+                window = igGetCurrentWindow();
+
+                igSetNavCursorVisible(true);
+                igSetNavWindow(window);
+
+                igNavMoveRequestSubmit(
+                    ImGuiDir_None,
+                    ImGuiDir_Down,
+                    ImGuiNavMoveFlags_IsTabbing | ImGuiNavMoveFlags_Activate | ImGuiNavMoveFlags_FocusApi,
+                    window->Appearing ? ImGuiScrollFlags_KeepVisibleEdgeX | ImGuiScrollFlags_AlwaysCenterY : ImGuiScrollFlags_KeepVisibleEdgeX | ImGuiScrollFlags_KeepVisibleEdgeY
+                );
+
+                app->ui.settings.focus = false;
+            }
+
             if (igSelectable_Bool(menu_names[i], app->ui.settings.menu == i, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f})) {
                 app->ui.settings.menu = i;
             }
@@ -1057,6 +1076,16 @@ app_win_settings(
         }
 
         igEndGroup();
+
+        // Allow the user to close the settings by pressing the B button enough time with a gamepad.
+        if (igIsKeyPressed_Bool(ImGuiKey_GamepadFaceRight, false)
+            && igIsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)
+            && !igIsAnyItemActive()
+            && !igIsPopupOpen_Str(NULL, ImGuiPopupFlags_AnyPopup)
+            && !igIsAnyItemFocused()
+        ) {
+            app->ui.settings.open = false;
+        }
 
         igEnd();
     }
