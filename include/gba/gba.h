@@ -109,6 +109,7 @@ struct game_entry {
     char *code;
     enum backup_storage_types storage;
     enum gpio_device_types gpio;
+    bool mirror;
     char *title;
 };
 
@@ -163,6 +164,9 @@ struct launch_config {
 
     // GPIO device attached to the cartridge.
     enum gpio_device_types gpio_device_type;
+
+    // Enable ROM memory mirroring
+    bool rom_mirroring;
 
     // The kind of storage type to use.
     struct {

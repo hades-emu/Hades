@@ -186,6 +186,17 @@ gba_state_reset(
         memcpy(gba->memory.bios, config->bios.data, min(config->bios.size, BIOS_SIZE));
         memcpy(gba->memory.rom, config->rom.data, min(config->rom.size, CART_SIZE));
         gba->memory.rom_size = config->rom.size;
+        gba->memory.rom_mask = CART_MASK;
+
+        if (config->rom_mirroring) {
+            size_t rounded_size = 1;
+
+            while(rounded_size < gba->memory.rom_size) {
+                rounded_size *= 2;
+            }
+
+            gba->memory.rom_mask = (uint32_t)(rounded_size  - 1);
+        }
     }
 
     // IO

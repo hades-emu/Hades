@@ -289,6 +289,12 @@ struct settings {
             enum gpio_device_types type;
         } gpio_device;
 
+        // ROM Mirroring
+        struct {
+            bool autodetect;
+            bool value;
+        } rom_mirroring;
+
         // Enable the emulation of the prefetch buffer
         bool prefetch_buffer;
     } emulation;

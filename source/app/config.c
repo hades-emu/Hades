@@ -53,6 +53,8 @@ app_config_default_settings(
     settings->emulation.backup_storage.type = BACKUP_NONE;
     settings->emulation.gpio_device.autodetect = true;
     settings->emulation.gpio_device.type = GPIO_NONE;
+    settings->emulation.rom_mirroring.autodetect = true;
+    settings->emulation.rom_mirroring.value = false;
     settings->emulation.prefetch_buffer = true;
     settings->video.enable_oam = true;
     memset(settings->video.enable_bg_layers, true, sizeof(settings->video.enable_bg_layers));
@@ -287,6 +289,14 @@ app_config_load(
 
         if (mjson_get_number(data, data_len, "$.emulation.gpio.type", &d)) {
             app->settings.emulation.gpio_device.type = max(GPIO_MIN, min((int)d, GPIO_MAX));
+        }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.rom_mirroring.autodetect", &b)) {
+            app->settings.emulation.rom_mirroring.autodetect = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.emulation.rom_mirroring.value", &b)) {
+            app->settings.emulation.rom_mirroring.value = b;
         }
 
         if (mjson_get_bool(data, data_len, "$.emulation.prefetch_buffer", &b)) {
@@ -527,6 +537,10 @@ app_config_save(
                     "autodetect": %B,
                     "type": %d
                 },
+                "rom_mirroring": {
+                    "autodetect": %B,
+                    "value": %B
+                },
                 "prefetch_buffer": %B
             },
 
@@ -582,6 +596,8 @@ app_config_save(
         (int)app->settings.emulation.backup_storage.type,
         (int)app->settings.emulation.gpio_device.autodetect,
         (int)app->settings.emulation.gpio_device.type,
+        (int)app->settings.emulation.rom_mirroring.autodetect,
+        (int)app->settings.emulation.rom_mirroring.value,
         (int)app->settings.emulation.prefetch_buffer,
         (int)app->settings.video.menubar_mode,
         (int)app->settings.video.display_mode,

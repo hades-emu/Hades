@@ -661,12 +661,19 @@ app_emulator_configure_and_run(
         app->emulation.launch_config->gpio_device_type = app->settings.emulation.gpio_device.type;
     }
 
+    if (app->settings.emulation.rom_mirroring.autodetect) {
+        app->emulation.launch_config->rom_mirroring = app->emulation.game_entry->mirror;
+    } else {
+        app->emulation.launch_config->rom_mirroring = app->settings.emulation.rom_mirroring.value;
+    }
+
     app_emulator_fill_gba_settings(app, &app->emulation.launch_config->settings);
 
     logln(HS_INFO, "Emulator's configuration:");
     logln(HS_INFO, "    Skip BIOS: %s", app->emulation.launch_config->skip_bios ? "true" : "false");
     logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
     logln(HS_INFO, "    GPIO: %s", gpio_device_names[app->emulation.launch_config->gpio_device_type]);
+    logln(HS_INFO, "    ROM Mirroring: %s", app->emulation.launch_config->rom_mirroring ? "true" : "false");
     if (app->emulation.launch_config->settings.fast_forward) {
         logln(HS_INFO, "    Speed: Fast Forward");
     } else {

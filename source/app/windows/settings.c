@@ -459,6 +459,33 @@ app_win_settings_emulation(
         igEndTable();
     }
 
+    igSeparatorText("ROM Mirroring");
+
+    if (igBeginTable("##EmulationSettingsROMMirroring", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##EmulationSettingsROMMirroringLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##EmulationSettingsROMMirroringValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // ROM Mirroring Auto-Detect
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Auto-Detect");
+
+        igTableNextColumn();
+        igCheckbox("##ROMMirroringAutoDetect", &app->settings.emulation.rom_mirroring.autodetect);
+
+        // ROM Mirroring Value
+        igBeginDisabled(app->settings.emulation.rom_mirroring.autodetect);
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Value");
+
+        igTableNextColumn();
+        igCheckbox("##ROMMirroringInnerValue", &app->settings.emulation.rom_mirroring.value);
+        igEndDisabled();
+
+        igEndTable();
+    }
+
     igSeparatorText("Misc");
 
     if (igBeginTable("##EmulationSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {

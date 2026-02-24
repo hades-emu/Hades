@@ -229,6 +229,7 @@ struct memory {
     // External Memory (Game Pak)
     uint8_t rom[CART_SIZE];
     size_t rom_size;
+    uint64_t rom_mask;
 
     // Backup Storage
     struct {
