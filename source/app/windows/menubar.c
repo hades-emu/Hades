@@ -89,6 +89,13 @@ app_win_menubar_file(
                     free(path);
                 }
             }
+
+            igSeparator();
+
+            if (igMenuItem_Bool("Clear", NULL, false, true)) {
+                app_config_clear_recent_roms(app);
+            }
+
             igEndMenu();
         }
 

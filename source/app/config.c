@@ -751,3 +751,14 @@ app_config_push_recent_rom(
 
     memcpy(app->file.recent_roms, new_recent_roms, sizeof(new_recent_roms));
 }
+
+
+/*
+** Clear the list of recent roms.
+*/
+void
+app_config_clear_recent_roms(
+    struct app *app
+) {
+    memset(app->file.recent_roms, 0, sizeof(app->file.recent_roms));
+}

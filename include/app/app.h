@@ -655,6 +655,7 @@ void app_config_default_bindings(struct app *app);
 void app_config_load(struct app *app);
 void app_config_save(struct app *app);
 void app_config_push_recent_rom(struct app *app, char const *path);
+void app_config_clear_recent_roms(struct app *app);
 
 /* emulator.c */
 void app_emulator_process_all_notifs(struct app *app);
