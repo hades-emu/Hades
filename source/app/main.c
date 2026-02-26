@@ -200,6 +200,8 @@ SDL_AppIterate(
     // Handle all the stuff that must disappear after a few seconds if the mouse isn't moving
     // and the UI isn't being used.
     if (app->emulation.is_started && !igGetHoveredID() && !igGetFocusID() && !app->ui.settings.open) {
+        app->ui.ioptr->ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad; // Disable Gamepad Controls to navigate the UI
+
         if (app->ui.menubar.force_show) {
             app->ui.time_elapsed_since_last_mouse_motion_ms = 0.0f;
             app->ui.menubar.visibility = 1.0f;
@@ -246,6 +248,7 @@ SDL_AppIterate(
         app->ui.menubar.visibility = 1.0f;
         app->ui.menubar.force_hide = false;
         app->ui.menubar.force_show = false;
+        app->ui.ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls to navigate the UI
     }
 
     // Handle the power-save mode.
