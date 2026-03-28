@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -245,5 +245,18 @@ app_path_update_quicksave_paths(
         );
     }
 
-    app->file.flush_qsaves_cache = true;
+    app_path_refresh_quicksave_cache(app);
+}
+
+void
+app_path_refresh_quicksave_cache(
+    struct app *app
+) {
+    size_t i;
+
+    for (i = 0; i < MAX_QUICKSAVES; ++i) {
+        free(app->file.qsaves[i].mtime);
+        app->file.qsaves[i].exist = hs_fexists(app->file.qsaves[i].path);
+        app->file.qsaves[i].mtime = hs_fmtime(app->file.qsaves[i].path);
+    }
 }

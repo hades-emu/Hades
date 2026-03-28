@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -167,7 +167,7 @@ sched_run_for(
 
         if (!elapsed) {
             if (gba->core.state != CORE_STOP) {
-                logln(HS_WARNING, "No cycles elapsed during `core_next()`.");
+                logln(HS_WARN, "No cycles elapsed during `core_next()`.");
             }
             break;
         }

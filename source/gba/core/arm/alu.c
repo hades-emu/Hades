@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -73,7 +73,7 @@ core_arm_alu(
         if (bitfield_get(shift, 0)) {
             early_pc_inc = true;
             core->pc += 4;
-            core_idle(gba);
+            mem_bus_idle(gba);
             core->prefetch_access_type = NON_SEQUENTIAL;
         }
 

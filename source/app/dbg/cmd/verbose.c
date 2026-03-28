@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -21,7 +21,7 @@ struct verbosity_arg verbosities[] = {
     { "global",     &g_verbose_global       },
 
     { "info",       g_verbose + HS_INFO     },
-    { "warn",       g_verbose + HS_WARNING  },
+    { "warn",       g_verbose + HS_WARN     },
     { "err",        g_verbose + HS_ERROR    },
 
     { "io",         g_verbose + HS_IO       },

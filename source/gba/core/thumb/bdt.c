@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -55,7 +55,7 @@ core_thumb_pop(
     uint16_t op
 ) {
     struct core *core;
-    enum access_types access_type;
+    enum access_flags access_type;
     ssize_t i;
 
     core = &gba->core;
@@ -80,7 +80,7 @@ core_thumb_pop(
         }
     }
 
-    core_idle(gba);
+    mem_bus_idle(gba);
 
     /* Pop PC */
     if (bitfield_get(op, 8)) {
@@ -100,17 +100,18 @@ core_thumb_stmia(
 ) {
     bool first;
     struct core *core;
-    enum access_types access_type;
+    enum access_flags access_type;
     uint32_t count;
     uint32_t addr;
     uint32_t rb;
     ssize_t i;
 
-    count = 0;
-    rb = bitfield_get_range(op, 8, 11);
     core = &gba->core;
     core->pc += 2;
     core->prefetch_access_type = NON_SEQUENTIAL;
+
+    count = 0;
+    rb = bitfield_get_range(op, 8, 11);
 
     /*
     ** Edge case: if rlist is empty, r15 is stored instead and rb is increased by 0x40
@@ -161,16 +162,17 @@ core_thumb_ldmia(
     uint16_t op
 ) {
     struct core *core;
-    enum access_types access_type;
+    enum access_flags access_type;
     uint32_t count;
     uint32_t addr;
     uint32_t rb;
     ssize_t i;
 
-    count = 0;
     core = &gba->core;
     core->pc += 2;
     core->prefetch_access_type = NON_SEQUENTIAL;
+
+    count = 0;
     rb = bitfield_get_range(op, 8, 11);
 
     /*
@@ -193,7 +195,7 @@ core_thumb_ldmia(
     addr = core->registers[rb];
     core->registers[rb] += count;
     access_type = NON_SEQUENTIAL;
-    core_idle(gba);
+    mem_bus_idle(gba);
 
     for (i = 0; i < 8; ++i) {
         if (bitfield_get(op, i)) {

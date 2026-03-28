@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -109,6 +109,7 @@ struct game_entry {
     char *code;
     enum backup_storage_types storage;
     enum gpio_device_types gpio;
+    bool mirror;
     char *title;
 };
 
@@ -163,6 +164,9 @@ struct launch_config {
 
     // GPIO device attached to the cartridge.
     enum gpio_device_types gpio_device_type;
+
+    // Enable ROM memory mirroring
+    bool rom_mirroring;
 
     // The kind of storage type to use.
     struct {

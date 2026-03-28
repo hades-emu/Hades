@@ -3,7 +3,7 @@
 ##  This file is part of the Hades GBA Emulator, and is made available under
 ##  the terms of the GNU General Public License version 2.
 ##
-##  Copyright (C) 2021-2024 - The Hades Authors
+##  Copyright (C) 2021-2026 - The Hades Authors
 ##
 ################################################################################
 
@@ -13,10 +13,6 @@ libapp_extra_cflags = [
 libapp_extra_deps = []
 
 libapp_sources = [
-    'sdl/audio.c',
-    'sdl/event.c',
-    'sdl/init.c',
-    'sdl/video.c',
     'shaders/frag-color-correction.c',
     'shaders/frag-grey-scale.c',
     'shaders/frag-lcd-grid-with-rgb-stripes.c',
@@ -24,14 +20,18 @@ libapp_sources = [
     'shaders/vertex-common.c',
     'windows/game.c',
     'windows/menubar.c',
-    'windows/notif.c',
+    'windows/notification.c',
     'windows/settings.c',
     'args.c',
+    'audio.c',
+    'bindings.c',
     'config.c',
     'emulator.c',
-    'bindings.c',
+    'event.c',
     'main.c',
+    'nfd.c',
     'path.c',
+    'video.c',
 ]
 
 libapp_dbg_sources = [
@@ -70,8 +70,8 @@ libapp = static_library(
         dependency('threads', required: true, static: static_dependencies),
         dependency('libarchive', version: '>=3.0', required: true, static: static_dependencies or get_option('static_libarchive')),
     ] + imgui_dep,
-    link_with: [libgba, imgui, nfde, mjson] + libapp_extra_deps,
-    include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],
+    link_with: [libgba, imgui, mjson] + libapp_extra_deps,
+    include_directories: [incdir, imgui_inc, mjson_inc, stb_inc],
     c_args: cflags + libapp_extra_cflags,
     link_args: ldflags,
 )
@@ -86,8 +86,8 @@ if get_option('with_debugger')
             dependency('libedit', required: true, static: static_dependencies),
             dependency('capstone', required: true, static: static_dependencies),
         ] + imgui_dep,
-        link_with: [libgba_dbg, imgui, nfde, mjson] + libapp_extra_deps,
-        include_directories: [incdir, imgui_inc, nfde_inc, mjson_inc, stb_inc],
+        link_with: [libgba_dbg, imgui, mjson] + libapp_extra_deps,
+        include_directories: [incdir, imgui_inc, mjson_inc, stb_inc],
         c_args: cflags + libapp_extra_cflags + debugger_cflags,
         link_args: ldflags + debugger_ldflags,
     )

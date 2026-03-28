@@ -3,7 +3,7 @@
 ##  This file is part of the Hades GBA Emulator, and is made available under
 ##  the terms of the GNU General Public License version 2.
 ##
-##  Copyright (C) 2021-2024 - The Hades Authors
+##  Copyright (C) 2021-2026 - The Hades Authors
 ##
 ################################################################################
 
@@ -11,11 +11,12 @@ project(
     'Hades',
     'c',
     'cpp',
-    version: '1.0.0',
+    version: '1.1.1',
     license: 'GPL-2.0-only',
     default_options: ['c_std=gnu17', 'cpp_std=c++11', 'buildtype=release'],
 )
 
+cc = meson.get_compiler('c')
 incdir = include_directories('include', 'source')
 cflags = [
     '-fms-extensions',
@@ -27,11 +28,24 @@ ldflags = [
     # '-fsanitize=undefined',
 ]
 
+# Somewhat required for the Windows CI to link properly.
+# Otherwise it complains about a missing `WinMain()` function that SDL3 is, afaik, supposed to provide.
+if host_machine.system() == 'windows' and cc.has_define('__MINGW32__')
+    ldflags += [
+        '-lmingw32',
+    ]
+endif
+
 static_dependencies = get_option('static_executable') or get_option('static_dependencies')
 
 if get_option('static_executable')
     cflags += ['-static']
     ldflags += ['-static']
+endif
+
+if get_option('with_wayland')
+    cflags += ['-DWITH_WAYLAND']
+    ldflags += ['-DWITH_WAYLAND']
 endif
 
 debugger_cflags = ['-DWITH_DEBUGGER']
@@ -105,7 +119,7 @@ elif host_machine.system() == 'darwin'
             include_directories: [incdir, imgui_inc],
             c_args: cflags + debugger_cflags,
             link_args: ldflags + debugger_ldflags,
-            install: true ,
+            install: true,
         )
     endif
 
@@ -147,13 +161,15 @@ else # Not supported officially, but there's no reason not to try and build them
         install: true,
     )
 
-    hades_dbg = executable(
-        'hades-dbg',
-        'source/log.c',
-        link_with: [libapp_dbg],
-        include_directories: [incdir, imgui_inc],
-        c_args: cflags + debugger_cflags,
-        link_args: ldflags + debugger_ldflags,
-        install: true,
-    )
+    if get_option('with_debugger')
+        hades_dbg = executable(
+            'hades-dbg',
+            'source/log.c',
+            link_with: [libapp_dbg],
+            include_directories: [incdir, imgui_inc],
+            c_args: cflags + debugger_cflags,
+            link_args: ldflags + debugger_ldflags,
+            install: true,
+        )
+    endif
 endif

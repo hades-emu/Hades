@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -91,7 +91,8 @@ qsave_err:
 qsave_finally:
             app->emulation.quicksave_request.enabled = false;
             app->emulation.quicksave_request.idx = 0;
-            app->file.flush_qsaves_cache = true;
+
+            app_path_refresh_quicksave_cache(app);
 
             if (file) {
                 fclose(file);
@@ -468,7 +469,7 @@ app_emulator_configure_backup_storage(
         read_len = fread(data, 1, file_len, app->emulation.backup_file);
 
         if (read_len != file_len) {
-            logln(HS_WARNING, "Failed to read the save file. Is it corrupted?");
+            logln(HS_WARN, "Failed to read the save file. Is it corrupted?");
         } else {
             logln(HS_INFO, "Save file successfully read.");
         }
@@ -476,7 +477,7 @@ app_emulator_configure_backup_storage(
         app->emulation.launch_config->backup_storage.data = data;
         app->emulation.launch_config->backup_storage.size = file_len;
     } else {
-        logln(HS_WARNING, "Failed to open the save file. A new one will be created instead.");
+        logln(HS_WARN, "Failed to open the save file. A new one will be created instead.");
 
         app->emulation.backup_file = hs_fopen(backup_path, "wb+");
 
@@ -528,7 +529,7 @@ app_emulator_import_backup_storage(
     read_len = fread(data, 1, file_len, backup);
 
     if (read_len != file_len) {
-        logln(HS_WARNING, "Failed to import the save file. Is it corrupted?");
+        logln(HS_WARN, "Failed to import the save file. Is it corrupted?");
     } else {
         app_new_notification(
             app,
@@ -544,7 +545,7 @@ app_emulator_import_backup_storage(
     app->emulation.backup_file = hs_fopen(backup_path, "rb+");
 
     if (!app->emulation.backup_file) {
-        logln(HS_WARNING, "Failed to open the save file. A new one will be created instead.");
+        logln(HS_WARN, "Failed to open the save file. A new one will be created instead.");
 
         app->emulation.backup_file = hs_fopen(backup_path, "wb+");
 
@@ -573,6 +574,7 @@ app_emulator_import_backup_storage(
 **   - Reset the emulator
 **   - Wait for the reset notification
 **   - Run/Pause the emulator, according to the configuration
+**   - Update the window's title with the new game's name
 **
 ** NOTE: `backup_to_import` can be NULL if there is no backup to import.
 */
@@ -635,11 +637,9 @@ app_emulator_configure_and_run(
         );
     } else {
         logln(
-            HS_WARNING,
-            "No game with the code \"%s%.3s%s\" could be found in the Hades game database.",
-            g_light_magenta,
-            code,
-            g_reset
+            HS_WARN,
+            "No game with the code \"%.3s\" could be found in the Hades game database.",
+            code
         );
 
         app->emulation.game_entry = db_autodetect_game_features(app->emulation.launch_config->rom.data, app->emulation.launch_config->rom.size);
@@ -661,12 +661,19 @@ app_emulator_configure_and_run(
         app->emulation.launch_config->gpio_device_type = app->settings.emulation.gpio_device.type;
     }
 
+    if (app->settings.emulation.rom_mirroring.autodetect) {
+        app->emulation.launch_config->rom_mirroring = app->emulation.game_entry->mirror;
+    } else {
+        app->emulation.launch_config->rom_mirroring = app->settings.emulation.rom_mirroring.value;
+    }
+
     app_emulator_fill_gba_settings(app, &app->emulation.launch_config->settings);
 
     logln(HS_INFO, "Emulator's configuration:");
     logln(HS_INFO, "    Skip BIOS: %s", app->emulation.launch_config->skip_bios ? "true" : "false");
     logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
     logln(HS_INFO, "    GPIO: %s", gpio_device_names[app->emulation.launch_config->gpio_device_type]);
+    logln(HS_INFO, "    ROM Mirroring: %s", app->emulation.launch_config->rom_mirroring ? "true" : "false");
     if (app->emulation.launch_config->settings.fast_forward) {
         logln(HS_INFO, "    Speed: Fast Forward");
     } else {
@@ -690,6 +697,8 @@ app_emulator_configure_and_run(
     app_emulator_wait_for_notification(app, NOTIFICATION_RESET);
 
     app_config_push_recent_rom(app, rom_path);
+
+    app_sdl_video_update_win_title(app);
 
     logln(HS_INFO, "Game successfully loaded.");
 
@@ -737,6 +746,8 @@ app_emulator_stop(
     channel_lock(&app->emulation.gba->channels.messages);
     channel_push(&app->emulation.gba->channels.messages, &event.header);
     channel_release(&app->emulation.gba->channels.messages);
+
+    app_sdl_video_update_win_title(app);
 }
 
 /*
@@ -837,7 +848,7 @@ app_emulator_settings(
 ** Write the content of the backup storage on the disk, only if it's dirty.
 */
 void
-app_emulator_update_backup(
+app_emulator_write_save_to_disk(
     struct app *app
 ) {
     bool dirty;
@@ -906,6 +917,34 @@ error:
     );
 }
 
+void
+app_emulator_screenshot_resize(
+    uint32_t *src,
+    uint32_t src_width,
+    uint32_t src_height,
+    uint32_t *dst,
+    uint32_t dst_width,
+    uint32_t dst_height
+) {
+    uint32_t i;
+    uint32_t scale_factor;
+
+    scale_factor = dst_width / src_width;
+
+    hs_assert(src_width * scale_factor == dst_width);
+    hs_assert(src_height * scale_factor == dst_height);
+
+    for (i = 0; i < dst_width * dst_height; ++i) {
+        uint32_t src_x;
+        uint32_t src_y;
+
+        src_x = (i % dst_width) / scale_factor;
+        src_y = (i / dst_width) / scale_factor;
+
+        dst[i] = src[src_y * src_width + src_x];
+    }
+}
+
 /*
 ** Take a screenshot of the game and writes it to the disk.
 */
@@ -915,17 +954,45 @@ app_emulator_screenshot_path(
     char const *path
 ) {
     int out;
+    uint32_t *rescaled_screenshot;
+    uint32_t rescaled_width;
+    uint32_t rescaled_height;
 
+    // Sanity & paranoia check, shouldn't be useful under normal circumstances
+    if (app->settings.video.display_size >= 1 && app->settings.video.display_size <= 5) {
+        rescaled_width = app->settings.video.display_size * GBA_SCREEN_WIDTH;
+        rescaled_height = app->settings.video.display_size * GBA_SCREEN_HEIGHT;
+    } else {
+        rescaled_width = GBA_SCREEN_WIDTH;
+        rescaled_height = GBA_SCREEN_HEIGHT;
+    }
+
+    rescaled_screenshot = malloc(rescaled_width * rescaled_height * sizeof(uint32_t));
+    hs_assert(rescaled_screenshot);
+
+    // Grab the framebuffer from the shared data and rescale it to the appropriate size
     pthread_mutex_lock(&app->emulation.gba->shared_data.framebuffer.lock);
-    out = stbi_write_png(
-        path,
+    app_emulator_screenshot_resize(
+        app->emulation.gba->shared_data.framebuffer.data,
         GBA_SCREEN_WIDTH,
         GBA_SCREEN_HEIGHT,
-        4,
-        app->emulation.gba->shared_data.framebuffer.data,
-        GBA_SCREEN_WIDTH * sizeof(uint32_t)
+        rescaled_screenshot,
+        rescaled_width,
+        rescaled_height
     );
     pthread_mutex_unlock(&app->emulation.gba->shared_data.framebuffer.lock);
+
+    // Write the screenshot on the disk
+    out = stbi_write_png(
+        path,
+        rescaled_width,
+        rescaled_height,
+        4,
+        rescaled_screenshot,
+        rescaled_width * sizeof(uint32_t)
+    );
+
+    free(rescaled_screenshot);
 
     if (out) {
         app_new_notification(
@@ -1005,7 +1072,7 @@ app_emulator_quickload(
     size_t size;
 
     if (app->emulation.quickload_request.enabled) {
-        logln(HS_WARNING, "A saved state is already being loaded by the emulator, ignoring the new request.");
+        logln(HS_WARN, "A saved state is already being loaded by the emulator, ignoring the new request.");
         return;
     }
 

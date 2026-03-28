@@ -3,16 +3,17 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
 #define _GNU_SOURCE
 
-#include <string.h>
+#include <SDL3/SDL_dialog.h>
 #include <cimgui.h>
-#include <nfd.h>
 #include <stdio.h>
+#include <string.h>
+#include <math.h>
 #include "hades.h"
 #include "app/app.h"
 #include "compat.h"
@@ -23,23 +24,42 @@ app_win_menubar_file(
     struct app *app
 ) {
     char *bind_str;
+    bool focus_file_open;
+
+    focus_file_open = false;
+
+    if (app->ui.menubar.focus) {
+        app->ui.menubar.focus = false;
+
+        // Focus the menubar
+        igFocusWindow(igGetCurrentWindow(), ImGuiFocusRequestFlags_None);
+
+        // Reset the navigation "history" of the menubar (aka, pressing left/right will match the highlighted element)
+        igSetNavID(0, ImGuiNavLayer_Menu, 0, (ImRect) {});
+
+        // Open the "File" submenu
+        igOpenPopup_Str("File", ImGuiPopupFlags_None);
+
+        // Ensure the first element of "File" is focused & highlighted.
+        focus_file_open = true;
+    }
 
     if (igBeginMenu("File", true)) {
         if (igMenuItem_Bool("Open", NULL, false, true)) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_OpenDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Rom", .spec = "gba,zip,7z,rar"}},
+            SDL_ShowOpenFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_ROM_PATH),
+                app->sdl.window,
+                sdl_nfd_rom_filters,
                 1,
-                NULL
+                NULL,
+                false
             );
+        }
 
-            if (result == NFD_OKAY) {
-                app_emulator_configure_and_run(app, path, NULL);
-                NFD_FreePath(path);
-            }
+        if (focus_file_open) {
+            igNavMoveRequestSubmit(ImGuiDir_None, ImGuiDir_None, ImGuiNavMoveFlags_None, ImGuiScrollFlags_None);
+            focus_file_open = false;
         }
 
         if (igBeginMenu("Open Recent", app->file.recent_roms[0] != NULL)) {
@@ -69,25 +89,26 @@ app_win_menubar_file(
                     free(path);
                 }
             }
+
+            igSeparator();
+
+            if (igMenuItem_Bool("Clear", NULL, false, true)) {
+                app_config_clear_recent_roms(app);
+            }
+
             igEndMenu();
         }
 
         if (igMenuItem_Bool("Open BIOS", NULL, false, true)) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_OpenDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "BIOS file", .spec = "bin,bios,raw"}},
+            SDL_ShowOpenFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_BIOS_PATH),
+                app->sdl.window,
+                sdl_nfd_bios_filters,
                 1,
-                NULL
+                NULL,
+                false
             );
-
-            if (result == NFD_OKAY) {
-                free(app->settings.emulation.bios_path);
-                app->settings.emulation.bios_path = strdup(path);
-                NFD_FreePath(path);
-            }
         }
 
         igSeparator();
@@ -95,8 +116,16 @@ app_win_menubar_file(
         bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_SETTINGS]);
         if (igMenuItem_Bool("Settings", bind_str, false, true)) {
             app->ui.settings.open = true;
+            app->ui.settings.focus = true;
+            app->ui.settings.menu = 0;
         }
         free(bind_str);
+
+        igSeparator();
+
+        if (igMenuItem_Bool("Exit", NULL, false, true)) {
+            app->run = false;
+        }
 
         igEndMenu();
     }
@@ -173,8 +202,6 @@ app_win_menubar_emulation(
         igSeparator();
 
         if (igBeginMenu("Quick Save", app->emulation.is_started)) {
-            size_t i;
-
             for (i = 0; i < MAX_QUICKSAVES; ++i) {
                 char *text;
 
@@ -197,8 +224,6 @@ app_win_menubar_emulation(
         }
 
         if (igBeginMenu("Quick Load", app->emulation.is_started)) {
-            size_t i;
-
             for (i = 0; i < MAX_QUICKSAVES; ++i) {
                 char *text;
 
@@ -223,42 +248,26 @@ app_win_menubar_emulation(
         igSeparator();
 
         if (igMenuItem_Bool("Import Save File", NULL, false, app->emulation.is_started && (bool)app->emulation.gba->shared_data.backup_storage.data)) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_OpenDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Save File", .spec = "sav"}},
+            SDL_ShowOpenFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_IMPORT_SAVE),
+                app->sdl.window,
+                sdl_nfd_save_filters,
                 1,
-                NULL
+                NULL,
+                false
             );
-
-            if (result == NFD_OKAY) {
-                char *game_path;
-
-                game_path = strdup(app->emulation.game_path);
-                app_emulator_configure_and_run(app, game_path, path);
-                free(game_path);
-                NFD_FreePath(path);
-            }
         }
 
         if (igMenuItem_Bool("Export Save File", NULL, false, app->emulation.is_started && (bool)app->emulation.gba->shared_data.backup_storage.data)) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_SaveDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "GBA Save File", .spec = "sav"}},
+            SDL_ShowSaveFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_EXPORT_SAVE),
+                app->sdl.window,
+                sdl_nfd_save_filters,
                 1,
-                NULL,
                 NULL
             );
-
-            if (result == NFD_OKAY) {
-                app_emulator_export_save_to_path(app, path);
-                NFD_FreePath(path);
-            }
         }
 
         igSeparator();
@@ -289,6 +298,7 @@ app_win_menubar_emulation(
 
         if (igMenuItem_Bool("Emulation Settings", NULL, false, true)) {
             app->ui.settings.open = true;
+            app->ui.settings.focus = true;
             app->ui.settings.menu = MENU_EMULATION;
         }
 
@@ -321,12 +331,12 @@ app_win_menubar_video(
                 if (igMenuItem_Bool(
                     display_sizes[x - 1],
                     NULL,
-                       app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * x / app->ui.display_scale)
-                    && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * x / app->ui.display_scale),
+                       app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * x / app->ui.window_pixel_density)
+                    && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * x / app->ui.window_pixel_density),
                     true
                 )) {
                     app->settings.video.display_size = x;
-                    app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
+                    app_sdl_video_resize_window(app);
                 }
             }
 
@@ -390,6 +400,7 @@ app_win_menubar_video(
 
         if (igMenuItem_Bool("Video Settings", NULL, false, true)) {
             app->ui.settings.open = true;
+            app->ui.settings.focus = true;
             app->ui.settings.menu = MENU_VIDEO;
         }
 
@@ -415,6 +426,7 @@ app_win_menubar_audio(
 
         if (igMenuItem_Bool("Audio Settings", NULL, false, true)) {
             app->ui.settings.open = true;
+            app->ui.settings.focus = true;
             app->ui.settings.menu = MENU_AUDIO;
         }
 
@@ -425,7 +437,7 @@ app_win_menubar_audio(
 static
 void
 app_win_menubar_help(
-    struct app *app
+    struct app const *app
 ) {
     bool open_about;
 
@@ -499,7 +511,7 @@ app_win_menubar_fps_counter(
            app->settings.general.show_fps
         && app->emulation.is_started
         && app->emulation.is_running
-        && igGetWindowWidth() >= GBA_SCREEN_WIDTH * 2 * app->ui.scale
+        && igGetWindowWidth() >= GBA_SCREEN_WIDTH * 2
     ) {
         float spacing;
         ImVec2 out;
@@ -520,7 +532,7 @@ app_win_menubar(
     float vp_y;
 
     if (app->ui.menubar.visibility <= 0.0f) {
-        return ;
+        return;
     }
 
     // Hacking ImGui a bit to nicely fade the menubar away

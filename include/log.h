@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -16,7 +16,7 @@ enum modules {
     HS_INFO      = 0,
 
     HS_ERROR,
-    HS_WARNING,
+    HS_WARN,
 
     HS_CORE,
     HS_IO,
@@ -60,7 +60,7 @@ extern bool g_verbose_global;
 static char const * const modules_str[] = {
     [HS_INFO]       = " INFO  ",
     [HS_ERROR]      = " ERROR ",
-    [HS_WARNING]    = " WARN  ",
+    [HS_WARN]       = " WARN  ",
     [HS_CORE]       = " CORE  ",
     [HS_IO]         = " IO    ",
     [HS_VIDEO]      = " VIDEO ",
@@ -81,3 +81,9 @@ static char const * const modules_str[] = {
 void panic(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
 void unimplemented(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
 void disable_colors(void);
+
+#ifdef WITH_DEBUGGER
+#define dbgln(...) logln(__VA_ARGS__)
+#else
+#define dbgln(...)
+#endif

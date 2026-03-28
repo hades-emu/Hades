@@ -3,12 +3,13 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
+#include <SDL3/SDL_dialog.h>
 #include <cimgui.h>
-#include <nfd.h>
+#include <math.h>
 #include "hades.h"
 #include "app/app.h"
 
@@ -43,9 +44,8 @@ static char const *aspect_ratio_names[ASPECT_RATIO_LEN] = {
 };
 
 static char const *display_mode_names[DISPLAY_MODE_LEN] = {
-    [DISPLAY_MODE_WINDOWED] = "Windowed",
-    [DISPLAY_MODE_BORDERLESS] = "Borderless",
-    [DISPLAY_MODE_FULLSCREEN] = "Fullscreen",
+    [DISPLAY_MODE_WINDOW] = "Window",
+    [DISPLAY_MODE_BORDERLESS_FULLSCREEN] = "Fullscreen (borderless)",
 };
 
 static char const *menubar_mode_names[MENUBAR_MODE_LEN] = {
@@ -61,92 +61,16 @@ static char const * const display_size_names[] = {
     "x5",
 };
 
-char const * const binds_pretty_name[] = {
-    [BIND_GBA_A] = "A",
-    [BIND_GBA_B] = "B",
-    [BIND_GBA_L] = "L",
-    [BIND_GBA_R] = "R",
-    [BIND_GBA_UP] = "Up",
-    [BIND_GBA_DOWN] = "Down",
-    [BIND_GBA_LEFT] = "Left",
-    [BIND_GBA_RIGHT] = "Right",
-    [BIND_GBA_START] = "Start",
-    [BIND_GBA_SELECT] = "Select",
-
-    [BIND_EMULATOR_RESET] = "Reset",
-    [BIND_EMULATOR_MUTE] = "Mute",
-    [BIND_EMULATOR_PAUSE] = "Pause",
-    [BIND_EMULATOR_STOP] = "Stop",
-    [BIND_EMULATOR_SHOW_FPS] = "Toggle FPS",
-    [BIND_EMULATOR_FULLSCREEN] = "Toggle Fullscreen",
-    [BIND_EMULATOR_SCREENSHOT] = "Screenshot",
-    [BIND_EMULATOR_SETTINGS] = "Toggle Settings",
-    [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "Alt. Speed (Toggle)",
-    [BIND_EMULATOR_ALT_SPEED_HOLD] = "Alt. Speed (Hold)",
-    [BIND_EMULATOR_QUICKSAVE_1] = "Quicksave 1",
-    [BIND_EMULATOR_QUICKSAVE_2] = "Quicksave 2",
-    [BIND_EMULATOR_QUICKSAVE_3] = "Quicksave 3",
-    [BIND_EMULATOR_QUICKSAVE_4] = "Quicksave 4",
-    [BIND_EMULATOR_QUICKSAVE_5] = "Quicksave 5",
-    [BIND_EMULATOR_QUICKSAVE_6] = "Quicksave 6",
-    [BIND_EMULATOR_QUICKSAVE_7] = "Quicksave 7",
-    [BIND_EMULATOR_QUICKSAVE_8] = "Quicksave 8",
-    [BIND_EMULATOR_QUICKSAVE_9] = "Quicksave 9",
-    [BIND_EMULATOR_QUICKSAVE_10] = "Quicksave 10",
-    [BIND_EMULATOR_QUICKLOAD_1] = "Quickload 1",
-    [BIND_EMULATOR_QUICKLOAD_2] = "Quickload 2",
-    [BIND_EMULATOR_QUICKLOAD_3] = "Quickload 3",
-    [BIND_EMULATOR_QUICKLOAD_4] = "Quickload 4",
-    [BIND_EMULATOR_QUICKLOAD_5] = "Quickload 5",
-    [BIND_EMULATOR_QUICKLOAD_6] = "Quickload 6",
-    [BIND_EMULATOR_QUICKLOAD_7] = "Quickload 7",
-    [BIND_EMULATOR_QUICKLOAD_8] = "Quickload 8",
-    [BIND_EMULATOR_QUICKLOAD_9] = "Quickload 9",
-    [BIND_EMULATOR_QUICKLOAD_10] = "Quickload 10",
+SDL_DialogFileFilter const sdl_nfd_bios_filters[] = {
+    { "BIOS File",  "bin;bios;raw" },
 };
 
-char const * const binds_slug[] = {
-    [BIND_GBA_A] = "a",
-    [BIND_GBA_B] = "b",
-    [BIND_GBA_L] = "l",
-    [BIND_GBA_R] = "r",
-    [BIND_GBA_UP] = "up",
-    [BIND_GBA_DOWN] = "down",
-    [BIND_GBA_LEFT] = "left",
-    [BIND_GBA_RIGHT] = "right",
-    [BIND_GBA_START] = "start",
-    [BIND_GBA_SELECT] = "select",
+SDL_DialogFileFilter const sdl_nfd_rom_filters[] = {
+    { "GBA Rom",  "gba;zip;7z;rar" },
+};
 
-    [BIND_EMULATOR_RESET] = "reset",
-    [BIND_EMULATOR_MUTE] = "mute",
-    [BIND_EMULATOR_PAUSE] = "pause",
-    [BIND_EMULATOR_STOP] = "stop",
-    [BIND_EMULATOR_SHOW_FPS] = "toggle_show_fps",
-    [BIND_EMULATOR_FULLSCREEN] = "fullscreen",
-    [BIND_EMULATOR_SCREENSHOT] = "screenshot",
-    [BIND_EMULATOR_SETTINGS] = "toggle_settings",
-    [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "alternative_speed_toggle",
-    [BIND_EMULATOR_ALT_SPEED_HOLD] = "alternative_speed_hold",
-    [BIND_EMULATOR_QUICKSAVE_1] = "quicksave_1",
-    [BIND_EMULATOR_QUICKSAVE_2] = "quicksave_2",
-    [BIND_EMULATOR_QUICKSAVE_3] = "quicksave_3",
-    [BIND_EMULATOR_QUICKSAVE_4] = "quicksave_4",
-    [BIND_EMULATOR_QUICKSAVE_5] = "quicksave_5",
-    [BIND_EMULATOR_QUICKSAVE_6] = "quicksave_6",
-    [BIND_EMULATOR_QUICKSAVE_7] = "quicksave_7",
-    [BIND_EMULATOR_QUICKSAVE_8] = "quicksave_8",
-    [BIND_EMULATOR_QUICKSAVE_9] = "quicksave_9",
-    [BIND_EMULATOR_QUICKSAVE_10] = "quicksave_10",
-    [BIND_EMULATOR_QUICKLOAD_1] = "quickload_1",
-    [BIND_EMULATOR_QUICKLOAD_2] = "quickload_2",
-    [BIND_EMULATOR_QUICKLOAD_3] = "quickload_3",
-    [BIND_EMULATOR_QUICKLOAD_4] = "quickload_4",
-    [BIND_EMULATOR_QUICKLOAD_5] = "quickload_5",
-    [BIND_EMULATOR_QUICKLOAD_6] = "quickload_6",
-    [BIND_EMULATOR_QUICKLOAD_7] = "quickload_7",
-    [BIND_EMULATOR_QUICKLOAD_8] = "quickload_8",
-    [BIND_EMULATOR_QUICKLOAD_9] = "quickload_9",
-    [BIND_EMULATOR_QUICKLOAD_10] = "quickload_10",
+SDL_DialogFileFilter const sdl_nfd_save_filters[] = {
+    { "GBA Save File",  "sav" },
 };
 
 static
@@ -267,16 +191,13 @@ app_win_settings_general(
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose##SaveDirectoryButton", (ImVec2){ 50.f, 0.f})) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_PickFolder(&path, app->settings.general.directories.backup.path);
-
-            if (result == NFD_OKAY) {
-                free(app->settings.general.directories.backup.path);
-                app->settings.general.directories.backup.path = strdup(path);
-                NFD_FreePath(path);
-            }
+            SDL_ShowOpenFolderDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_SAVE_DIR),
+                app->sdl.window,
+                app->settings.general.directories.backup.path,
+                false
+            );
         }
 
         igEndDisabled();
@@ -302,16 +223,13 @@ app_win_settings_general(
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose##QuickSaveDirectoryButton", (ImVec2){ 50.f, 0.f})) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_PickFolder(&path, app->settings.general.directories.quicksave.path);
-
-            if (result == NFD_OKAY) {
-                free(app->settings.general.directories.quicksave.path);
-                app->settings.general.directories.quicksave.path = strdup(path);
-                NFD_FreePath(path);
-            }
+            SDL_ShowOpenFolderDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_QUICKSAVE_DIR),
+                app->sdl.window,
+                app->settings.general.directories.quicksave.path,
+                false
+            );
         }
 
         igEndDisabled();
@@ -337,16 +255,13 @@ app_win_settings_general(
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose##ScreenshotDirectoryButton", (ImVec2){ 50.f, 0.f})) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_PickFolder(&path, app->settings.general.directories.screenshot.path);
-
-            if (result == NFD_OKAY) {
-                free(app->settings.general.directories.screenshot.path);
-                app->settings.general.directories.screenshot.path= strdup(path);
-                NFD_FreePath(path);
-            }
+            SDL_ShowOpenFolderDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_SCREENSHOT_DIR),
+                app->sdl.window,
+                app->settings.general.directories.screenshot.path,
+                false
+            );
         }
 
         igEndDisabled();
@@ -386,21 +301,15 @@ app_win_settings_emulation(
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
         if (igButton("Choose##BiosButton", (ImVec2){ 50.f, 0.f})) {
-            nfdresult_t result;
-            nfdchar_t *path;
-
-            result = NFD_OpenDialog(
-                &path,
-                (nfdfilteritem_t[1]){(nfdfilteritem_t){ .name = "BIOS file", .spec = "bin,bios,raw"}},
+            SDL_ShowOpenFileDialog(
+                app_nfd_update_path,
+                app_nfd_create_event(app, NFD_BIOS_PATH),
+                app->sdl.window,
+                sdl_nfd_bios_filters,
                 1,
-                NULL
+                NULL,
+                false
             );
-
-            if (result == NFD_OKAY) {
-                free(app->settings.emulation.bios_path);
-                app->settings.emulation.bios_path = strdup(path);
-                NFD_FreePath(path);
-            }
         }
 
         // Skip BIOS
@@ -550,6 +459,33 @@ app_win_settings_emulation(
         igEndTable();
     }
 
+    igSeparatorText("ROM Mirroring");
+
+    if (igBeginTable("##EmulationSettingsROMMirroring", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##EmulationSettingsROMMirroringLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##EmulationSettingsROMMirroringValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // ROM Mirroring Auto-Detect
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Auto-Detect");
+
+        igTableNextColumn();
+        igCheckbox("##ROMMirroringAutoDetect", &app->settings.emulation.rom_mirroring.autodetect);
+
+        // ROM Mirroring Value
+        igBeginDisabled(app->settings.emulation.rom_mirroring.autodetect);
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Value");
+
+        igTableNextColumn();
+        igCheckbox("##ROMMirroringInnerValue", &app->settings.emulation.rom_mirroring.value);
+        igEndDisabled();
+
+        igEndTable();
+    }
+
     igSeparatorText("Misc");
 
     if (igBeginTable("##EmulationSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
@@ -600,7 +536,19 @@ app_win_settings_video(
 
         igTableNextColumn();
         if (igCombo_Str_arr("##MenubarMode", (int *)&app->settings.video.menubar_mode, menubar_mode_names, array_length(menubar_mode_names), 0)) {
-            app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
+            switch (app->settings.video.display_mode) {
+                case DISPLAY_MODE_WINDOW: {
+                    app_sdl_video_resize_window(app);
+                    break;
+                }
+                case DISPLAY_MODE_BORDERLESS_FULLSCREEN: {
+                    app_win_game_refresh_game_area(app);
+                    break;
+                };
+                default: {
+                    panic(HS_INFO, "Invalid display mode %u", app->settings.video.display_mode);
+                };
+            }
         }
 
         // Display Mode
@@ -665,8 +613,8 @@ app_win_settings_video(
         display_size = -1;
         for (i = 1; i < array_length(display_size_names) + 1; ++i) {
             if (
-                   app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * i / app->ui.display_scale)
-                && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * i / app->ui.display_scale)
+                   app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * i / app->ui.window_pixel_density)
+                && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * i / app->ui.window_pixel_density)
             ) {
                 display_size = i;
                 break;
@@ -680,7 +628,7 @@ app_win_settings_video(
                 is_selected = (display_size == i);
                 if (igSelectable_Bool(display_size_names[i - 1], is_selected, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f })) {
                     app->settings.video.display_size = i;
-                    app->ui.display.resize_request_timer = DEFAULT_RESIZE_TIMER;
+                    app_sdl_video_resize_window(app);
                 }
 
                 if (is_selected) {
@@ -707,7 +655,7 @@ app_win_settings_video(
 
         igTableNextColumn();
         if (igCheckbox("##VSync", &app->settings.video.vsync)) {
-            SDL_GL_SetSwapInterval(app->settings.video.vsync);
+            SDL_SetRenderVSync(SDL_GetRenderer(app->sdl.window), app->settings.video.vsync ? 1 : SDL_RENDERER_VSYNC_DISABLED);
         }
 
         igEndTable();
@@ -957,22 +905,22 @@ app_win_settings_bindings_bind_keyboard(
         igTableNextColumn();
         if (igButton(label, (ImVec2){ -1.f, 0.f })) {
             app->ui.settings.keybindings_editor.keyboard_target = keyboard_bind;
-            app->ui.settings.keybindings_editor.controller_target = NULL;
+            app->ui.settings.keybindings_editor.gamepad_target = NULL;
         }
     }
 }
 
 static
 void
-app_win_settings_bindings_bind_controller(
+app_win_settings_bindings_bind_gamepad(
     struct app *app,
     size_t bind
 ) {
     size_t j;
 
-    SDL_GameControllerButton *controller_layers[] = {
-        app->binds.controller,
-        app->binds.controller_alt,
+    SDL_GamepadButton *gamepad_layers[] = {
+        app->binds.gamepad,
+        app->binds.gamepad_alt,
     };
 
     igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -981,14 +929,14 @@ app_win_settings_bindings_bind_controller(
     igTextWrapped(binds_pretty_name[bind]);
 
     for (j = 0; j < 2; ++j) {
-        SDL_GameControllerButton *button;
+        SDL_GamepadButton *button;
         char const *name;
         char label[128];
 
-        button = &controller_layers[j][bind];
-        name = SDL_GameControllerGetStringForButton(*button);
+        button = &gamepad_layers[j][bind];
+        name = SDL_GetGamepadStringForButton(*button);
 
-        if (button == app->ui.settings.keybindings_editor.controller_target) {
+        if (button == app->ui.settings.keybindings_editor.gamepad_target) {
             snprintf(label, sizeof(label), ">> %s <<##BindingsSettingsController%zu", name ?: " ", bind * 10 + j);
         } else {
             snprintf(label, sizeof(label), "%s##BindingsSettingsController%zu", name ?: "", bind * 10 + j);
@@ -996,7 +944,7 @@ app_win_settings_bindings_bind_controller(
 
         igTableNextColumn();
         if (igButton(label, (ImVec2){ -1.f, 0.f })) {
-            app->ui.settings.keybindings_editor.controller_target = button;
+            app->ui.settings.keybindings_editor.gamepad_target = button;
             app->ui.settings.keybindings_editor.keyboard_target = NULL;
         }
     }
@@ -1056,7 +1004,7 @@ app_win_settings_bindings(
                 igTableSetupColumn("##BindingsSettingsControllerGBABindAlt", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
                 for (bind = BIND_GBA_MIN; bind <= BIND_GBA_MAX; ++bind) {
-                    app_win_settings_bindings_bind_controller(app, bind);
+                    app_win_settings_bindings_bind_gamepad(app, bind);
                 }
 
                 igEndTable();
@@ -1070,7 +1018,7 @@ app_win_settings_bindings(
                 igTableSetupColumn("##BindingsSettingsControllerEmulatorBindAlt", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
                 for (bind = BIND_EMULATOR_MIN; bind <= BIND_EMULATOR_MAX; ++bind) {
-                    app_win_settings_bindings_bind_controller(app, bind);
+                    app_win_settings_bindings_bind_gamepad(app, bind);
                 }
                 igEndTable();
             }
@@ -1108,13 +1056,32 @@ app_win_settings(
           | ImGuiWindowFlags_NoResize
           | ImGuiWindowFlags_AlwaysAutoResize
           | ImGuiWindowFlags_NoTitleBar
-          | ImGuiWindowFlags_NoNavInputs
-          | ImGuiWindowFlags_NoNavFocus
     )) {
         uint32_t i;
 
-        igBeginChild_Str("##SettingsMenu", (ImVec2){ vp->WorkSize.x / 4.f, 0.f}, ImGuiChildFlags_Border , ImGuiWindowFlags_None);
+        igBeginChild_Str("##SettingsMenu", (ImVec2){ vp->WorkSize.x / 4.f, 0.f}, ImGuiChildFlags_Borders, ImGuiWindowFlags_None);
         for (i = 0; i < MENU_MAX; ++i) {
+
+            // Bunch of ImGui magic to highlight the desired entry in the left menu when the settings are opened.
+            // This is especially useful when navigating the options using a gamepad.
+            if (app->ui.settings.focus && app->ui.settings.menu == i) {
+                ImGuiWindow *window;
+
+                window = igGetCurrentWindow();
+
+                igSetNavCursorVisible(true);
+                igSetNavWindow(window);
+
+                igNavMoveRequestSubmit(
+                    ImGuiDir_None,
+                    ImGuiDir_Down,
+                    ImGuiNavMoveFlags_IsTabbing | ImGuiNavMoveFlags_Activate | ImGuiNavMoveFlags_FocusApi,
+                    window->Appearing ? ImGuiScrollFlags_KeepVisibleEdgeX | ImGuiScrollFlags_AlwaysCenterY : ImGuiScrollFlags_KeepVisibleEdgeX | ImGuiScrollFlags_KeepVisibleEdgeY
+                );
+
+                app->ui.settings.focus = false;
+            }
+
             if (igSelectable_Bool(menu_names[i], app->ui.settings.menu == i, ImGuiSelectableFlags_None, (ImVec2){ 0.f, 0.f})) {
                 app->ui.settings.menu = i;
             }
@@ -1125,7 +1092,7 @@ app_win_settings(
 
         igBeginGroup();
 
-        igBeginChild_Str("##SettingsVariables", (ImVec2){ 0.f, -igGetFrameHeightWithSpacing()}, ImGuiChildFlags_Border, ImGuiWindowFlags_None);
+        igBeginChild_Str("##SettingsVariables", (ImVec2){ 0.f, -igGetFrameHeightWithSpacing()}, ImGuiChildFlags_Borders, ImGuiWindowFlags_None);
         if (menu_callbacks[app->ui.settings.menu]) {
             menu_callbacks[app->ui.settings.menu](app);
         }
@@ -1136,6 +1103,16 @@ app_win_settings(
         }
 
         igEndGroup();
+
+        // Allow the user to close the settings by pressing the B button enough time with a gamepad.
+        if (igIsKeyPressed_Bool(ImGuiKey_GamepadFaceRight, false)
+            && igIsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)
+            && !igIsAnyItemActive()
+            && !igIsPopupOpen_Str(NULL, ImGuiPopupFlags_AnyPopup)
+            && !igIsAnyItemFocused()
+        ) {
+            app->ui.settings.open = false;
+        }
 
         igEnd();
     }

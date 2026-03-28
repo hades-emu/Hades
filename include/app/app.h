@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -13,10 +13,11 @@
 #include <capstone/capstone.h>
 #endif
 
-#include <stdatomic.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_dialog.h>
 #include <GL/glew.h>
-#include <SDL2/SDL.h>
 #include <cimgui.h>
+#include <stdatomic.h>
 #include "gba/gba.h"
 
 #define GLSL(src)                   "#version 330 core\n" #src
@@ -40,13 +41,12 @@ enum menubar_mode {
 };
 
 enum display_mode {
-    DISPLAY_MODE_WINDOWED = 0,
-    DISPLAY_MODE_BORDERLESS = 1,
-    DISPLAY_MODE_FULLSCREEN = 2,
+    DISPLAY_MODE_WINDOW = 0,
+    DISPLAY_MODE_BORDERLESS_FULLSCREEN = 1,
 
     DISPLAY_MODE_LEN,
     DISPLAY_MODE_MIN = 0,
-    DISPLAY_MODE_MAX = 2,
+    DISPLAY_MODE_MAX = 1,
 };
 
 enum texture_filter_kind {
@@ -108,6 +108,7 @@ enum bind_actions {
     BIND_EMULATOR_SHOW_FPS,
     BIND_EMULATOR_FULLSCREEN,
     BIND_EMULATOR_SCREENSHOT,
+    BIND_EMULATOR_MENUBAR,
     BIND_EMULATOR_SETTINGS,
     BIND_EMULATOR_ALT_SPEED_HOLD,
     BIND_EMULATOR_ALT_SPEED_TOGGLE,
@@ -143,11 +144,24 @@ enum bind_actions {
 
 extern char const * const binds_pretty_name[];
 extern char const * const binds_slug[];
+extern SDL_DialogFileFilter const sdl_nfd_bios_filters[];
+extern SDL_DialogFileFilter const sdl_nfd_rom_filters[];
+extern SDL_DialogFileFilter const sdl_nfd_save_filters[];
 
 enum app_notification_kind {
     UI_NOTIFICATION_INFO,
     UI_NOTIFICATION_SUCCESS,
     UI_NOTIFICATION_ERROR,
+};
+
+enum nfd_event_kind {
+    NFD_BIOS_PATH,
+    NFD_ROM_PATH,
+    NFD_EXPORT_SAVE,
+    NFD_IMPORT_SAVE,
+    NFD_SAVE_DIR,
+    NFD_QUICKSAVE_DIR,
+    NFD_SCREENSHOT_DIR,
 };
 
 enum menu_kind {
@@ -166,6 +180,14 @@ struct app_notification {
     uint64_t timeout;
     uint64_t fade_time_start;
     struct app_notification *next;
+};
+
+struct nfd_event {
+    enum nfd_event_kind kind;
+    struct app *app;
+    char *path;
+
+    struct nfd_event *next;
 };
 
 struct keyboard_binding {
@@ -267,6 +289,12 @@ struct settings {
             enum gpio_device_types type;
         } gpio_device;
 
+        // ROM Mirroring
+        struct {
+            bool autodetect;
+            bool value;
+        } rom_mirroring;
+
         // Enable the emulation of the prefetch buffer
         bool prefetch_buffer;
     } emulation;
@@ -342,11 +370,13 @@ struct settings {
 struct app {
     atomic_bool run;
 
+    bool config_loaded;
+
     struct args {
         char const *rom_path;
         char const *bios_path;
         char const *config_path;
-        bool with_gui;
+        bool without_gui;
     } args;
 
     struct {
@@ -382,22 +412,29 @@ struct app {
 
     struct {
         SDL_Window *window;
-        SDL_AudioDeviceID audio_device;
+        uint64_t counters[2];
 
-        // Game controller
+        // Gamepad
         struct {
-            SDL_GameController *ptr;
+            SDL_Gamepad *ptr;
             bool connected;
+            bool can_rumble;
+
             struct {
                 SDL_JoystickID idx;
                 SDL_Joystick *ptr;
-                bool can_rumble;
                 bool up;
                 bool down;
                 bool right;
                 bool left;
             } joystick;
-        } controller;
+        } gamepad;
+
+        struct {
+            pthread_mutex_t lock;
+
+            struct nfd_event *head;
+        } nfd;
     } sdl;
 
     struct {
@@ -432,35 +469,29 @@ struct app {
             char *mtime;
             bool exist;
         } qsaves[MAX_QUICKSAVES];
-
-        // Set to true if both the `mtime` and `exist` field of `qsaves` needs to be refreshed.
-        bool flush_qsaves_cache;
     } file;
 
     struct {
+        SDL_AudioStream *stream;
+        int16_t buffer[4096];
         uint32_t resample_frequency;
     } audio;
 
     struct {
         // ImGui internal stuff
-        struct ImGuiIO *ioptr;
+        ImGuiIO *ioptr;
 
-        struct {
-            struct ImFont *normal;
-            struct ImFont *big;
-        } fonts;
+        // Window's Display Scale
+        float window_display_scale;
 
-        // Display's metadata
-        float display_dpi;
-        float display_scale;
-        uint32_t display_refresh_rate;
+        // Window's Pixel Density
+        float window_pixel_density;
 
         // UI Scale
         // Usually the display scale unless overridden in the settings
         float scale;
 
-        // Set to update the UI scale to match `app.video.scale` at the
-        // end of the frame.
+        // Set to update the UI scale at the end of the frame.
         bool request_scale_update;
 
         // Default style of ImGui.
@@ -477,6 +508,9 @@ struct app {
         float time_elapsed_since_last_mouse_motion_ms;
 
         struct {
+            // Set when the user wants to focus the menubar.
+            bool focus;
+
             // Force the menubar to be hidden on the next frame
             bool force_hide;
 
@@ -529,12 +563,6 @@ struct app {
                 uint32_t width;
                 uint32_t height;
             } win;
-
-            // Timer, in frames, until the window needs to be resized to fit a specific aspect ratio
-            int resize_request_timer;
-
-            // Set to the last time the scale was calculated.
-            uint64_t last_scale_calculation_ms;
         } display;
 
         // The error message to print, if any.
@@ -546,11 +574,14 @@ struct app {
         struct {
             bool open;
 
+            // Set when the user wants to focus the menubar.
+            bool focus;
+
             uint32_t menu;
 
             struct {
                 struct keyboard_binding *keyboard_target;
-                SDL_GameControllerButton *controller_target;
+                SDL_GamepadButton *gamepad_target;
             } keybindings_editor;
         } settings;
 
@@ -560,11 +591,18 @@ struct app {
     struct {
         struct keyboard_binding keyboard[BIND_MAX];
         struct keyboard_binding keyboard_alt[BIND_MAX];
-        SDL_GameControllerButton controller[BIND_MAX];
-        SDL_GameControllerButton controller_alt[BIND_MAX];
+        SDL_GamepadButton gamepad[BIND_MAX];
+        SDL_GamepadButton gamepad_alt[BIND_MAX];
     } binds;
 
     struct settings settings;
+
+    struct {
+        pthread_t gba;
+#ifdef WITH_DEBUGGER
+        pthread_t dbg;
+#endif
+    } threads;
 
 #if WITH_DEBUGGER
     struct {
@@ -586,62 +624,27 @@ struct app {
 #endif
 };
 
-/* app/sdl/audio.c */
-void app_sdl_audio_init(struct app *app);
-void app_sdl_audio_cleanup(struct app const *app);
-
-/* app/sdl/event.c */
-void app_sdl_handle_events(struct app *app);
-void app_sdl_set_rumble(struct app *app, bool enable);
-
-/* app/sdl/init.c */
-void app_sdl_init(struct app *app);
-void app_sdl_cleanup(struct app *app);
-
-/* app/sdl/video.c */
-void app_sdl_video_init(struct app *app);
-void app_sdl_video_cleanup(struct app *app);
-void app_sdl_video_render_frame(struct app *app);
-void app_sdl_video_rebuild_pipeline(struct app *app);
-void app_sdl_video_resize_window(struct app *app);
-void app_sdl_video_update_display_mode(struct app *app);
-void app_sdl_video_update_scale(struct app *app);
-float app_sdl_video_calculate_scale(struct app *app);
-
-/* app/shaders/frag-color-correction.c */
+/* shaders/ */
 extern char const *SHADER_FRAG_COLOR_CORRECTION;
-
-/* app/shaders/frag-gameboy.c */
-extern char const *SHADER_FRAG_GAMEBOY;
-
-/* app/shaders/frag-grey-scale.c */
 extern char const *SHADER_FRAG_GREY_SCALE;
-
-/* app/shaders/frag-lcd-grid-with-rgb-stripes.c */
 extern char const *SHADER_FRAG_LCD_GRID_WITH_RGB_STRIPES;
-
-/* app/shaders/frag-lcd-grid.c */
 extern char const *SHADER_FRAG_LCD_GRID;
-
-/* app/shaders/vertex-common.c */
 extern char const *SHADER_VERTEX_COMMON;
 
-/* app/windows/game.c */
+/* windows/ */
 void app_win_game(struct app *app);
 void app_win_game_refresh_game_area(struct app *app);
-
-/* app/windows/menubar.c */
 void app_win_menubar(struct app *app);
-
-/* app/windows/notif.c */
 void app_new_notification(struct app *app, enum app_notification_kind, char const *msg, ...);
 void app_win_notifications(struct app *app);
-
-/* app/windows/settings.c */
 void app_win_settings(struct app *app);
 
 /* args.c */
-void app_args_parse(struct app *app, int argc, char * const argv[]);
+SDL_AppResult app_args_parse(struct app *app, int argc, char * const argv[]);
+
+/* audio.c */
+void app_sdl_audio_init(struct app *app);
+void app_sdl_audio_cleanup(struct app const *app);
 
 /* bindings.c */
 void app_bindings_setup_default(struct app *app);
@@ -649,13 +652,16 @@ void app_bindings_keyboard_binding_build(struct keyboard_binding *, SDL_Keycode 
 void app_bindings_keyboard_binding_clear(struct app *app, struct keyboard_binding const *binding);
 bool app_bindings_keyboard_binding_match(struct keyboard_binding const *, struct keyboard_binding const *);
 char *app_bindings_keyboard_binding_to_str(struct keyboard_binding const *bind);
-void app_bindings_controller_binding_clear(struct app *app, SDL_GameControllerButton btn);
+void app_bindings_gamepad_binding_clear(struct app *app, SDL_GamepadButton btn);
 void app_bindings_process(struct app *app, enum bind_actions bind, bool pressed);
 
 /* config.c */
+void app_config_default_settings(struct app *app);
+void app_config_default_bindings(struct app *app);
 void app_config_load(struct app *app);
 void app_config_save(struct app *app);
 void app_config_push_recent_rom(struct app *app, char const *path);
+void app_config_clear_recent_roms(struct app *app);
 
 /* emulator.c */
 void app_emulator_process_all_notifs(struct app *app);
@@ -668,7 +674,7 @@ void app_emulator_exit(struct app *app);
 void app_emulator_key(struct app *app, enum keys key, bool pressed);
 void app_emulator_settings(struct app *app);
 void app_emulator_export_save_to_path(struct app *app, char const *);
-void app_emulator_update_backup(struct app *app);
+void app_emulator_write_save_to_disk(struct app *app);
 void app_emulator_screenshot(struct app *app);
 void app_emulator_screenshot_path(struct app *app, char const *);
 void app_emulator_quicksave(struct app *app, size_t idx);
@@ -685,9 +691,28 @@ void app_emulator_set_watchpoints_list(struct app *app, struct watchpoint *watch
 
 #endif
 
+/* event.c */
+void app_sdl_handle_events(struct app *app, SDL_Event *event);
+void app_sdl_set_rumble(struct app const *app, bool enable);
+void app_nfd_process_events(struct app *app);
+void app_nfd_update_path(void *raw_event, const char * const *filelist, int filter);
+struct nfd_event *app_nfd_create_event(struct app *app, enum nfd_event_kind kind);
+
 /* path.c */
 void app_paths_update(struct app *app);
 char const *app_path_config(struct app const *app);
 char const *app_path_screenshots(struct app const *app);
 char *app_path_backup(struct app const *app, char const *rom);
 void app_path_update_quicksave_paths(struct app *app, char const *rom);
+void app_path_refresh_quicksave_cache(struct app *app);
+
+/* video.c */
+void app_sdl_video_init(struct app *app);
+void app_sdl_video_cleanup(struct app *app);
+void app_sdl_video_render_frame(struct app *app);
+void app_sdl_video_rebuild_pipeline(struct app *app);
+void app_sdl_video_resize_window(struct app *app);
+void app_sdl_video_update_display_mode(struct app *app);
+void app_sdl_video_update_scale(struct app *app);
+float app_sdl_video_calculate_scale(struct app *app);
+void app_sdl_video_update_win_title(struct app const *app);

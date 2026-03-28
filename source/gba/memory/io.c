@@ -3,12 +3,13 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
 #include <string.h>
 #include "memory.h"
+#include "gba/io.h"
 #include "gba/gba.h"
 
 /*
@@ -108,28 +109,20 @@ mem_io_reg_name(
         case IO_REG_FIFO_A_H:       return ("fifo_a_h");
         case IO_REG_FIFO_B_L:       return ("fifo_b_l");
         case IO_REG_FIFO_B_H:       return ("fifo_b_h");
-        case IO_REG_DMA0SAD_LO:     return ("dma0sad_lo");
-        case IO_REG_DMA0SAD_HI:     return ("dma0sad_hi");
-        case IO_REG_DMA0DAD_LO:     return ("dma0dad_lo");
-        case IO_REG_DMA0DAD_HI:     return ("dma0dad_hi");
+        case IO_REG_DMA0SAD:        return ("dma0sad");
+        case IO_REG_DMA0DAD:        return ("dma0dad");
         case IO_REG_DMA0CNT:        return ("dma0cnt");
         case IO_REG_DMA0CTL:        return ("dma0ctl");
-        case IO_REG_DMA1SAD_LO:     return ("dma1sad_lo");
-        case IO_REG_DMA1SAD_HI:     return ("dma1sad_hi");
-        case IO_REG_DMA1DAD_LO:     return ("dma1dad_lo");
-        case IO_REG_DMA1DAD_HI:     return ("dma1dad_hi");
+        case IO_REG_DMA1SAD:        return ("dma1sad");
+        case IO_REG_DMA1DAD:        return ("dma1dad");
         case IO_REG_DMA1CNT:        return ("dma1cnt");
         case IO_REG_DMA1CTL:        return ("dma1ctl");
-        case IO_REG_DMA2SAD_LO:     return ("dma2sad_lo");
-        case IO_REG_DMA2SAD_HI:     return ("dma2sad_hi");
-        case IO_REG_DMA2DAD_LO:     return ("dma2dad_lo");
-        case IO_REG_DMA2DAD_HI:     return ("dma2dad_hi");
+        case IO_REG_DMA2SAD:        return ("dma2sad");
+        case IO_REG_DMA2DAD:        return ("dma2dad");
         case IO_REG_DMA2CNT:        return ("dma2cnt");
         case IO_REG_DMA2CTL:        return ("dma2ctl");
-        case IO_REG_DMA3SAD_LO:     return ("dma3sad_lo");
-        case IO_REG_DMA3SAD_HI:     return ("dma3sad_hi");
-        case IO_REG_DMA3DAD_LO:     return ("dma3dad_lo");
-        case IO_REG_DMA3DAD_HI:     return ("dma3dad_hi");
+        case IO_REG_DMA3SAD:        return ("dma3sad");
+        case IO_REG_DMA3DAD:        return ("dma3dad");
         case IO_REG_DMA3CNT:        return ("dma3cnt");
         case IO_REG_DMA3CTL:        return ("dma3ctl");
         case IO_REG_TM0CNT_LO:      return ("tm0cnt_lo");
@@ -164,7 +157,7 @@ mem_io_read8(
 ) {
     struct io const *io;
 
-    logln(HS_IO, "IO read to register %s (%#08x)", mem_io_reg_name(addr), addr);
+    dbgln(HS_IO, "IO read to register %s (%#08x)", mem_io_reg_name(addr), addr);
 
     io = &gba->io;
     switch (addr) {
@@ -355,6 +348,12 @@ mem_io_read8(
 
         /* System */
         case IO_REG_POSTFLG:                return (io->postflg);
+
+        /* mGBA logging system */
+#ifdef WITH_DEBUGGER
+        case IO_REG_MGBA_LOG_ENABLE:            return (io->mgba_log.enable.bytes[0]);
+        case IO_REG_MGBA_LOG_ENABLE + 1:        return (io->mgba_log.enable.bytes[1]);
+#endif
     }
     return (mem_openbus_read(gba, addr));
 }
@@ -370,7 +369,7 @@ mem_io_write8(
 ) {
     struct io *io;
 
-    logln(HS_IO, "IO write to register %s (%#08x) (%#02x)", mem_io_reg_name(addr), addr, val);
+    dbgln(HS_IO, "IO write to register %s (%#08x) (%#02x)", mem_io_reg_name(addr), addr, val);
 
     io = &gba->io;
     switch (addr) {
@@ -473,7 +472,7 @@ mem_io_write8(
         case IO_REG_SOUND1CNT_H + 1: {
             io->sound1cnt_h.bytes[1] = val;
 
-            // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+            // Envelope set to decrease mode with a volume of 0 mutes the channel
             if (!gba->io.sound1cnt_h.envelope_direction && !gba->io.sound1cnt_h.envelope_initial_volume) {
                 apu_tone_and_sweep_stop(gba);
             }
@@ -501,7 +500,7 @@ mem_io_write8(
         case IO_REG_SOUND2CNT_L + 1: {
             io->sound2cnt_l.bytes[1] = val;
 
-            // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+            // Envelope set to decrease mode with a volume of 0 mutes the channel
             if (!gba->io.sound2cnt_l.envelope_direction && !gba->io.sound2cnt_l.envelope_initial_volume) {
                 apu_tone_stop(gba);
             }
@@ -539,9 +538,9 @@ mem_io_write8(
         case IO_REG_SOUND4CNT_L + 1: {
             io->sound4cnt_l.bytes[1] = val;
 
-            // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+            // Envelope set to decrease mode with a volume of 0 mutes the channel
             if (!gba->io.sound4cnt_l.envelope_direction && !gba->io.sound4cnt_l.envelope_initial_volume) {
-                apu_tone_and_sweep_stop(gba);
+                apu_noise_reset(gba);
             }
 
             break;
@@ -791,18 +790,17 @@ mem_io_write8(
         };
         case IO_REG_WAITCNT:
         case IO_REG_WAITCNT + 1: {
-            bool old_pbuffer_enabled;
+            bool old_enable;
 
+            old_enable = gba->memory.pbuffer.enabled;
             io->waitcnt.bytes[addr - IO_REG_WAITCNT] = val;
-            old_pbuffer_enabled = gba->memory.pbuffer.enabled;
-
-            if (old_pbuffer_enabled ^ io->waitcnt.gamepak_prefetch) {
-                memset(&gba->memory.pbuffer, 0, sizeof(struct prefetch_buffer));
-            }
-
             gba->memory.pbuffer.enabled = gba->settings.prefetch_buffer && io->waitcnt.gamepak_prefetch;
 
-            mem_update_waitstates(gba);
+            if (old_enable && !gba->memory.pbuffer.enabled) {
+                gba->memory.pbuffer.disabling_now = true;
+            }
+
+            mem_bus_update_waitstates(gba);
             break;
         };
         case IO_REG_IME:
@@ -821,12 +819,56 @@ mem_io_write8(
             }
             break;
         };
+
+        /* mGBA logging system */
+#ifdef WITH_DEBUGGER
+        case IO_REG_MGBA_LOG_BUFFER ... IO_REG_MGBA_LOG_BUFFER_END - 1: {
+            io->mgba_log.buffer[addr - IO_REG_MGBA_LOG_BUFFER] = val;
+            break;
+        }
+        case IO_REG_MGBA_LOG_FLAGS: io->mgba_log.flags.bytes[0] = val; break;
+        case IO_REG_MGBA_LOG_FLAGS + 1: {
+            io->mgba_log.flags.bytes[1] = val;
+
+            if (io->mgba_log.flags.send) {
+                enum modules module;
+                int level;
+
+                level = 1 << io->mgba_log.flags.level;
+                level &= 0x1F;
+
+                switch (level) {
+                    case MGBA_LOG_FATAL:
+                    case MGBA_LOG_ERROR:    module = HS_ERROR; break;
+                    case MGBA_LOG_WARN:     module = HS_WARN; break;
+                    case MGBA_LOG_INFO:     module = HS_INFO; break;
+                    case MGBA_LOG_DEBUG:    module = HS_DEBUG; break;
+                    default:                module = HS_INFO; break;
+                }
+
+                io->mgba_log.buffer[MGBA_LOG_BUFFER_SIZE] = 0x0;
+                logln(module, "%s", io->mgba_log.buffer);
+                memset(io->mgba_log.buffer, 0, MGBA_LOG_BUFFER_SIZE);
+
+                io->mgba_log.flags.send = false;
+            }
+            break;
+        }
+        case IO_REG_MGBA_LOG_ENABLE:
+        case IO_REG_MGBA_LOG_ENABLE + 1: {
+            io->mgba_log.enable.bytes[addr - IO_REG_MGBA_LOG_ENABLE] = val;
+            if (io->mgba_log.enable.raw == 0xC0DE) {
+                io->mgba_log.enable.raw = 0x1DEA;
+            }
+            break;
+        }
+#endif
     }
 }
 
 bool
 io_evaluate_keypad_cond(
-    struct gba *gba
+    struct gba const *gba
 ) {
     return ((gba->io.keycnt.irq_cond && (~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF) == (gba->io.keycnt.raw & 0x3FF))  // Logical AND
         || (!gba->io.keycnt.irq_cond && ~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF)  // Logical OR

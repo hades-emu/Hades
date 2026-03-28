@@ -12,43 +12,39 @@ AppDir:
     id: hades
     name: Hades
     icon: hades
-    version: 1.0.0
+    version: 1.1.1
     exec: usr/bin/hades
     exec_args: $@
-  runtime:
-    env:
-      GDK_BACKEND: 'x11'
   apt:
     arch:
-    - amd64
+      - amd64
     allow_unauthenticated: true
     sources:
-    - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy main restricted
-    - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted
-    - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy universe
-    - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-updates universe
-    - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy multiverse
-    - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-updates multiverse
-    - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-backports main restricted
-        universe multiverse
-    - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted
-    - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security universe
-    - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security multiverse
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy main restricted
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy universe
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-updates universe
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy multiverse
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-updates multiverse
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy-backports main restricted universe multiverse
+      - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted
+      - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security universe
+      - sourceline: deb http://security.ubuntu.com/ubuntu/ jammy-security multiverse
     include:
-    - libsdl2-2.0-0
-    - libarchive13
-    - libgtk-3-0
-    - libgtk-3-common
-    - libglew2.2
+      - libarchive13
+      - libglew2.2
+      - librsvg2-common  # See https://github.com/hades-emu/Hades/issues/102
+    exclude:
+      - libxkbcommon0
 
   files:
     include: []
     exclude:
-    - usr/share/man
-    - usr/share/doc/*/README.*
-    - usr/share/doc/*/changelog.*
-    - usr/share/doc/*/NEWS.*
-    - usr/share/doc/*/TODO.*
+      - usr/share/man
+      - usr/share/doc/*/README.*
+      - usr/share/doc/*/changelog.*
+      - usr/share/doc/*/NEWS.*
+      - usr/share/doc/*/TODO.*
   test:
     fedora-30:
       image: appimagecrafters/tests-env:fedora-30

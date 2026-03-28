@@ -14,7 +14,7 @@
 cflags += [
     '-DIMGUI_IMPL_API=extern "C"  ',
     '-DCIMGUI_USE_OPENGL3',
-    '-DCIMGUI_USE_SDL2',
+    '-DCIMGUI_USE_SDL3',
 ]
 
 imgui_inc = include_directories(
@@ -24,7 +24,7 @@ imgui_inc = include_directories(
 )
 
 imgui_dep = [
-    dependency('sdl2', version: '>=2', required: true, static: static_dependencies or get_option('static_sdl2')),
+    dependency('sdl3', version: '>=3', required: true, static: static_dependencies or get_option('static_sdl3')),
     dependency('glew', required: true, static: static_dependencies or get_option('static_glew')),
 ]
 
@@ -59,7 +59,7 @@ imgui = static_library(
     'cimgui/imgui/imgui_tables.cpp',
     'cimgui/imgui/imgui_widgets.cpp',
     'cimgui/imgui/backends/imgui_impl_opengl3.cpp',
-    'cimgui/imgui/backends/imgui_impl_sdl2.cpp',
+    'cimgui/imgui/backends/imgui_impl_sdl3.cpp',
     include_directories: imgui_inc,
     dependencies: imgui_dep,
     c_args: cflags,
@@ -89,40 +89,4 @@ mjson = static_library(
 
 stb_inc = include_directories(
     'stb/'
-)
-
-###############################
-##            NFDe           ##
-###############################
-
-nfde_inc = include_directories(
-    'nfde/src/include/'
-)
-
-nfde_src = []
-nfde_dep = []
-
-if host_machine.system() == 'windows'
-    nfde_src += ['nfde/src/nfd_win.cpp']
-elif host_machine.system() == 'darwin'
-    add_languages('objc')
-    nfde_src += ['nfde/src/nfd_cocoa.m']
-    nfde_dep += [
-        dependency('appleframeworks', required: true, modules: ['AppKit', 'UniformTypeIdentifiers']),
-    ]
-else
-    nfde_src += ['nfde/src/nfd_gtk.cpp']
-    nfde_dep += [
-        dependency('gtk+-3.0', required: true, static: static_dependencies),
-    ]
-endif
-
-nfde = static_library(
-    'nfde',
-    nfde_src,
-    include_directories: nfde_inc,
-    dependencies: nfde_dep,
-    c_args: cflags,
-    cpp_args: cflags,
-    link_args: ldflags,
 )

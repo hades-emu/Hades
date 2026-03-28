@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -31,16 +31,16 @@ core_arm_swp(
     rn = bitfield_get_range(op, 16, 20);
 
     if (bitfield_get(op, 22)) { // Swap byte quantity
-        tmp = mem_read8(gba, core->registers[rn], NON_SEQUENTIAL);
-        mem_write8(gba, core->registers[rn], core->registers[rm], NON_SEQUENTIAL);
+        tmp = mem_read8(gba, core->registers[rn], NON_SEQUENTIAL | LOCK);
+        mem_write8(gba, core->registers[rn], core->registers[rm], NON_SEQUENTIAL | LOCK);
         core->registers[rd] = tmp;
     } else { // Swap word quantity
-        tmp = mem_read32_ror(gba, core->registers[rn], NON_SEQUENTIAL);
-        mem_write32(gba, core->registers[rn], core->registers[rm], NON_SEQUENTIAL);
+        tmp = mem_read32_ror(gba, core->registers[rn], NON_SEQUENTIAL | LOCK);
+        mem_write32(gba, core->registers[rn], core->registers[rm], NON_SEQUENTIAL | LOCK);
         core->registers[rd] = tmp;
     }
 
-    core_idle(gba);
+    mem_bus_idle(gba);
 
     if (rd == 15) {
         core_reload_pipeline(gba);

@@ -22,19 +22,68 @@ jobs:
       - name: Install Dependencies
         uses: msys2/setup-msys2@v2
         with:
-          install: make mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2 mingw-w64-x86_64-glew mingw-w64-x86_64-libarchive
+          install: make mingw-w64-x86_64-ca-certificates mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-glew mingw-w64-x86_64-libarchive mingw-w64-x86_64-sdl3
       - name: Build Hades
         run: |
-          meson --buildtype=release build -Dstatic_executable=true
-          cd build
-          ninja
+          # Setup the Meson project
+          meson setup build --buildtype=release -Dstatic_executable=true
+
+          # Build the project
+          ninja -C build
       - name: Test Hades
         run: |
           ./build/Hades.exe --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: hades-win64
+          name: hades-win-x64
+          path: build/Hades.exe
+          if-no-files-found: error
+
+  windows-arm:
+    name: Windows ARM64 (Portable Archive)
+    runs-on: windows-11-arm
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANGARM64
+          update: true
+          cache: true
+          release: true
+          install:
+            gcc
+            make
+          pacboy:
+            gcc-compat:p
+            toolchain:p
+            ca-certificates:p
+            meson:p
+            ninja:p
+            glew:p
+            libarchive:p
+            sdl3:p
+      - name: Fetch Source Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build Hades
+        run: |
+          # Setup the Meson project
+          meson setup build --buildtype=release -Dstatic_executable=true
+
+          # Build the project
+          ninja -C build
+      - name: Test Hades
+        run: |
+          ./build/Hades.exe --help
+      - name: Collect Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hades-win-arm64
           path: build/Hades.exe
           if-no-files-found: error
 
@@ -49,7 +98,28 @@ jobs:
       - name: Install Dependencies
         run: |
           echo "Installing dependencies"
-          brew install meson ninja create-dmg sdl2 glew libarchive
+          brew install meson ninja create-dmg libarchive
+
+          # Install glew 2.2.0 because the latest version doesn't ship with a static library anymore
+          brew tap-new hades/dependencies
+          brew extract --version=2.2.0 glew hades/dependencies
+          brew install hades/dependencies/glew@2.2.0
+
+      - name: Build the SDL3
+        run: |
+          # Source & Documentation:
+          #
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-macos.md
+
+          # Clone the SDL3
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.4.0
+
+          # Build the SDL3
+          cd sdl
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
+          cmake --build build --config Release -j
+          sudo cmake --install build
 
       - name: Build Hades for arm64
         run: |
@@ -59,23 +129,28 @@ jobs:
           # a directory containing only the static archives (.a), without the .dylib next to them.
           mkdir libs-arm64
           cp /opt/homebrew/lib/*.a ./libs-arm64/
+          cp /usr/local/lib/*.a ./libs-arm64/
 
           export LDFLAGS="-L$(pwd)/libs-arm64/"
 
           rm -rf /tmp/build/
           mkdir -p /tmp/build/Hades.app
 
-          meson --buildtype=release --prefix=/tmp/build/Hades.app --bindir=Contents/MacOS build --werror -Dstatic_dependencies=true
+          # Setup the Meson project
+          meson setup build --buildtype=release -Dstatic_dependencies=true --prefix=/tmp/build/Hades.app --bindir=Contents/MacOS
+
+          # Build & Install the project
           ninja -C build install
 
-      - name: Build Hades Universal App
+      - name: Clean & Polish Hades App
         run: |
-          echo "Hades Dependencies Check"
-          otool -L /tmp/build/Hades.app/Contents/MacOS/hades | grep /opt/homebrew/ && false
-
           echo "Hades (Universal) Dependencies:"
           otool -L /tmp/build/Hades.app/Contents/MacOS/hades
           echo "End of dependencies"
+
+          echo "Hades Dependencies Check"
+          otool -L /tmp/build/Hades.app/Contents/MacOS/hades | grep /opt/homebrew/ && false
+          otool -L /tmp/build/Hades.app/Contents/MacOS/hades | grep /usr/local/ && false
 
           # Set permissions
           chmod +x /tmp/build/Hades.app/Contents/MacOS/hades
@@ -88,6 +163,11 @@ jobs:
         # Only run if a certificate is set
         if: ${{ env.MACOS_CODESIGN_CRT != '' && env.MACOS_CODESIGN_CRT_IDENTITY != '' }}
         run: |
+          echo "Content of the bundle to sign:"
+          echo "---- START ----"
+          find "/tmp/build/Hades.app" | sed -e "s/[^─][^\/]*\//   │/g" -e "s/│\([^ ]\)/├── \1/"
+          echo "----  END  ----"
+
           # Create keychain with certificate to use to sign the binaries.
           echo "$MACOS_CODESIGN_CRT" | base64 -d > certificate.p12
           security create-keychain -p test123 build.keychain
@@ -159,24 +239,61 @@ jobs:
             meson \
             ninja-build \
             libfuse2 \
-            libsdl2-dev \
             libglew-dev \
-            libgtk-3-dev \
-            libarchive-dev
+            libarchive-dev \
+            libudev-dev \
+            libpipewire-0.3-dev
+
+      - name: Build the SDL3
+        run: |
+          # Source & Documentation:
+          #
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md
+
+          # Install all SDL3 build dependencies
+          sudo apt-get install build-essential git make \
+            pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+            libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
+            libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
+
+          # Clone the SDL3
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.4.0
+
+          # Build the SDL3
+          cd sdl
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON
+          cmake --build build --config Release -j
+          sudo cmake --install build --prefix /usr/local
+
       - name: Build Hades
         run: |
-          meson --buildtype=release --prefix=/usr build --werror
+          # Setup the Meson project
+          meson setup build --buildtype=release -Dstatic_sdl3=true -Dwith_wayland=false --prefix=/usr
+
+          # Build & Install the project
           DESTDIR=$(pwd)/AppDir ninja -C build install
+
+          echo "Content of the package:"
+          echo "---- START ----"
+          find "$(pwd)/AppDir" | sed -e "s/[^─][^\/]*\//   │/g" -e "s/│\([^ ]\)/├── \1/"
+          echo "----  END  ----"
+
       - name: Package Hades
         uses: AppImageCrafters/build-appimage@master
         with:
           recipe: "./resource/linux/AppImageBuilder.yml"
+
       - name: Test Hades
         run: |
           sudo chown --reference=. *.AppImage
           mv -v *.AppImage hades.AppImage
 
           ./hades.AppImage --help
+
       - name: Collect Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -201,23 +318,55 @@ jobs:
           sudo apt-get install -y \
             meson \
             ninja-build \
-            libsdl2-dev \
             libglew-dev \
-            libgtk-3-dev \
-            libarchive-dev
+            libarchive-dev \
+            libudev-dev \
+            libpipewire-0.3-dev
+
+      - name: Build the SDL3
+        run: |
+          # Source & Documentation:
+          #
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+          # https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md
+
+          # Install all SDL3 build dependencies
+          sudo apt-get install build-essential git make \
+            pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+            libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
+            libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
+
+          # Clone the SDL3
+          git clone https://github.com/libsdl-org/SDL.git sdl --branch release-3.4.0
+
+          # Build the SDL3
+          cd sdl
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON
+          cmake --build build --config Release -j
+          sudo cmake --install build --prefix /usr/local
+
       - name: Build Hades
         run: |
-          meson --buildtype=release --prefix=/usr build --werror
+          meson setup build --buildtype=release -Dstatic_sdl3=true --prefix=/usr
           DESTDIR=$(pwd)/pkg-root ninja -C build install
+
+          echo "Content of the package:"
+          echo "---- START ----"
+          find "$(pwd)/pkg-root" | sed -e "s/[^─][^\/]*\//   │/g" -e "s/│\([^ ]\)/├── \1/"
+          echo "----  END  ----"
+
       - name: Package Hades
         uses: jiro4989/build-deb-action@v3
         with:
           package: hades
           package_root: pkg-root
           maintainer: The Hades Authors
-          version: 1.0.0
+          version: 1.1.1
           arch: 'amd64'
-          depends: 'libsdl2-2.0-0, libarchive13, libgtk-3-0, libglew2.2'
+          depends: 'libarchive13, libglew2.2, libdecor-0-0'
           desc: 'A Nintendo Game Boy Advance Emulator.'
       - name: Test Hades
         run: |

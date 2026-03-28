@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -68,7 +68,6 @@ struct rtc {
     bool sck;
     bool sio;
     bool cs;
-
     enum rtc_registers active_register;
 
     union {
@@ -102,7 +101,7 @@ uint8_t gpio_read_u8(struct gba *gba, uint32_t);
 void gpio_write_u8(struct gba *gba, uint32_t, uint8_t);
 
 /* gpio/rtc.c */
-uint8_t gpio_rtc_read(struct gba *gba);
+uint8_t gpio_rtc_read(struct gba const *gba);
 void gpio_rtc_write(struct gba *gba, uint8_t);
 
 /* gpio/rumble.c */

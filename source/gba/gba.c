@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -96,7 +96,6 @@ gba_send_notification_raw(
 #endif
         default: {
             unimplemented(HS_ERROR, "Unimplemented notification kind %i.", notif_header->kind);
-            break;
         }
     }
 }
@@ -187,6 +186,17 @@ gba_state_reset(
         memcpy(gba->memory.bios, config->bios.data, min(config->bios.size, BIOS_SIZE));
         memcpy(gba->memory.rom, config->rom.data, min(config->rom.size, CART_SIZE));
         gba->memory.rom_size = config->rom.size;
+        gba->memory.rom_mask = CART_MASK;
+
+        if (config->rom_mirroring) {
+            size_t rounded_size = 1;
+
+            while(rounded_size < gba->memory.rom_size) {
+                rounded_size *= 2;
+            }
+
+            gba->memory.rom_mask = (uint32_t)(rounded_size  - 1);
+        }
     }
 
     // IO
@@ -319,7 +329,7 @@ gba_state_reset(
             case BACKUP_FLASH64: gba->shared_data.backup_storage.size = FLASH64_SIZE; break;
             case BACKUP_FLASH128:gba->shared_data.backup_storage.size = FLASH128_SIZE; break;
             case BACKUP_NONE: gba->shared_data.backup_storage.size = 0; break;
-            default: panic(HS_CORE, "Unknown backup type %i", gba->memory.backup_storage.type); break;
+            default: panic(HS_CORE, "Unknown backup type %i", gba->memory.backup_storage.type);
         }
 
         if (gba->shared_data.backup_storage.size) {
@@ -342,7 +352,7 @@ gba_state_reset(
 
         memset(core, 0, sizeof(*core));
 
-        mem_update_waitstates(gba);
+        mem_bus_update_waitstates(gba);
 
         core->cpsr.mode = MODE_SYS;
         core->prefetch[0] = 0xF0000000;

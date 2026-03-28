@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -29,7 +29,7 @@ core_arm_bdt(
     bool pre;
     bool s;
     bool wb;
-    enum access_types access_type;
+    enum access_flags access_type;
 
     core = &gba->core;
     rn = bitfield_get_range(op, 16, 20);
@@ -51,7 +51,7 @@ core_arm_bdt(
 
     /*
     ** Edge case: if rlist is empty, transfer the pc but
-    ** increment the base as if all registers were transfered.
+    ** increment the base as if all registers were transferred.
     */
     if (count == 0) {
         op |= (1 << 15);
@@ -103,7 +103,6 @@ core_arm_bdt(
             if (load) {
                 if (first && wb) { // Write back before data is read
                     core->registers[rn] = base_new;
-                    first = false;
                 }
 
                 core->registers[i] = mem_read32(gba, base, access_type);
@@ -112,18 +111,18 @@ core_arm_bdt(
 
                 if (first && wb) { // Write back after data is stored
                     core->registers[rn] = base_new;
-                    first = false;
                 }
             }
 
             base += pre ? 0 : 4; // Post-increment
             access_type = SEQUENTIAL;
+            first = false;
         }
         ++i;
     }
 
     if (load) {
-        core_idle(gba);
+        mem_bus_idle(gba);
 
         if (pc_in_rlist) {
             if (s) {

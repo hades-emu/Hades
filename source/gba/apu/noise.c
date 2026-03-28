@@ -3,7 +3,7 @@
 **  This file is part of the Hades GBA Emulator, and is made available under
 **  the terms of the GNU General Public License version 2.
 **
-**  Copyright (C) 2021-2024 - The Hades Authors
+**  Copyright (C) 2021-2026 - The Hades Authors
 **
 \******************************************************************************/
 
@@ -20,7 +20,7 @@ apu_noise_reset(
 
     apu_noise_stop(gba);
 
-    // Enveloppe set to decrease mode with a volume of 0 mutes the channel
+    // Envelope set to decrease mode with a volume of 0 mutes the channel
     if (!gba->io.sound4cnt_l.envelope_direction && !gba->io.sound4cnt_l.envelope_initial_volume) {
         return;
     }
@@ -30,7 +30,7 @@ apu_noise_reset(
 
     apu_modules_envelope_reset(
         &gba->apu.noise.envelope,
-        gba->io.sound4cnt_l.eveloppe_step_time,
+        gba->io.sound4cnt_l.envelope_step_time,
         gba->io.sound4cnt_l.envelope_direction,
         gba->io.sound4cnt_l.envelope_initial_volume
     );

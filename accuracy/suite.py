@@ -32,6 +32,8 @@ class TestRoms(Enum):
 
     AGS = Rom('ags', None)
 
+    AGBEEG = Rom('agbeeg', 'https://github.com/zaydlang/AGBEEG-Aging-Cartridge/releases/download/v0.0.2/AGBEEG_AGING_CARTRIDGE.gba')
+
 
 TESTS_SUITE: List[Test] = [
 
@@ -137,7 +139,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 100
+            frame 220
 
             screenshot ./.tests_screenshots/mgba_suite_memory.png
         ''',
@@ -169,7 +171,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 200
+            frame 290
 
             screenshot ./.tests_screenshots/mgba_suite_timing.png
         ''',
@@ -185,7 +187,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 150
+            frame 200
 
             screenshot ./.tests_screenshots/mgba_suite_timer_count_up.png
         ''',
@@ -214,7 +216,7 @@ TESTS_SUITE: List[Test] = [
             frame 70
             key down false
             key a true
-            frame 20
+            frame 30
             key a false
 
             screenshot ./.tests_screenshots/mgba_suite_shifter.png
@@ -244,7 +246,7 @@ TESTS_SUITE: List[Test] = [
             frame 85
             key down false
             key a true
-            frame 20
+            frame 30
             key a false
 
             screenshot ./.tests_screenshots/mgba_suite_multiply_long.png
@@ -259,7 +261,7 @@ TESTS_SUITE: List[Test] = [
             frame 95
             key down false
             key a true
-            frame 20
+            frame 80
             key a false
 
             screenshot ./.tests_screenshots/mgba_suite_bios.png
@@ -276,7 +278,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 130
+            frame 250
 
             screenshot ./.tests_screenshots/mgba_suite_dma.png
         ''',
@@ -286,7 +288,7 @@ TESTS_SUITE: List[Test] = [
     # NBA Hardware Tests
     # https://github.com/nba-emu/hw-test
     Test(
-        name="NBA HW-Tests - Timer Reload",
+        name="NBA Tests - Timer Reload",
         rom=TestRoms.NBA_TIMER_RELOAD.value,
         code='''
             frame 15
@@ -296,7 +298,7 @@ TESTS_SUITE: List[Test] = [
         screenshot='nba_timer_reload.png',
     ),
     Test(
-        name="NBA HW-Tests - Timer Start/Stop",
+        name="NBA Tests - Timer Start/Stop",
         rom=TestRoms.NBA_TIMER_START_STOP.value,
         code='''
             frame 15
@@ -306,7 +308,7 @@ TESTS_SUITE: List[Test] = [
         screenshot='nba_timer_start_stop.png',
     ),
     Test(
-        name="NBA HW-Tests - DMA Latch",
+        name="NBA Tests - DMA Latch",
         rom=TestRoms.NBA_DMA_LATCH.value,
         code='''
             frame 15
@@ -316,7 +318,7 @@ TESTS_SUITE: List[Test] = [
         screenshot='nba_dma_latch.png',
     ),
     Test(
-        name="NBA HW-Tests - DMA Start Delay",
+        name="NBA Tests - DMA Start Delay",
         rom=TestRoms.NBA_DMA_START_DELAY.value,
         code='''
             frame 15
@@ -326,7 +328,7 @@ TESTS_SUITE: List[Test] = [
         screenshot='nba_dma_start_delay.png',
     ),
     Test(
-        name="NBA HW-Tests - IRQ Delay",
+        name="NBA Tests - IRQ Delay",
         rom=TestRoms.NBA_IRQ_DELAY.value,
         code='''
             frame 15
@@ -355,7 +357,6 @@ TESTS_SUITE: List[Test] = [
             screenshot ./.tests_screenshots/hades_dma_start_delay.png
         ''',
         screenshot='hades_dma_start_delay.png',
-        skip=True,
     ),
     Test(
         name="Hades Tests - BIOS Openbus",
@@ -385,5 +386,16 @@ TESTS_SUITE: List[Test] = [
             screenshot ./.tests_screenshots/ags_01.png
         ''',
         screenshot='ags_01.png',
+    ),
+
+    # AGBEEG
+    Test(
+        name="AGBEEG - Aging Tests",
+        rom=TestRoms.AGBEEG.value,
+        code='''
+            frame 20
+            screenshot ./.tests_screenshots/agbeeg.png
+        ''',
+        screenshot='agbeeg.png',
     )
 ]
