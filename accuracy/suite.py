@@ -187,7 +187,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 200
+            frame 205
 
             screenshot ./.tests_screenshots/mgba_suite_timer_count_up.png
         ''',
