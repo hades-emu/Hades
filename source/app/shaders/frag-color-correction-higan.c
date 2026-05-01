@@ -15,7 +15,7 @@
 ** Reference:
 **   - https://github.com/higan-emu/emulation-articles/tree/master/video/color-emulation
 */
-char const *SHADER_FRAG_COLOR_CORRECTION = GLSL(
+char const *SHADER_FRAG_COLOR_CORRECTION_HIGAN = GLSL(
     layout(location = 0) out vec4 frag_color;
 
     in vec2 v_uv;

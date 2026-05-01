@@ -60,12 +60,17 @@ enum texture_filter_kind {
 
 enum pixel_color_filter_kind {
     PIXEL_COLOR_FILTER_NONE = 0,
-    PIXEL_COLOR_FILTER_COLOR_CORRECTION = 1,
-    PIXEL_COLOR_FILTER_GREY_SCALE = 2,
+    PIXEL_COLOR_FILTER_COLOR_CORRECTION_HIGAN = 1,
+    PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA = 2,
+    PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_SP_001 = 3,
+    PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_SP_101 = 4,
+    PIXEL_COLOR_FILTER_COLOR_CORRECTION_GB_MICRO = 5,
+    PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_NSO = 6,
+    PIXEL_COLOR_FILTER_GREY_SCALE = 7,
 
     PIXEL_COLOR_FILTER_LEN,
     PIXEL_COLOR_FILTER_MIN = 0,
-    PIXEL_COLOR_FILTER_MAX = 2,
+    PIXEL_COLOR_FILTER_MAX = 7,
 };
 
 enum pixel_scaling_filter_kind {
@@ -148,6 +153,8 @@ extern char const * const binds_slug[];
 extern SDL_DialogFileFilter const sdl_nfd_bios_filters[];
 extern SDL_DialogFileFilter const sdl_nfd_rom_filters[];
 extern SDL_DialogFileFilter const sdl_nfd_save_filters[];
+
+extern char const * const pixel_color_filters_names[];
 
 enum app_notification_kind {
     UI_NOTIFICATION_INFO,
@@ -449,7 +456,12 @@ struct app {
         GLuint vao;
         GLuint vbo;
 
-        GLuint program_color_correction;
+        GLuint program_color_correction_gb_micro;
+        GLuint program_color_correction_gba;
+        GLuint program_color_correction_gba_sp_001;
+        GLuint program_color_correction_gba_sp_101;
+        GLuint program_color_correction_gba_nso;
+        GLuint program_color_correction_higan;
         GLuint program_grey_scale;
         GLuint program_lcd_grid;
         GLuint program_lcd_grid_with_rgb_stripes;
@@ -629,7 +641,12 @@ struct app {
 };
 
 /* shaders/ */
-extern char const *SHADER_FRAG_COLOR_CORRECTION;
+extern char const *SHADER_FRAG_COLOR_CORRECTION_HIGAN;
+extern char const *SHADER_FRAG_COLOR_CORRECTION_GBA;
+extern char const *SHADER_FRAG_COLOR_CORRECTION_GBA_SP_001;
+extern char const *SHADER_FRAG_COLOR_CORRECTION_GBA_SP_101;
+extern char const *SHADER_FRAG_COLOR_CORRECTION_GB_MICRO;
+extern char const *SHADER_FRAG_COLOR_CORRECTION_GBA_NSO;
 extern char const *SHADER_FRAG_GREY_SCALE;
 extern char const *SHADER_FRAG_LCD_GRID_WITH_RGB_STRIPES;
 extern char const *SHADER_FRAG_LCD_GRID;

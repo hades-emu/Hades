@@ -354,21 +354,17 @@ app_win_menubar_video(
 
         /* Pixel Color Effect */
         if (igBeginMenu("Color Effect", true)) {
-            if (igMenuItem_Bool("None", NULL, app->settings.video.pixel_color_filter == PIXEL_COLOR_FILTER_NONE, true)) {
-                app->settings.video.pixel_color_filter = PIXEL_COLOR_FILTER_NONE;
-                app_sdl_video_rebuild_pipeline(app);
-            }
+            int i;
 
-            igSeparator();
+            for (i = PIXEL_COLOR_FILTER_MIN; i <= PIXEL_COLOR_FILTER_MAX; ++i) {
+                if (igMenuItem_Bool(pixel_color_filters_names[i], NULL, app->settings.video.pixel_color_filter == i, true)) {
+                    app->settings.video.pixel_color_filter = i;
+                    app_sdl_video_rebuild_pipeline(app);
+                }
 
-            if (igMenuItem_Bool("Color Correction", NULL, app->settings.video.pixel_color_filter == PIXEL_COLOR_FILTER_COLOR_CORRECTION, true)) {
-                app->settings.video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
-                app_sdl_video_rebuild_pipeline(app);
-            }
-
-            if (igMenuItem_Bool("Grey Scale", NULL, app->settings.video.pixel_color_filter == PIXEL_COLOR_FILTER_GREY_SCALE, true)) {
-                app->settings.video.pixel_color_filter = PIXEL_COLOR_FILTER_GREY_SCALE;
-                app_sdl_video_rebuild_pipeline(app);
+                if (i == 0) {
+                    igSeparator();
+                }
             }
 
             igEndMenu();

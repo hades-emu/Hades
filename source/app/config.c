@@ -68,7 +68,7 @@ app_config_default_settings(
     settings->video.aspect_ratio = ASPECT_RATIO_BORDERS;
     settings->video.vsync = false;
     settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
-    settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION;
+    settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_NSO;
     settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
     settings->audio.mute = false;
     settings->audio.level = 1.0f;

@@ -126,7 +126,12 @@ app_sdl_video_init(
     app_sdl_video_update_scale(app);
 
     // Build all the available shaders
-    app->gfx.program_color_correction = build_shader_program("color_correction", SHADER_FRAG_COLOR_CORRECTION, SHADER_VERTEX_COMMON);
+    app->gfx.program_color_correction_higan = build_shader_program("color_correction_higan", SHADER_FRAG_COLOR_CORRECTION_HIGAN, SHADER_VERTEX_COMMON);
+    app->gfx.program_color_correction_gba = build_shader_program("color_correction_gba", SHADER_FRAG_COLOR_CORRECTION_GBA, SHADER_VERTEX_COMMON);
+    app->gfx.program_color_correction_gba_sp_001 = build_shader_program("color_correction_gba_sp_001", SHADER_FRAG_COLOR_CORRECTION_GBA_SP_001, SHADER_VERTEX_COMMON);
+    app->gfx.program_color_correction_gba_sp_101 = build_shader_program("color_correction_gba_sp_101", SHADER_FRAG_COLOR_CORRECTION_GBA_SP_101, SHADER_VERTEX_COMMON);
+    app->gfx.program_color_correction_gb_micro = build_shader_program("color_correction_gb_micro", SHADER_FRAG_COLOR_CORRECTION_GB_MICRO, SHADER_VERTEX_COMMON);
+    app->gfx.program_color_correction_gba_nso = build_shader_program("color_correction_gba_nso", SHADER_FRAG_COLOR_CORRECTION_GBA_NSO, SHADER_VERTEX_COMMON);
     app->gfx.program_grey_scale = build_shader_program("grey_scale", SHADER_FRAG_GREY_SCALE, SHADER_VERTEX_COMMON);
     app->gfx.program_lcd_grid_with_rgb_stripes = build_shader_program("lcd_grid_with_rgb_stripes", SHADER_FRAG_LCD_GRID_WITH_RGB_STRIPES, SHADER_VERTEX_COMMON);
     app->gfx.program_lcd_grid = build_shader_program("lcd_grid", SHADER_FRAG_LCD_GRID, SHADER_VERTEX_COMMON);
@@ -214,18 +219,14 @@ app_sdl_video_rebuild_pipeline(
     );
 
     switch (app->settings.video.pixel_color_filter) {
-        case PIXEL_COLOR_FILTER_COLOR_CORRECTION: {
-            app->gfx.pixel_color_program = app->gfx.program_color_correction;
-            break;
-        };
-        case PIXEL_COLOR_FILTER_GREY_SCALE: {
-            app->gfx.pixel_color_program = app->gfx.program_grey_scale;
-            break;
-        };
-        default: {
-            app->gfx.pixel_color_program = 0;
-            break;
-        };
+        case PIXEL_COLOR_FILTER_COLOR_CORRECTION_HIGAN: app->gfx.pixel_color_program = app->gfx.program_color_correction_higan; break;
+        case PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA: app->gfx.pixel_color_program = app->gfx.program_color_correction_gba; break;
+        case PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_SP_001: app->gfx.pixel_color_program = app->gfx.program_color_correction_gba_sp_001; break;
+        case PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_SP_101: app->gfx.pixel_color_program = app->gfx.program_color_correction_gba_sp_101; break;
+        case PIXEL_COLOR_FILTER_COLOR_CORRECTION_GB_MICRO: app->gfx.pixel_color_program = app->gfx.program_color_correction_gb_micro; break;
+        case PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_NSO: app->gfx.pixel_color_program = app->gfx.program_color_correction_gba_nso; break;
+        case PIXEL_COLOR_FILTER_GREY_SCALE: app->gfx.pixel_color_program = app->gfx.program_grey_scale; break;
+        default: app->gfx.pixel_color_program = 0; break;
     }
 
     // Setup the pixel color texture
@@ -425,7 +426,12 @@ app_sdl_video_cleanup(
     igDestroyContext(NULL);
 
     // Cleanup OpenGL
-    glDeleteProgram(app->gfx.program_color_correction);
+    glDeleteProgram(app->gfx.program_color_correction_higan);
+    glDeleteProgram(app->gfx.program_color_correction_gba);
+    glDeleteProgram(app->gfx.program_color_correction_gba_sp_001);
+    glDeleteProgram(app->gfx.program_color_correction_gba_sp_101);
+    glDeleteProgram(app->gfx.program_color_correction_gb_micro);
+    glDeleteProgram(app->gfx.program_color_correction_gba_nso);
     glDeleteProgram(app->gfx.program_grey_scale);
     glDeleteProgram(app->gfx.program_lcd_grid);
     glDeleteProgram(app->gfx.program_lcd_grid_with_rgb_stripes);

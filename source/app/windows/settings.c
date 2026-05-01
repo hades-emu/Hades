@@ -13,7 +13,7 @@
 #include "hades.h"
 #include "app/app.h"
 
-static char const *menu_names[MENU_MAX] = {
+static char const * const menu_names[MENU_MAX] = {
     [MENU_GENERAL] = "General",
     [MENU_EMULATION] = "Emulation",
     [MENU_VIDEO] = "Video",
@@ -21,35 +21,40 @@ static char const *menu_names[MENU_MAX] = {
     [MENU_BINDINGS] = "Bindings",
 };
 
-static char const *texture_filters_names[TEXTURE_FILTER_LEN] = {
+static char const * const texture_filters_names[TEXTURE_FILTER_LEN] = {
     [TEXTURE_FILTER_NEAREST] = "Nearest",
     [TEXTURE_FILTER_LINEAR] = "Linear",
 };
 
-static char const *pixel_color_filters_names[PIXEL_COLOR_FILTER_LEN] = {
+char const * const pixel_color_filters_names[PIXEL_COLOR_FILTER_LEN] = {
     [PIXEL_COLOR_FILTER_NONE] = "None",
-    [PIXEL_COLOR_FILTER_COLOR_CORRECTION] = "Color correction",
+    [PIXEL_COLOR_FILTER_COLOR_CORRECTION_HIGAN] = "Color correction (Higan)",
+    [PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA] = "Color correction (GBA)",
+    [PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_SP_001] = "Color correction (GBA SP 001)",
+    [PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_SP_101] = "Color correction (GBA SP 101)",
+    [PIXEL_COLOR_FILTER_COLOR_CORRECTION_GB_MICRO] = "Color correction (GB Micro)",
+    [PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_NSO] = "Color correction (Switch)",
     [PIXEL_COLOR_FILTER_GREY_SCALE] = "Grey scale",
 };
 
-static char const *pixel_scaling_filters_names[PIXEL_SCALING_FILTER_LEN] = {
+static char const * const pixel_scaling_filters_names[PIXEL_SCALING_FILTER_LEN] = {
     [PIXEL_SCALING_FILTER_NONE] = "None",
     [PIXEL_SCALING_FILTER_LCD_GRID] = "LCD Grid",
     [PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES] = "LCD Grid /w RGB Stripes",
     [PIXEL_SCALING_FILTER_XBRZ] = "xBRZ",
 };
 
-static char const *aspect_ratio_names[ASPECT_RATIO_LEN] = {
+static char const * const aspect_ratio_names[ASPECT_RATIO_LEN] = {
     [ASPECT_RATIO_BORDERS] = "Black Borders",
     [ASPECT_RATIO_STRETCH] = "Stretch",
 };
 
-static char const *display_mode_names[DISPLAY_MODE_LEN] = {
+static char const * const display_mode_names[DISPLAY_MODE_LEN] = {
     [DISPLAY_MODE_WINDOW] = "Window",
     [DISPLAY_MODE_BORDERLESS_FULLSCREEN] = "Fullscreen (borderless)",
 };
 
-static char const *menubar_mode_names[MENUBAR_MODE_LEN] = {
+static char const * const menubar_mode_names[MENUBAR_MODE_LEN] = {
     [MENUBAR_MODE_PINNED] = "Pinned, above game",
     [MENUBAR_MODE_AUTO_HIDE] = "Hide automatically",
 };

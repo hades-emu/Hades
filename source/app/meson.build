@@ -13,7 +13,12 @@ libapp_extra_cflags = [
 libapp_extra_deps = []
 
 libapp_sources = [
-    'shaders/frag-color-correction.c',
+    'shaders/frag-color-correction-gb-micro.c',
+    'shaders/frag-color-correction-gba.c',
+    'shaders/frag-color-correction-gba-nso.c',
+    'shaders/frag-color-correction-gba-sp-001.c',
+    'shaders/frag-color-correction-gba-sp-101.c',
+    'shaders/frag-color-correction-higan.c',
     'shaders/frag-grey-scale.c',
     'shaders/frag-lcd-grid-with-rgb-stripes.c',
     'shaders/frag-lcd-grid.c',
