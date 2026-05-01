@@ -32,7 +32,11 @@ Currently, Hades features:
   - Some GPIO devices, such as:
     - Real Time Clock (RTC)
     - Rumble
-  - Color correction & LCD effects
+  - Shaders, such as:
+    - Color correction
+    - xBRZ scaling
+    - LCD effects
+    - Etc.
   - Loading games from common archive formats (`.zip`, `.7z`, `.rar`, etc.)
 
 It is the third 🥉 software emulator to pass the AGS Aging Cartridge used to test Game Boy Advance systems.
