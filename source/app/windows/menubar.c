@@ -393,6 +393,11 @@ app_win_menubar_video(
                 app_sdl_video_rebuild_pipeline(app);
             }
 
+            if (igMenuItem_Bool("xBRZ", NULL, app->settings.video.pixel_scaling_filter == PIXEL_SCALING_FILTER_XBRZ, true)) {
+                app->settings.video.pixel_scaling_filter = PIXEL_SCALING_FILTER_XBRZ;
+                app_sdl_video_rebuild_pipeline(app);
+            }
+
             igEndMenu();
         }
 

@@ -72,10 +72,11 @@ enum pixel_scaling_filter_kind {
     PIXEL_SCALING_FILTER_NONE = 0,
     PIXEL_SCALING_FILTER_LCD_GRID = 1,
     PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES = 2,
+    PIXEL_SCALING_FILTER_XBRZ = 3,
 
     PIXEL_SCALING_FILTER_LEN,
     PIXEL_SCALING_FILTER_MIN = 0,
-    PIXEL_SCALING_FILTER_MAX = 2,
+    PIXEL_SCALING_FILTER_MAX = 3,
 };
 
 enum aspect_ratio {
@@ -442,6 +443,7 @@ struct app {
 
         GLuint game_texture;
         GLuint pixel_color_texture;
+        GLuint xbrz_intermediate_texture;
         GLuint pixel_scaling_texture;
         GLuint fbo;
         GLuint vao;
@@ -451,6 +453,8 @@ struct app {
         GLuint program_grey_scale;
         GLuint program_lcd_grid;
         GLuint program_lcd_grid_with_rgb_stripes;
+        GLuint program_xbrz_1;
+        GLuint program_xbrz_2;
 
         GLuint pixel_color_program;
 
@@ -629,6 +633,8 @@ extern char const *SHADER_FRAG_COLOR_CORRECTION;
 extern char const *SHADER_FRAG_GREY_SCALE;
 extern char const *SHADER_FRAG_LCD_GRID_WITH_RGB_STRIPES;
 extern char const *SHADER_FRAG_LCD_GRID;
+extern char const *SHADER_FRAG_XBRZ_1;
+extern char const *SHADER_FRAG_XBRZ_2;
 extern char const *SHADER_VERTEX_COMMON;
 
 /* windows/ */

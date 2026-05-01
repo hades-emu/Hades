@@ -131,22 +131,77 @@ app_win_game(
     }
 
     // Apply the Pixel Scaling Effect
-    if (app->gfx.pixel_scaling_program != 0) {
-        in_texture = out_texture;
-        out_texture = app->gfx.pixel_scaling_texture;
+    switch (app->settings.video.pixel_scaling_filter) {
+        case PIXEL_SCALING_FILTER_LCD_GRID:
+        case PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES: {
+            in_texture = out_texture;
+            out_texture = app->gfx.pixel_scaling_texture;
 
-        // Set the viewport
-        glViewport(0, 0, GBA_SCREEN_WIDTH * app->gfx.pixel_scaling_size, GBA_SCREEN_HEIGHT * app->gfx.pixel_scaling_size);
+            // Set the viewport
+            glViewport(0, 0, GBA_SCREEN_WIDTH * app->gfx.pixel_scaling_size, GBA_SCREEN_HEIGHT * app->gfx.pixel_scaling_size);
 
-        // Set the input and output texture
-        glBindTexture(GL_TEXTURE_2D, in_texture);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out_texture, 0);
+            // Set the shader to use
+            glUseProgram(app->gfx.pixel_scaling_program);
 
-        // Set the shader to use
-        glUseProgram(app->gfx.pixel_scaling_program);
+            // Set the input texture
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, in_texture);
 
-        // Draw
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+            // Set the output texture
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out_texture, 0);
+
+            // Draw
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            break;
+        }
+        case PIXEL_SCALING_FILTER_XBRZ: {
+            in_texture = out_texture;
+            out_texture = app->gfx.xbrz_intermediate_texture;
+
+            // Set the viewport
+            glViewport(0, 0, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT);
+
+            // Set the shader to use
+            glUseProgram(app->gfx.program_xbrz_1);
+
+            // Set inputs
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, in_texture);
+            glUniform1i(glGetUniformLocation(app->gfx.program_xbrz_1, "u_input_map"), 0);
+
+            // Set output texture
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out_texture, 0);
+
+            // Draw
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            out_texture = app->gfx.pixel_scaling_texture;
+
+            // Set the viewport
+            glViewport(0, 0, GBA_SCREEN_WIDTH * app->gfx.pixel_scaling_size, GBA_SCREEN_HEIGHT * app->gfx.pixel_scaling_size);
+
+            // Set the shader to use
+            glUseProgram(app->gfx.program_xbrz_2);
+
+            // Set the different inputs
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, in_texture);
+            glUniform1i(glGetUniformLocation(app->gfx.program_xbrz_2, "u_input_map"), 0);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, app->gfx.xbrz_intermediate_texture);
+            glUniform1i(glGetUniformLocation(app->gfx.program_xbrz_2, "u_info_map"), 1);
+            glUniform2f(glGetUniformLocation(app->gfx.program_xbrz_2, "u_output_size"), GBA_SCREEN_WIDTH * app->gfx.pixel_scaling_size, GBA_SCREEN_HEIGHT * app->gfx.pixel_scaling_size);
+
+            // Set the output texture
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, out_texture, 0);
+
+            // Draw
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            break;
+        }
+        default: {
+            break;
+        }
     }
 
     glUseProgram(0);

@@ -130,10 +130,13 @@ app_sdl_video_init(
     app->gfx.program_grey_scale = build_shader_program("grey_scale", SHADER_FRAG_GREY_SCALE, SHADER_VERTEX_COMMON);
     app->gfx.program_lcd_grid_with_rgb_stripes = build_shader_program("lcd_grid_with_rgb_stripes", SHADER_FRAG_LCD_GRID_WITH_RGB_STRIPES, SHADER_VERTEX_COMMON);
     app->gfx.program_lcd_grid = build_shader_program("lcd_grid", SHADER_FRAG_LCD_GRID, SHADER_VERTEX_COMMON);
+    app->gfx.program_xbrz_1 = build_shader_program("xbrz_1", SHADER_FRAG_XBRZ_1, SHADER_VERTEX_COMMON);
+    app->gfx.program_xbrz_2 = build_shader_program("xbrz_2", SHADER_FRAG_XBRZ_2, SHADER_VERTEX_COMMON);
 
     // Create the OpenGL objects required to build the pipeline
     glGenTextures(1, &app->gfx.game_texture);
     glGenTextures(1, &app->gfx.pixel_color_texture);
+    glGenTextures(1, &app->gfx.xbrz_intermediate_texture);
     glGenTextures(1, &app->gfx.pixel_scaling_texture);
     glGenFramebuffers(1, &app->gfx.fbo);
     glGenVertexArrays(1, &app->gfx.vao);
@@ -254,12 +257,35 @@ app_sdl_video_rebuild_pipeline(
             app->gfx.pixel_scaling_size = 3;
             break;
         };
+        case PIXEL_SCALING_FILTER_XBRZ: {
+            app->gfx.pixel_scaling_program = app->gfx.program_xbrz_2;
+            app->gfx.pixel_scaling_size = 6;
+            break;
+        };
         default: {
             app->gfx.pixel_scaling_program = 0;
             app->gfx.pixel_scaling_size = 1;
             break;
         };
     }
+
+    // Setup the xBRZ intermediate texture
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, app->gfx.xbrz_intermediate_texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texture_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texture_filter);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        GBA_SCREEN_WIDTH,
+        GBA_SCREEN_HEIGHT,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        NULL
+    );
 
     // Setup the pixel scaling texture
     glActiveTexture(GL_TEXTURE0);

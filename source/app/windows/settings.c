@@ -36,6 +36,7 @@ static char const *pixel_scaling_filters_names[PIXEL_SCALING_FILTER_LEN] = {
     [PIXEL_SCALING_FILTER_NONE] = "None",
     [PIXEL_SCALING_FILTER_LCD_GRID] = "LCD Grid",
     [PIXEL_SCALING_FILTER_LCD_GRID_WITH_RGB_STRIPES] = "LCD Grid /w RGB Stripes",
+    [PIXEL_SCALING_FILTER_XBRZ] = "xBRZ",
 };
 
 static char const *aspect_ratio_names[ASPECT_RATIO_LEN] = {

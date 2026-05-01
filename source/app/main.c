@@ -11,7 +11,6 @@
 #include <SDL3/SDL_main.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <math.h>
 #include "app/app.h"
 #include "compat.h"
 

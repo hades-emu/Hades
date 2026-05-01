@@ -17,6 +17,7 @@ libapp_sources = [
     'shaders/frag-grey-scale.c',
     'shaders/frag-lcd-grid-with-rgb-stripes.c',
     'shaders/frag-lcd-grid.c',
+    'shaders/frag-xbrz.c',
     'shaders/vertex-common.c',
     'windows/game.c',
     'windows/menubar.c',
