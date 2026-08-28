@@ -95,7 +95,7 @@ if host_machine.system() == 'windows'
             link_with: [libapp_dbg],
             include_directories: [incdir, imgui_inc],
             c_args: cflags + debugger_cflags,
-            link_args: ldflags + debuffer_ldflags,
+            link_args: ldflags + debugger_ldflags,
             install: true,
         )
     endif

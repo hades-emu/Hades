@@ -22,7 +22,34 @@ jobs:
       - name: Install Dependencies
         uses: msys2/setup-msys2@v2
         with:
-          install: make mingw-w64-x86_64-ca-certificates mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-glew mingw-w64-x86_64-libarchive mingw-w64-x86_64-sdl3
+          install: make git mingw-w64-x86_64-ca-certificates mingw-w64-x86_64-cmake mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-glew mingw-w64-x86_64-libarchive mingw-w64-x86_64-sdl3
+      - name: Build libarchive
+        run: |
+          # msys2's libarchive assumes a DLL zlib, which breaks when linking hades statically.
+          # We therefore build it ourselves against a static libz.a to fix this.
+
+          git clone https://github.com/libarchive/libarchive.git archive --branch v3.8.7 --depth 1
+
+          # Pre-seeding the ZLIB_WINAPI/ZLIB_DLL cache variables didn't stop libarchive's build
+          # from defining `-DZLIB_DLL` anyway, so force it at the compiler level instead: `-U`
+          # cancels out an earlier `-D` for the same macro on the same compile command, and
+          # CMake always places CMAKE_C_FLAGS after a target's own `-D`s in that command.
+          cmake -S archive -B archive/build \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH="$MSYSTEM_PREFIX" \
+              -DCMAKE_INSTALL_PREFIX="$MSYSTEM_PREFIX" \
+              -DCMAKE_C_FLAGS="-UZLIB_DLL -UZLIB_WINAPI" \
+              -DBUILD_SHARED_LIBS=OFF \
+              -DENABLE_OPENSSL=OFF \
+              -DENABLE_LIBXML2=OFF \
+              -DENABLE_TEST=OFF \
+              -DENABLE_TAR=OFF \
+              -DENABLE_CPIO=OFF \
+              -DENABLE_CAT=OFF
+
+          cmake --build archive/build
+          cmake --install archive/build
       - name: Build Hades
         run: |
           # Setup the Meson project
@@ -52,10 +79,12 @@ jobs:
         with:
           msystem: CLANGARM64
           release: true
+          install: git
           pacboy:
             gcc-compat:p
             toolchain:p
             ca-certificates:p
+            cmake:p
             meson:p
             ninja:p
             glew:p
@@ -65,6 +94,33 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Build libarchive
+        run: |
+          # msys2's libarchive assumes a DLL zlib, which breaks when linking hades statically.
+          # We therefore build it ourselves against a static libz.a to fix this.
+
+          git clone https://github.com/libarchive/libarchive.git archive --branch v3.8.7 --depth 1
+
+          # Pre-seeding the ZLIB_WINAPI/ZLIB_DLL cache variables didn't stop libarchive's build
+          # from defining `-DZLIB_DLL` anyway, so force it at the compiler level instead: `-U`
+          # cancels out an earlier `-D` for the same macro on the same compile command, and
+          # CMake always places CMAKE_C_FLAGS after a target's own `-D`s in that command.
+          cmake -S archive -B archive/build \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH="$MSYSTEM_PREFIX" \
+              -DCMAKE_INSTALL_PREFIX="$MSYSTEM_PREFIX" \
+              -DCMAKE_C_FLAGS="-UZLIB_DLL -UZLIB_WINAPI" \
+              -DBUILD_SHARED_LIBS=OFF \
+              -DENABLE_OPENSSL=OFF \
+              -DENABLE_LIBXML2=OFF \
+              -DENABLE_TEST=OFF \
+              -DENABLE_TAR=OFF \
+              -DENABLE_CPIO=OFF \
+              -DENABLE_CAT=OFF
+
+          cmake --build archive/build
+          cmake --install archive/build
       - name: Build Hades
         run: |
           # Setup the Meson project
@@ -98,6 +154,13 @@ jobs:
           # Install glew 2.2.0 because the latest version doesn't ship with a static library anymore
           brew tap-new hades/dependencies
           brew extract --version=2.2.0 glew hades/dependencies
+
+          # The formula extracted from homebrew-core's history carries a `no_autobump!`
+          # directive, which Homebrew only allows in its own official taps. Strip it so
+          # the formula can be loaded from our local tap.
+          tap_repo="$(brew --repository hades/dependencies)"
+          sed -i '' '/no_autobump!/d' "$tap_repo/Formula/glew@2.2.0.rb"
+
           brew install hades/dependencies/glew@2.2.0
 
       - name: Build the SDL3
