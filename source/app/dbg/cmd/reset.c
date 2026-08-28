@@ -22,5 +22,10 @@ debugger_cmd_reset(
         return;
     }
 
-    app_emulator_reset(app);
+    // `app_emulator_reset()` eventually calls `SDL_SetWindowTitle()`, which on some
+    // platforms (e.g. MacOS) is only allowed to be called from the main thread.
+    // Since this debugger command runs on the debugger's own thread, we hop back to the
+    // main thread before invoking it using `SDL_RunOnMainThread()`.
+    // The last arg is set to `true` so that this command keeps its current, synchronous behavior.
+    SDL_RunOnMainThread((SDL_MainThreadCallback)app_emulator_reset, app, true);
 }
