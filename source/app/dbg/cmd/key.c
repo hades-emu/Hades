@@ -36,7 +36,7 @@ debugger_cmd_key(
     }
 
     if (argc == 2) {
-        enum keys i;
+        enum gba_keys i;
 
         if (debugger_check_arg_type(CMD_KEY, &argv[0], ARGS_STRING)
             || debugger_check_arg_type(CMD_KEY, &argv[1], ARGS_INTEGER)

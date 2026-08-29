@@ -198,7 +198,7 @@ SDL_AppIterate(
 
     // Handle all the stuff that must disappear after a few seconds if the mouse isn't moving
     // and the UI isn't being used.
-    if (app->emulation.is_started && !igGetHoveredID() && !igGetFocusID() && !app->ui.settings.open) {
+    if (app->emulation.is_started && !igGetHoveredID() && !igGetFocusID() && app->ui.main_window == MAIN_WINDOW_NONE) {
         app->ui.ioptr->ConfigFlags &= ~ImGuiConfigFlags_NavEnableGamepad; // Disable Gamepad Controls to navigate the UI
 
         if (app->ui.menubar.force_show) {

@@ -56,7 +56,7 @@ struct message_settings {
 
 struct message_key {
     struct event_header header;
-    enum keys key;
+    enum gba_keys key;
     bool pressed;
 };
 
@@ -82,8 +82,16 @@ struct message_trace {
 
 struct message_set_breakpoints_list {
     struct event_header header;
-    struct breakpoint *breakpoints;
-    size_t len;
+
+    struct {
+        struct hw_breakpoint *list;
+        size_t len;
+    } hw_breakpoints;
+
+    struct {
+        struct sw_breakpoint *list;
+        size_t len;
+    } sw_breakpoints;
 };
 
 struct message_set_watchpoints_list {

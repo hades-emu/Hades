@@ -39,8 +39,8 @@ static struct hs_thumb_insn const thumb_insns[] = {
     { "ldr_pc",         "01001dddxxxxxxxx",          core_thumb_ldr_pc},
 
     // Load/Store Word/Byte with register offset
-    { "ldr_regoff",     "01011b0ooobbbddd",          core_thumb_sdt_wb_reg},
     { "str_regoff",     "01010b0ooobbbddd",          core_thumb_sdt_wb_reg},
+    { "ldr_regoff",     "01011b0ooobbbddd",          core_thumb_sdt_wb_reg},
 
     // Load/Store Sign-Extended Byte/Halfword
     { "sdt_sbh_reg",    "0101hs1ooobbbddd",          core_thumb_sdt_sbh_reg},
@@ -64,6 +64,9 @@ static struct hs_thumb_insn const thumb_insns[] = {
     // Push/Pop lo registers
     { "push",           "1011010xxxxxxxxx",          core_thumb_push},
     { "pop",            "1011110xxxxxxxxx",          core_thumb_pop},
+
+    // Breakpoint
+    { "brk",            "1011111xxxxxxxxx",          core_thumb_brk},
 
     // Multiple Load/Store
     { "stmia",          "11000bbbxxxxxxxx",          core_thumb_stmia},

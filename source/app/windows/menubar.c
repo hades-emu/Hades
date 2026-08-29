@@ -115,7 +115,7 @@ app_win_menubar_file(
 
         bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_SETTINGS]);
         if (igMenuItem_Bool("Settings", bind_str, false, true)) {
-            app->ui.settings.open = true;
+            app->ui.main_window = MAIN_WINDOW_SETTINGS;
             app->ui.settings.focus = true;
             app->ui.settings.menu = 0;
         }
@@ -296,8 +296,16 @@ app_win_menubar_emulation(
 
         igSeparator();
 
+        bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_CHEATS]);
+        if (igMenuItem_Bool("Cheats", bind_str, false, app->emulation.is_started)) {
+            app->ui.main_window = MAIN_WINDOW_CHEATS;
+        }
+        free(bind_str);
+
+        igSeparator();
+
         if (igMenuItem_Bool("Emulation Settings", NULL, false, true)) {
-            app->ui.settings.open = true;
+            app->ui.main_window = MAIN_WINDOW_SETTINGS;
             app->ui.settings.focus = true;
             app->ui.settings.menu = MENU_EMULATION;
         }
@@ -400,7 +408,7 @@ app_win_menubar_video(
         igSeparator();
 
         if (igMenuItem_Bool("Video Settings", NULL, false, true)) {
-            app->ui.settings.open = true;
+            app->ui.main_window = MAIN_WINDOW_SETTINGS;
             app->ui.settings.focus = true;
             app->ui.settings.menu = MENU_VIDEO;
         }
@@ -426,7 +434,7 @@ app_win_menubar_audio(
         igSeparator();
 
         if (igMenuItem_Bool("Audio Settings", NULL, false, true)) {
-            app->ui.settings.open = true;
+            app->ui.main_window = MAIN_WINDOW_SETTINGS;
             app->ui.settings.focus = true;
             app->ui.settings.menu = MENU_AUDIO;
         }

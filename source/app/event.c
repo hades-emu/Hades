@@ -120,6 +120,7 @@ app_sdl_handle_events(
             bool is_alt_mod_key;
             bool is_shift_mod_key;
             bool is_mod_key;
+            bool is_escape;
             size_t i;
 
             // Ignore repeat keys
@@ -129,6 +130,8 @@ app_sdl_handle_events(
 
             // Suspend power save mode on keyboard events
             app->ui.power_save_fcounter = POWER_SAVE_FRAME_DELAY;
+
+            is_escape = (event->type == SDL_EVENT_KEY_DOWN) && (event->key.key == SDLK_ESCAPE);
 
             is_ctrl_mod_key = (event->key.key == SDLK_LCTRL) || (event->key.key == SDLK_RCTRL);
             is_alt_mod_key = (event->key.key == SDLK_LALT) || (event->key.key == SDLK_RALT);
@@ -140,30 +143,35 @@ app_sdl_handle_events(
             bind.alt = (event->key.mod & SDL_KMOD_ALT) && !is_alt_mod_key;
             bind.shift = (event->key.mod & SDL_KMOD_SHIFT) && !is_shift_mod_key;
 
-            // Ignore keys if the settings are open except the special case where we are creating new bindings.
-            if (app->ui.settings.open) {
-                if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_ESCAPE) {
-                    // The `Escape` key is used to clear a bind.
-                    if (app->ui.settings.keybindings_editor.keyboard_target) {
-                        app->ui.settings.keybindings_editor.keyboard_target->key = SDLK_UNKNOWN;
-                        app->ui.settings.keybindings_editor.keyboard_target->ctrl = false;
-                        app->ui.settings.keybindings_editor.keyboard_target->alt = false;
-                        app->ui.settings.keybindings_editor.keyboard_target->shift = false;
-                        app->ui.settings.keybindings_editor.keyboard_target = NULL;
-                        break;
-                    }
+            // The `Escape` key is used to clear a keyboard bind.
+            if (is_escape && app->ui.settings.keybindings_editor.keyboard_target) {
+                app->ui.settings.keybindings_editor.keyboard_target->key = SDLK_UNKNOWN;
+                app->ui.settings.keybindings_editor.keyboard_target->ctrl = false;
+                app->ui.settings.keybindings_editor.keyboard_target->alt = false;
+                app->ui.settings.keybindings_editor.keyboard_target->shift = false;
+                app->ui.settings.keybindings_editor.keyboard_target = NULL;
+                break;
+            }
 
-                    if (app->ui.settings.keybindings_editor.gamepad_target) {
-                        *app->ui.settings.keybindings_editor.gamepad_target = SDL_GAMEPAD_BUTTON_INVALID;
-                        app->ui.settings.keybindings_editor.gamepad_target = NULL;
-                        break;
-                    }
-                } else if (app->ui.settings.keybindings_editor.keyboard_target && ((event->type == SDL_EVENT_KEY_DOWN && !is_mod_key) || (event->type == SDL_EVENT_KEY_UP && is_mod_key))) {
-                    app_bindings_keyboard_binding_clear(app, &bind);
-                    *app->ui.settings.keybindings_editor.keyboard_target = bind;
-                    app->ui.settings.keybindings_editor.keyboard_target = NULL;
-                    break;
-                }
+            // The `Escape` key is used to clear a gamepad bind.
+            if (is_escape && app->ui.settings.keybindings_editor.gamepad_target) {
+                *app->ui.settings.keybindings_editor.gamepad_target = SDL_GAMEPAD_BUTTON_INVALID;
+                app->ui.settings.keybindings_editor.gamepad_target = NULL;
+                break;
+            }
+
+            // A new binding is being created
+            if (app->ui.settings.keybindings_editor.keyboard_target && ((event->type == SDL_EVENT_KEY_DOWN && !is_mod_key) || (event->type == SDL_EVENT_KEY_UP && is_mod_key))) {
+                app_bindings_keyboard_binding_clear(app, &bind);
+                *app->ui.settings.keybindings_editor.keyboard_target = bind;
+                app->ui.settings.keybindings_editor.keyboard_target = NULL;
+                break;
+            }
+
+            // Close the main window
+            if (is_escape && app->ui.main_window != MAIN_WINDOW_NONE) {
+                app->ui.main_window = MAIN_WINDOW_NONE;
+                break;
             }
 
             for (i = BIND_MIN; i < BIND_MAX; ++i) {
@@ -187,8 +195,8 @@ app_sdl_handle_events(
             // Suspend power save mode on gamepad button events
             app->ui.power_save_fcounter = POWER_SAVE_FRAME_DELAY;
 
-            // Disable gamepad buttons if the settings are open except the special case where we are creating new bindings.
-            if (app->ui.settings.open && event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN && app->ui.settings.keybindings_editor.gamepad_target) {
+            // A new binding is being created
+            if (event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN && app->ui.settings.keybindings_editor.gamepad_target) {
                 app_bindings_gamepad_binding_clear(app, event->gbutton.button);
                 *app->ui.settings.keybindings_editor.gamepad_target = event->gbutton.button;
                 app->ui.settings.keybindings_editor.gamepad_target = NULL;
@@ -215,7 +223,7 @@ app_sdl_handle_events(
             // Disable the joysticks if the settings are open
             // We do this to be consistent with keyboard events and prevent interactions with the game when
             // the settings are open.
-            if (app->ui.settings.open) {
+            if (app->ui.main_window == MAIN_WINDOW_SETTINGS) {
                 break;
             }
 

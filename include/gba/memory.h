@@ -227,7 +227,9 @@ struct memory {
     uint8_t oam[OAM_SIZE];
 
     // External Memory (Game Pak)
-    uint8_t rom[CART_SIZE];
+    uint8_t unpatched_rom[CART_SIZE];
+    uint8_t *patched_rom;   // Either NULL or a copy of `unpatched_rom` with ROM patches applied to it.
+    uint8_t *active_rom;    // Set to either `unpatched_rom` or `patched_rom`
     size_t rom_size;
     uint64_t rom_mask;
 
@@ -271,6 +273,7 @@ enum dma_timings {
 struct core;
 struct gba;
 struct dma_channel;
+struct cheat_bin;
 
 /* gba/memory/bus.c */
 void mem_bus_update_waitstates(struct gba const *gba);
@@ -310,6 +313,7 @@ void mem_write16(struct gba *gba, uint32_t addr, uint16_t val, enum access_flags
 void mem_write16_raw(struct gba *gba, uint32_t addr, uint16_t val);
 void mem_write32(struct gba *gba, uint32_t addr, uint32_t val, enum access_flags access_type);
 void mem_write32_raw(struct gba *gba, uint32_t addr, uint32_t val);
+void mem_refresh_rom_patches(struct gba *gba);
 
 /* gba/memory/storage/eeprom.c */
 uint8_t mem_eeprom_read8(struct gba *gba);

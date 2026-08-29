@@ -7,30 +7,53 @@
 **
 \******************************************************************************/
 
+#include "hades.h"
+
 #ifdef WITH_DEBUGGER
 
-#include <string.h>
-#include "hades.h"
 #include "gba/gba.h"
 #include "gba/core.h"
 #include "gba/event.h"
 
 void
-debugger_init(
-    struct debugger *debugger
+debugger_eval_sw_breakpoints(
+    struct gba *gba,
+    uint32_t addr
 ) {
-    memset(debugger, 0, sizeof(*debugger));
+    size_t i;
+
+    for (i = 0; i < gba->debugger.sw_breakpoints.len; ++i) {
+        struct sw_breakpoint *bp;
+
+        bp = &gba->debugger.sw_breakpoints.list[i];
+        if (bp->ptr == addr && bp->thumb == gba->core.cpsr.thumb) {
+            struct notification_breakpoint notif;
+
+            notif.header.kind = NOTIFICATION_BREAKPOINT;
+            notif.header.size = sizeof(notif);
+            notif.addr = addr;
+
+            gba->debugger.interrupted = true;
+
+            gba_send_notification_raw(gba, &notif.header);
+            gba_state_pause(gba);
+            break;
+        }
+    }
 }
 
 void
-debugger_eval_breakpoints(
+debugger_eval_hw_breakpoints(
     struct gba *gba
 ) {
     uint32_t pc;
-    struct breakpoint *bp;
+    size_t i;
 
     pc = gba->core.pc - (gba->core.cpsr.thumb ? 2 : 4) * 2;
-    for (bp = gba->debugger.breakpoints.list; bp && bp < gba->debugger.breakpoints.list + gba->debugger.breakpoints.len; ++bp) {
+    for (i = 0; i < gba->debugger.hw_breakpoints.len; ++i) {
+        struct hw_breakpoint *bp;
+
+        bp = &gba->debugger.hw_breakpoints.list[i];
         if (bp->ptr == pc) {
             struct notification_breakpoint notif;
 
@@ -39,7 +62,6 @@ debugger_eval_breakpoints(
             notif.addr = pc;
 
             gba->debugger.interrupted = true;
-
             gba_send_notification_raw(gba, &notif.header);
             gba_state_pause(gba);
             break;
@@ -54,9 +76,12 @@ debugger_eval_write_watchpoints(
     size_t size,
     uint32_t new_value
 ) {
-    struct watchpoint *wp;
+    size_t i;
 
-    for (wp = gba->debugger.watchpoints.list; wp && wp < gba->debugger.watchpoints.list + gba->debugger.watchpoints.len; ++wp) {
+    for (i = 0; i < gba->debugger.watchpoints.len; ++i) {
+        struct watchpoint *wp;
+
+        wp = &gba->debugger.watchpoints.list[i];
         if (wp->ptr >= addr && wp->ptr < addr + size && wp->write) {
             struct notification_watchpoint notif;
 
@@ -84,9 +109,12 @@ debugger_eval_read_watchpoints(
     uint32_t addr,
     size_t size
 ) {
-    struct watchpoint *wp;
+    size_t i;
 
-    for (wp = gba->debugger.watchpoints.list; wp && wp < gba->debugger.watchpoints.list + gba->debugger.watchpoints.len; ++wp) {
+    for (i = 0; i < gba->debugger.watchpoints.len; ++i) {
+        struct watchpoint *wp;
+
+        wp = &gba->debugger.watchpoints.list[i];
         if (wp->ptr >= addr && wp->ptr < addr + size && !wp->write) {
             struct notification_watchpoint notif;
 
@@ -112,7 +140,7 @@ void
 debugger_execute_run_mode(
     struct gba *gba
 ) {
-    switch (gba->debugger.run_mode) {
+    switch (gba->run_mode) {
         case GBA_RUN_MODE_NORMAL: {
             sched_run_for(gba, GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH);
             break;

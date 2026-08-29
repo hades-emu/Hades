@@ -116,6 +116,7 @@ enum bind_actions {
     BIND_EMULATOR_SCREENSHOT,
     BIND_EMULATOR_MENUBAR,
     BIND_EMULATOR_SETTINGS,
+    BIND_EMULATOR_CHEATS,
     BIND_EMULATOR_ALT_SPEED_HOLD,
     BIND_EMULATOR_ALT_SPEED_TOGGLE,
     BIND_EMULATOR_QUICKSAVE_1,
@@ -180,6 +181,12 @@ enum menu_kind {
     MENU_BINDINGS,
 
     MENU_MAX,
+};
+
+enum main_window_kind {
+    MAIN_WINDOW_NONE = 0,
+    MAIN_WINDOW_SETTINGS,
+    MAIN_WINDOW_CHEATS,
 };
 
 struct app_notification {
@@ -587,10 +594,12 @@ struct app {
             bool active;
         } error;
 
-        struct {
-            bool open;
+        // Which main window (settings or cheats) is currently open, if any.
+        // At most one main window can be open at a time.
+        enum main_window_kind main_window;
 
-            // Set when the user wants to focus the menubar.
+        struct {
+            // Set when the user wants to focus the settings window.
             bool focus;
 
             uint32_t menu;
@@ -600,6 +609,10 @@ struct app {
                 SDL_GamepadButton *gamepad_target;
             } keybindings_editor;
         } settings;
+
+        struct {
+            size_t selected;
+        } cheats;
 
         struct app_notification *notifications;
     } ui;
@@ -612,6 +625,11 @@ struct app {
     } binds;
 
     struct settings settings;
+
+    struct {
+        struct gba_cheat_raw *list;
+        size_t len;
+    } cheats;
 
     struct {
         pthread_t gba;
@@ -631,8 +649,11 @@ struct app {
         struct variable *variables;
         size_t variables_len;
 
-        struct breakpoint *breakpoints;
-        size_t breakpoints_len;
+        struct sw_breakpoint *sw_breakpoints;
+        size_t sw_breakpoints_len;
+
+        struct hw_breakpoint *hw_breakpoints;
+        size_t hw_breakpoints_len;
 
         struct watchpoint *watchpoints;
         size_t watchpoints_len;
@@ -661,6 +682,7 @@ void app_win_menubar(struct app *app);
 void app_new_notification(struct app *app, enum app_notification_kind, char const *msg, ...);
 void app_win_notifications(struct app *app);
 void app_win_settings(struct app *app);
+void app_win_cheats(struct app *app);
 
 /* args.c */
 SDL_AppResult app_args_parse(struct app *app, int argc, char * const argv[]);
@@ -678,6 +700,10 @@ char *app_bindings_keyboard_binding_to_str(struct keyboard_binding const *bind);
 void app_bindings_gamepad_binding_clear(struct app *app, SDL_GamepadButton btn);
 void app_bindings_process(struct app *app, enum bind_actions bind, bool pressed);
 
+/* cheats.c */
+void app_cheats_load(struct app *app, char const *rom_path);
+void app_cheats_save(struct app const *app);
+
 /* config.c */
 void app_config_default_settings(struct app *app);
 void app_config_default_bindings(struct app *app);
@@ -689,12 +715,14 @@ void app_config_clear_recent_roms(struct app *app);
 /* emulator.c */
 void app_emulator_process_all_notifs(struct app *app);
 bool app_emulator_configure_and_run(struct app *app, char const *rom_path, char const *backup_to_import);
+bool app_emulator_configure_and_run_impl(struct app *app, char const *rom_path, char const *backup_to_import, bool run);
 void app_emulator_reset(struct app *app);
+void app_emulator_reset_and_pause(struct app *app);
 void app_emulator_stop(struct app *app);
 void app_emulator_run(struct app *app);
 void app_emulator_pause(struct app *app);
 void app_emulator_exit(struct app *app);
-void app_emulator_key(struct app *app, enum keys key, bool pressed);
+void app_emulator_key(struct app *app, enum gba_keys key, bool pressed);
 void app_emulator_settings(struct app *app);
 void app_emulator_export_save_to_path(struct app *app, char const *);
 void app_emulator_write_save_to_disk(struct app *app);
@@ -709,7 +737,7 @@ void app_emulator_frame(struct app *app, size_t);
 void app_emulator_trace(struct app *app, size_t, void (*)(struct app *));
 void app_emulator_step_in(struct app *app, size_t cnt);
 void app_emulator_step_over(struct app *app, size_t cnt);
-void app_emulator_set_breakpoints_list(struct app *app, struct breakpoint *breakpoints, size_t len);
+void app_emulator_set_breakpoints_list(struct app *app, struct hw_breakpoint *hw_data, size_t hw_len, struct sw_breakpoint *sw_data, size_t sw_len);
 void app_emulator_set_watchpoints_list(struct app *app, struct watchpoint *watchpoints, size_t len);
 
 #endif
@@ -726,6 +754,7 @@ void app_paths_update(struct app *app);
 char const *app_path_config(struct app const *app);
 char const *app_path_screenshots(struct app const *app);
 char *app_path_backup(struct app const *app, char const *rom);
+char *app_path_cheats(struct app const *app, char const *rom);
 void app_path_update_quicksave_paths(struct app *app, char const *rom);
 void app_path_refresh_quicksave_cache(struct app *app);
 

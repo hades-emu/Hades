@@ -37,7 +37,6 @@ debugger_cmd_step_in(
         debugger_dump_context_auto(app);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP_IN].usage);
-        return;
     }
 }
 
@@ -67,6 +66,5 @@ debugger_cmd_step_over(
         debugger_dump_context_auto(app);
     } else {
         printf("Usage: %s\n", g_commands[CMD_STEP_OVER].usage);
-        return;
     }
 }

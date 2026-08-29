@@ -33,7 +33,8 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_FULLSCREEN] = "Toggle Fullscreen",
     [BIND_EMULATOR_SCREENSHOT] = "Screenshot",
     [BIND_EMULATOR_MENUBAR] = "Focus Menubar",
-    [BIND_EMULATOR_SETTINGS] = "Toggle Settings",
+    [BIND_EMULATOR_SETTINGS] = "Toggle Settings Panel",
+    [BIND_EMULATOR_CHEATS] = "Toggle Cheats Panel",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "Alt. Speed (Toggle)",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "Alt. Speed (Hold)",
     [BIND_EMULATOR_QUICKSAVE_1] = "Quicksave 1",
@@ -78,7 +79,8 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_FULLSCREEN] = "fullscreen",
     [BIND_EMULATOR_SCREENSHOT] = "screenshot",
     [BIND_EMULATOR_MENUBAR] = "focus_menubar",
-    [BIND_EMULATOR_SETTINGS] = "toggle_settings",
+    [BIND_EMULATOR_SETTINGS] = "toggle_settings_panel",
+    [BIND_EMULATOR_CHEATS] = "toggle_cheats_panel",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "alternative_speed_toggle",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "alternative_speed_hold",
     [BIND_EMULATOR_QUICKSAVE_1] = "quicksave_1",
@@ -323,8 +325,16 @@ app_bindings_process_ui_binds(
             break;
         };
         case BIND_EMULATOR_SETTINGS: {
-            app->ui.settings.open ^= true;
-            app->ui.settings.focus = true;
+            if (app->ui.main_window == MAIN_WINDOW_NONE) {
+                app->ui.main_window = MAIN_WINDOW_SETTINGS;
+                app->ui.settings.focus = true;
+            }
+            break;
+        };
+        case BIND_EMULATOR_CHEATS: {
+            if (app->ui.main_window == MAIN_WINDOW_NONE) {
+                app->ui.main_window = MAIN_WINDOW_CHEATS;
+            }
             break;
         };
         default: break;

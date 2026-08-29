@@ -20,7 +20,7 @@
 struct command g_commands[] = {
     [CMD_HELP] = {
         .name = "help",
-        .alias = "h",
+        .aliases = (char const *[]){ "h", NULL },
         .usage = "help [COMMAND]",
         .description = "Show a list of all commands, or show the usage of \"COMMAND\".",
         .func = debugger_cmd_help,
@@ -33,132 +33,135 @@ struct command g_commands[] = {
     },
     [CMD_CONTINUE] = {
         .name = "continue",
-        .alias = "c",
+        .aliases = (char const *[]){ "c", NULL },
         .usage = "continue",
         .description = "Continue the execution until a breakpoint is reached.",
         .func = debugger_cmd_continue,
     },
     [CMD_STEP_IN] = {
         .name = "stepin",
-        .alias = "s",
+        .aliases = (char const *[]){ "s", NULL },
         .usage = "stepin [N=1]",
         .description = "Execute the next N instructions, following branching instructions.",
         .func = debugger_cmd_step_in,
     },
     [CMD_STEP_OVER] = {
         .name = "stepover",
-        .alias = "so",
+        .aliases = (char const *[]){ "so", NULL },
         .usage = "stepover [N=1]",
         .description = "Execute the next N instructions, stepping over branching instructions.",
         .func = debugger_cmd_step_over,
     },
     [CMD_REGISTERS] = {
         .name = "registers",
-        .alias = "r",
+        .aliases = (char const *[]){ "r", NULL },
         .usage = "registers",
         .description = "List the content of all registers.",
         .func = debugger_cmd_registers,
     },
     [CMD_DISAS] = {
         .name = "disas",
-        .alias = NULL,
         .usage = "disas [MODE] [ADDR=pc]",
         .description = "Disassemble the instructions around \"ADDR\".",
         .func = debugger_cmd_disas,
     },
     [CMD_CONTEXT] = {
         .name = "context",
-        .alias = "d",
+        .aliases = (char const *[]){ "d", NULL },
         .usage = "context",
         .description = "Show the most important information of the current context (registers, stack, instructions, etc.).",
         .func = debugger_cmd_context,
     },
     [CMD_CONTEXT_COMPACT] = {
         .name = "compact",
-        .alias = "dc",
+        .aliases = (char const *[]){ "dc", NULL },
         .usage = "compact",
         .description = "Show the most important information of the current context (registers, current instruction, etc.) in a compact form.",
         .func = debugger_cmd_context_compact,
     },
     [CMD_PRINT] = {
         .name = "print",
-        .alias = "p",
+        .aliases = (char const *[]){ "p", NULL },
         .usage = "print <TYPE> [QUANTITY] <EXPR>",
         .description = "Print QUANTITY (Default: 1) memory located at EXPR of type TYPE (string, char, word, dword, etc.).",
         .func = debugger_cmd_print,
     },
-    [CMD_BREAK] = {
-        .name = "break",
-        .alias = "b",
-        .usage = "break | break <ADDR> | break delete <ID>",
-        .description = "Add or remove a breakpoint.",
-        .func = debugger_cmd_break,
+    [CMD_BREAK_HW] = {
+        .name = "breakhw",
+        .aliases = (char const *[]){ "break", "bhw", "bh", "b", NULL },
+        .usage = "breakhw | breakhw <ADDR> | breakhw delete <ID>",
+        .description = "Add or remove a hardware breakpoint.",
+        .func = debugger_cmd_break_hw,
+    },
+    [CMD_BREAK_SW] = {
+        .name = "breaksw",
+        .aliases = (char const *[]){ "bsw", "bs", NULL },
+        .usage = "breaksw | breaksw <arm|thumb> <ADDR> | breaksw delete <ID>",
+        .description = "Add or remove a software breakpoint.",
+        .func = debugger_cmd_break_sw,
     },
     [CMD_WATCH] = {
         .name = "watch",
-        .alias = "w",
+        .aliases = (char const *[]){ "w", NULL },
         .usage = "watch | watch <read|write> <ADDR> | watch delete <ID>",
         .description = "Add or remove a watchpoint.",
         .func = debugger_cmd_watch,
     },
     [CMD_TRACE] = {
         .name = "trace",
-        .alias = "t",
+        .aliases = (char const *[]){ "t", NULL },
         .usage = "trace [N=1]",
         .description = "Execute the next N instructions, dumping the content of all registers in between them.",
         .func = debugger_cmd_trace,
     },
     [CMD_VERBOSE] = {
         .name = "verbose",
-        .alias = "v",
+        .aliases = (char const *[]){ "v", NULL },
         .usage = "verbose [NAME|all]",
         .description = "Inverse the verbosity of module NAME.",
         .func = debugger_cmd_verbose,
     },
     [CMD_RESET] = {
         .name = "reset",
-        .alias = NULL,
         .usage = "reset",
         .description = "Reset the emulation",
         .func = debugger_cmd_reset,
     },
     [CMD_FRAME] = {
         .name = "frame",
-        .alias = "f",
+        .aliases = (char const *[]){ "f", NULL },
         .usage = "frame [N=1]",
         .description = "Run until N frames are completed.",
         .func = debugger_cmd_frame,
     },
     [CMD_IO] = {
         .name = "io",
-        .alias = NULL,
         .usage = "io [REGISTER] [VALUE]",
         .description = "Print or set the value of an IO register.",
         .func = debugger_cmd_io,
     },
     [CMD_KEY] = {
         .name = "key",
-        .alias = NULL,
         .usage = "key KEY STATE",
         .description = "Set the state of any input key.",
         .func = debugger_cmd_key,
     },
     [CMD_SCREENSHOT] = {
         .name = "screenshot",
-        .alias = "screen",
+        .aliases = (char const *[]){ "screen", NULL },
         .usage = "screenshot [FILE]",
         .description = "Store a screenshot of the screen in FILE.",
         .func = debugger_cmd_screenshot
     },
     [CMD_PPU] = {
         .name = "ppu",
-        .usage = "ppu OPTION VALUE",
+        .usage = "ppu <OPTION> <VALUE>",
         .description = "Set options for the ppu.",
         .func = debugger_cmd_ppu
     },
     [CMD_APU] = {
         .name = "apu",
-        .usage = "apu OPTION VALUE",
+        .usage = "apu <OPTION> <VALUE>",
         .description = "Set options for the apu.",
         .func = debugger_cmd_apu
     },
@@ -170,6 +173,7 @@ struct command g_commands[] = {
 /*
 ** Process a single notification, updating the content of `app->debugger` accordingly.
 */
+static
 void
 debugger_process_notif(
     struct app *app,
@@ -294,7 +298,7 @@ debugger_wait_for_notif(
         event = channel_next(channel, NULL);
         while (event) {
             debugger_process_notif(app, (struct notification const *)event);
-            ok = (event->kind == kind);
+            ok |= (event->kind == kind);
             event = channel_next(channel, event);
         }
 
@@ -468,11 +472,19 @@ debugger_run(
     // Build the IO registers table
     debugger_io_init(app->emulation.gba);
 
+    // Consume the first notifications available, so the current state is up to date.
     debugger_process_all_notifs(app);
+
+    // If the emulation started immediately, wait for it to be over.
     if (app->debugger.is_started) {
+        while (app->debugger.is_running) {
+            debugger_wait_for_notif(app, NOTIFICATION_PAUSE);
+        }
+
         debugger_dump_context_auto(app);
     }
 
+    // REPL
     while (app->run && (input = readline("$ ")) != NULL) {
         char *saveptr;
         char *cmd_str;
@@ -531,14 +543,24 @@ debugger_run(
 
                 input_cmd = ast.root->value.identifier;
                 for (cmd = g_commands; cmd->name; ++cmd) {
-                    if (!strcmp(cmd->name, input_cmd) || (cmd->alias && !strcmp(cmd->alias, input_cmd))) {
-                        if (cmd->func) {
-                            debugger_run_command(app, cmd, &ast);
-                        } else {
-                            printf("Command \"%s\" isn't implemented yet.\n", input_cmd);
-                        }
-                        goto cleanup;
+                    bool match;
+                    size_t i;
+
+                    match = !strcmp(cmd->name, input_cmd);
+                    for (i = 0; !match && cmd->aliases && cmd->aliases[i]; ++i) {
+                        match = !strcmp(cmd->aliases[i], input_cmd);
                     }
+
+                    if (!match) {
+                        continue;
+                    }
+
+                    if (cmd->func) {
+                        debugger_run_command(app, cmd, &ast);
+                    } else {
+                        printf("Command \"%s\" isn't implemented yet.\n", input_cmd);
+                    }
+                    goto cleanup;
                 }
 
                 printf("Unknown command \"%s\". Type \"help\" for a list of commands.\n", input_cmd);

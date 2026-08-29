@@ -11,7 +11,6 @@
 #include "gba/core/arm.h"
 
 static struct hs_arm_insn const arm_insns[] = {
-
     // Data processing
     { "and_reg1",   "xxxx_000_0000_s_xxxxxxxxxxxxxxx0xxxx",             core_arm_alu},
     { "and_reg2",   "xxxx_000_0000_s_xxxxxxxxxxxx0xx1xxxx",             core_arm_alu},
@@ -126,6 +125,9 @@ static struct hs_arm_insn const arm_insns[] = {
 
     // Software Interrupt
     {"swi",         "xxxx_1111_xxxxxxxxxxxxxxxxxxxxxxxx",               core_arm_swi},
+
+    // Breakpoint
+    {"brk",         "xxxx_1100_xxxxxxxxxxxxxxxxxxxxxxxx",               core_arm_brk},
 
     // Single Data Swap
     {"swp",         "xxxx_00010_b_00nnnndddd00001001mmmm",              core_arm_swp},

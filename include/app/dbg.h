@@ -110,7 +110,7 @@ struct arg {
 */
 struct command {
     char const *name;
-    char const *alias;
+    char const **aliases; // NULL-terminated, or NULL if the command has no alias.
     char const *usage;
     char const *description;
     void (*func)(struct app *app, size_t argc, struct arg const *argv);
@@ -127,7 +127,8 @@ enum commands_list {
     CMD_CONTEXT,
     CMD_CONTEXT_COMPACT,
     CMD_PRINT,
-    CMD_BREAK,
+    CMD_BREAK_HW,
+    CMD_BREAK_SW,
     CMD_WATCH,
     CMD_TRACE,
     CMD_VERBOSE,
@@ -173,8 +174,11 @@ extern size_t g_io_registers_len;
 /* app/dbg/cmd/apu.c */
 void debugger_cmd_apu(struct app *, size_t, struct arg const *);
 
-/* app/dbg/cmd/break.c */
-void debugger_cmd_break(struct app *, size_t, struct arg const *);
+/* app/dbg/cmd/breakhw.c */
+void debugger_cmd_break_hw(struct app *, size_t, struct arg const *);
+
+/* app/dbg/cmd/breaksw.c */
+void debugger_cmd_break_sw(struct app *, size_t, struct arg const *);
 
 /* app/dbg/cmd/context.c */
 void debugger_dump_context(struct app *);

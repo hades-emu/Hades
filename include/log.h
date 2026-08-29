@@ -25,6 +25,7 @@ enum modules {
     HS_IRQ,
     HS_MEMORY,
     HS_TIMER,
+    HS_CHEAT,
 
     HS_DEBUG,
 
@@ -69,6 +70,7 @@ static char const * const modules_str[] = {
     [HS_MEMORY]     = " MEM   ",
     [HS_TIMER]      = " TIMER ",
     [HS_DEBUG]      = " DEBUG ",
+    [HS_CHEAT]      = " CHEAT ",
 };
 
 /* log.c */

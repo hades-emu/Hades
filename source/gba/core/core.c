@@ -59,17 +59,8 @@ core_next(
             core->prefetch[1] = mem_read16(gba, core->pc, core->prefetch_access_type | PIPELINE);
             gba->memory.was_last_access_from_dma = false;
 
-            // Build a unique index based on the instruction's opcode, which is then used to index
-            // the Lookup Table (LUT) of Thumb instructions.
-            //
-            // NOTE: We need to properly handle unknown instructions instead of crashing.
-            if (unlikely(thumb_lut[op >> 8] == NULL)) {
-                panic(HS_CORE, "Unknown Thumb op-code 0x%04x (pc=0x%08x).", op, core->pc);
-            }
-
-            thumb_lut[op >> 8](gba, op);
+            core_execute_thumb_opcode(gba, op);
         } else {
-            size_t idx;
             uint32_t op;
 
             op = core->prefetch[0];
@@ -77,27 +68,7 @@ core_next(
             core->prefetch[1] = mem_read32(gba, core->pc, core->prefetch_access_type | PIPELINE);
             gba->memory.was_last_access_from_dma = false;
 
-            // Test if the conditions required to execute the instruction are met using a Lookup Table (LUT).
-            //
-            // The index of the LUT is both the CPSR and the condition combined in an 8-bit integer
-            // unique per situation.
-            idx = (bitfield_get_range(core->cpsr.raw, 28, 32) << 4) | (bitfield_get_range(op, 28, 32));
-            if (unlikely(!cond_lut[idx])) {
-                core->pc += 4;
-                core->prefetch_access_type = SEQUENTIAL;
-                goto end;
-            }
-
-            // Build a unique index based on the instruction's opcode, which is then used to index
-            // the Lookup Table (LUT) of ARM instructions.
-            //
-            // NOTE: We need to properly handle unknown instructions instead of crashing.
-            idx = ((op >> 16) & 0xFF0) | ((op >> 4) & 0x00F);
-            if (unlikely(arm_lut[idx] == NULL)) {
-                panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
-            }
-
-            arm_lut[idx](gba, op);
+            core_execute_arm_opcode(gba, op);
         }
     } else if (core->state == CORE_HALT) {
         if (gba->core.pending_dma && !gba->core.is_dma_running) {
@@ -111,12 +82,64 @@ core_next(
         }
     }
 
-end:
 #ifdef WITH_DEBUGGER
-    debugger_eval_breakpoints(gba);
+    debugger_eval_hw_breakpoints(gba);
 #else
     (void)0;
 #endif
+}
+
+void
+core_execute_arm_opcode(
+    struct gba *gba,
+    uint32_t op
+) {
+    struct core *core;
+    size_t idx;
+
+    core = &gba->core;
+
+    // Test if the conditions required to execute the instruction are met using a Lookup Table (LUT).
+    //
+    // The index of the LUT is both the CPSR and the condition combined in an 8-bit integer
+    // unique per situation.
+    idx = (bitfield_get_range(core->cpsr.raw, 28, 32) << 4) | (bitfield_get_range(op, 28, 32));
+    if (unlikely(!cond_lut[idx])) {
+        core->pc += 4;
+        core->prefetch_access_type = SEQUENTIAL;
+        return;
+    }
+
+    // Build a unique index based on the instruction's opcode, which is then used to index
+    // the Lookup Table (LUT) of ARM instructions.
+    //
+    // TODO FIXME: We need to properly handle unknown instructions instead of crashing.
+    idx = ((op >> 16) & 0xFF0) | ((op >> 4) & 0x00F);
+    if (unlikely(arm_lut[idx] == NULL)) {
+        panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
+    }
+
+    arm_lut[idx](gba, op);
+}
+
+void
+core_execute_thumb_opcode(
+    struct gba *gba,
+    uint16_t op
+) {
+    struct core *core;
+
+    core = &gba->core;
+
+    // Build a unique index based on the instruction's opcode, which is then used to index
+    // the Lookup Table (LUT) of Thumb instructions.
+    //
+    // TODO FIXME: We need to properly handle unknown instructions instead of crashing.
+    if (unlikely(thumb_lut[op >> 8] == NULL)) {
+        panic(HS_CORE, "Unknown Thumb op-code 0x%04x (pc=0x%08x).", op, core->pc);
+    }
+
+    thumb_lut[op >> 8](gba, op);
 }
 
 /*

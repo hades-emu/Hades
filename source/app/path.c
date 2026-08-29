@@ -194,6 +194,34 @@ app_path_backup(
     }
 }
 
+
+char *
+app_path_cheats(
+    struct app const *app,
+    char const *rom
+) {
+    char const *rom_basename;
+    char const *rom_ext;
+    size_t dirname_len;
+    size_t basename_len;
+
+    rom_basename = strrchr(rom, HS_PATH_SEPARATOR);
+
+    // The path contains a '/'
+    if (rom_basename) {
+        dirname_len = rom_basename - rom;
+        ++rom_basename; // Skip the '/' and point to the first char of the basename
+    } else {
+        dirname_len = 0;
+        rom_basename = rom;
+    }
+
+    rom_ext = strrchr(rom_basename, '.');
+    basename_len = rom_ext - rom_basename;
+
+    return hs_format("%.*s/%.*s.cheats.json", (int)dirname_len, rom, (int)basename_len, rom_basename);
+}
+
 void
 app_path_update_quicksave_paths(
     struct app *app,

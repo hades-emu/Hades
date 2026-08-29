@@ -210,6 +210,8 @@ static char const * const arm_modes_name[] = {
 /* gba/core/core.c */
 void core_run(struct gba *gba);
 void core_next(struct gba *gba);
+void core_execute_arm_opcode(struct gba *gba, uint32_t opcode);
+void core_execute_thumb_opcode(struct gba *gba, uint16_t opcode);
 void core_reload_pipeline(struct gba *gba);
 struct psr core_spsr_get(struct core const *core, enum arm_modes mode);
 void core_spsr_set(struct core *core, enum arm_modes mode, struct psr psr);

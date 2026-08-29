@@ -32,6 +32,7 @@ struct verbosity_arg verbosities[] = {
     { "mem",        g_verbose + HS_MEMORY   },
     { "timer",      g_verbose + HS_TIMER    },
     { "debug",      g_verbose + HS_DEBUG    },
+    { "cheat",      g_verbose + HS_CHEAT    },
 
     { NULL,         NULL                    },
 };

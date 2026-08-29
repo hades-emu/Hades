@@ -160,7 +160,7 @@ mem_openbus_read(
                         default: ((_addr >> (1 + 8 * (_addr & 0b1))) & 0xFF)                \
                     );                                                                      \
                 } else {                                                                    \
-                    _ret = *(T *)((uint8_t *)((gba)->memory.rom) + (_addr & (gba)->memory.rom_mask));\
+                    _ret = *(T *)((uint8_t *)((gba)->memory.active_rom) + (_addr & (gba)->memory.rom_mask)); \
                 }                                                                           \
                 break;                                                                      \
             };                                                                              \
@@ -518,4 +518,126 @@ mem_write32(
 
     mem_bus_access(gba, addr, sizeof(uint32_t), access_type);
     template_write(uint32_t, gba, addr, val);
+}
+
+static
+void
+mem_patch_rom32(
+    struct gba *gba,
+    uint32_t addr,
+    uint32_t val
+) {
+    *(uint32_t *)(gba->memory.patched_rom + (addr & gba->memory.rom_mask)) = val;
+}
+
+static
+void
+mem_patch_rom16(
+    struct gba *gba,
+    uint32_t addr,
+    uint16_t val
+) {
+    *(uint16_t *)(gba->memory.patched_rom + (addr & gba->memory.rom_mask)) = val;
+}
+
+static
+void
+mem_patch_rom8(
+    struct gba *gba,
+    uint32_t addr,
+    uint8_t val
+) {
+    *(gba->memory.patched_rom + (addr & gba->memory.rom_mask)) = val;
+}
+
+static
+void
+mem_install_dbg_software_breakpoint(
+    struct gba *gba,
+    uint32_t addr,
+    bool thumb
+) {
+    if (!gba->memory.patched_rom) {
+        gba->memory.patched_rom = malloc(CART_SIZE);
+        hs_assert(gba->memory.patched_rom);
+        memcpy(gba->memory.patched_rom, gba->memory.unpatched_rom, CART_SIZE);
+        gba->memory.active_rom = gba->memory.patched_rom;
+    }
+
+    if (thumb) {
+        mem_patch_rom16(gba, addr, 0xBE00);
+    } else {
+        mem_patch_rom32(gba, addr, 0xEC000000);
+    }
+}
+
+static
+void
+mem_install_cheat_rom_patches(
+    struct gba *gba,
+    struct cheat_bin const *bin
+) {
+    size_t i;
+
+    // Early return to avoid allocating memory if there's no ROM patch for this cheat.
+    if (bin->rom_patches.len == 0) {
+        return;
+    }
+
+    dbgln(HS_CHEAT, "Installing ROM patch for a cheat:");
+
+    if (!gba->memory.patched_rom) {
+        gba->memory.patched_rom = malloc(CART_SIZE);
+        hs_assert(gba->memory.patched_rom);
+        memcpy(gba->memory.patched_rom, gba->memory.unpatched_rom, CART_SIZE);
+        gba->memory.active_rom = gba->memory.patched_rom;
+    }
+
+    for (i = 0; i < bin->rom_patches.len; ++i) {
+        struct cheat_rom_patch *patch;
+
+        patch = &bin->rom_patches.list[i];
+
+        dbgln(HS_CHEAT, "  - Address: %08x", patch->addr);
+        dbgln(HS_CHEAT, "  - Width: %i", patch->width);
+        dbgln(HS_CHEAT, "  - Val: %08x", patch->value);
+
+        switch (patch->width) {
+            case 1: mem_patch_rom8(gba, patch->addr, patch->value); break;
+            case 2: mem_patch_rom16(gba, patch->addr, patch->value); break;
+            case 4: mem_patch_rom32(gba, patch->addr, patch->value); break;
+            default: panic(HS_CHEAT, "Invalid rom patch width: %u", patch->width);
+        }
+    }
+}
+
+void
+mem_refresh_rom_patches(
+    struct gba *gba
+) {
+    size_t i;
+
+    dbgln(HS_CHEAT, "Refreshing ROM patches.");
+
+    free(gba->memory.patched_rom);
+    gba->memory.patched_rom = NULL;
+    gba->memory.active_rom = gba->memory.unpatched_rom;
+
+    for (i = 0; i < gba->cheats.len; ++i) {
+        struct cheat_bin *cheat;
+
+        cheat = &gba->cheats.list[i];
+        if (cheat->hook.active) {
+            mem_install_dbg_software_breakpoint(gba, cheat->hook.bp.ptr, cheat->hook.bp.thumb);
+        }
+
+        mem_install_cheat_rom_patches(gba, &gba->cheats.list[i]);
+    }
+
+    for (i = 0; i < gba->debugger.sw_breakpoints.len; ++i) {
+        struct sw_breakpoint *swbp;
+
+        swbp = &gba->debugger.sw_breakpoints.list[i];
+        mem_install_dbg_software_breakpoint(gba, swbp->ptr, swbp->thumb);
+    }
 }

@@ -77,6 +77,16 @@
         __tmp;                                              \
     })
 
+#define hs_memdup(ptr, len)                                 \
+    ({                                                      \
+        void *__dst;                                        \
+                                                            \
+        __dst = malloc(len);                                \
+        hs_assert(__dst);                                   \
+        memcpy(__dst, ptr, len);                            \
+        __dst;                                              \
+    })
+
 /* ✨ Variadic macro magic ✨ */
 #define XSTR(...)                #__VA_ARGS__
 #define STR(...)               XSTR(__VA_ARGS__)

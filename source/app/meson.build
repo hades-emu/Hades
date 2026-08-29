@@ -24,6 +24,7 @@ libapp_sources = [
     'shaders/frag-lcd-grid.c',
     'shaders/frag-xbrz.c',
     'shaders/vertex-common.c',
+    'windows/cheats.c',
     'windows/game.c',
     'windows/menubar.c',
     'windows/notification.c',
@@ -31,6 +32,7 @@ libapp_sources = [
     'args.c',
     'audio.c',
     'bindings.c',
+    'cheats.c',
     'config.c',
     'emulator.c',
     'event.c',
@@ -42,7 +44,8 @@ libapp_sources = [
 
 libapp_dbg_sources = [
     'dbg/cmd/apu.c',
-    'dbg/cmd/break.c',
+    'dbg/cmd/breakhw.c',
+    'dbg/cmd/breaksw.c',
     'dbg/cmd/context.c',
     'dbg/cmd/continue.c',
     'dbg/cmd/disas.c',

@@ -38,6 +38,9 @@ void core_arm_bdt(struct gba *gba, uint32_t op);
 void core_arm_branch(struct gba *gba, uint32_t op);
 void core_arm_branch_xchg(struct gba *gba, uint32_t op);
 
+/* core/arm/brk.c */
+void core_arm_brk(struct gba *gba, uint32_t op);
+
 /* core/arm/core.c */
 void core_arm_decode_insns(void);
 

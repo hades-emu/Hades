@@ -13,6 +13,7 @@
 #include "gba/core/arm.h"
 #include "gba/core/thumb.h"
 #include "gba/channel.h"
+#include "gba/debugger.h"
 #include "gba/event.h"
 
 /*
@@ -122,6 +123,21 @@ gba_state_stop(
     free(gba->shared_data.backup_storage.data);
     gba->shared_data.backup_storage.data = NULL;
 
+    free(gba->memory.patched_rom);
+    gba->memory.patched_rom = NULL;
+
+    {
+        size_t i;
+
+        for (i = 0; i < gba->cheats.len; ++i) {
+            cheat_delete(&gba->cheats.list[i]);
+        }
+
+        free(gba->cheats.list);
+        gba->cheats.list = NULL;
+        gba->cheats.len = 0;
+    }
+
     gba->state = GBA_STATE_STOP;
     gba_send_notification(gba, NOTIFICATION_STOP);
 }
@@ -136,8 +152,10 @@ gba_state_pause(
 
 void
 gba_state_run(
-    struct gba *gba
+    struct gba *gba,
+    enum gba_run_modes run_mode
 ) {
+    gba->run_mode = run_mode;
     gba->state = GBA_STATE_RUN;
     sched_reset_frame_limiter(gba);
     gba_send_notification(gba, NOTIFICATION_RUN);
@@ -150,6 +168,27 @@ gba_state_reset(
 ) {
     // Settings
     memcpy(&gba->settings, &config->settings, sizeof(struct gba_settings));
+
+    // Shared Data
+    {
+        struct gba_shared_data *shared_data;
+
+        shared_data = &gba->shared_data;
+
+        pthread_mutex_lock(&shared_data->framebuffer.lock);
+        memset(shared_data->framebuffer.data, 0, sizeof(shared_data->framebuffer.data));
+        pthread_mutex_unlock(&shared_data->framebuffer.lock);
+
+        pthread_mutex_lock(&shared_data->audio_rbuffer_mutex);
+        shared_data->audio_rbuffer.read_idx = 0;
+        shared_data->audio_rbuffer.write_idx = 0;
+        shared_data->audio_rbuffer.size = 0;
+        memset(shared_data->audio_rbuffer.data, 0, sizeof(shared_data->audio_rbuffer.data));
+        pthread_mutex_unlock(&shared_data->audio_rbuffer_mutex);
+
+
+        shared_data->frame_counter = 0;
+    }
 
     // Scheduler
     {
@@ -180,23 +219,28 @@ gba_state_reset(
         struct memory *memory;
 
         memory = &gba->memory;
+
         memset(memory, 0, sizeof(*memory));
 
         // Copy the BIOS and ROM to memory
-        memcpy(gba->memory.bios, config->bios.data, min(config->bios.size, BIOS_SIZE));
-        memcpy(gba->memory.rom, config->rom.data, min(config->rom.size, CART_SIZE));
-        gba->memory.rom_size = config->rom.size;
-        gba->memory.rom_mask = CART_MASK;
+        memcpy(memory->bios, config->bios.data, min(config->bios.size, BIOS_SIZE));
+        memcpy(memory->unpatched_rom, config->rom.data, min(config->rom.size, CART_SIZE));
+        memory->rom_size = config->rom.size;
+        memory->rom_mask = CART_MASK;
 
         if (config->rom_mirroring) {
             size_t rounded_size = 1;
 
-            while(rounded_size < gba->memory.rom_size) {
+            while(rounded_size < memory->rom_size) {
                 rounded_size *= 2;
             }
 
-            gba->memory.rom_mask = (uint32_t)(rounded_size  - 1);
+            memory->rom_mask = (uint32_t)(rounded_size  - 1);
         }
+
+        // Reset patched memory and set the active ROM to the normal, unpatched ROM.
+        memory->patched_rom = NULL;
+        memory->active_rom = memory->unpatched_rom;
     }
 
     // IO
@@ -342,6 +386,8 @@ gba_state_reset(
                 memcpy(gba->shared_data.backup_storage.data, config->backup_storage.data, min(gba->shared_data.backup_storage.size, config->backup_storage.size));
             }
         }
+
+        gba->shared_data.backup_storage.dirty = false;
     }
 
     // Core
@@ -373,7 +419,35 @@ gba_state_reset(
         }
     }
 
+    // Cheats
+    {
+        size_t i;
+
+        gba->cheats.len = 0;
+        gba->cheats.list = calloc(config->cheats.len, sizeof(struct cheat_bin));
+        hs_assert(gba->cheats.list);
+
+        for (i = 0; i < config->cheats.len; ++i) {
+            struct cheat_bin *cheat;
+            struct gba_cheat_raw *raw;
+
+            cheat = &gba->cheats.list[gba->cheats.len];
+            raw = &config->cheats.list[i];
+
+            if (raw->enabled && cheat_parse_and_compile(cheat, raw)) {
+                gba->cheats.len += 1;
+            }
+        }
+    }
+
+    // Not locked behind WITH_DEBUGGER since we use rom patches for cheats too.
+    mem_refresh_rom_patches(gba);
+
     gba_send_notification(gba, NOTIFICATION_RESET);
+
+#if WITH_DEBUGGER
+    debugger_eval_hw_breakpoints(gba);
+#endif
 }
 
 static
@@ -397,10 +471,7 @@ gba_process_message(
             break;
         };
         case MESSAGE_RUN: {
-#ifdef WITH_DEBUGGER
-            gba->debugger.run_mode = GBA_RUN_MODE_NORMAL;
-#endif
-            gba_state_run(gba);
+            gba_state_run(gba, GBA_RUN_MODE_NORMAL);
             break;
         };
         case MESSAGE_STOP: {
@@ -475,9 +546,8 @@ gba_process_message(
             msg_frame = (struct message_frame const *)message;
 
             gba->debugger.frame.count = msg_frame->count;
-            gba->debugger.run_mode = GBA_RUN_MODE_FRAME;
 
-            gba_state_run(gba);
+            gba_state_run(gba, GBA_RUN_MODE_FRAME);
             break;
         };
         case MESSAGE_TRACE: {
@@ -489,8 +559,7 @@ gba_process_message(
             gba->debugger.trace.tracer_cb = msg_trace->tracer_cb;
             gba->debugger.trace.arg = msg_trace->arg;
 
-            gba->debugger.run_mode = GBA_RUN_MODE_TRACE;
-            gba_state_run(gba);
+            gba_state_run(gba, GBA_RUN_MODE_TRACE);
             break;
         };
         case MESSAGE_STEP_IN:
@@ -502,8 +571,7 @@ gba_process_message(
             gba->debugger.step.count = msg_step->count;
             gba->debugger.step.next_pc = gba->core.pc + (gba->core.cpsr.thumb ? 2 : 4);
 
-            gba->debugger.run_mode = message->header.kind == MESSAGE_STEP_OVER ? GBA_RUN_MODE_STEP_OVER : GBA_RUN_MODE_STEP_IN;
-            gba_state_run(gba);
+            gba_state_run(gba, message->header.kind == MESSAGE_STEP_OVER ? GBA_RUN_MODE_STEP_OVER : GBA_RUN_MODE_STEP_IN);
             break;
         };
         case MESSAGE_SET_BREAKPOINTS_LIST: {
@@ -511,11 +579,19 @@ gba_process_message(
 
             msg_set_breakpoints_list = (struct message_set_breakpoints_list const *)message;
 
-            free(gba->debugger.breakpoints.list);
-            gba->debugger.breakpoints.len = msg_set_breakpoints_list->len;
-            gba->debugger.breakpoints.list = calloc(gba->debugger.breakpoints.len, sizeof(struct breakpoint));
-            hs_assert(gba->debugger.breakpoints.list);
-            memcpy(gba->debugger.breakpoints.list, msg_set_breakpoints_list->breakpoints, sizeof(struct breakpoint) * gba->debugger.breakpoints.len);
+            free(gba->debugger.hw_breakpoints.list);
+            gba->debugger.hw_breakpoints.len = msg_set_breakpoints_list->hw_breakpoints.len;
+            gba->debugger.hw_breakpoints.list = calloc(gba->debugger.hw_breakpoints.len, sizeof(struct hw_breakpoint));
+            hs_assert(gba->debugger.hw_breakpoints.list);
+            memcpy(gba->debugger.hw_breakpoints.list, msg_set_breakpoints_list->hw_breakpoints.list, sizeof(struct hw_breakpoint) * gba->debugger.hw_breakpoints.len);
+
+            free(gba->debugger.sw_breakpoints.list);
+            gba->debugger.sw_breakpoints.len = msg_set_breakpoints_list->sw_breakpoints.len;
+            gba->debugger.sw_breakpoints.list = calloc(gba->debugger.sw_breakpoints.len, sizeof(struct sw_breakpoint));
+            hs_assert(gba->debugger.sw_breakpoints.list);
+            memcpy(gba->debugger.sw_breakpoints.list, msg_set_breakpoints_list->sw_breakpoints.list, sizeof(struct sw_breakpoint) * gba->debugger.sw_breakpoints.len);
+
+            mem_refresh_rom_patches(gba);
 
             gba_send_notification(gba, NOTIFICATION_BREAKPOINTS_LIST_SET);
             break;
@@ -588,6 +664,7 @@ gba_run(
 #ifdef WITH_DEBUGGER
                 debugger_execute_run_mode(gba);
 #else
+                // We assume that gba->run_mode is `GBA_RUN_MODES_NORMAL`.
                 sched_run_for(gba, GBA_CYCLES_PER_PIXEL * GBA_SCREEN_REAL_WIDTH);
 #endif
                 break;
