@@ -24,11 +24,11 @@ class TestRoms(Enum):
     HADES_BIOS_OPENBUS = Rom('hades-bios-openbus', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/bios-openbus.gba')
     HADES_TIMER_BASIC = Rom('hades-timer-basic', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/timer-basic.gba')
 
-    NBA_DMA_START_DELAY = Rom('nba-dma-start-delay', 'https://raw.githubusercontent.com/nba-emu/hw-test/master/dma/start-delay/start-delay.gba')
-    NBA_DMA_LATCH = Rom('nba-dma-latch', 'https://raw.githubusercontent.com/nba-emu/hw-test/master/dma/latch/latch.gba')
-    NBA_TIMER_RELOAD = Rom('nba-timer-reload', 'https://raw.githubusercontent.com/nba-emu/hw-test/master/timer/reload/reload.gba')
-    NBA_TIMER_START_STOP = Rom('nba-timer-start-stop', 'https://raw.githubusercontent.com/nba-emu/hw-test/master/timer/start-stop/start-stop.gba')
-    NBA_IRQ_DELAY = Rom('nba-irq-delay', 'https://raw.githubusercontent.com/nba-emu/hw-test/master/irq/irq-delay/irq-delay.gba')
+    NBA_DMA_START_DELAY = Rom('nba-dma-start-delay', 'https://codeberg.org/nba-emu/hw-test/raw/branch/master/dma/start-delay/start-delay.gba')
+    NBA_DMA_LATCH = Rom('nba-dma-latch', 'https://codeberg.org/nba-emu/hw-test/raw/branch/master/dma/latch/latch.gba')
+    NBA_TIMER_RELOAD = Rom('nba-timer-reload', 'https://codeberg.org/nba-emu/hw-test/raw/branch/master/timer/reload/reload.gba')
+    NBA_TIMER_START_STOP = Rom('nba-timer-start-stop', 'https://codeberg.org/nba-emu/hw-test/raw/branch/master/timer/start-stop/start-stop.gba')
+    NBA_IRQ_DELAY = Rom('nba-irq-delay', 'https://codeberg.org/nba-emu/hw-test/raw/branch/master/irq/irq-delay/irq-delay.gba')
 
     AGS = Rom('ags', None)
 
@@ -278,7 +278,7 @@ TESTS_SUITE: List[Test] = [
             key a true
             frame 20
             key a false
-            frame 250
+            frame 260
 
             screenshot ./.tests_screenshots/mgba_suite_dma.png
         ''',
