@@ -48,6 +48,9 @@ void core_thumb_branch_link(struct gba *gba, uint16_t op);
 void core_thumb_branch_xchg(struct gba *gba, uint16_t op);
 void core_thumb_branch_cond(struct gba *gba, uint16_t op);
 
+/* gba/thumb/brk.c */
+void core_thumb_brk(struct gba *gba, uint16_t op);
+
 /* gba/thumb/gba.c */
 void core_thumb_decode_insns(void);
 

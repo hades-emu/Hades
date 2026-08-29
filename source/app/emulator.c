@@ -163,7 +163,7 @@ app_emulator_wait_for_notification(
         event = channel_next(channel, NULL);
         while (event) {
             app_emulator_process_notif(app, event);
-            ok = (event->kind == kind);
+            ok |= (event->kind == kind);
             event = channel_next(channel, event);
         }
 
@@ -177,7 +177,7 @@ app_emulator_wait_for_notification(
     channel_release(channel);
 }
 
-static inline
+static
 void
 app_emulator_fill_gba_settings(
     struct app const *app,
@@ -234,6 +234,12 @@ app_emulator_unconfigure(
     if (app->emulation.game_path) {
         free(app->emulation.game_path);
         app->emulation.game_path = NULL;
+    }
+
+    if (app->cheats.list) {
+        free(app->cheats.list);
+        app->cheats.list = NULL;
+        app->cheats.len = 0;
     }
 }
 
@@ -579,19 +585,19 @@ app_emulator_import_backup_storage(
 ** NOTE: `backup_to_import` can be NULL if there is no backup to import.
 */
 bool
-app_emulator_configure_and_run(
+app_emulator_configure_and_run_impl(
     struct app *app,
     char const *rom_path,
-    char const *backup_to_import
+    char const *backup_to_import,
+    bool run
 ) {
     struct message_reset event;
+    char const *extension;
     char *backup_path;
-    char *extension;
     bool is_archive;
     uint8_t *code;
 
     app_emulator_stop(app);
-    app_emulator_unconfigure(app);
 
     logln(HS_INFO, "Loading game at \"%s%s%s\".", g_light_green, rom_path, g_reset);
 
@@ -619,6 +625,13 @@ app_emulator_configure_and_run(
     ) {
         app_emulator_unconfigure(app);
         return (true);
+    }
+
+    app_cheats_load(app, rom_path);
+
+    if (app->cheats.len > 0) {
+        app->emulation.launch_config->cheats.len = app->cheats.len;
+        app->emulation.launch_config->cheats.list = app->cheats.list;
     }
 
     code = app->emulation.launch_config->rom.data + 0xAC;
@@ -680,6 +693,7 @@ app_emulator_configure_and_run(
         logln(HS_INFO, "    Speed: %.0f%%", app->emulation.launch_config->settings.speed * 100.f);
     }
     logln(HS_INFO, "    Audio Frequency: %iHz (%i cycles)", app->audio.resample_frequency, app->emulation.launch_config->audio_frequency);
+    logln(HS_INFO, "    Cheats: %zu", app->emulation.launch_config->cheats.len);
 
     event.header.kind = MESSAGE_RESET;
     event.header.size = sizeof(event);
@@ -702,17 +716,30 @@ app_emulator_configure_and_run(
 
     logln(HS_INFO, "Game successfully loaded.");
 
-#ifdef WITH_DEBUGGER
-    if (app->settings.general.startup.pause_when_game_resets) {
-        app_emulator_pause(app);
-    } else {
+    if (run) {
         app_emulator_run(app);
+    } else {
+        app_emulator_pause(app);
     }
-#else
-    app_emulator_run(app);
-#endif
 
     return (false);
+}
+
+bool
+app_emulator_configure_and_run(
+    struct app *app,
+    char const *rom_path,
+    char const *backup_to_import
+) {
+    bool run;
+
+#ifdef WITH_DEBUGGER
+    run = !app->settings.general.startup.pause_when_game_resets;
+#else
+    run = true;
+#endif
+
+    return app_emulator_configure_and_run_impl(app, rom_path, backup_to_import, run);
 }
 
 /*
@@ -728,6 +755,21 @@ app_emulator_reset(
     app_emulator_configure_and_run(app, game_path, NULL);
     free(game_path);
 }
+
+/*
+** Reset the emulator with the same configuration and settings, but do not run the emulation afterwards.
+*/
+void
+app_emulator_reset_and_pause(
+    struct app *app
+) {
+    char *game_path;
+
+    game_path = strdup(app->emulation.game_path);
+    app_emulator_configure_and_run_impl(app, game_path, NULL, false);
+    free(game_path);
+}
+
 
 /*
 ** Stop the emulation and return to a neutral state.
@@ -810,7 +852,7 @@ app_emulator_exit(
 void
 app_emulator_key(
     struct app *app,
-    enum keys key,
+    enum gba_keys key,
     bool pressed
 ) {
     struct message_key event;
@@ -1210,20 +1252,24 @@ app_emulator_step_over(
 }
 
 /*
-** Set the list of breakpoints and wait to make sure it was correctly copied by the emulator.
+** Set the list of hardware breakpoints and wait to make sure it was correctly copied by the emulator.
 */
 void
 app_emulator_set_breakpoints_list(
     struct app *app,
-    struct breakpoint *breakpoints,
-    size_t len
+    struct hw_breakpoint *hw_bps,
+    size_t hw_len,
+    struct sw_breakpoint *sw_bps,
+    size_t sw_len
 ) {
     struct message_set_breakpoints_list event;
 
     event.header.kind = MESSAGE_SET_BREAKPOINTS_LIST;
     event.header.size = sizeof(event);
-    event.breakpoints = breakpoints;
-    event.len = len;
+    event.hw_breakpoints.list = hw_bps;
+    event.hw_breakpoints.len = hw_len;
+    event.sw_breakpoints.list = sw_bps;
+    event.sw_breakpoints.len = sw_len;
 
     /*
     ** Process all notifications before sending the message to make sure the notification we will

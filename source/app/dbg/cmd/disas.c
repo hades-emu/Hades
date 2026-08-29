@@ -97,7 +97,7 @@ try_disas(
             }
             return (cs_disasm(
                 handle,
-                (uint8_t *)memory->rom + (addr & CART_MASK),
+                (uint8_t *)memory->unpatched_rom + (addr & CART_MASK),
                 op_len * count,
                 addr,
                 count,

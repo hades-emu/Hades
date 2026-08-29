@@ -159,6 +159,25 @@ hs_fexists(
 }
 
 static inline
+bool
+hs_remove(
+    char const *path
+) {
+    wchar_t *wpath;
+    bool out;
+
+    wpath = hs_convert_to_wchar(path);
+    if (!wpath) {
+        return (false);
+    }
+
+    out = DeleteFileW(wpath);
+
+    free(wpath);
+    return (out);
+}
+
+static inline
 char const *
 hs_basename(
     char const *path
@@ -252,6 +271,7 @@ hs_open_url(
 #define hs_usleep(x)            usleep(x)
 #define hs_fexists(path)        (access((path), F_OK) == 0)
 #define hs_abspath(path)        realpath((path), NULL)
+#define hs_remove(path)         (remove((path)) == 0)
 
 static inline
 char const *

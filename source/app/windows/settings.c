@@ -1105,7 +1105,7 @@ app_win_settings(
         igEndChild();
 
         if (igButton("Close##SettingsMenuCloseButton", (ImVec2){ 0.f, 0.f})) {
-            app->ui.settings.open = false;
+            app->ui.main_window = MAIN_WINDOW_NONE;
         }
 
         igEndGroup();
@@ -1117,7 +1117,7 @@ app_win_settings(
             && !igIsPopupOpen_Str(NULL, ImGuiPopupFlags_AnyPopup)
             && !igIsAnyItemFocused()
         ) {
-            app->ui.settings.open = false;
+            app->ui.main_window = MAIN_WINDOW_NONE;
         }
 
         igEnd();

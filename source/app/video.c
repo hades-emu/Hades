@@ -464,8 +464,16 @@ app_sdl_video_render_frame(
         app_win_game(app);
     }
 
-    if (app->ui.settings.open) {
-        app_win_settings(app);
+    switch (app->ui.main_window) {
+        case MAIN_WINDOW_SETTINGS: {
+            app_win_settings(app);
+            break;
+        };
+        case MAIN_WINDOW_CHEATS: {
+            app_win_cheats(app);
+            break;
+        };
+        default: break;
     }
 
     app_win_notifications(app);

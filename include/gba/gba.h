@@ -27,6 +27,7 @@
 #include "gba/io.h"
 #include "gba/gpio.h"
 #include "gba/debugger.h"
+#include "gba/cheat.h"
 
 enum gba_states {
     GBA_STATE_STOP = 0,
@@ -34,7 +35,17 @@ enum gba_states {
     GBA_STATE_RUN,
 };
 
-enum keys {
+enum gba_run_modes {
+    GBA_RUN_MODE_NORMAL,
+#ifdef WITH_DEBUGGER
+    GBA_RUN_MODE_FRAME,
+    GBA_RUN_MODE_TRACE,
+    GBA_RUN_MODE_STEP_IN,
+    GBA_RUN_MODE_STEP_OVER,
+#endif
+};
+
+enum gba_keys {
     KEY_A,
     KEY_B,
     KEY_L,
@@ -50,7 +61,28 @@ enum keys {
     KEY_MIN = KEY_A,
 };
 
-struct shared_data {
+struct gba_cheat_raw {
+    bool enabled;
+
+    enum {
+        RAW_CHEAT_KIND_AUTODETECT,
+        RAW_CHEAT_KIND_GAMESHARK,
+        RAW_CHEAT_KIND_PARV3,
+        RAW_CHEAT_KIND_CODEBREAKER,
+    } kind;
+
+    struct {
+        bool finished;
+        bool success;
+        char *error;
+    } compilation;
+
+    char name[64];
+    char code[4096];
+
+};
+
+struct gba_shared_data {
     // The emulator's screen, as built by the PPU each frame.
     struct {
         uint32_t data[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
@@ -105,6 +137,11 @@ struct gba_settings {
     } apu;
 };
 
+struct gba_cheats {
+    struct cheat_bin *list;
+    size_t len;
+};
+
 struct game_entry {
     char *code;
     enum backup_storage_types storage;
@@ -119,14 +156,20 @@ struct gba {
     // The current state of the GBA
     enum gba_states state;
 
+    // The "run mode" of the gba (how it should behave when running and for how long).
+    enum gba_run_modes run_mode;
+
     // The channel used to communicate with the frontend
     struct channels channels;
 
     // Shared data with the frontend, mainly the framebuffer and audio channels.
-    struct shared_data shared_data;
+    struct gba_shared_data shared_data;
 
     // A set of settings the frontend can update during the emulator's execution (speed, etc.)
     struct gba_settings settings;
+
+    // A list of enabled cheats.
+    struct gba_cheats cheats;
 
     // The different components of the GBA
     struct core core;
@@ -136,12 +179,20 @@ struct gba {
     struct apu apu;
     struct io io;
     struct gpio gpio;
-
-#ifdef WITH_DEBUGGER
     struct debugger debugger;
-#endif
 };
 
+/*
+** The initial configuration to run a game on the emulator thread.
+**
+** This structure contains the BIOS data, the game's ROM, its save data and other information needed
+** by the emulator thread to start running the game.
+*
+** The application thread keeps ownership of the pointers contained in a launch config.
+** The emulator thread will copy their content.
+**
+** Therefore, those pointers must remain valid until the emulator thread sends a NOTIFICATION_RESET.
+*/
 struct launch_config {
     // The game ROM and its size
     struct {
@@ -177,6 +228,12 @@ struct launch_config {
 
     // Initial value for all runtime-settings (speed, etc.)
     struct gba_settings settings;
+
+    // Cheats
+    struct {
+        struct gba_cheat_raw *list;
+        size_t len;
+    } cheats;
 };
 
 struct notification;
@@ -203,6 +260,10 @@ void gba_delete_notification(struct notification const *notif);
 /* source/gba/db.c */
 struct game_entry *db_lookup_game(uint8_t const *code);
 struct game_entry *db_autodetect_game_features(uint8_t const *rom, size_t rom_size);
+
+/* source/gba/cheat/cheat.c */
+bool cheat_parse_and_compile(struct cheat_bin *bin, struct gba_cheat_raw *raw);
+bool cheat_parse(struct gba_cheat_raw *raw);
 
 /*
 ** The following functions are *NOT* part of the public API of libgba.
