@@ -201,6 +201,7 @@ ppu_prerender_oam(
                         c.idx = 4;
                         c.force_blend = (oam.mode == OAM_MODE_BLEND);
                         scanline->oam[oam.priority][win_ox + x] = c;
+                        scanline->oam_dirty[oam.priority] = true;
                     }
                 }
             }

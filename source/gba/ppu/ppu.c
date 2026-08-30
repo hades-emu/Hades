@@ -192,7 +192,7 @@ ppu_render_scanline(
                     }
                 }
 
-                if (likely(gba->settings.ppu.enable_oam)) {
+                if (likely(gba->settings.ppu.enable_oam) && scanline->oam_dirty[prio]) {
                     scanline->top_idx = 4;
                     ppu_merge_layer(gba, scanline, scanline->oam[prio]);
                 }
@@ -215,7 +215,7 @@ ppu_render_scanline(
                     }
                 }
 
-                if (likely(gba->settings.ppu.enable_oam)) {
+                if (likely(gba->settings.ppu.enable_oam) && scanline->oam_dirty[prio]) {
                     scanline->top_idx = 4;
                     ppu_merge_layer(gba, scanline, scanline->oam[prio]);
                 }
@@ -234,7 +234,7 @@ ppu_render_scanline(
                     }
                 }
 
-                if (likely(gba->settings.ppu.enable_oam)) {
+                if (likely(gba->settings.ppu.enable_oam) && scanline->oam_dirty[prio]) {
                     scanline->top_idx = 4;
                     ppu_merge_layer(gba, scanline, scanline->oam[prio]);
                 }
@@ -249,7 +249,7 @@ ppu_render_scanline(
                     ppu_merge_layer(gba, scanline, scanline->bg);
                 }
 
-                if (likely(gba->settings.ppu.enable_oam)) {
+                if (likely(gba->settings.ppu.enable_oam) && scanline->oam_dirty[prio]) {
                     scanline->top_idx = 4;
                     ppu_merge_layer(gba, scanline, scanline->oam[prio]);
                 }
@@ -264,7 +264,7 @@ ppu_render_scanline(
                     ppu_merge_layer(gba, scanline, scanline->bg);
                 }
 
-                if (likely(gba->settings.ppu.enable_oam)) {
+                if (likely(gba->settings.ppu.enable_oam) && scanline->oam_dirty[prio]) {
                     scanline->top_idx = 4;
                     ppu_merge_layer(gba, scanline, scanline->oam[prio]);
                 }
@@ -279,7 +279,7 @@ ppu_render_scanline(
                     ppu_merge_layer(gba, scanline, scanline->bg);
                 }
 
-                if (likely(gba->settings.ppu.enable_oam)) {
+                if (likely(gba->settings.ppu.enable_oam) && scanline->oam_dirty[prio]) {
                     scanline->top_idx = 4;
                     ppu_merge_layer(gba, scanline, scanline->oam[prio]);
                 }

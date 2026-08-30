@@ -186,7 +186,6 @@ gba_state_reset(
         memset(shared_data->audio_rbuffer.data, 0, sizeof(shared_data->audio_rbuffer.data));
         pthread_mutex_unlock(&shared_data->audio_rbuffer_mutex);
 
-
         shared_data->frame_counter = 0;
     }
 

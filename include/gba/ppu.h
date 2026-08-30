@@ -60,6 +60,7 @@ struct scanline {
     struct rich_color result[GBA_SCREEN_WIDTH];
     bool win_obj_mask[GBA_SCREEN_WIDTH];
     uint32_t top_idx;
+    bool oam_dirty[4]; // Set for each prio if there's at least one opaque sprite pixel for that prio.
 };
 
 union tile {
