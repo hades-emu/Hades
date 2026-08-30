@@ -16,29 +16,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Download Test Roms
-        run: |
-          # Download BIOS
-          echo "$BIOS_DATA" | base64 -d | gpg --pinentry-mode loopback --passphrase "$BIOS_KEY" -d -o ./bios.bin
 
-          # Create ROMs directory
-          mkdir roms
-          cd roms
-
-          # Download AGS
-          declare ags_url="$(echo "$AGS_URL" | base64 -d | gpg --pinentry-mode loopback --passphrase "$AGS_KEY" -d)"
-          wget -q "$ags_url" -O ags.zip
-          unzip ags.zip
-          shred -u ags.zip
-          mv AGB_*.gba ags.gba
-
-          # Clear-out all secrets to not leak them to the later steps
-          unset BIOS_DATA BIOS_KEY AGS_URL AGS_KEY ags_url
-        env:
-          BIOS_DATA: ${{ secrets.BIOS_DATA }}
-          BIOS_KEY: ${{ secrets.BIOS_KEY }}
-          AGS_URL: ${{ secrets.AGS_URL }}
-          AGS_KEY: ${{ secrets.AGS_KEY }}
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -51,7 +29,32 @@ jobs:
             libcapstone-dev \
             libudev-dev \
             libpipewire-0.3-dev \
-            libarchive-dev
+            libarchive-dev \
+            p7zip-full
+
+      - name: Download Test Roms
+        run: |
+          # Download BIOS
+          echo "$BIOS_DATA" | base64 -d | gpg --decrypt --pinentry-mode loopback --passphrase "$BIOS_KEY" -o ./bios.bin
+
+          # Create ROMs directory
+          mkdir roms
+          cd roms
+
+          # Download AGS
+          declare ags_url="$(echo "$AGS_URL" | base64 -d | gpg --decrypt --pinentry-mode loopback --passphrase "$AGS_KEY")"
+          wget -q "$ags_url" -O ags.7z
+          7z e ags.7z
+          shred -u ags.7z
+          mv AGB_*.gba ags.gba
+
+          # Clear-out all secrets to not leak them to the later steps
+          unset BIOS_DATA BIOS_KEY AGS_URL AGS_KEY ags_url
+        env:
+          BIOS_DATA: ${{ secrets.BIOS_DATA }}
+          BIOS_KEY: ${{ secrets.BIOS_KEY }}
+          AGS_URL: ${{ secrets.AGS_URL }}
+          AGS_KEY: ${{ secrets.AGS_KEY }}
 
       - name: Build the SDL3
         run: |
