@@ -229,7 +229,7 @@ cheat_parse_and_compile(
             goto end;
         }
         default: {
-            cheat_compilation_error_own(raw, hs_format("Unsupported cheat type %i.", raw->kind));
+            cheat_compilation_error_own(raw, hs_format("Unsupported cheat type %i", raw->kind));
             logln(HS_WARN, "Unsupported cheat type %i.", raw->kind);
             ret = false;
             goto end;

@@ -65,10 +65,11 @@ struct gba_cheat_raw {
     bool enabled;
 
     enum {
-        RAW_CHEAT_KIND_AUTODETECT,
-        RAW_CHEAT_KIND_GAMESHARK,
         RAW_CHEAT_KIND_PARV3,
+        RAW_CHEAT_KIND_GAMESHARK,
         RAW_CHEAT_KIND_CODEBREAKER,
+
+        RAW_CHEAT_KIND_MAX,
     } kind;
 
     struct {

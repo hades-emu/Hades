@@ -10,6 +10,40 @@
 #include <cimgui.h>
 #include "app/app.h"
 
+static char const * const cheats_kind_names[MENU_MAX] = {
+    [RAW_CHEAT_KIND_PARV3] = "Action\nReplay",
+    [RAW_CHEAT_KIND_GAMESHARK] = "Gameshark",
+    [RAW_CHEAT_KIND_CODEBREAKER] = " Code\nBreaker",
+};
+
+#define CHEATS_FIELD_WIDTH_MIN                  (200.f)
+#define CHEATS_FIELD_WIDTH_MAX                  (500.f)
+#define CHEATS_FIELD_WIDTH_MIN_RATIO            (0.65f)
+#define CHEATS_FIELD_RADIO_BUTTON_SNAP_WIDTH    150.0f
+
+static
+float
+app_win_cheats_calculate_field_width(
+    void
+) {
+    ImVec2 size;
+    float t;
+
+    igGetContentRegionAvail(&size);
+
+    if (size.x <= CHEATS_FIELD_WIDTH_MIN) {
+        return size.x;
+    }
+
+    if (size.x >= CHEATS_FIELD_WIDTH_MAX) {
+        return size.x * CHEATS_FIELD_WIDTH_MIN_RATIO;
+    }
+
+    t = (size.x - CHEATS_FIELD_WIDTH_MIN) / (CHEATS_FIELD_WIDTH_MAX - CHEATS_FIELD_WIDTH_MIN);
+    return size.x * (1.0f - t * (1.0f - CHEATS_FIELD_WIDTH_MIN_RATIO));
+}
+
+static
 void
 app_win_cheats_list(
     struct app *app
@@ -89,6 +123,7 @@ app_win_cheats_list(
     igEndChild();
 }
 
+static
 void
 app_win_cheats_content(
     struct app *app
@@ -119,7 +154,47 @@ app_win_cheats_content(
             igTextWrapped("Name");
 
             igTableNextColumn();
-            igInputTextEx("##Name", "Cheat Name", raw->name, sizeof(raw->name), (ImVec2){0, 0}, ImGuiInputTextFlags_None, NULL, NULL);
+            igInputTextEx("##Name", "Cheat Name", raw->name, sizeof(raw->name), (ImVec2){app_win_cheats_calculate_field_width(), 0}, ImGuiInputTextFlags_None, NULL, NULL);
+
+            igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+            igTableNextColumn();
+            igTextWrapped("Type");
+
+            igTableNextColumn();
+            {
+                float seg_width;
+                ImVec2 size;
+                bool snap;
+                int i;
+
+                igGetContentRegionAvail(&size);
+                snap = size.x <= CHEATS_FIELD_RADIO_BUTTON_SNAP_WIDTH;
+                seg_width = snap ? -0.0f : (app_win_cheats_calculate_field_width() - igGetStyle()->ItemSpacing.x * (RAW_CHEAT_KIND_MAX - 1)) / RAW_CHEAT_KIND_MAX;
+
+                igPushStyleVar_Vec2(ImGuiStyleVar_SelectableTextAlign, (ImVec2){ 0.5f, 0.5f });
+
+                for (i = 0; i < RAW_CHEAT_KIND_MAX; ++i) {
+                    if (i > 0 && !snap) {
+                        igSameLine(0.0f, -1.0f);
+                    }
+
+                    igBeginDisabled(i > 0); // TODO FIXME: Only PARV3 is availalbe right now.
+
+                    if (igSelectable_Bool(
+                        cheats_kind_names[i],
+                        raw->kind == i,
+                        ImGuiSelectableFlags_NoPadWithHalfSpacing,
+                        (ImVec2){ seg_width, igGetFrameHeight() * 2.f }
+                    )) {
+                        raw->kind = i;
+                        cheat_parse(raw);
+                    }
+
+                    igEndDisabled();
+                }
+
+                igPopStyleVar(1);
+            }
 
             igTableNextRow(ImGuiTableRowFlags_None, 0.f);
             igTableNextColumn();
@@ -161,7 +236,7 @@ app_win_cheats_content(
                     "00000000 00000000",
                     raw->code,
                     sizeof(raw->code),
-                    (ImVec2){0, -1},
+                    (ImVec2){app_win_cheats_calculate_field_width(), -1},
                     ImGuiInputTextFlags_Multiline,
                     NULL,
                     NULL
