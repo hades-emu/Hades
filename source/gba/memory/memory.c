@@ -598,9 +598,10 @@ mem_install_cheat_rom_patches(
 
         patch = &bin->rom_patches.list[i];
 
-        dbgln(HS_CHEAT, "  - Address: %08x", patch->addr);
-        dbgln(HS_CHEAT, "  - Width: %i", patch->width);
-        dbgln(HS_CHEAT, "  - Val: %08x", patch->value);
+        dbgln(HS_CHEAT, " - Patch %zu", i + 1);
+        dbgln(HS_CHEAT, "    - Address: %08x", patch->addr);
+        dbgln(HS_CHEAT, "    - Width: %i", patch->width);
+        dbgln(HS_CHEAT, "    - Val: %08x", patch->value);
 
         switch (patch->width) {
             case 1: mem_patch_rom8(gba, patch->addr, patch->value); break;
