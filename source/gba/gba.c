@@ -120,6 +120,9 @@ gba_state_stop(
     free(gba->scheduler.events);
     gba->scheduler.events = NULL;
 
+    free(gba->scheduler.minheap);
+    gba->scheduler.minheap = NULL;
+
     free(gba->shared_data.backup_storage.data);
     gba->shared_data.backup_storage.data = NULL;
 

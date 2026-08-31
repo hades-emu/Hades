@@ -29,6 +29,111 @@ void (*sched_event_callbacks[])(struct gba *gba, struct event_args args) = {
     [SCHED_EVENT_CORE_UPDATE_IRQ_LINE] = core_update_irq_line,
 };
 
+/*
+** Push the entry (at, idx) onto the scheduler's minheap, growing it if necessary.
+** Reference:
+**  - https://www.geeksforgeeks.org/dsa/introduction-to-min-heap-data-structure/
+*/
+static
+void
+sched_minheap_push(
+    struct scheduler *scheduler,
+    uint64_t at,
+    size_t idx
+) {
+    size_t child_idx;
+
+    // Reallocate the minheap inner array if needed
+    if (scheduler->minheap_size == scheduler->minheap_capacity) {
+        scheduler->minheap_capacity = scheduler->minheap_capacity * 2 + 64;
+        scheduler->minheap = realloc(scheduler->minheap, scheduler->minheap_capacity * sizeof(struct scheduler_minheap_entry));
+        hs_assert(scheduler->minheap);
+    }
+
+    child_idx = scheduler->minheap_size;
+    scheduler->minheap_size += 1;
+
+    // Shift the new entry up until the minheap property (parent <= child) is true again.
+    while (child_idx > 0) {
+        size_t parent_idx;
+
+        parent_idx = (child_idx - 1) / 2;
+
+        // Stop if the parent is smaller or equal to the new element
+        if (scheduler->minheap[parent_idx].at <= at) {
+            break;
+        }
+
+        // Swap the parent with the child
+        scheduler->minheap[child_idx] = scheduler->minheap[parent_idx];
+        child_idx = parent_idx;
+    }
+
+    scheduler->minheap[child_idx].at = at;
+    scheduler->minheap[child_idx].idx = idx;
+}
+
+/*
+** Remove the top element of the scheduler's minheap.
+*/
+static
+void
+sched_minheap_pop(
+    struct scheduler *scheduler
+) {
+    struct scheduler_minheap_entry last;
+    size_t parent_idx;
+
+    scheduler->minheap_size -= 1;
+    last = scheduler->minheap[scheduler->minheap_size];
+
+    parent_idx = 0;
+    while (true) {
+        size_t child_idx;
+        size_t left_idx;
+        size_t right_idx;
+
+        left_idx = 2 * parent_idx + 1;
+        right_idx = 2 * parent_idx + 2;
+
+        if (left_idx >= scheduler->minheap_size) {
+            break;
+        }
+
+        if (right_idx < scheduler->minheap_size && scheduler->minheap[right_idx].at < scheduler->minheap[left_idx].at) {
+            child_idx = right_idx;
+        } else {
+            child_idx = left_idx;
+        }
+
+        if (last.at <= scheduler->minheap[child_idx].at) {
+            break;
+        }
+
+        scheduler->minheap[parent_idx] = scheduler->minheap[child_idx];
+        parent_idx = child_idx;
+    }
+
+    scheduler->minheap[parent_idx] = last;
+}
+
+void
+sched_minheap_rebuild(
+    struct gba *gba
+) {
+    struct scheduler *scheduler;
+    size_t i;
+
+    scheduler = &gba->scheduler;
+    scheduler->minheap_size = 0;
+
+    for (i = 0; i < scheduler->events_size; ++i) {
+        if (scheduler->events[i].active) {
+            sched_minheap_push(scheduler, scheduler->events[i].at, i);
+        }
+    }
+}
+
 void
 sched_process_events(
     struct gba *gba
@@ -36,37 +141,40 @@ sched_process_events(
     struct scheduler *scheduler;
 
     scheduler = &gba->scheduler;
+
     while (true) {
         struct scheduler_event *event;
-        uint64_t next_event;
         uint64_t delay;
-        size_t i;
+        size_t idx;
 
-        event = NULL;
+        // Discard any stale entry in the scheduler's minheap
+        // Those stale entry can be caused by deleted or rescheduled events.
+        while (scheduler->minheap_size > 0) {
+            struct scheduler_minheap_entry top;
 
-        next_event = UINT64_MAX;
-
-        // We want to fire all the events in the correct order, hence the complicated
-        // loop.
-        for (i = 0; i < scheduler->events_size; ++i) {
-
-            // Keep only the event that are active and should occure now
-            if (scheduler->events[i].active) {
-                if (scheduler->events[i].at <= scheduler->cycles) {
-                    if (!event || scheduler->events[i].at < event->at) {
-                        event = scheduler->events + i;
-                    }
-                } else if (scheduler->events[i].at < next_event) {
-                    next_event = scheduler->events[i].at;
-                }
+            top = scheduler->minheap[0];
+            if (!scheduler->events[top.idx].active || scheduler->events[top.idx].at != top.at) {
+                sched_minheap_pop(scheduler);
+                continue;
             }
-        }
 
-        scheduler->next_event = next_event;
-
-        if (!event) {
             break;
         }
+
+        if (scheduler->minheap_size == 0) {
+            scheduler->next_event = UINT64_MAX;
+            break;
+        }
+
+        idx = scheduler->minheap[0].idx;
+        event = &scheduler->events[idx];
+
+        if (event->at > scheduler->cycles) {
+            scheduler->next_event = event->at;
+            break;
+        }
+
+        sched_minheap_pop(scheduler);
 
         // We 'rollback' the cycle counter for the duration of the callback
         delay = scheduler->cycles - event->at;
@@ -74,10 +182,7 @@ sched_process_events(
 
         if (event->repeat) {
             event->at += event->period;
-
-            if (event->at < scheduler->next_event) {
-                scheduler->next_event = event->at;
-            }
+            sched_minheap_push(scheduler, event->at, idx);
         } else {
             event->active = false;
         }
@@ -117,6 +222,8 @@ sched_add_event(
     scheduler->events[i].active = true;
 
 end:
+    sched_minheap_push(scheduler, event.at, i);
+
     if (event.at < scheduler->next_event) {
         scheduler->next_event = event.at;
     }

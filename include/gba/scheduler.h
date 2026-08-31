@@ -63,6 +63,16 @@ struct scheduler_event {
     struct event_args args;
 };
 
+/*
+** An entry of the scheduler's min-heap, used to quickly find the next event to process.
+**
+** https://en.wikipedia.org/wiki/Heap_(data_structure)
+*/
+struct scheduler_minheap_entry {
+    uint64_t at;
+    size_t idx;
+};
+
 struct scheduler {
     uint64_t cycles;                // Amount of cycles spent by the system since initialization
 
@@ -70,6 +80,10 @@ struct scheduler {
 
     struct scheduler_event *events;
     size_t events_size;
+
+    struct scheduler_minheap_entry *minheap;
+    size_t minheap_size;
+    size_t minheap_capacity;
 
     uint64_t time_per_frame;        // In usec
     uint64_t time_last_frame;       // In usec
@@ -134,3 +148,4 @@ void sched_run_for(struct gba *gba, uint64_t cycles);
 void sched_frame_limiter(struct gba *gba,struct event_args args);
 void sched_reset_frame_limiter(struct gba *gba);
 void sched_update_speed(struct gba *gba);
+void sched_minheap_rebuild(struct gba *gba);

@@ -120,6 +120,11 @@ quickload(
     gba->scheduler.events = NULL;
     gba->scheduler.events_size = 0;
 
+    free(gba->scheduler.minheap);
+    gba->scheduler.minheap = NULL;
+    gba->scheduler.minheap_size = 0;
+    gba->scheduler.minheap_capacity = 0;
+
     if (
            quicksave_read(&buffer, (uint8_t *)&gba->core, sizeof(gba->core))
         || quicksave_read(&buffer, (uint8_t *)&gba->memory, sizeof(gba->memory))
@@ -153,6 +158,8 @@ quickload(
             return (true);
         }
     }
+
+    sched_minheap_rebuild(gba);
 
     return (false);
 }
