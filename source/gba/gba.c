@@ -430,19 +430,25 @@ gba_state_reset(
         hs_assert(gba->cheats.list);
 
         for (i = 0; i < config->cheats.len; ++i) {
-            struct cheat_bin *cheat;
+            struct cheat_bin *bin;
             struct gba_cheat_raw *raw;
 
-            cheat = &gba->cheats.list[gba->cheats.len];
+            bin = &gba->cheats.list[gba->cheats.len];
             raw = &config->cheats.list[i];
 
-            if (raw->enabled && cheat_parse_and_compile(cheat, raw)) {
-                gba->cheats.len += 1;
+            if (raw->enabled) {
+                dbgln(HS_CHEAT, "Loading cheat \"%s%s%s\":", g_light_magenta, raw->name, g_reset);
+                if (cheat_parse_and_compile(bin, raw)) {
+                    cheat_dump(bin);
+                    gba->cheats.len += 1;
+                }
+                dbgln(HS_CHEAT, "Done.");
+            } else {
+                dbgln(HS_CHEAT, "Skipping cheat \"%s%s%s\" (disabled).", g_light_magenta, raw->name, g_reset);
             }
         }
     }
 
-    // Not locked behind WITH_DEBUGGER since we use rom patches for cheats too.
     mem_refresh_rom_patches(gba);
 
     gba_send_notification(gba, NOTIFICATION_RESET);

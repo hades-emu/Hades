@@ -601,7 +601,7 @@ mem_install_cheat_rom_patches(
         dbgln(HS_CHEAT, " - Patch %zu", i + 1);
         dbgln(HS_CHEAT, "    - Address: %08x", patch->addr);
         dbgln(HS_CHEAT, "    - Width: %i", patch->width);
-        dbgln(HS_CHEAT, "    - Val: %08x", patch->value);
+        dbgln(HS_CHEAT, "    - Val: %0*x", patch->width * 2, patch->value);
 
         switch (patch->width) {
             case 1: mem_patch_rom8(gba, patch->addr, patch->value); break;
@@ -625,11 +625,11 @@ mem_refresh_rom_patches(
     gba->memory.active_rom = gba->memory.unpatched_rom;
 
     for (i = 0; i < gba->cheats.len; ++i) {
-        struct cheat_bin *cheat;
+        struct cheat_bin *bin;
 
-        cheat = &gba->cheats.list[i];
-        if (cheat->hook.active) {
-            mem_install_dbg_software_breakpoint(gba, cheat->hook.bp.ptr, cheat->hook.bp.thumb);
+        bin = &gba->cheats.list[i];
+        if (bin->hook.active) {
+            mem_install_dbg_software_breakpoint(gba, bin->hook.bp.ptr, bin->hook.bp.thumb);
         }
 
         mem_install_cheat_rom_patches(gba, &gba->cheats.list[i]);

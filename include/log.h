@@ -82,5 +82,5 @@ void disable_colors(void);
 #ifdef WITH_DEBUGGER
 #define dbgln(...) logln(__VA_ARGS__)
 #else
-#define dbgln(...)
+#define dbgln(...) if (0) { logln(__VA_ARGS__); }
 #endif

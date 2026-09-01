@@ -69,7 +69,7 @@ cheat_parv3_try_fetch_next_op_pair(
 
 static
 uint32_t
-cheat_parv3_parse_addr(
+cheat_parv3_compute_addr(
     uint32_t addr
 ) {
     return (((addr & 0x00F00000) << 4) | (addr & 0xFFFFF));
@@ -84,12 +84,12 @@ cheat_parv3_compile(
     uint32_t op1;
     uint32_t op2;
 
-    dbgln(HS_CHEAT, "Compiling a new PARV3 cheat");
+    dbgln(HS_CHEAT, "  - Compiling (PARV3)");
 
     token = compiler->tokens;
 
     while (cheat_parv3_try_fetch_next_op_pair(&token, &op1, &op2)) {
-        dbgln(HS_CHEAT, "  [%08x] [%08x]", op1, op2);
+        dbgln(HS_CHEAT, "    - [ %08x %08x ]", op1, op2);
 
         if (op2 == 0x001DC0DE) {
             continue;
@@ -105,40 +105,94 @@ cheat_parv3_compile(
                     bin->hook.active = true;
                     bin->hook.bp.ptr = CART_0_START | (op1 & 0x00FFFFFF);
                     bin->hook.bp.thumb = true;
-                    dbgln(HS_CHEAT, "    > Hook routine set to %08x", bin->hook.bp.ptr);
                     break;
                 }
-                case 0x00: {
-                    struct cheat_insn *insn;
-
-                    insn = cheat_create_insn(bin);
-                    insn->kind = CHEAT_INSN_ASSIGN;
-                    insn->width = 1;
-                    insn->addr = cheat_parv3_parse_addr(op1);
-                    insn->value = op2 & 0xFF;
-                    insn->repeat = op2 >> 8;
-                    break;
-                }
-                case 0x02: {
-                    struct cheat_insn *insn;
-
-                    insn = cheat_create_insn(bin);
-                    insn->kind = CHEAT_INSN_ASSIGN;
-                    insn->width = 2;
-                    insn->addr = cheat_parv3_parse_addr(op1);
-                    insn->value = op2 & 0xFFFF;
-                    insn->repeat = (op2 >> 16) * 2;
-                    break;
-                }
+                case 0x00:
+                case 0x02:
                 case 0x04: {
                     struct cheat_insn *insn;
 
                     insn = cheat_create_insn(bin);
                     insn->kind = CHEAT_INSN_ASSIGN;
-                    insn->width = 4;
-                    insn->addr = cheat_parv3_parse_addr(op1);
-                    insn->value = op2;
-                    insn->repeat = 0;
+                    insn->assign.addr = cheat_parv3_compute_addr(op1);
+
+                    switch (op1 >> 24) {
+                        case 0x00: {
+                            insn->assign.width = 1;
+                            insn->assign.value = op2 & 0xFF;
+                            insn->assign.repeat = op2 >> 8;
+                            break;
+                        }
+                        case 0x02: {
+                            insn->assign.width = 2;
+                            insn->assign.value = op2 & 0xFFFF;
+                            insn->assign.repeat = (op2 >> 16) * 2;
+                            break;
+                        }
+                        case 0x04: {
+                            insn->assign.width = 4;
+                            insn->assign.value = op2;
+                            insn->assign.repeat = 0;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case 0x40:
+                case 0x42:
+                case 0x44: {
+                    struct cheat_insn *insn;
+
+                    insn = cheat_create_insn(bin);
+                    insn->kind = CHEAT_INSN_INDIRECT_ASSIGN;
+                    insn->ind_assign.addr = cheat_parv3_compute_addr(op1);
+                    switch (op1 >> 24) {
+                        case 0x40: {
+                            insn->ind_assign.offset = op2 >> 8;
+                            insn->ind_assign.width = 1;
+                            insn->ind_assign.value = op2 & 0xFF;
+                            break;
+                        }
+                        case 0x42: {
+                            insn->ind_assign.offset = (op2 >> 16) * 2;
+                            insn->ind_assign.width = 2;
+                            insn->ind_assign.value = op2 & 0xFFFF;
+                            break;
+                        }
+                        case 0x44: {
+                            insn->ind_assign.offset = 0;
+                            insn->ind_assign.width = 4;
+                            insn->ind_assign.value = op2;
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case 0x80:
+                case 0x82:
+                case 0x84: {
+                    struct cheat_insn *insn;
+
+                    insn = cheat_create_insn(bin);
+                    insn->kind = CHEAT_INSN_ADD_ASSIGN;
+                    insn->add_assign.addr = cheat_parv3_compute_addr(op1);
+                    switch (op1 >> 24) {
+                        case 0x80: {
+                            insn->add_assign.width = 1;
+                            insn->add_assign.value = op2 & 0xFF;
+                            break;
+                        }
+                        case 0x82: {
+                            insn->add_assign.width = 2;
+                            insn->add_assign.value = op2 & 0xFFFF;
+                            break;
+                        }
+                        case 0x84: {
+                            insn->add_assign.width = 4;
+                            insn->add_assign.value = op2;
+                            break;
+                        }
+                    }
                     break;
                 }
                 default: {
@@ -163,6 +217,8 @@ cheat_parv3_compile(
                         return false;
                     }
 
+                    dbgln(HS_CHEAT, "    - [ %08x %08x ]", val1, val2);
+
                     cheat_create_rom_patch(
                         bin,
                         addr,
@@ -185,6 +241,6 @@ cheat_parv3_compile(
         return false;
     }
 
-    dbgln(HS_CHEAT, "Done");
+    dbgln(HS_CHEAT, "  - Compiled successfuly");
     return true;
 }

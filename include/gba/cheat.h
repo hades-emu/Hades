@@ -59,14 +59,31 @@ struct cheat_bin {
 struct cheat_insn {
     enum cheat_insn_kind {
         CHEAT_INSN_ASSIGN,
+        CHEAT_INSN_INDIRECT_ASSIGN,
+        CHEAT_INSN_ADD_ASSIGN,
     } kind;
 
-    uint32_t width;
+    union {
+        struct {
+            uint32_t addr;
+            uint32_t value;
+            uint32_t width;
+            uint32_t repeat;
+        } assign;
 
-    uint32_t addr;
-    uint32_t value;
+        struct {
+            uint32_t addr;
+            uint32_t offset;
+            uint32_t value;
+            uint32_t width;
+        } ind_assign;
 
-    uint32_t repeat;
+        struct {
+            uint32_t addr;
+            uint32_t value;
+            uint32_t width;
+        } add_assign;
+    };
 };
 
 struct cheat_rom_patch {
@@ -82,6 +99,7 @@ struct cheat_parv3_parser {
 };
 
 void cheat_delete(struct cheat_bin *bin);
+void cheat_dump(struct cheat_bin const *bin);
 void cheat_process_hooks_at_addr(struct gba *gba, uint32_t addr);
 struct cheat_insn *cheat_create_insn(struct cheat_bin *bin);
 bool cheat_parv3_compile(struct cheat_bin *bin, struct cheat_compiler *compiler);

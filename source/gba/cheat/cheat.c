@@ -11,7 +11,7 @@
 #include "gba/gba.h"
 #include "gba/cheat.h"
 
-static void cheat_hook_impl(struct gba *gba, struct cheat_bin const *cheat);
+static void cheat_hook_impl(struct gba *gba, struct cheat_bin const *bin);
 
 void
 cheat_delete(
@@ -29,6 +29,50 @@ cheat_delete(
 }
 
 void
+cheat_dump(
+    struct cheat_bin const *bin
+) {
+    size_t i;
+
+    if (bin->hook.active) {
+        dbgln(HS_CHEAT, "  - Hook: %08x", bin->hook.bp.ptr);
+    } else {
+        dbgln(HS_CHEAT, "  - No hook");
+    }
+
+    if (bin->insns.len > 0) {
+        dbgln(HS_CHEAT, "  - Instructions: ");
+    } else {
+        dbgln(HS_CHEAT, "  - No instructions");
+    }
+
+    for (i = 0; i < bin->insns.len; ++i) {
+        struct cheat_insn *insn;
+
+        insn = &bin->insns.list[i];
+
+        switch (insn->kind) {
+            case CHEAT_INSN_ASSIGN:          dbgln(HS_CHEAT, "    - %zu | Assign:          | [0x%08x] = 0x%0*x", i, insn->assign.addr, insn->assign.width * 2, insn->assign.value); break;
+            case CHEAT_INSN_INDIRECT_ASSIGN: dbgln(HS_CHEAT, "    - %zu | Indirect Assign: | [[0x%08x]] = 0x%0*x", i, insn->ind_assign.addr, insn->ind_assign.width * 2, insn->ind_assign.value); break;
+            case CHEAT_INSN_ADD_ASSIGN:      dbgln(HS_CHEAT, "    - %zu | Add Assign:      | [0x%08x] = [0x%08x] + 0x%0*x", i, insn->add_assign.addr, insn->add_assign.addr, insn->add_assign.width * 2, insn->add_assign.value); break;
+        }
+    }
+
+    if (bin->rom_patches.len > 0) {
+        dbgln(HS_CHEAT, "  - ROM Patches: ");
+    } else {
+        dbgln(HS_CHEAT, "  - No ROM patches");
+    }
+
+    for (i = 0; i < bin->rom_patches.len; ++i) {
+        struct cheat_rom_patch const *patch;
+
+        patch = &bin->rom_patches.list[i];
+        dbgln(HS_CHEAT, "    - %zu | [%08x] = %0*x", i, patch->addr, patch->width * 2, patch->value);
+    }
+}
+
+void
 cheat_process_hooks_at_addr(
     struct gba *gba,
     uint32_t addr
@@ -36,15 +80,16 @@ cheat_process_hooks_at_addr(
     size_t i;
 
     for (i = 0; i < gba->cheats.len; ++i) {
-        struct cheat_bin *cheat;
+        struct cheat_bin *bin;
 
-        cheat = &gba->cheats.list[i];
+        bin = &gba->cheats.list[i];
 
-        if (!cheat->hook.active || addr != cheat->hook.bp.ptr) {
+
+        if (!bin->hook.active || addr != bin->hook.bp.ptr) {
             continue;
         }
 
-        cheat_hook_impl(gba, cheat);
+        cheat_hook_impl(gba, bin);
     }
 }
 
@@ -52,31 +97,56 @@ static
 void
 cheat_hook_impl(
     struct gba *gba,
-    struct cheat_bin const *cheat
+    struct cheat_bin const *bin
 ) {
     size_t i;
 
-    for (i = 0; i < cheat->insns.len; ++i) {
+    for (i = 0; i < bin->insns.len; ++i) {
         struct cheat_insn *insn;
-        uint32_t addr;
 
-        insn = &cheat->insns.list[i];
-        addr = insn->addr;
+        insn = &bin->insns.list[i];
 
         switch (insn->kind) {
             case CHEAT_INSN_ASSIGN: {
                 size_t repeat;
+                uint32_t addr;
 
-                for (repeat = 0; repeat <= insn->repeat; ++repeat) {
-                    switch (insn->width) {
-                        case 1: mem_write8_raw(gba, addr, insn->value); break;
-                        case 2: mem_write16_raw(gba, addr, insn->value); break;
-                        case 4: mem_write32_raw(gba, addr, insn->value); break;
-                        default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->width);
+                addr = insn->assign.addr;
+
+                for (repeat = 0; repeat <= insn->assign.repeat; ++repeat) {
+                    switch (insn->assign.width) {
+                        case 1: mem_write8_raw(gba, addr, insn->assign.value); break;
+                        case 2: mem_write16_raw(gba, addr, insn->assign.value); break;
+                        case 4: mem_write32_raw(gba, addr, insn->assign.value); break;
+                        default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->assign.width);
                     }
-                    addr += insn->width;
+                    addr += insn->assign.width;
                 }
+                break;
+            }
+            case CHEAT_INSN_INDIRECT_ASSIGN: {
+                uint32_t addr;
 
+                addr = insn->ind_assign.addr;
+                addr = mem_read32_raw(gba, addr);
+                switch (insn->ind_assign.width) {
+                    case 1: mem_write8_raw(gba, addr + insn->ind_assign.offset, insn->ind_assign.value); break;
+                    case 2: mem_write16_raw(gba, addr + insn->ind_assign.offset, insn->ind_assign.value); break;
+                    case 4: mem_write32_raw(gba, addr + insn->ind_assign.offset, insn->ind_assign.value); break;
+                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+                break;
+            }
+            case CHEAT_INSN_ADD_ASSIGN: {
+                uint32_t addr;
+
+                addr = insn->add_assign.addr;
+                switch (insn->add_assign.width) {
+                    case 1: mem_write8_raw(gba, addr, mem_read8_raw(gba, addr) + insn->add_assign.value); break;
+                    case 2: mem_write16_raw(gba, addr, mem_read16_raw(gba, addr) + insn->add_assign.value); break;
+                    case 4: mem_write32_raw(gba, addr, mem_read32_raw(gba, addr) + insn->add_assign.value); break;
+                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
                 break;
             }
         }
