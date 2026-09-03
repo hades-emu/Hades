@@ -195,6 +195,29 @@ cheat_parv3_compile(
                     }
                     break;
                 }
+                case 0xC6:
+                case 0xC7: {
+                    struct cheat_insn *insn;
+
+                    insn = cheat_create_insn(bin);
+                    insn->kind = CHEAT_INSN_ASSIGN;
+                    insn->assign.addr = IO_START | (op1 & 0xFFFFFF);
+                    switch (op1 >> 24) {
+                        case 0xC6: {
+                            insn->assign.repeat = 0;
+                            insn->assign.width = 2;
+                            insn->assign.value = op2 & 0xFFFF;
+                            break;
+                        }
+                        case 0xC7: {
+                            insn->assign.repeat = 0;
+                            insn->assign.width = 4;
+                            insn->assign.value = op2;
+                            break;
+                        }
+                    }
+                    break;
+                }
                 default: {
                     compiler->error = hs_format("Unknown, invalid or unsupported instruction %08x %08x", op1, op2);
                     return false;
