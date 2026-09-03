@@ -92,5 +92,7 @@ Special thanks to some invaluable individuals and resources while writing Hades:
   - [GBA Cartridge Backup Storage](https://dillonbeliveau.com/2020/06/05/GBA-FLASH.html) by Dillon Beliveau
   - [EEPROM Save Type](https://densinh.github.io/DenSinH/emulation/2021/02/01/gba-eeprom.html) by Dennis H
   - [Explaining GBA Real-Time Clock (RTC)](https://beanmachine.alt.icu/post/rtc/) by Zayd
+  - [The Secrets of Professional Gameshark(tm) Hacking](https://gamehacking.org/faqs/hackv500c.html) by Kong K Rool and Macrox
   - [Higan](https://near.sh/articles/video/color-emulation) for their color correction algorithm (by Talarubi and Near)
+  - [Handheld Colorspace Shaders](https://github.com/Pokefan531/Handheld-Colorspace-Shaders) for their color correction algorithms (by Pokefan531 and Hunterk)
   - [The Hades Icon](https://totushi.com/) by Totushi
