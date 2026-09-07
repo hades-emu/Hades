@@ -15,6 +15,8 @@ libgba_sources = [
     'apu/tone.c',
     'apu/wave.c',
     'cheat/cheat.c',
+    'cheat/codebreaker.c',
+    'cheat/gameshark.c',
     'cheat/parser.c',
     'cheat/parv3.c',
     'core/arm/alu.c',

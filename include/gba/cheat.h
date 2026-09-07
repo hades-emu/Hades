@@ -101,6 +101,9 @@ struct cheat_parv3_parser {
 void cheat_delete(struct cheat_bin *bin);
 void cheat_dump(struct cheat_bin const *bin);
 void cheat_process_hooks_at_addr(struct gba *gba, uint32_t addr);
+void cheat_hook_impl(struct gba *gba, struct cheat_bin const *bin);
 struct cheat_insn *cheat_create_insn(struct cheat_bin *bin);
 bool cheat_parv3_compile(struct cheat_bin *bin, struct cheat_compiler *compiler);
+bool cheat_gameshark_compile(struct cheat_bin *bin, struct cheat_compiler *compiler);
+bool cheat_codebreaker_compile(struct cheat_bin *bin, struct cheat_compiler *compiler);
 void cheat_create_rom_patch(struct cheat_bin *bin, uint32_t addr, uint32_t val, uint32_t width);

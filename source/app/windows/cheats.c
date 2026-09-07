@@ -178,8 +178,6 @@ app_win_cheats_content(
                         igSameLine(0.0f, -1.0f);
                     }
 
-                    igBeginDisabled(i > 0); // TODO FIXME: Only PARV3 is availalbe right now.
-
                     if (igSelectable_Bool(
                         cheats_kind_names[i],
                         raw->kind == i,
@@ -189,8 +187,6 @@ app_win_cheats_content(
                         raw->kind = i;
                         cheat_parse(raw);
                     }
-
-                    igEndDisabled();
                 }
 
                 igPopStyleVar(1);

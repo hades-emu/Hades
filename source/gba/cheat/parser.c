@@ -228,6 +228,28 @@ cheat_parse_and_compile(
             ret = true;
             goto end;
         }
+        case RAW_CHEAT_KIND_GAMESHARK: {
+            if (!cheat_gameshark_compile(bin, &compiler)) {
+                cheat_compilation_error_own(raw, hs_format("GameShark: %s", compiler.error));
+                logln(HS_ERROR, "Failed to compile GameShark cheat: %s.", compiler.error);
+                ret = false;
+                goto end;
+            }
+
+            ret = true;
+            goto end;
+        }
+        case RAW_CHEAT_KIND_CODEBREAKER: {
+            if (!cheat_codebreaker_compile(bin, &compiler)) {
+                cheat_compilation_error_own(raw, hs_format("CodeBreaker: %s", compiler.error));
+                logln(HS_ERROR, "Failed to compile CodeBreaker cheat: %s.", compiler.error);
+                ret = false;
+                goto end;
+            }
+
+            ret = true;
+            goto end;
+        }
         default: {
             cheat_compilation_error_own(raw, hs_format("Unsupported cheat type %i", raw->kind));
             logln(HS_WARN, "Unsupported cheat type %i.", raw->kind);

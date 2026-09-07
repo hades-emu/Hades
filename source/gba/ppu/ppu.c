@@ -35,10 +35,8 @@ ppu_initialize_scanline(
         scanline->result[x] = backdrop;
     }
 
-    /*
-    ** The only layer that `ppu_merge_layer` will never merge is the backdrop layer so we force
-    ** it here instead (if that's useful).
-    */
+    // The only layer that `ppu_merge_layer` will never merge is the backdrop layer so we force
+    // it here instead (if that's useful).
 
     if (gba->io.bldcnt.mode == BLEND_LIGHT || gba->io.bldcnt.mode == BLEND_DARK) {
         scanline->top_idx = 5;
@@ -79,7 +77,7 @@ ppu_merge_layer(
         topc = layer[x];
         botc = scanline->bot[x];
 
-        /* Skip transparent pixels */
+        // Skip transparent pixels
         if (!topc.visible) {
             continue;
         }
@@ -87,24 +85,24 @@ ppu_merge_layer(
         mode = gba->io.bldcnt.mode;
         bot_enabled = bitfield_get(io->bldcnt.raw, botc.idx + 8);
 
-        /* Apply windowing, if any */
+        // Apply windowing, if any
         if (scanline->top_idx <= 4 && (io->dispcnt.win0 || io->dispcnt.win1 || io->dispcnt.winobj)) {
             uint8_t win_opts;
 
             win_opts = ppu_find_top_window(gba, scanline, x);
 
-            /* Hide pixels that belong to a layer that this window doesn't show. */
+            // Hide pixels that belong to a layer that this window doesn't show.
             if (!bitfield_get(win_opts, scanline->top_idx)) {
                 continue;
             }
 
-            /* Windows can disable blending */
+            // Windows can disable blending
             if (!bitfield_get(win_opts, 5)) {
                 mode = BLEND_OFF;
             }
         }
 
-        /* Sprite can force blending no matter what BLDCNT says */
+        // Sprite can force blending no matter what BLDCNT says
         if (topc.force_blend && bot_enabled) {
             mode = BLEND_ALPHA;
         }
@@ -119,10 +117,8 @@ ppu_merge_layer(
             case BLEND_ALPHA: {
                 bool top_enabled;
 
-                /*
-                ** If both the top and bot layers are enabled, blend the colors.
-                ** Otherwise, the top layer takes priority.
-                */
+                // If both the top and bot layers are enabled, blend the colors.
+                // Otherwise, the top layer takes priority.
 
                 top_enabled = bitfield_get(io->bldcnt.raw, scanline->top_idx) || topc.force_blend;
                 if (top_enabled && bot_enabled && botc.visible) {
@@ -327,26 +323,46 @@ ppu_hdraw(
 
     io = &gba->io;
 
-    /* Increment VCOUNT */
+    // Increment VCOUNT
     ++io->vcount.raw;
 
+    // On frame end
     if (io->vcount.raw >= GBA_SCREEN_REAL_HEIGHT) {
+        size_t i;
+
         io->vcount.raw = 0;
+
+        // Increment frame counter
         atomic_fetch_add(&gba->shared_data.frame_counter, 1);
 
+        // Handle frame skipping
         if (gba->settings.enable_frame_skipping && gba->settings.frame_skip_counter > 0) {
             gba->ppu.current_frame_skip_counter = (gba->ppu.current_frame_skip_counter + 1) % gba->settings.frame_skip_counter;
             gba->ppu.skip_current_frame = (gba->ppu.current_frame_skip_counter != 0);
         } else {
             gba->ppu.skip_current_frame = false;
         }
+
+        // Run cheat codes without hooks
+        //
+        // XXX:
+        //   I noticed some Code Breaker cheats were using ram writes without a hook.
+        //   gamehacking.org says ram writes are written to "continuously", I'm assuming that means once per frame.
+        //   mGBA also does something similar so it's probably the way to go.
+        //   I unfortunately do not own any cheat device to actually test the behaviour more rigourosly :/
+        for (i = 0; i < gba->cheats.len; ++i) {
+            struct cheat_bin *bin;
+
+            bin = &gba->cheats.list[i];
+            if (!bin->hook.active) {
+                cheat_hook_impl(gba, bin);
+            }
+        }
     } else if (io->vcount.raw == GBA_SCREEN_HEIGHT) {
-        /*
-        ** Now that the frame is finished, we can copy the current framebuffer to
-        ** the one the frontend uses.
-        **
-        ** Doing it now will avoid tearing.
-        */
+        // Now that the frame is finished, we can copy the current framebuffer to
+        // the one the frontend uses.
+        //
+        // Doing it now will avoid tearing.
         pthread_mutex_lock(&gba->shared_data.framebuffer.lock);
         memcpy(gba->shared_data.framebuffer.data, gba->ppu.framebuffer, sizeof(gba->ppu.framebuffer));
         pthread_mutex_unlock(&gba->shared_data.framebuffer.lock);
@@ -356,7 +372,7 @@ ppu_hdraw(
     io->dispstat.vblank = (io->vcount.raw >= GBA_SCREEN_HEIGHT && io->vcount.raw < GBA_SCREEN_REAL_HEIGHT - 1);
     io->dispstat.hblank = false;
 
-    /* Trigger the VBlank IRQ & DMA transfer */
+    // Trigger the VBlank IRQ & DMA transfer
     if (io->vcount.raw == GBA_SCREEN_HEIGHT) {
         if (io->dispstat.vblank_irq) {
             core_schedule_irq(gba, IRQ_VBLANK);
@@ -372,7 +388,7 @@ ppu_hdraw(
         gba->ppu.reload_internal_affine_regs = false;
     }
 
-    /* Trigger the VCOUNT IRQ */
+    // Trigger the VCOUNT IRQ
     if (io->dispstat.vcount_eq && io->dispstat.vcount_irq) {
         core_schedule_irq(gba, IRQ_VCOUNTER);
     }
@@ -411,9 +427,7 @@ ppu_hblank(
 
     io->dispstat.hblank = true;
 
-    /*
-    ** Trigger the HBLANK IRQ & DMA transfer
-    */
+    // Trigger the HBLANK IRQ & DMA transfer
 
     if (io->dispstat.hblank_irq) {
         core_schedule_irq(gba, IRQ_HBLANK);
@@ -427,13 +441,11 @@ ppu_hblank(
         mem_schedule_dma_transfers_for(gba, 3, DMA_TIMING_SPECIAL);  // Video DMA
     }
 
-    /*
-    ** Video mode is evaluated once at the beginning of the frame and can't be enabled/disabled mid-frame.
-    **
-    ** Reference:
-    **   - https://github.com/mgba-emu/mgba/issues/2017
-    **   - https://github.com/skylersaleh/SkyEmu/issues/104
-    */
+    // Video mode is evaluated once at the beginning of the frame and can't be enabled/disabled mid-frame.
+    //
+    // Reference:
+    //   - https://github.com/mgba-emu/mgba/issues/2017
+    //   - https://github.com/skylersaleh/SkyEmu/issues/104
     if (io->vcount.raw == GBA_SCREEN_HEIGHT + 2) {
         gba->ppu.video_capture_enabled = gba->io.dma[3].control.enable && gba->io.dma[3].control.timing == DMA_TIMING_SPECIAL;
     }

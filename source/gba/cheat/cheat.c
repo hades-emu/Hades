@@ -68,7 +68,7 @@ cheat_dump(
         struct cheat_rom_patch const *patch;
 
         patch = &bin->rom_patches.list[i];
-        dbgln(HS_CHEAT, "    - %2zu | [%08x] = %0*x", i, patch->addr, patch->width * 2, patch->value);
+        dbgln(HS_CHEAT, "    - %2zu | [0x%08x] = 0x%0*x", i, patch->addr, patch->width * 2, patch->value);
     }
 }
 
@@ -93,7 +93,6 @@ cheat_process_hooks_at_addr(
     }
 }
 
-static
 void
 cheat_hook_impl(
     struct gba *gba,

@@ -24,7 +24,6 @@ cheat_parv3_decrypt_cheat(
     uint32_t *op1,
     uint32_t *op2
 ) {
-
     uint32_t i;
     uint32_t sum;
 
@@ -91,7 +90,7 @@ cheat_parv3_compile(
     while (cheat_parv3_try_fetch_next_op_pair(&token, &op1, &op2)) {
         dbgln(HS_CHEAT, "    - [ %08x %08x ]", op1, op2);
 
-        if (op2 == 0x001DC0DE) {
+        if (op2 == 0x001DC0DE) { // Enable Code (Ignored)
             continue;
         }
 
@@ -225,6 +224,10 @@ cheat_parv3_compile(
             };
         } else {
             switch (op2 >> 24) {
+                case 0x08: {
+                    logln(HS_WARN, "Action Replay slowdown not implemented");
+                    break;
+                }
                 case 0x18:
                 case 0x1A:
                 case 0x1C:
