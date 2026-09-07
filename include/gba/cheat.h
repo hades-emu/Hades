@@ -61,6 +61,8 @@ struct cheat_insn {
         CHEAT_INSN_ASSIGN,
         CHEAT_INSN_INDIRECT_ASSIGN,
         CHEAT_INSN_ADD_ASSIGN,
+        CHEAT_INSN_AND_ASSIGN,
+        CHEAT_INSN_OR_ASSIGN,
     } kind;
 
     union {
@@ -83,6 +85,18 @@ struct cheat_insn {
             uint32_t value;
             uint32_t width;
         } add_assign;
+
+        struct {
+            uint32_t addr;
+            uint32_t value;
+            uint32_t width;
+        } and_assign;
+
+        struct {
+            uint32_t addr;
+            uint32_t value;
+            uint32_t width;
+        } or_assign;
     };
 };
 

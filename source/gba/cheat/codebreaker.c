@@ -69,6 +69,16 @@ cheat_codebreaker_compile(
                 bin->hook.bp.thumb = true;
                 break;
             }
+            case 0x2: { // OR Assign
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_OR_ASSIGN;
+                insn->or_assign.addr = op1 & 0x0FFFFFFF;
+                insn->or_assign.width = 2;
+                insn->or_assign.value = op2 & 0xFFFF;
+                break;
+            }
             case 0x3: { // Assign
                 struct cheat_insn *insn;
 
@@ -79,6 +89,16 @@ cheat_codebreaker_compile(
                 insn->assign.value = op2 & 0xFF;
                 break;
             }
+            case 0x6: { // AND Assign
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_AND_ASSIGN;
+                insn->and_assign.addr = op1 & 0x0FFFFFFF;
+                insn->and_assign.width = 2;
+                insn->and_assign.value = op2 & 0xFFFF;
+                break;
+            }
             case 0x8: { // Assign (16-bit)
                 struct cheat_insn *insn;
 
@@ -87,6 +107,16 @@ cheat_codebreaker_compile(
                 insn->assign.addr = op1 & 0x0FFFFFFF;
                 insn->assign.width = 2;
                 insn->assign.value = op2;
+                break;
+            }
+            case 0xE: { // ADD Assign
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_ADD_ASSIGN;
+                insn->add_assign.addr = op1 & 0x0FFFFFFF;
+                insn->add_assign.width = 2;
+                insn->add_assign.value = op2 & 0xFFFF;
                 break;
             }
             default: {

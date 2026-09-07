@@ -55,6 +55,8 @@ cheat_dump(
             case CHEAT_INSN_ASSIGN:          dbgln(HS_CHEAT, "    - %2zu | Assign:          | [0x%08x] = 0x%0*x", i, insn->assign.addr, insn->assign.width * 2, insn->assign.value); break;
             case CHEAT_INSN_INDIRECT_ASSIGN: dbgln(HS_CHEAT, "    - %2zu | Indirect Assign: | [[0x%08x]] = 0x%0*x", i, insn->ind_assign.addr, insn->ind_assign.width * 2, insn->ind_assign.value); break;
             case CHEAT_INSN_ADD_ASSIGN:      dbgln(HS_CHEAT, "    - %2zu | Add Assign:      | [0x%08x] = [0x%08x] + 0x%0*x", i, insn->add_assign.addr, insn->add_assign.addr, insn->add_assign.width * 2, insn->add_assign.value); break;
+            case CHEAT_INSN_AND_ASSIGN:      dbgln(HS_CHEAT, "    - %2zu | And Assign:      | [0x%08x] = [0x%08x] & 0x%0*x", i, insn->and_assign.addr, insn->and_assign.addr, insn->and_assign.width * 2, insn->and_assign.value); break;
+            case CHEAT_INSN_OR_ASSIGN:       dbgln(HS_CHEAT, "    - %2zu | Or Assign:       | [0x%08x] = [0x%08x] | 0x%0*x", i, insn->or_assign.addr, insn->or_assign.addr, insn->or_assign.width * 2, insn->or_assign.value); break;
         }
     }
 
@@ -144,6 +146,30 @@ cheat_hook_impl(
                     case 1: mem_write8_raw(gba, addr, mem_read8_raw(gba, addr) + insn->add_assign.value); break;
                     case 2: mem_write16_raw(gba, addr, mem_read16_raw(gba, addr) + insn->add_assign.value); break;
                     case 4: mem_write32_raw(gba, addr, mem_read32_raw(gba, addr) + insn->add_assign.value); break;
+                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+                break;
+            }
+            case CHEAT_INSN_AND_ASSIGN: {
+                uint32_t addr;
+
+                addr = insn->and_assign.addr;
+                switch (insn->and_assign.width) {
+                    case 1: mem_write8_raw(gba, addr, mem_read8_raw(gba, addr) & (uint8_t)insn->and_assign.value); break;
+                    case 2: mem_write16_raw(gba, addr, mem_read16_raw(gba, addr) & (uint16_t)insn->and_assign.value); break;
+                    case 4: mem_write32_raw(gba, addr, mem_read32_raw(gba, addr) & insn->and_assign.value); break;
+                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+                break;
+            }
+            case CHEAT_INSN_OR_ASSIGN: {
+                uint32_t addr;
+
+                addr = insn->or_assign.addr;
+                switch (insn->or_assign.width) {
+                    case 1: mem_write8_raw(gba, addr, mem_read8_raw(gba, addr) | (uint8_t)insn->or_assign.value); break;
+                    case 2: mem_write16_raw(gba, addr, mem_read16_raw(gba, addr) | (uint16_t)insn->or_assign.value); break;
+                    case 4: mem_write32_raw(gba, addr, mem_read32_raw(gba, addr) | insn->or_assign.value); break;
                     default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
                 break;
