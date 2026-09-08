@@ -97,9 +97,6 @@ app_sdl_video_init(
     // Enable VSync
     SDL_SetRenderVSync(SDL_GetRenderer(app->sdl.window), app->settings.video.vsync ? 1 : SDL_RENDERER_VSYNC_DISABLED);
 
-    // Center the window
-    SDL_SetWindowPosition(app->sdl.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-
     // Initialize OpenGL
     err = glewInit();
     if (err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY) {
@@ -182,6 +179,9 @@ app_sdl_video_init(
 
     // We can now resize the window as we now have all the information needed to compute its correct and final size.
     app_sdl_video_resize_window(app);
+
+    // Center the window
+    SDL_SetWindowPosition(app->sdl.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
     // And finally we show the window
     SDL_ShowWindow(app->sdl.window);
