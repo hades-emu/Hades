@@ -16,10 +16,11 @@ static char const * const cheats_kind_names[MENU_MAX] = {
     [RAW_CHEAT_KIND_CODEBREAKER] = " Code\nBreaker",
 };
 
-#define CHEATS_FIELD_WIDTH_MIN                  (200.f)
-#define CHEATS_FIELD_WIDTH_MAX                  (500.f)
-#define CHEATS_FIELD_WIDTH_MIN_RATIO            (0.65f)
+#define CHEATS_FIELD_WIDTH_MIN                  200.f
+#define CHEATS_FIELD_WIDTH_MAX                  500.f
+#define CHEATS_FIELD_WIDTH_MIN_RATIO            0.65f
 #define CHEATS_FIELD_RADIO_BUTTON_SNAP_WIDTH    150.0f
+#define CHEATS_CODE_FIELD_HEIGHT_MIN            80.f
 
 static
 float
@@ -221,24 +222,33 @@ app_win_cheats_content(
                 igTextColored(color, "Cheat is disabled.");
             }
 
-
             igTableNextRow(ImGuiTableRowFlags_None, 0.f);
             igTableNextColumn();
 
             igTextWrapped("Code");
             igTableNextColumn();
-            if (igInputTextEx(
-                    "##Code",
-                    "00000000 00000000",
-                    raw->code,
-                    sizeof(raw->code),
-                    (ImVec2){app_win_cheats_calculate_field_width(), -1},
-                    ImGuiInputTextFlags_Multiline,
-                    NULL,
-                    NULL
-                )
-            ) {
-                cheat_parse(raw);
+            {
+                ImVec2 size;
+
+                igGetContentRegionAvail(&size);
+
+                if (size.y < CHEATS_CODE_FIELD_HEIGHT_MIN) {
+                    size.y = CHEATS_CODE_FIELD_HEIGHT_MIN;
+                }
+
+                if (igInputTextEx(
+                        "##Code",
+                        "00000000 00000000",
+                        raw->code,
+                        sizeof(raw->code),
+                        (ImVec2){app_win_cheats_calculate_field_width(), size.y},
+                        ImGuiInputTextFlags_Multiline,
+                        NULL,
+                        NULL
+                    )
+                ) {
+                    cheat_parse(raw);
+                }
             }
 
             igEndTable();
