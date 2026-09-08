@@ -1734,6 +1734,10 @@ static struct game_entry game_database[] = {
     (struct game_entry){.code = "BMZ", .storage = BACKUP_EEPROM_64K,.gpio = GPIO_NONE, .mirror = false, .title = "Zooo"},
 };
 
+static struct idle_loop_entry const idle_loop_database[] = {
+    (struct idle_loop_entry){.code = "BPE", .addr = 0x080008C6, .thumb = true}, // Pokemon - Emerald Version
+};
+
 struct game_entry *
 db_lookup_game(
     uint8_t const *game_code
@@ -1749,6 +1753,21 @@ db_lookup_game(
             return (entry);
         }
     }
+    return (NULL);
+}
+
+struct idle_loop_entry const *
+db_lookup_idle_loop(
+    uint8_t const *game_code
+) {
+    size_t i;
+
+    for (i = 0; i < array_length(idle_loop_database); ++i) {
+        if (!strncmp((char const *)game_code, idle_loop_database[i].code, 3) && idle_loop_database[i].addr) {
+            return (&idle_loop_database[i]);
+        }
+    }
+
     return (NULL);
 }
 

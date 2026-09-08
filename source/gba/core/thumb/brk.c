@@ -35,5 +35,7 @@ core_thumb_brk(
     debugger_eval_sw_breakpoints(gba, addr);
 #endif
 
-    core_execute_thumb_opcode(gba, insn);
+    if (!core_idle_loop_eval(gba, addr)) {
+        core_execute_thumb_opcode(gba, insn);
+    }
 }

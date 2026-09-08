@@ -587,3 +587,53 @@ core_compute_shift(
 
     return (value);
 }
+
+/*
+** Idle loop elimination.
+**
+** This function is called before executing the instruction identified as a main component of the game's idle loop.
+** This instruction is identified by the game's idle loop database and is stored in `gba->core.idle_loop.addr`.
+**
+** This instruction is trapped (using software breakpoints) and we eventually end up here.
+**
+** We give the idle loop a normal, unassisted try first; only once it is hit a second time in a row does it
+** fast-forward to the next interrupt and jump straight into it instead of
+** re-running the loop's body.
+**
+** The return value indicates if the trapped instruction should be skipped. Since we end up interrupting the core when
+** eliminating the loop, the trapped instruction shouldn't be run until after the ISR is finished.
+*/
+bool
+core_idle_loop_eval(
+    struct gba *gba,
+    uint32_t addr
+) {
+    struct core *core;
+
+    core = &gba->core;
+
+    if (!core->idle_loop.enabled || addr != core->idle_loop.addr) {
+        return false;
+    }
+
+    if (core->idle_loop.first_visit) {
+        core->idle_loop.first_visit = false;
+        return false;
+    }
+
+    while (!(core->irq_line && !core->cpsr.irq_disable)) {
+        if (core->pending_dma && !core->is_dma_running) {
+            mem_dma_do_all_pending_transfers(gba);
+        }
+
+        if (gba->scheduler.next_event > gba->scheduler.cycles) {
+            mem_bus_wait_for(gba, gba->scheduler.next_event - gba->scheduler.cycles);
+        } else {
+            mem_bus_wait(gba);
+        }
+    }
+
+    core->idle_loop.first_visit = true;
+    core_interrupt(gba, VEC_IRQ, MODE_IRQ, true);
+    return true;
+}

@@ -26,6 +26,11 @@ static char const * const texture_filters_names[TEXTURE_FILTER_LEN] = {
     [TEXTURE_FILTER_LINEAR] = "Linear",
 };
 
+char const * const idle_loop_mode_names[IDLE_LOOP_MODE_LEN] = {
+    [IDLE_LOOP_MODE_DISABLED] = "Disabled",
+    [IDLE_LOOP_MODE_REMOVE_KNOWN] = "Remove Known",
+};
+
 char const * const pixel_color_filters_names[PIXEL_COLOR_FILTER_LEN] = {
     [PIXEL_COLOR_FILTER_NONE] = "None",
     [PIXEL_COLOR_FILTER_COLOR_CORRECTION_HIGAN] = "Color correction (Higan)",
@@ -488,6 +493,23 @@ app_win_settings_emulation(
         igTableNextColumn();
         igCheckbox("##ROMMirroringInnerValue", &app->settings.emulation.rom_mirroring.value);
         igEndDisabled();
+
+        igEndTable();
+    }
+
+    igSeparatorText("Idle Loop Elimination");
+
+    if (igBeginTable("##EmulationSettingsIdleLoop", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
+        igTableSetupColumn("##EmulationSettingsIdleLoopLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
+        igTableSetupColumn("##EmulationSettingsIdleLoopValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+
+        // Idle Loop Elimination Mode
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Mode");
+
+        igTableNextColumn();
+        igCombo_Str_arr("##IdleLoopMode", (int *)&app->settings.emulation.idle_loop_mode, idle_loop_mode_names, array_length(idle_loop_mode_names), 0);
 
         igEndTable();
     }

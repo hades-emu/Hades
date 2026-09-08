@@ -124,6 +124,14 @@ struct core {
     bool reenter_dma_transfer_loop;
 
     bool irq_line;                          // Set when there's an IRQ available
+
+    // Hard-coded, per-game idle loop elimination. See `core_idle_loop_eval()`.
+    struct {
+        bool enabled;
+        bool thumb;
+        bool first_visit;
+        uint32_t addr;
+    } idle_loop;
 };
 
 /*
@@ -210,6 +218,7 @@ static char const * const arm_modes_name[] = {
 /* gba/core/core.c */
 void core_run(struct gba *gba);
 void core_next(struct gba *gba);
+bool core_idle_loop_eval(struct gba *gba, uint32_t addr);
 void core_execute_arm_opcode(struct gba *gba, uint32_t opcode);
 void core_execute_thumb_opcode(struct gba *gba, uint16_t opcode);
 void core_reload_pipeline(struct gba *gba);

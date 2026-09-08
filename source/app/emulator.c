@@ -658,6 +658,17 @@ app_emulator_configure_and_run_impl(
         app->emulation.game_entry = db_autodetect_game_features(app->emulation.launch_config->rom.data, app->emulation.launch_config->rom.size);
     }
 
+    if (app->settings.emulation.idle_loop_mode == IDLE_LOOP_MODE_REMOVE_KNOWN) {
+        struct idle_loop_entry const *entry;
+
+        entry = db_lookup_idle_loop(code);
+        if (entry) {
+            app->emulation.launch_config->idle_loop.enabled = true;
+            app->emulation.launch_config->idle_loop.addr = entry->addr;
+            app->emulation.launch_config->idle_loop.thumb = entry->thumb;
+        }
+    }
+
     app->emulation.game_path = strdup(rom_path);
     app->emulation.launch_config->skip_bios = app->settings.emulation.skip_bios_intro;
     app->emulation.launch_config->audio_frequency = GBA_CYCLES_PER_SECOND / app->audio.resample_frequency;
@@ -687,6 +698,7 @@ app_emulator_configure_and_run_impl(
     logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
     logln(HS_INFO, "    GPIO: %s", gpio_device_names[app->emulation.launch_config->gpio_device_type]);
     logln(HS_INFO, "    ROM Mirroring: %s", app->emulation.launch_config->rom_mirroring ? "true" : "false");
+    logln(HS_INFO, "    Idle Loop Elimination: %s", app->emulation.launch_config->idle_loop.enabled ? "true" : "false");
     if (app->emulation.launch_config->settings.fast_forward) {
         logln(HS_INFO, "    Speed: Fast Forward");
     } else {

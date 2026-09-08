@@ -151,6 +151,12 @@ struct game_entry {
     char *title;
 };
 
+struct idle_loop_entry {
+    char const *code;
+    uint32_t addr;
+    bool thumb;
+};
+
 struct gba {
     bool exit;
 
@@ -220,6 +226,13 @@ struct launch_config {
     // Enable ROM memory mirroring
     bool rom_mirroring;
 
+    // Idle loop elimination
+    struct {
+        bool enabled;
+        uint32_t addr;
+        bool thumb;
+    } idle_loop;
+
     // The kind of storage type to use.
     struct {
         enum backup_storage_types type;
@@ -261,6 +274,7 @@ void gba_delete_notification(struct notification const *notif);
 /* source/gba/db.c */
 struct game_entry *db_lookup_game(uint8_t const *code);
 struct game_entry *db_autodetect_game_features(uint8_t const *rom, size_t rom_size);
+struct idle_loop_entry const *db_lookup_idle_loop(uint8_t const *game_code);
 
 /* source/gba/cheat/cheat.c */
 bool cheat_parse_and_compile(struct cheat_bin *bin, struct gba_cheat_raw *raw);
