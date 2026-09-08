@@ -11,8 +11,6 @@
 #include "gba/gba.h"
 #include "gba/cheat.h"
 
-static void cheat_hook_impl(struct gba *gba, struct cheat_bin const *bin);
-
 void
 cheat_delete(
     struct cheat_bin *bin
