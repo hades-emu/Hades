@@ -278,6 +278,7 @@ app_win_cheats(
     struct app *app
 ) {
     ImGuiViewport *vp;
+    bool ask_for_reset;
 
     // Close this window without saving if there's no game running.
     // This can happen, for example, if the keybind to stop the current game is pressed while the cheats are being edited.
@@ -286,6 +287,7 @@ app_win_cheats(
         return;
     }
 
+    ask_for_reset = false;
     vp = igGetMainViewport();
 
     igSetNextWindowPos(vp->WorkPos, ImGuiCond_Always, (ImVec2){0.f, 0.f});
@@ -312,12 +314,15 @@ app_win_cheats(
 
         if (igButton("Save", (ImVec2){ 0.f, 0.f})) {
             app_cheats_save(app);
+
+            if (app->emulation.is_started) {
+                ask_for_reset = true;
+            }
         }
 
         igSameLine(0.0f, -1.0f);
         if (igButton("Exit", (ImVec2){ 0.f, 0.f})) {
             app->ui.main_window = MAIN_WINDOW_NONE;
-            app_cheats_save(app);
         }
 
         igSameLine(0.0f, -1.0f);
@@ -335,6 +340,44 @@ app_win_cheats(
             app_cheats_save(app);
         }
 
+        if (ask_for_reset) {
+            igOpenPopup_Str("Reset the game?", ImGuiPopupFlags_None);
+        }
+
+        // Always center the modal
+        igSetNextWindowPos(
+            (ImVec2){.x = app->ui.ioptr->DisplaySize.x * 0.5f, .y = app->ui.ioptr->DisplaySize.y * 0.5f},
+            ImGuiCond_Always,
+            (ImVec2){.x = 0.5f, .y = 0.5f}
+        );
+
+        if (
+            igBeginPopupModal(
+                "Reset the game?",
+                NULL,
+                ImGuiWindowFlags_Popup
+                  | ImGuiWindowFlags_Modal
+                  | ImGuiWindowFlags_NoResize
+                  | ImGuiWindowFlags_NoMove
+            )
+        ) {
+            igText("The cheats have been saved.");
+            igText("Reset the game now for them to take effect?");
+            igSpacing();
+
+            if (igButton("Reset Now", (ImVec2){ 0.f, 0.f})) {
+                app_emulator_reset(app);
+                app->ui.main_window = MAIN_WINDOW_NONE;
+                igCloseCurrentPopup();
+            }
+
+            igSameLine(0.0f, -1.0f);
+            if (igButton("Later", (ImVec2){ 0.f, 0.f})) {
+                igCloseCurrentPopup();
+            }
+
+            igEndPopup();
+        }
 
         igEndGroup();
 

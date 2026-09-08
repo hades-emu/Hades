@@ -303,6 +303,20 @@ app_bindings_process_global_binds(
     }
 }
 
+// Show `window`, or hide it back to `MAIN_WINDOW_NONE` if it is already the current main window.
+static
+void
+app_bindings_toggle_main_window(
+    struct app *app,
+    enum main_window_kind window
+) {
+    if (app->ui.main_window == window) {
+        app->ui.main_window = MAIN_WINDOW_NONE;
+    } else if (app->ui.main_window == MAIN_WINDOW_NONE) {
+        app->ui.main_window = window;
+    }
+}
+
 // Bindings that can be used even when navigating the UI.
 static
 void
@@ -325,16 +339,14 @@ app_bindings_process_ui_binds(
             break;
         };
         case BIND_EMULATOR_SETTINGS: {
-            if (app->ui.main_window == MAIN_WINDOW_NONE) {
-                app->ui.main_window = MAIN_WINDOW_SETTINGS;
+            app_bindings_toggle_main_window(app, MAIN_WINDOW_SETTINGS);
+            if (app->ui.main_window == MAIN_WINDOW_SETTINGS) {
                 app->ui.settings.focus = true;
             }
             break;
         };
         case BIND_EMULATOR_CHEATS: {
-            if (app->ui.main_window == MAIN_WINDOW_NONE) {
-                app->ui.main_window = MAIN_WINDOW_CHEATS;
-            }
+            app_bindings_toggle_main_window(app, MAIN_WINDOW_CHEATS);
             break;
         };
         default: break;
