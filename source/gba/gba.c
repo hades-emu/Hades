@@ -407,6 +407,11 @@ gba_state_reset(
         core->prefetch[1] = 0xF0000000;
         core->prefetch_access_type = NON_SEQUENTIAL;
 
+        core->idle_loop.enabled = config->idle_loop.enabled;
+        core->idle_loop.addr = config->idle_loop.addr;
+        core->idle_loop.thumb = config->idle_loop.thumb;
+        core->idle_loop.first_visit = true;
+
         if (config->skip_bios) {
             core->r13_irq = 0x03007FA0;
             core->r13_svc = 0x03007FE0;

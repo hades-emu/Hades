@@ -55,6 +55,7 @@ app_config_default_settings(
     settings->emulation.gpio_device.type = GPIO_NONE;
     settings->emulation.rom_mirroring.autodetect = true;
     settings->emulation.rom_mirroring.value = false;
+    settings->emulation.idle_loop_mode = IDLE_LOOP_MODE_DISABLED;
     settings->emulation.prefetch_buffer = true;
     settings->video.enable_oam = true;
     memset(settings->video.enable_bg_layers, true, sizeof(settings->video.enable_bg_layers));
@@ -300,6 +301,10 @@ app_config_load(
             app->settings.emulation.rom_mirroring.value = b;
         }
 
+        if (mjson_get_number(data, data_len, "$.emulation.idle_loop_mode", &d)) {
+            app->settings.emulation.idle_loop_mode = max(IDLE_LOOP_MODE_MIN, min((int)d, IDLE_LOOP_MODE_MAX));
+        }
+
         if (mjson_get_bool(data, data_len, "$.emulation.prefetch_buffer", &b)) {
             app->settings.emulation.prefetch_buffer = b;
         }
@@ -542,6 +547,7 @@ app_config_save(
                     "autodetect": %B,
                     "value": %B
                 },
+                "idle_loop_mode": %d,
                 "prefetch_buffer": %B
             },
 
@@ -599,6 +605,7 @@ app_config_save(
         (int)app->settings.emulation.gpio_device.type,
         (int)app->settings.emulation.rom_mirroring.autodetect,
         (int)app->settings.emulation.rom_mirroring.value,
+        (int)app->settings.emulation.idle_loop_mode,
         (int)app->settings.emulation.prefetch_buffer,
         (int)app->settings.video.menubar_mode,
         (int)app->settings.video.display_mode,

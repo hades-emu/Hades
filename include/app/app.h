@@ -157,6 +157,17 @@ extern SDL_DialogFileFilter const sdl_nfd_save_filters[];
 
 extern char const * const pixel_color_filters_names[];
 
+enum idle_loop_modes {
+    IDLE_LOOP_MODE_DISABLED = 0,
+    IDLE_LOOP_MODE_REMOVE_KNOWN = 1,
+
+    IDLE_LOOP_MODE_MIN = IDLE_LOOP_MODE_DISABLED,
+    IDLE_LOOP_MODE_MAX = IDLE_LOOP_MODE_REMOVE_KNOWN,
+    IDLE_LOOP_MODE_LEN = IDLE_LOOP_MODE_MAX + 1,
+};
+
+extern char const * const idle_loop_mode_names[];
+
 enum app_notification_kind {
     UI_NOTIFICATION_INFO,
     UI_NOTIFICATION_SUCCESS,
@@ -309,6 +320,9 @@ struct settings {
             bool autodetect;
             bool value;
         } rom_mirroring;
+
+        // Idle loop elimination mode
+        enum idle_loop_modes idle_loop_mode;
 
         // Enable the emulation of the prefetch buffer
         bool prefetch_buffer;

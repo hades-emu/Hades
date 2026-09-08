@@ -35,5 +35,7 @@ core_arm_brk(
     debugger_eval_sw_breakpoints(gba, addr);
 #endif
 
-    core_execute_arm_opcode(gba, insn);
+    if (!core_idle_loop_eval(gba, addr)) {
+        core_execute_arm_opcode(gba, insn);
+    }
 }
