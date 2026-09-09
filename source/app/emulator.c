@@ -640,7 +640,7 @@ app_emulator_configure_and_run_impl(
     if (app->emulation.game_entry) {
         logln(
             HS_INFO,
-            "Game code %s%.3s%s identified as %s%s%s.",
+            "Game code %s%.4s%s identified as %s%s%s.",
             g_light_magenta,
             code,
             g_reset,
@@ -698,7 +698,6 @@ app_emulator_configure_and_run_impl(
     logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
     logln(HS_INFO, "    GPIO: %s", gpio_device_names[app->emulation.launch_config->gpio_device_type]);
     logln(HS_INFO, "    ROM Mirroring: %s", app->emulation.launch_config->rom_mirroring ? "true" : "false");
-    logln(HS_INFO, "    Idle Loop Elimination: %s", app->emulation.launch_config->idle_loop.enabled ? "true" : "false");
     if (app->emulation.launch_config->settings.fast_forward) {
         logln(HS_INFO, "    Speed: Fast Forward");
     } else {
@@ -706,6 +705,7 @@ app_emulator_configure_and_run_impl(
     }
     logln(HS_INFO, "    Audio Frequency: %iHz (%i cycles)", app->audio.resample_frequency, app->emulation.launch_config->audio_frequency);
     logln(HS_INFO, "    Cheats: %zu", app->emulation.launch_config->cheats.len);
+    logln(HS_INFO, "    Idle Loop Elimination: %s", app->emulation.launch_config->idle_loop.enabled ? "true" : "false");
 
     event.header.kind = MESSAGE_RESET;
     event.header.size = sizeof(event);

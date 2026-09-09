@@ -1735,12 +1735,19 @@ static struct game_entry game_database[] = {
 };
 
 static struct idle_loop_entry const idle_loop_database[] = {
-    (struct idle_loop_entry){.code = "BPE", .addr = 0x080008C6, .thumb = true}, // Pokemon - Emerald Version
+    // Pokemon - Emerald Version
+    (struct idle_loop_entry){ .code = "BPEJ", .addr = 0x080008C6, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPEE", .addr = 0x080008C6, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPEP", .addr = 0x080008C6, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPEF", .addr = 0x080008C6, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPED", .addr = 0x080008C6, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPEI", .addr = 0x080008C6, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPES", .addr = 0x080008C6, .thumb = true },
 };
 
 struct game_entry *
 db_lookup_game(
-    uint8_t const *game_code
+    uint8_t const game_code[3]
 ) {
     size_t i;
 
@@ -1758,12 +1765,12 @@ db_lookup_game(
 
 struct idle_loop_entry const *
 db_lookup_idle_loop(
-    uint8_t const *game_code
+    uint8_t const game_code[4]
 ) {
     size_t i;
 
     for (i = 0; i < array_length(idle_loop_database); ++i) {
-        if (!strncmp((char const *)game_code, idle_loop_database[i].code, 3) && idle_loop_database[i].addr) {
+        if (!strncmp((char const *)game_code, idle_loop_database[i].code, 4) && idle_loop_database[i].addr) {
             return (&idle_loop_database[i]);
         }
     }
