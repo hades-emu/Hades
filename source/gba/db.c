@@ -1735,6 +1735,28 @@ static struct game_entry game_database[] = {
 };
 
 static struct idle_loop_entry const idle_loop_database[] = {
+    // Advance Wars 2 - Black Hole Rising
+    (struct idle_loop_entry){ .code = "AW2P", .addr = 0x08037192, .thumb = true },
+    (struct idle_loop_entry){ .code = "AW2E", .addr = 0x08036DFE, .thumb = true },
+
+    // Pokemon - Fire Red Version
+    (struct idle_loop_entry){ .code = "BPRJ", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRE", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRP", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRF", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRD", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRI", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRS", .addr = 0x080008AA, .thumb = true },
+
+    // Pokemon - Leaf Green Version
+    (struct idle_loop_entry){ .code = "BPGJ", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGE", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGP", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGF", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGD", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGI", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGS", .addr = 0x080008AA, .thumb = true },
+
     // Pokemon - Emerald Version
     (struct idle_loop_entry){ .code = "BPEJ", .addr = 0x080008C6, .thumb = true },
     (struct idle_loop_entry){ .code = "BPEE", .addr = 0x080008C6, .thumb = true },
