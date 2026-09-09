@@ -32,7 +32,7 @@ debugger_io_new_register(
     reg->address = addr;
     reg->size = size;
     reg->name = name;
-    return (reg);
+    return reg;
 }
 
 static
@@ -46,7 +46,7 @@ debugger_io_new_register32(
 
     reg = debugger_io_new_register(addr, 4, name);
     reg->ptr32 = ptr;
-    return (reg);
+    return reg;
 }
 
 static
@@ -60,7 +60,7 @@ debugger_io_new_register16(
 
     reg = debugger_io_new_register(addr, 2, name);
     reg->ptr16 = ptr;
-    return (reg);
+    return reg;
 }
 
 static
@@ -352,8 +352,8 @@ debugger_io_lookup_reg(
 
         reg = &g_io_registers[i];
         if (address == (reg->address & ~(reg->size - 1))) {
-            return (reg);
+            return reg;
         }
     }
-    return (NULL);
+    return NULL;
 }

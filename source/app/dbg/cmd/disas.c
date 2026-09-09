@@ -34,7 +34,7 @@ find_biggest_mnenmonic(
         }
         ++i;
     }
-    return (best);
+    return best;
 }
 
 static
@@ -55,56 +55,56 @@ try_disas(
     switch (addr) {
         case BIOS_START ... BIOS_END:
             if (addr + count * op_len >= BIOS_END) {
-                return (0);
+                return 0;
             }
-            return (cs_disasm(
+            return cs_disasm(
                 handle,
                 (uint8_t *)memory->bios + (addr & BIOS_MASK),
                 op_len * count,
                 addr,
                 count,
                 insn_ptr
-            ));
+            );
         case EWRAM_START ... EWRAM_END:
             if (addr + count * op_len >= EWRAM_END) {
-                return (0);
+                return 0;
             }
-            return (cs_disasm(
+            return cs_disasm(
                 handle,
                 (uint8_t *)memory->ewram + (addr & EWRAM_MASK),
                 op_len * count,
                 addr,
                 count,
                 insn_ptr
-            ));
+            );
         case IWRAM_START ... IWRAM_END:
             if (addr + count * op_len >= IWRAM_END) {
-                return (0);
+                return 0;
             }
-            return (cs_disasm(
+            return cs_disasm(
                 handle,
                 (uint8_t *)memory->iwram + (addr & IWRAM_MASK),
                 op_len * count,
                 addr,
                 count,
                 insn_ptr
-            ));
+            );
         case CART_0_START ... CART_0_END:
         case CART_1_START ... CART_1_END:
         case CART_2_START ... CART_2_END:
             if (addr + count * op_len >= CART_0_END) {
-                return (0);
+                return 0;
             }
-            return (cs_disasm(
+            return cs_disasm(
                 handle,
                 (uint8_t *)memory->unpatched_rom + (addr & CART_MASK),
                 op_len * count,
                 addr,
                 count,
                 insn_ptr
-            ));
+            );
         default:
-            return (0);
+            return 0;
     }
 }
 

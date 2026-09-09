@@ -183,17 +183,17 @@ core_spsr_get(
     switch (mode) {
         case MODE_USR:
         case MODE_SYS:
-            return (core->cpsr);
+            return core->cpsr;
         case MODE_FIQ:
-            return (core->spsr_fiq);
+            return core->spsr_fiq;
         case MODE_IRQ:
-            return (core->spsr_irq);
+            return core->spsr_irq;
         case MODE_SVC:
-            return (core->spsr_svc);
+            return core->spsr_svc;
         case MODE_ABT:
-            return (core->spsr_abt);
+            return core->spsr_abt;
         case MODE_UND:
-            return (core->spsr_und);
+            return core->spsr_und;
         default:
             panic(HS_CORE, "core_spsr_get(): unsupported mode (%u)", mode);
             break;
@@ -499,7 +499,7 @@ core_compute_shift(
         */
 
         if (bits == 0) {
-            return (value);
+            return value;
         }
     } else {                                // Immediate value
         bits = (encoded_shift >> 3) & 0x1F;
@@ -585,7 +585,7 @@ core_compute_shift(
         *carry = carry_out;
     }
 
-    return (value);
+    return value;
 }
 
 /*

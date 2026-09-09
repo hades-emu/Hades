@@ -25,7 +25,7 @@ gpio_rtc_write_sio(
     rtc->data >>= 1;
     ++rtc->data_count;
 
-    return (rtc->data_count >= rtc->data_len);
+    return rtc->data_count >= rtc->data_len;
 }
 
 static inline
@@ -42,7 +42,7 @@ gpio_rtc_read_sio(
     rtc->data |= rtc->sio << rtc->data_count;       // Set the nth bit to the value contained in SIO
     ++rtc->data_count;
 
-    return (rtc->data_count >= rtc->data_len);
+    return rtc->data_count >= rtc->data_len;
 }
 
 static inline
@@ -50,7 +50,7 @@ uint8_t
 gpio_rtc_to_bcd(
     uint8_t val
 ) {
-    return ((val / 10 % 10) << 4 | (val % 10));
+    return (val / 10 % 10) << 4 | (val % 10);
 }
 
 static inline
@@ -75,7 +75,7 @@ gpio_rtc_get_date_time(
     res = (res << 8) | gpio_rtc_to_bcd(tm->tm_mday);                            // Day of the month
     res = (res << 8) | gpio_rtc_to_bcd(tm->tm_mon + 1);                         // Month
     res = (res << 8) | gpio_rtc_to_bcd(tm->tm_year % 100);                      // Year
-    return (res);
+    return res;
 }
 
 static inline
@@ -83,7 +83,7 @@ uint64_t
 gpio_rtc_get_time(
     struct gba const *gba
 ) {
-    return ((gpio_rtc_get_date_time(gba) >> 32) & 0xFFFFFF);
+    return (gpio_rtc_get_date_time(gba) >> 32) & 0xFFFFFF;
 }
 
 static inline
@@ -223,5 +223,5 @@ uint8_t
 gpio_rtc_read(
     struct gba const *gba
 ) {
-    return (gba->gpio.rtc.sio << 1);
+    return gba->gpio.rtc.sio << 1;
 }

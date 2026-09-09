@@ -135,7 +135,7 @@ timer_update_counter(
 
     timer = &gba->io.timers[timer_idx];
     elapsed = gba->scheduler.cycles - gba->scheduler.events[timer->handler].at;
-    return (elapsed >> scalers[timer->control.prescaler]);
+    return elapsed >> scalers[timer->control.prescaler];
 }
 
 uint16_t
@@ -147,8 +147,8 @@ timer_read_value(
 
     timer = &gba->io.timers[timer_idx];
     if (timer->control.enable && !timer->control.count_up) {
-        return (timer_update_counter(gba, timer_idx));
+        return timer_update_counter(gba, timer_idx);
     } else {
-        return (timer->counter.raw);
+        return timer->counter.raw;
     }
 }

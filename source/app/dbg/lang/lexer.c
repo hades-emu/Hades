@@ -39,7 +39,7 @@ token_new(
         lexer->tokens = t;
     }
 
-    return (t);
+    return t;
 }
 
 static
@@ -52,7 +52,7 @@ token_new_op(
 
     token = token_new(lexer, TOKEN_OPERATOR);
     token->value.operator = op;
-    return (token);
+    return token;
 }
 
 void

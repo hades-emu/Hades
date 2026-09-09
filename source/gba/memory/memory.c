@@ -79,7 +79,7 @@ mem_openbus_read(
         val = gba->core.prefetch[1];
     }
 
-    return (val >> (8 * shift));
+    return val >> (8 * shift);
 }
 
 /*
@@ -317,7 +317,7 @@ mem_read8_raw(
     struct gba *gba,
     uint32_t addr
 ) {
-    return (template_read(uint8_t, gba, addr));
+    return template_read(uint8_t, gba, addr);
 }
 
 /*
@@ -334,7 +334,7 @@ mem_read8(
 #endif
 
     mem_bus_access(gba, addr, sizeof(uint8_t), access_type);
-    return (template_read(uint8_t, gba, addr));
+    return template_read(uint8_t, gba, addr);
 }
 
 uint16_t
@@ -342,7 +342,7 @@ mem_read16_raw(
     struct gba *gba,
     uint32_t addr
 ) {
-    return (template_read(uint16_t, gba, addr));
+    return template_read(uint16_t, gba, addr);
 }
 
 /*
@@ -359,7 +359,7 @@ mem_read16(
 #endif
 
     mem_bus_access(gba, addr, sizeof(uint16_t), access_type);
-    return (template_read(uint16_t, gba, addr));
+    return template_read(uint16_t, gba, addr);
 }
 
 /*
@@ -385,7 +385,7 @@ mem_read16_ror(
     value = template_read(uint16_t, gba, addr);
 
     /* Unaligned 16-bits loads are supposed to be unpredictable, but in practise the GBA rotates them */
-    return (ror32(value, rotate));
+    return ror32(value, rotate);
 }
 
 uint32_t
@@ -393,7 +393,7 @@ mem_read32_raw(
     struct gba *gba,
     uint32_t addr
 ) {
-    return (template_read(uint32_t, gba, addr));
+    return template_read(uint32_t, gba, addr);
 }
 
 /*
@@ -410,7 +410,7 @@ mem_read32(
 #endif
 
     mem_bus_access(gba, addr, sizeof(uint32_t), access_type);
-    return (template_read(uint32_t, gba, addr));
+    return template_read(uint32_t, gba, addr);
 }
 
 /*
@@ -435,7 +435,7 @@ mem_read32_ror(
     rotate = (addr % 4) << 3;
     value = template_read(uint32_t, gba, addr);
 
-    return (ror32(value, rotate));
+    return ror32(value, rotate);
 }
 
 void

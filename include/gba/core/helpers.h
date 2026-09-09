@@ -20,9 +20,9 @@ sign_extend8(
     uint32_t value
 ) {
     if ((value & 0x80) != 0) {
-        return ((int32_t)(value | 0xFFFFFF00));
+        return (int32_t)(value | 0xFFFFFF00);
     } else {
-        return ((int32_t)value);
+        return (int32_t)value;
     }
 }
 
@@ -35,9 +35,9 @@ sign_extend9(
     uint32_t value
 ) {
     if ((value & 0x100) != 0) {
-        return ((int32_t)(value | 0xFFFFFF00));
+        return (int32_t)(value | 0xFFFFFF00);
     } else {
-        return ((int32_t)value);
+        return (int32_t)value;
     }
 }
 
@@ -50,9 +50,9 @@ sign_extend11(
     uint32_t value
 ) {
     if ((value & 0x400) != 0) {
-        return ((int32_t)(value | 0xFFFFF800));
+        return (int32_t)(value | 0xFFFFF800);
     } else {
-        return ((int32_t)value);
+        return (int32_t)value;
     }
 }
 
@@ -65,9 +65,9 @@ sign_extend12(
     uint32_t value
 ) {
     if ((value & 0x800) != 0) {
-        return ((int32_t)(value | 0xFFFFF000));
+        return (int32_t)(value | 0xFFFFF000);
     } else {
-        return ((int32_t)value);
+        return (int32_t)value;
     }
 }
 
@@ -80,9 +80,9 @@ sign_extend24(
     uint32_t value
 ) {
     if ((value & 0x800000) != 0) {
-        return ((int32_t)(value | 0xFF000000));
+        return (int32_t)(value | 0xFF000000);
     } else {
-        return ((int32_t)value);
+        return (int32_t)value;
     }
 }
 
@@ -95,9 +95,9 @@ sign_extend28(
     uint32_t value
 ) {
     if ((value & 0x08000000) != 0) {
-        return ((int32_t)(value | 0xF0000000));
+        return (int32_t)(value | 0xF0000000);
     } else {
-        return ((int32_t)value);
+        return (int32_t)value;
     }
 }
 
@@ -114,7 +114,7 @@ uadd32(
     uint64_t r;
 
     r = (uint64_t)a + (uint64_t)b + (uint64_t)c;
-    return (r > UINT32_MAX);
+    return r > UINT32_MAX;
 }
 
 /*
@@ -130,7 +130,7 @@ iadd32(
     int64_t r;
 
     r = (int64_t)a + (int64_t)b + (int64_t)c;
-    return ((r < INT32_MIN) | (r > INT32_MAX));
+    return (r < INT32_MIN) | (r > INT32_MAX);
 }
 
 /*
@@ -146,7 +146,7 @@ usub32(
     uint64_t r;
 
     r = (uint64_t)a - (uint64_t)b -(uint64_t)c;
-    return (r <= UINT32_MAX);
+    return r <= UINT32_MAX;
 }
 
 /*
@@ -162,7 +162,7 @@ isub32(
     int64_t r;
 
     r = (int64_t)a - (int64_t)b - (int64_t)c;
-    return ((r < INT32_MIN) | (r > INT32_MAX));
+    return (r < INT32_MIN) | (r > INT32_MAX);
 }
 
 /*
@@ -175,8 +175,8 @@ ror32(
     uint32_t shift
 ) {
     if (shift) {
-        return ((value >> shift) | (value << (32 - shift)));
+        return (value >> shift) | (value << (32 - shift));
     } else {
-        return (value);
+        return value;
     }
 }

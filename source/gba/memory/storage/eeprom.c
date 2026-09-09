@@ -26,7 +26,7 @@ mem_eeprom_read8(
                 eeprom->transfer_len = 0; // Reset for next transfer
                 eeprom->state = EEPROM_STATE_TRANSFER_DATA;
             }
-            return (0);
+            return 0;
         } else if (eeprom->state == EEPROM_STATE_TRANSFER_DATA) {
             bool value;
 
@@ -38,7 +38,7 @@ mem_eeprom_read8(
                 eeprom->transfer_len = 0; // Reset for next transfer
                 eeprom->state = EEPROM_STATE_READY;
             }
-            return (value);
+            return value;
         }
     }
 
@@ -47,7 +47,7 @@ mem_eeprom_read8(
     ** They do this by reading from the EEPROM and waiting until it returns 1.
     **   - Dennis H
     */
-    return (1);
+    return 1;
 }
 
 void

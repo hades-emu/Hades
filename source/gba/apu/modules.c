@@ -27,9 +27,9 @@ apu_modules_counter_step(
 ) {
     if (counter->enabled) {
         counter->value -= (counter->value > 0);
-        return (counter->value > 0);
+        return counter->value > 0;
     }
-    return (true);
+    return true;
 }
 
 void
@@ -69,7 +69,7 @@ apu_modules_sweep_step(
 
             /* Overflow check */
             if (new_frequency >= 2048) {
-                return (false);
+                return false;
             }
 
             if (sweep->shifts > 0) {
@@ -81,7 +81,7 @@ apu_modules_sweep_step(
         }
     }
 
-    return (true);
+    return true;
 }
 
 void

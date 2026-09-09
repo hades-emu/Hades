@@ -322,9 +322,7 @@ mem_dma_is_fifo(
     struct dma_channel const *dma;
 
     dma = &gba->io.dma[dma_channel_idx];
-    return (
-           dma->control.enable
+    return dma->control.enable
         && dma->control.timing == DMA_TIMING_SPECIAL
-        && dma->dst.raw == (fifo_idx == FIFO_A ? IO_REG_FIFO_A_L : IO_REG_FIFO_B_L)
-    );
+        && dma->dst.raw == (fifo_idx == FIFO_A ? IO_REG_FIFO_A_L : IO_REG_FIFO_B_L);
 }

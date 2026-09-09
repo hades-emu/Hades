@@ -50,7 +50,7 @@ apu_rbuffer_pop(
         --rbuffer->size;
     }
 
-    return (val);
+    return val;
 }
 
 /*

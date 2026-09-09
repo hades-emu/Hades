@@ -604,8 +604,8 @@ debugger_check_arg_type(
     if (arg->type != expected) {
         printf("Expected argument of type %s, got %s.\n", args_type_names[expected], args_type_names[arg->type]);
         printf("Usage: %s\n", g_commands[command].usage);
-        return (true);
+        return true;
     } else {
-        return (false);
+        return false;
     }
 }

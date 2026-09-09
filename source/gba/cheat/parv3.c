@@ -71,7 +71,7 @@ uint32_t
 cheat_parv3_compute_addr(
     uint32_t addr
 ) {
-    return (((addr & 0x00F00000) << 4) | (addr & 0xFFFFF));
+    return ((addr & 0x00F00000) << 4) | (addr & 0xFFFFF);
 }
 
 bool

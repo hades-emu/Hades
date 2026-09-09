@@ -26,5 +26,5 @@ uint8_t
 gpio_rumble_read(
     struct gba *gba
 ) {
-    return (((uint8_t)gba->gpio.rumble.enabled) << 3);
+    return ((uint8_t)gba->gpio.rumble.enabled) << 3;
 }

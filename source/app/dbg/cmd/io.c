@@ -19,9 +19,9 @@ debugger_cmd_io_read_register(
     struct io_register *reg
 ) {
     if (reg->size == 2) {
-        return (reg->ptr16 ? *reg->ptr16: mem_read16_raw(app->emulation.gba, reg->address));
+        return reg->ptr16 ? *reg->ptr16: mem_read16_raw(app->emulation.gba, reg->address);
     } else {
-        return (reg->ptr32 ? *reg->ptr32: mem_read32_raw(app->emulation.gba, reg->address));
+        return reg->ptr32 ? *reg->ptr32: mem_read32_raw(app->emulation.gba, reg->address);
     }
 }
 

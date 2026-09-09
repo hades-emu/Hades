@@ -49,101 +49,101 @@ mem_io_reg_name(
     uint32_t addr
 ) {
     switch (addr & ~1) {
-        case IO_REG_DISPCNT:        return ("dispcnt");
-        case IO_REG_GREENSWP:       return ("greenswp");
-        case IO_REG_DISPSTAT:       return ("dispstat");
-        case IO_REG_VCOUNT:         return ("vcount");
-        case IO_REG_BG0CNT:         return ("bg0cnt");
-        case IO_REG_BG1CNT:         return ("bg1cnt");
-        case IO_REG_BG2CNT:         return ("bg2cnt");
-        case IO_REG_BG3CNT:         return ("bg3cnt");
-        case IO_REG_BG0VOFS:        return ("bg0vofs");
-        case IO_REG_BG1VOFS:        return ("bg1vofs");
-        case IO_REG_BG2VOFS:        return ("bg2vofs");
-        case IO_REG_BG3VOFS:        return ("bg3vofs");
-        case IO_REG_BG0HOFS:        return ("bg0hofs");
-        case IO_REG_BG1HOFS:        return ("bg1hofs");
-        case IO_REG_BG2HOFS:        return ("bg2hofs");
-        case IO_REG_BG3HOFS:        return ("bg3hofs");
-        case IO_REG_BG2PA:          return ("bg2pa");
-        case IO_REG_BG2PB:          return ("bg2pb");
-        case IO_REG_BG2PC:          return ("bg2pc");
-        case IO_REG_BG2PD:          return ("bg2pd");
-        case IO_REG_BG2X:           return ("bg2x");
-        case IO_REG_BG2Y:           return ("bg2y");
-        case IO_REG_BG3PA:          return ("bg3pa");
-        case IO_REG_BG3PB:          return ("bg3pb");
-        case IO_REG_BG3PC:          return ("bg3pc");
-        case IO_REG_BG3PD:          return ("bg3pd");
-        case IO_REG_BG3X:           return ("bg3x");
-        case IO_REG_BG3Y:           return ("bg3y");
-        case IO_REG_WIN0H:          return ("win0h");
-        case IO_REG_WIN1H:          return ("win1h");
-        case IO_REG_WIN0V:          return ("win0v");
-        case IO_REG_WIN1V:          return ("win1v");
-        case IO_REG_WININ:          return ("winin");
-        case IO_REG_WINOUT:         return ("winout");
-        case IO_REG_MOSAIC:         return ("mosaic");
-        case IO_REG_BLDCNT:         return ("bldcnt");
-        case IO_REG_BLDALPHA:       return ("bldalpha");
-        case IO_REG_BLDY:           return ("bldy");
-        case IO_REG_SOUND1CNT_L:    return ("sound1cnt_l");
-        case IO_REG_SOUND1CNT_H:    return ("sound1cnt_h");
-        case IO_REG_SOUND1CNT_X:    return ("sound1cnt_x");
-        case IO_REG_SOUND2CNT_L:    return ("sound2cnt_l");
-        case IO_REG_SOUND2CNT_H:    return ("sound2cnt_h");
-        case IO_REG_SOUND3CNT_L:    return ("sound3cnt_l");
-        case IO_REG_SOUND3CNT_H:    return ("sound3cnt_h");
-        case IO_REG_SOUND3CNT_X:    return ("sound3cnt_x");
-        case IO_REG_SOUND4CNT_L:    return ("sound4cnt_l");
-        case IO_REG_SOUND4CNT_H:    return ("sound4cnt_h");
-        case IO_REG_SOUNDCNT_L:     return ("soundcnt_l");
-        case IO_REG_SOUNDCNT_H:     return ("soundcnt_h");
-        case IO_REG_SOUNDCNT_X:     return ("soundcnt_x");
-        case IO_REG_SOUNDBIAS:      return ("soundbias");
-        case IO_REG_WAVE_RAM0:      return ("wave_ram0");
-        case IO_REG_WAVE_RAM1:      return ("wave_ram1");
-        case IO_REG_WAVE_RAM2:      return ("wave_ram2");
-        case IO_REG_WAVE_RAM3:      return ("wave_ram3");
-        case IO_REG_FIFO_A_L:       return ("fifo_a_l");
-        case IO_REG_FIFO_A_H:       return ("fifo_a_h");
-        case IO_REG_FIFO_B_L:       return ("fifo_b_l");
-        case IO_REG_FIFO_B_H:       return ("fifo_b_h");
-        case IO_REG_DMA0SAD:        return ("dma0sad");
-        case IO_REG_DMA0DAD:        return ("dma0dad");
-        case IO_REG_DMA0CNT:        return ("dma0cnt");
-        case IO_REG_DMA0CTL:        return ("dma0ctl");
-        case IO_REG_DMA1SAD:        return ("dma1sad");
-        case IO_REG_DMA1DAD:        return ("dma1dad");
-        case IO_REG_DMA1CNT:        return ("dma1cnt");
-        case IO_REG_DMA1CTL:        return ("dma1ctl");
-        case IO_REG_DMA2SAD:        return ("dma2sad");
-        case IO_REG_DMA2DAD:        return ("dma2dad");
-        case IO_REG_DMA2CNT:        return ("dma2cnt");
-        case IO_REG_DMA2CTL:        return ("dma2ctl");
-        case IO_REG_DMA3SAD:        return ("dma3sad");
-        case IO_REG_DMA3DAD:        return ("dma3dad");
-        case IO_REG_DMA3CNT:        return ("dma3cnt");
-        case IO_REG_DMA3CTL:        return ("dma3ctl");
-        case IO_REG_TM0CNT_LO:      return ("tm0cnt_lo");
-        case IO_REG_TM0CNT_HI:      return ("tm0cnt_hi");
-        case IO_REG_TM1CNT_LO:      return ("tm1cnt_lo");
-        case IO_REG_TM1CNT_HI:      return ("tm1cnt_hi");
-        case IO_REG_TM2CNT_LO:      return ("tm2cnt_lo");
-        case IO_REG_TM2CNT_HI:      return ("tm2cnt_hi");
-        case IO_REG_TM3CNT_LO:      return ("tm3cnt_lo");
-        case IO_REG_TM3CNT_HI:      return ("tm3cnt_hi");
-        case IO_REG_KEYINPUT:       return ("keyinput");
-        case IO_REG_KEYCNT:         return ("keycnt");
-        case IO_REG_IE:             return ("ie");
-        case IO_REG_IF:             return ("if");
-        case IO_REG_WAITCNT:        return ("waitcnt");
-        case IO_REG_IME:            return ("ime");
-        case IO_REG_POSTFLG:        return ("postflg");
-        case IO_REG_HALTCNT:        return ("haltcnt");
-        case IO_REG_SIOCNT:         return ("siocnt");
-        case IO_REG_RCNT:           return ("rcnt");
-        default:                    return ("<unknown>");
+        case IO_REG_DISPCNT:        return "dispcnt";
+        case IO_REG_GREENSWP:       return "greenswp";
+        case IO_REG_DISPSTAT:       return "dispstat";
+        case IO_REG_VCOUNT:         return "vcount";
+        case IO_REG_BG0CNT:         return "bg0cnt";
+        case IO_REG_BG1CNT:         return "bg1cnt";
+        case IO_REG_BG2CNT:         return "bg2cnt";
+        case IO_REG_BG3CNT:         return "bg3cnt";
+        case IO_REG_BG0VOFS:        return "bg0vofs";
+        case IO_REG_BG1VOFS:        return "bg1vofs";
+        case IO_REG_BG2VOFS:        return "bg2vofs";
+        case IO_REG_BG3VOFS:        return "bg3vofs";
+        case IO_REG_BG0HOFS:        return "bg0hofs";
+        case IO_REG_BG1HOFS:        return "bg1hofs";
+        case IO_REG_BG2HOFS:        return "bg2hofs";
+        case IO_REG_BG3HOFS:        return "bg3hofs";
+        case IO_REG_BG2PA:          return "bg2pa";
+        case IO_REG_BG2PB:          return "bg2pb";
+        case IO_REG_BG2PC:          return "bg2pc";
+        case IO_REG_BG2PD:          return "bg2pd";
+        case IO_REG_BG2X:           return "bg2x";
+        case IO_REG_BG2Y:           return "bg2y";
+        case IO_REG_BG3PA:          return "bg3pa";
+        case IO_REG_BG3PB:          return "bg3pb";
+        case IO_REG_BG3PC:          return "bg3pc";
+        case IO_REG_BG3PD:          return "bg3pd";
+        case IO_REG_BG3X:           return "bg3x";
+        case IO_REG_BG3Y:           return "bg3y";
+        case IO_REG_WIN0H:          return "win0h";
+        case IO_REG_WIN1H:          return "win1h";
+        case IO_REG_WIN0V:          return "win0v";
+        case IO_REG_WIN1V:          return "win1v";
+        case IO_REG_WININ:          return "winin";
+        case IO_REG_WINOUT:         return "winout";
+        case IO_REG_MOSAIC:         return "mosaic";
+        case IO_REG_BLDCNT:         return "bldcnt";
+        case IO_REG_BLDALPHA:       return "bldalpha";
+        case IO_REG_BLDY:           return "bldy";
+        case IO_REG_SOUND1CNT_L:    return "sound1cnt_l";
+        case IO_REG_SOUND1CNT_H:    return "sound1cnt_h";
+        case IO_REG_SOUND1CNT_X:    return "sound1cnt_x";
+        case IO_REG_SOUND2CNT_L:    return "sound2cnt_l";
+        case IO_REG_SOUND2CNT_H:    return "sound2cnt_h";
+        case IO_REG_SOUND3CNT_L:    return "sound3cnt_l";
+        case IO_REG_SOUND3CNT_H:    return "sound3cnt_h";
+        case IO_REG_SOUND3CNT_X:    return "sound3cnt_x";
+        case IO_REG_SOUND4CNT_L:    return "sound4cnt_l";
+        case IO_REG_SOUND4CNT_H:    return "sound4cnt_h";
+        case IO_REG_SOUNDCNT_L:     return "soundcnt_l";
+        case IO_REG_SOUNDCNT_H:     return "soundcnt_h";
+        case IO_REG_SOUNDCNT_X:     return "soundcnt_x";
+        case IO_REG_SOUNDBIAS:      return "soundbias";
+        case IO_REG_WAVE_RAM0:      return "wave_ram0";
+        case IO_REG_WAVE_RAM1:      return "wave_ram1";
+        case IO_REG_WAVE_RAM2:      return "wave_ram2";
+        case IO_REG_WAVE_RAM3:      return "wave_ram3";
+        case IO_REG_FIFO_A_L:       return "fifo_a_l";
+        case IO_REG_FIFO_A_H:       return "fifo_a_h";
+        case IO_REG_FIFO_B_L:       return "fifo_b_l";
+        case IO_REG_FIFO_B_H:       return "fifo_b_h";
+        case IO_REG_DMA0SAD:        return "dma0sad";
+        case IO_REG_DMA0DAD:        return "dma0dad";
+        case IO_REG_DMA0CNT:        return "dma0cnt";
+        case IO_REG_DMA0CTL:        return "dma0ctl";
+        case IO_REG_DMA1SAD:        return "dma1sad";
+        case IO_REG_DMA1DAD:        return "dma1dad";
+        case IO_REG_DMA1CNT:        return "dma1cnt";
+        case IO_REG_DMA1CTL:        return "dma1ctl";
+        case IO_REG_DMA2SAD:        return "dma2sad";
+        case IO_REG_DMA2DAD:        return "dma2dad";
+        case IO_REG_DMA2CNT:        return "dma2cnt";
+        case IO_REG_DMA2CTL:        return "dma2ctl";
+        case IO_REG_DMA3SAD:        return "dma3sad";
+        case IO_REG_DMA3DAD:        return "dma3dad";
+        case IO_REG_DMA3CNT:        return "dma3cnt";
+        case IO_REG_DMA3CTL:        return "dma3ctl";
+        case IO_REG_TM0CNT_LO:      return "tm0cnt_lo";
+        case IO_REG_TM0CNT_HI:      return "tm0cnt_hi";
+        case IO_REG_TM1CNT_LO:      return "tm1cnt_lo";
+        case IO_REG_TM1CNT_HI:      return "tm1cnt_hi";
+        case IO_REG_TM2CNT_LO:      return "tm2cnt_lo";
+        case IO_REG_TM2CNT_HI:      return "tm2cnt_hi";
+        case IO_REG_TM3CNT_LO:      return "tm3cnt_lo";
+        case IO_REG_TM3CNT_HI:      return "tm3cnt_hi";
+        case IO_REG_KEYINPUT:       return "keyinput";
+        case IO_REG_KEYCNT:         return "keycnt";
+        case IO_REG_IE:             return "ie";
+        case IO_REG_IF:             return "if";
+        case IO_REG_WAITCNT:        return "waitcnt";
+        case IO_REG_IME:            return "ime";
+        case IO_REG_POSTFLG:        return "postflg";
+        case IO_REG_HALTCNT:        return "haltcnt";
+        case IO_REG_SIOCNT:         return "siocnt";
+        case IO_REG_RCNT:           return "rcnt";
+        default:                    return "<unknown>";
     }
 };
 
@@ -163,76 +163,76 @@ mem_io_read8(
     switch (addr) {
 
         /* Display */
-        case IO_REG_DISPCNT:                return (io->dispcnt.bytes[0]);
-        case IO_REG_DISPCNT + 1:            return (io->dispcnt.bytes[1]);
-        case IO_REG_GREENSWP:               return (io->greenswp.bytes[0]);
-        case IO_REG_GREENSWP + 1:           return (io->greenswp.bytes[1]);
-        case IO_REG_DISPSTAT:               return (io->dispstat.bytes[0]);
-        case IO_REG_DISPSTAT + 1:           return (io->dispstat.bytes[1]);
-        case IO_REG_VCOUNT:                 return (io->vcount.bytes[0]);
-        case IO_REG_VCOUNT + 1:             return (io->vcount.bytes[1]);
-        case IO_REG_BG0CNT:                 return (io->bgcnt[0].bytes[0]);
-        case IO_REG_BG0CNT + 1:             return (io->bgcnt[0].bytes[1]);
-        case IO_REG_BG1CNT:                 return (io->bgcnt[1].bytes[0]);
-        case IO_REG_BG1CNT + 1:             return (io->bgcnt[1].bytes[1]);
-        case IO_REG_BG2CNT:                 return (io->bgcnt[2].bytes[0]);
-        case IO_REG_BG2CNT + 1:             return (io->bgcnt[2].bytes[1]);
-        case IO_REG_BG3CNT:                 return (io->bgcnt[3].bytes[0]);
-        case IO_REG_BG3CNT + 1:             return (io->bgcnt[3].bytes[1]);
-        case IO_REG_WININ:                  return (io->winin.bytes[0]);
-        case IO_REG_WININ + 1:              return (io->winin.bytes[1]);
-        case IO_REG_WINOUT:                 return (io->winout.bytes[0]);
-        case IO_REG_WINOUT + 1:             return (io->winout.bytes[1]);
-        case IO_REG_BLDCNT:                 return (io->bldcnt.bytes[0]);
-        case IO_REG_BLDCNT + 1:             return (io->bldcnt.bytes[1]);
-        case IO_REG_BLDALPHA:               return (io->bldalpha.bytes[0]);
-        case IO_REG_BLDALPHA + 1:           return (io->bldalpha.bytes[1]);
+        case IO_REG_DISPCNT:                return io->dispcnt.bytes[0];
+        case IO_REG_DISPCNT + 1:            return io->dispcnt.bytes[1];
+        case IO_REG_GREENSWP:               return io->greenswp.bytes[0];
+        case IO_REG_GREENSWP + 1:           return io->greenswp.bytes[1];
+        case IO_REG_DISPSTAT:               return io->dispstat.bytes[0];
+        case IO_REG_DISPSTAT + 1:           return io->dispstat.bytes[1];
+        case IO_REG_VCOUNT:                 return io->vcount.bytes[0];
+        case IO_REG_VCOUNT + 1:             return io->vcount.bytes[1];
+        case IO_REG_BG0CNT:                 return io->bgcnt[0].bytes[0];
+        case IO_REG_BG0CNT + 1:             return io->bgcnt[0].bytes[1];
+        case IO_REG_BG1CNT:                 return io->bgcnt[1].bytes[0];
+        case IO_REG_BG1CNT + 1:             return io->bgcnt[1].bytes[1];
+        case IO_REG_BG2CNT:                 return io->bgcnt[2].bytes[0];
+        case IO_REG_BG2CNT + 1:             return io->bgcnt[2].bytes[1];
+        case IO_REG_BG3CNT:                 return io->bgcnt[3].bytes[0];
+        case IO_REG_BG3CNT + 1:             return io->bgcnt[3].bytes[1];
+        case IO_REG_WININ:                  return io->winin.bytes[0];
+        case IO_REG_WININ + 1:              return io->winin.bytes[1];
+        case IO_REG_WINOUT:                 return io->winout.bytes[0];
+        case IO_REG_WINOUT + 1:             return io->winout.bytes[1];
+        case IO_REG_BLDCNT:                 return io->bldcnt.bytes[0];
+        case IO_REG_BLDCNT + 1:             return io->bldcnt.bytes[1];
+        case IO_REG_BLDALPHA:               return io->bldalpha.bytes[0];
+        case IO_REG_BLDALPHA + 1:           return io->bldalpha.bytes[1];
 
         /* Sound */
-        case IO_REG_SOUND1CNT_L:            return (io->sound1cnt_l.bytes[0]);
-        case IO_REG_SOUND1CNT_L + 1:        return (io->sound1cnt_l.bytes[1]);
-        case IO_REG_SOUND1CNT_H:            return (io->sound1cnt_h.bytes[0] & 0xC0);
-        case IO_REG_SOUND1CNT_H + 1:        return (io->sound1cnt_h.bytes[1]);
-        case IO_REG_SOUND1CNT_X:            return (0);
-        case IO_REG_SOUND1CNT_X + 1:        return (io->sound1cnt_x.bytes[1] & 0x40);
-        case IO_REG_SOUND1CNT_X + 2:        return (0);
-        case IO_REG_SOUND1CNT_X + 3:        return (0);
-        case IO_REG_SOUND2CNT_L:            return (io->sound2cnt_l.bytes[0] & 0xC0);
-        case IO_REG_SOUND2CNT_L + 1:        return (io->sound2cnt_l.bytes[1]);
-        case IO_REG_SOUND2CNT_L + 2:        return (0);
-        case IO_REG_SOUND2CNT_L + 3:        return (0);
-        case IO_REG_SOUND2CNT_H:            return (0);
-        case IO_REG_SOUND2CNT_H + 1:        return (io->sound2cnt_h.bytes[1] & 0x40);
-        case IO_REG_SOUND2CNT_H + 2:        return (0);
-        case IO_REG_SOUND2CNT_H + 3:        return (0);
-        case IO_REG_SOUND3CNT_L:            return (io->sound3cnt_l.bytes[0] & 0xE0);
-        case IO_REG_SOUND3CNT_L + 1:        return (0);
-        case IO_REG_SOUND3CNT_H:            return (0);
-        case IO_REG_SOUND3CNT_H + 1:        return (io->sound3cnt_h.bytes[1] & 0xE0);
-        case IO_REG_SOUND3CNT_X:            return (0);
-        case IO_REG_SOUND3CNT_X + 1:        return (io->sound3cnt_x.bytes[1] & 0x40);
+        case IO_REG_SOUND1CNT_L:            return io->sound1cnt_l.bytes[0];
+        case IO_REG_SOUND1CNT_L + 1:        return io->sound1cnt_l.bytes[1];
+        case IO_REG_SOUND1CNT_H:            return io->sound1cnt_h.bytes[0] & 0xC0;
+        case IO_REG_SOUND1CNT_H + 1:        return io->sound1cnt_h.bytes[1];
+        case IO_REG_SOUND1CNT_X:            return 0;
+        case IO_REG_SOUND1CNT_X + 1:        return io->sound1cnt_x.bytes[1] & 0x40;
+        case IO_REG_SOUND1CNT_X + 2:        return 0;
+        case IO_REG_SOUND1CNT_X + 3:        return 0;
+        case IO_REG_SOUND2CNT_L:            return io->sound2cnt_l.bytes[0] & 0xC0;
+        case IO_REG_SOUND2CNT_L + 1:        return io->sound2cnt_l.bytes[1];
+        case IO_REG_SOUND2CNT_L + 2:        return 0;
+        case IO_REG_SOUND2CNT_L + 3:        return 0;
+        case IO_REG_SOUND2CNT_H:            return 0;
+        case IO_REG_SOUND2CNT_H + 1:        return io->sound2cnt_h.bytes[1] & 0x40;
+        case IO_REG_SOUND2CNT_H + 2:        return 0;
+        case IO_REG_SOUND2CNT_H + 3:        return 0;
+        case IO_REG_SOUND3CNT_L:            return io->sound3cnt_l.bytes[0] & 0xE0;
+        case IO_REG_SOUND3CNT_L + 1:        return 0;
+        case IO_REG_SOUND3CNT_H:            return 0;
+        case IO_REG_SOUND3CNT_H + 1:        return io->sound3cnt_h.bytes[1] & 0xE0;
+        case IO_REG_SOUND3CNT_X:            return 0;
+        case IO_REG_SOUND3CNT_X + 1:        return io->sound3cnt_x.bytes[1] & 0x40;
         case IO_REG_SOUND3CNT_X + 2:
-        case IO_REG_SOUND3CNT_X + 3:        return (0);
-        case IO_REG_SOUND4CNT_L:            return (0);
-        case IO_REG_SOUND4CNT_L + 1:        return (io->sound4cnt_l.bytes[1]);
-        case IO_REG_SOUND4CNT_L + 2:        return (0);
-        case IO_REG_SOUND4CNT_L + 3:        return (0);
-        case IO_REG_SOUND4CNT_H:            return (io->sound4cnt_h.bytes[0]);
-        case IO_REG_SOUND4CNT_H + 1:        return (io->sound4cnt_h.bytes[1] & 0x40);
-        case IO_REG_SOUND4CNT_H + 2:        return (0);
-        case IO_REG_SOUND4CNT_H + 3:        return (0);
-        case IO_REG_SOUNDCNT_L:             return (io->soundcnt_l.bytes[0]);
-        case IO_REG_SOUNDCNT_L + 1:         return (io->soundcnt_l.bytes[1]);
-        case IO_REG_SOUNDCNT_H:             return (io->soundcnt_h.bytes[0]);
-        case IO_REG_SOUNDCNT_H + 1:         return (io->soundcnt_h.bytes[1]);
-        case IO_REG_SOUNDCNT_X:             return (io->soundcnt_x.bytes[0] & 0x8F);
+        case IO_REG_SOUND3CNT_X + 3:        return 0;
+        case IO_REG_SOUND4CNT_L:            return 0;
+        case IO_REG_SOUND4CNT_L + 1:        return io->sound4cnt_l.bytes[1];
+        case IO_REG_SOUND4CNT_L + 2:        return 0;
+        case IO_REG_SOUND4CNT_L + 3:        return 0;
+        case IO_REG_SOUND4CNT_H:            return io->sound4cnt_h.bytes[0];
+        case IO_REG_SOUND4CNT_H + 1:        return io->sound4cnt_h.bytes[1] & 0x40;
+        case IO_REG_SOUND4CNT_H + 2:        return 0;
+        case IO_REG_SOUND4CNT_H + 3:        return 0;
+        case IO_REG_SOUNDCNT_L:             return io->soundcnt_l.bytes[0];
+        case IO_REG_SOUNDCNT_L + 1:         return io->soundcnt_l.bytes[1];
+        case IO_REG_SOUNDCNT_H:             return io->soundcnt_h.bytes[0];
+        case IO_REG_SOUNDCNT_H + 1:         return io->soundcnt_h.bytes[1];
+        case IO_REG_SOUNDCNT_X:             return io->soundcnt_x.bytes[0] & 0x8F;
         case IO_REG_SOUNDCNT_X + 1:
         case IO_REG_SOUNDCNT_X + 2:
-        case IO_REG_SOUNDCNT_X + 3:         return (0);
-        case IO_REG_SOUNDBIAS:              return (io->soundbias.bytes[0]);
-        case IO_REG_SOUNDBIAS + 1:          return (io->soundbias.bytes[1]);
+        case IO_REG_SOUNDCNT_X + 3:         return 0;
+        case IO_REG_SOUNDBIAS:              return io->soundbias.bytes[0];
+        case IO_REG_SOUNDBIAS + 1:          return io->soundbias.bytes[1];
         case IO_REG_SOUNDBIAS + 2:
-        case IO_REG_SOUNDBIAS + 3:          return (0);
+        case IO_REG_SOUNDBIAS + 3:          return 0;
         case IO_REG_WAVE_RAM0 + 0:
         case IO_REG_WAVE_RAM0 + 1:
         case IO_REG_WAVE_RAM0 + 2:
@@ -248,25 +248,25 @@ mem_io_read8(
         case IO_REG_WAVE_RAM3 + 0:
         case IO_REG_WAVE_RAM3 + 1:
         case IO_REG_WAVE_RAM3 + 2:
-        case IO_REG_WAVE_RAM3 + 3:          return (io->waveram[!io->sound3cnt_l.bank_select][addr - IO_REG_WAVE_RAM0]);
+        case IO_REG_WAVE_RAM3 + 3:          return io->waveram[!io->sound3cnt_l.bank_select][addr - IO_REG_WAVE_RAM0];
 
         /* DMA */
         case IO_REG_DMA0CNT:
-        case IO_REG_DMA0CNT + 1:            return (0);
-        case IO_REG_DMA0CTL:                return (io->dma[0].control.bytes[0]);
-        case IO_REG_DMA0CTL + 1:            return (io->dma[0].control.bytes[1]);
+        case IO_REG_DMA0CNT + 1:            return 0;
+        case IO_REG_DMA0CTL:                return io->dma[0].control.bytes[0];
+        case IO_REG_DMA0CTL + 1:            return io->dma[0].control.bytes[1];
         case IO_REG_DMA1CNT:
-        case IO_REG_DMA1CNT + 1:            return (0);
-        case IO_REG_DMA1CTL:                return (io->dma[1].control.bytes[0]);
-        case IO_REG_DMA1CTL + 1:            return (io->dma[1].control.bytes[1]);
+        case IO_REG_DMA1CNT + 1:            return 0;
+        case IO_REG_DMA1CTL:                return io->dma[1].control.bytes[0];
+        case IO_REG_DMA1CTL + 1:            return io->dma[1].control.bytes[1];
         case IO_REG_DMA2CNT:
-        case IO_REG_DMA2CNT + 1:            return (0);
-        case IO_REG_DMA2CTL:                return (io->dma[2].control.bytes[0]);
-        case IO_REG_DMA2CTL + 1:            return (io->dma[2].control.bytes[1]);
+        case IO_REG_DMA2CNT + 1:            return 0;
+        case IO_REG_DMA2CTL:                return io->dma[2].control.bytes[0];
+        case IO_REG_DMA2CTL + 1:            return io->dma[2].control.bytes[1];
         case IO_REG_DMA3CNT:
-        case IO_REG_DMA3CNT + 1:            return (0);
-        case IO_REG_DMA3CTL:                return (io->dma[3].control.bytes[0]);
-        case IO_REG_DMA3CTL + 1:            return (io->dma[3].control.bytes[1]);
+        case IO_REG_DMA3CNT + 1:            return 0;
+        case IO_REG_DMA3CTL:                return io->dma[3].control.bytes[0];
+        case IO_REG_DMA3CTL + 1:            return io->dma[3].control.bytes[1];
 
         /* Timer 0 */
         case IO_REG_TM0CNT_LO:
@@ -274,10 +274,10 @@ mem_io_read8(
             uint16_t val;
 
             val = timer_read_value(gba, 0);
-            return (val >> (8 * (addr - IO_REG_TM0CNT_LO)));
+            return val >> (8 * (addr - IO_REG_TM0CNT_LO));
         };
-        case IO_REG_TM0CNT_HI:              return (io->timers[0].control.bytes[0]);
-        case IO_REG_TM0CNT_HI + 1:          return (0);
+        case IO_REG_TM0CNT_HI:              return io->timers[0].control.bytes[0];
+        case IO_REG_TM0CNT_HI + 1:          return 0;
 
         /* Timer 1 */
         case IO_REG_TM1CNT_LO:
@@ -285,10 +285,10 @@ mem_io_read8(
             uint16_t val;
 
             val = timer_read_value(gba, 1);
-            return (val >> (8 * (addr - IO_REG_TM1CNT_LO)));
+            return val >> (8 * (addr - IO_REG_TM1CNT_LO));
         };
-        case IO_REG_TM1CNT_HI:              return (io->timers[1].control.bytes[0]);
-        case IO_REG_TM1CNT_HI + 1:          return (0);
+        case IO_REG_TM1CNT_HI:              return io->timers[1].control.bytes[0];
+        case IO_REG_TM1CNT_HI + 1:          return 0;
 
         /* Timer 2 */
         case IO_REG_TM2CNT_LO:
@@ -296,10 +296,10 @@ mem_io_read8(
             uint16_t val;
 
             val = timer_read_value(gba, 2);
-            return (val >> (8 * (addr - IO_REG_TM2CNT_LO)));
+            return val >> (8 * (addr - IO_REG_TM2CNT_LO));
         };
-        case IO_REG_TM2CNT_HI:              return (io->timers[2].control.bytes[0]);
-        case IO_REG_TM2CNT_HI + 1:          return (0);
+        case IO_REG_TM2CNT_HI:              return io->timers[2].control.bytes[0];
+        case IO_REG_TM2CNT_HI + 1:          return 0;
 
         /* Timer 3 */
         case IO_REG_TM3CNT_LO:
@@ -307,55 +307,55 @@ mem_io_read8(
             uint16_t val;
 
             val = timer_read_value(gba, 3);
-            return (val >> (8 * (addr - IO_REG_TM3CNT_LO)));
+            return val >> (8 * (addr - IO_REG_TM3CNT_LO));
         };
-        case IO_REG_TM3CNT_HI:              return (io->timers[3].control.bytes[0]);
-        case IO_REG_TM3CNT_HI + 1:          return (0);
+        case IO_REG_TM3CNT_HI:              return io->timers[3].control.bytes[0];
+        case IO_REG_TM3CNT_HI + 1:          return 0;
 
         /* Key Input */
-        case IO_REG_KEYINPUT:               return (io->keyinput.bytes[0]);
-        case IO_REG_KEYINPUT + 1:           return (io->keyinput.bytes[1]);
-        case IO_REG_KEYCNT:                 return (io->keycnt.bytes[0]);
-        case IO_REG_KEYCNT + 1:             return (io->keycnt.bytes[1]);
+        case IO_REG_KEYINPUT:               return io->keyinput.bytes[0];
+        case IO_REG_KEYINPUT + 1:           return io->keyinput.bytes[1];
+        case IO_REG_KEYCNT:                 return io->keycnt.bytes[0];
+        case IO_REG_KEYCNT + 1:             return io->keycnt.bytes[1];
 
         /* Serial communication */
-        case IO_REG_SIOCNT:                 return (io->siocnt.bytes[0]);
-        case IO_REG_SIOCNT + 1:             return (io->siocnt.bytes[1]);
-        case IO_REG_RCNT:                   return (io->rcnt.bytes[0]);
-        case IO_REG_RCNT + 1:               return (io->rcnt.bytes[1]);
-        case IO_REG_IR:                     return (0);
-        case IO_REG_IR + 1:                 return (0);
-        case IO_REG_UNKNOWN_1:              return (0);
-        case IO_REG_UNKNOWN_1 + 1:          return (0);
-        case IO_REG_UNKNOWN_2:              return (0);
-        case IO_REG_UNKNOWN_2 + 1:          return (0);
+        case IO_REG_SIOCNT:                 return io->siocnt.bytes[0];
+        case IO_REG_SIOCNT + 1:             return io->siocnt.bytes[1];
+        case IO_REG_RCNT:                   return io->rcnt.bytes[0];
+        case IO_REG_RCNT + 1:               return io->rcnt.bytes[1];
+        case IO_REG_IR:                     return 0;
+        case IO_REG_IR + 1:                 return 0;
+        case IO_REG_UNKNOWN_1:              return 0;
+        case IO_REG_UNKNOWN_1 + 1:          return 0;
+        case IO_REG_UNKNOWN_2:              return 0;
+        case IO_REG_UNKNOWN_2 + 1:          return 0;
 
         /* Interrupts */
-        case IO_REG_IE:                     return (io->int_enabled.bytes[0]);
-        case IO_REG_IE + 1:                 return (io->int_enabled.bytes[1]);
-        case IO_REG_IF:                     return (io->int_flag.bytes[0]);
-        case IO_REG_IF + 1:                 return (io->int_flag.bytes[1]);
-        case IO_REG_WAITCNT:                return (io->waitcnt.bytes[0]);
-        case IO_REG_WAITCNT + 1:            return (io->waitcnt.bytes[1]);
+        case IO_REG_IE:                     return io->int_enabled.bytes[0];
+        case IO_REG_IE + 1:                 return io->int_enabled.bytes[1];
+        case IO_REG_IF:                     return io->int_flag.bytes[0];
+        case IO_REG_IF + 1:                 return io->int_flag.bytes[1];
+        case IO_REG_WAITCNT:                return io->waitcnt.bytes[0];
+        case IO_REG_WAITCNT + 1:            return io->waitcnt.bytes[1];
         case IO_REG_WAITCNT + 2:
-        case IO_REG_WAITCNT + 3:            return (0);
-        case IO_REG_IME:                    return (io->ime.bytes[0]);
+        case IO_REG_WAITCNT + 3:            return 0;
+        case IO_REG_IME:                    return io->ime.bytes[0];
         case IO_REG_IME + 1:
         case IO_REG_IME + 2:
-        case IO_REG_IME + 3:                return (0);
-        case IO_REG_UNKNOWN_3:              return (0);
-        case IO_REG_UNKNOWN_3 + 1:          return (0);
+        case IO_REG_IME + 3:                return 0;
+        case IO_REG_UNKNOWN_3:              return 0;
+        case IO_REG_UNKNOWN_3 + 1:          return 0;
 
         /* System */
-        case IO_REG_POSTFLG:                return (io->postflg);
+        case IO_REG_POSTFLG:                return io->postflg;
 
         /* mGBA logging system */
 #ifdef WITH_DEBUGGER
-        case IO_REG_MGBA_LOG_ENABLE:            return (io->mgba_log.enable.bytes[0]);
-        case IO_REG_MGBA_LOG_ENABLE + 1:        return (io->mgba_log.enable.bytes[1]);
+        case IO_REG_MGBA_LOG_ENABLE:            return io->mgba_log.enable.bytes[0];
+        case IO_REG_MGBA_LOG_ENABLE + 1:        return io->mgba_log.enable.bytes[1];
 #endif
     }
-    return (mem_openbus_read(gba, addr));
+    return mem_openbus_read(gba, addr);
 }
 
 /*
@@ -870,9 +870,8 @@ bool
 io_evaluate_keypad_cond(
     struct gba const *gba
 ) {
-    return ((gba->io.keycnt.irq_cond && (~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF) == (gba->io.keycnt.raw & 0x3FF))  // Logical AND
-        || (!gba->io.keycnt.irq_cond && ~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF)  // Logical OR
-    );
+    return (gba->io.keycnt.irq_cond && (~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF) == (gba->io.keycnt.raw & 0x3FF))  // Logical AND
+        || (!gba->io.keycnt.irq_cond && ~gba->io.keyinput.raw & gba->io.keycnt.raw & 0x3FF);  // Logical OR
 }
 
 /*

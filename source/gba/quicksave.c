@@ -49,12 +49,12 @@ quicksave_read(
     size_t length
 ) {
     if (buffer->size < buffer->index + length) {
-        return (true);
+        return true;
     }
 
     memcpy(data, buffer->data + buffer->index, length);
     buffer->index += length;
-    return (false);
+    return false;
 }
 
 /*
@@ -136,7 +136,7 @@ quickload(
         || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.next_event, sizeof(uint64_t))
         || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.events_size, sizeof(size_t))
     ) {
-        return (true);
+        return true;
     }
 
     gba->scheduler.events = calloc(gba->scheduler.events_size, sizeof(struct scheduler_event));
@@ -155,11 +155,11 @@ quickload(
             || quicksave_read(&buffer, (uint8_t *)&event->period, sizeof(uint64_t))
             || quicksave_read(&buffer, (uint8_t *)&event->args, sizeof(struct event_args))
         ) {
-            return (true);
+            return true;
         }
     }
 
     sched_minheap_rebuild(gba);
 
-    return (false);
+    return false;
 }

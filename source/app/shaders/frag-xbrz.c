@@ -87,7 +87,7 @@ char const *SHADER_FRAG_XBRZ_1 = GLSL(
     }
 
     bool IsPixEqual(const vec3 pixA, const vec3 pixB) {
-        return (DistYCbCr(pixA, pixB) < EQUAL_COLOR_TOLERANCE);
+        return DistYCbCr(pixA, pixB) < EQUAL_COLOR_TOLERANCE;
     }
 
     float get_left_ratio(vec2 center, vec2 origin, vec2 direction, vec2 scale) {
@@ -322,7 +322,7 @@ char const *SHADER_FRAG_XBRZ_2 = GLSL(
     }
 
     bool IsPixEqual(const vec3 pixA, const vec3 pixB) {
-        return (DistYCbCr(pixA, pixB) < EQUAL_COLOR_TOLERANCE);
+        return DistYCbCr(pixA, pixB) < EQUAL_COLOR_TOLERANCE;
     }
 
     float get_left_ratio(vec2 center, vec2 origin, vec2 direction, vec2 scale) {

@@ -23,13 +23,13 @@ mem_backup_storage_read8(
     switch (gba->memory.backup_storage.type) {
         case BACKUP_FLASH64:
         case BACKUP_FLASH128:
-            return (mem_flash_read8(gba, addr));
+            return mem_flash_read8(gba, addr);
             break;
         case BACKUP_SRAM:
-            return (gba->shared_data.backup_storage.data[addr & SRAM_MASK]);
+            return gba->shared_data.backup_storage.data[addr & SRAM_MASK];
             break;
         default:
-            return (0xFF);
+            return 0xFF;
     }
 }
 

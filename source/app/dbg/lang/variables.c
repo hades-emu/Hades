@@ -50,9 +50,9 @@ debugger_lang_variables_lookup(
 
     for (v = app->debugger.variables; v < app->debugger.variables + app->debugger.variables_len; ++v) {
         if (!strcmp(v->name, name)) {
-            return (v);
+            return v;
         }
     }
 
-    return (NULL);
+    return NULL;
 }

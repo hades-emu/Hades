@@ -37,7 +37,7 @@ cheat_token_new(
         compiler->tokens = t;
     }
 
-    return (t);
+    return t;
 }
 
 static

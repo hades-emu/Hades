@@ -66,12 +66,12 @@ ppu_find_top_window(
     uint32_t x
 ) {
     if (gba->ppu.win_masks[WIN0][x]) {
-        return (gba->io.winin.win0);
+        return gba->io.winin.win0;
     } else if (gba->ppu.win_masks[WIN1][x]) {
-        return (gba->io.winin.win1);
+        return gba->io.winin.win1;
     } else if (scanline->win_obj_mask[x]) {
-        return (gba->io.winout.winobj);
+        return gba->io.winout.winobj;
     } else {
-        return (gba->io.winout.winout);
+        return gba->io.winout.winout;
     }
 }

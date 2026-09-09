@@ -1779,10 +1779,10 @@ db_lookup_game(
 
             entry = calloc(1, sizeof(*entry));
             memcpy(entry, game_database + i, sizeof(*entry));
-            return (entry);
+            return entry;
         }
     }
-    return (NULL);
+    return NULL;
 }
 
 struct idle_loop_entry const *
@@ -1793,11 +1793,11 @@ db_lookup_idle_loop(
 
     for (i = 0; i < array_length(idle_loop_database); ++i) {
         if (!strncmp((char const *)game_code, idle_loop_database[i].code, 4) && idle_loop_database[i].addr) {
-            return (&idle_loop_database[i]);
+            return &idle_loop_database[i];
         }
     }
 
-    return (NULL);
+    return NULL;
 }
 
 static
@@ -1813,12 +1813,12 @@ array_search(
     tmp = haystack;
     while (haystack_len >= needle_len) {
         if (!memcmp(tmp, needle, needle_len)) {
-            return (tmp);
+            return tmp;
         }
         ++tmp;
         --haystack_len;
     }
-    return (NULL);
+    return NULL;
 }
 
 /*
@@ -1861,5 +1861,5 @@ db_autodetect_game_features(
         entry->storage = BACKUP_NONE;
     }
 
-    return (entry);
+    return entry;
 }

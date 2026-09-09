@@ -53,7 +53,7 @@ apu_fifo_read8(
         --fifo->size;
     }
 
-    return (val);
+    return val;
 }
 
 void

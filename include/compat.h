@@ -49,7 +49,7 @@ hs_convert_to_wchar(
     MultiByteToWideChar(CP_UTF8, 0, str, len, wstr, wlen);
     wstr[wlen] = '\0';
 
-    return (wstr);
+    return wstr;
 }
 
 static inline
@@ -62,14 +62,14 @@ hs_convert_from_wchar(
 
     wlen = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
     if (wlen == 0) {
-        return (NULL);
+        return NULL;
     }
 
     str = malloc(wlen);
     hs_assert(str);
 
     WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, wlen, NULL, NULL);
-    return (str);
+    return str;
 }
 
 static inline
@@ -92,7 +92,7 @@ hs_abspath(
 
 out:
     free(wpath);
-    return (abspath);
+    return abspath;
 }
 
 static inline
@@ -117,7 +117,7 @@ hs_fopen(
 end:
     free(wpath);
     free(wmode);
-    return (file);
+    return file;
 }
 
 static inline
@@ -130,7 +130,7 @@ hs_mkdir(
 
     wpath = hs_convert_to_wchar(path);
     if (!wpath) {
-        return (false);
+        return false;
     }
 
     out = CreateDirectoryW(wpath, NULL);
@@ -149,13 +149,13 @@ hs_fexists(
 
     wpath = hs_convert_to_wchar(path);
     if (!wpath) {
-        return (false);
+        return false;
     }
 
     out = _waccess(wpath, 0) == 0;
 
     free(wpath);
-    return (out);
+    return out;
 }
 
 static inline
@@ -168,13 +168,13 @@ hs_remove(
 
     wpath = hs_convert_to_wchar(path);
     if (!wpath) {
-        return (false);
+        return false;
     }
 
     out = DeleteFileW(wpath);
 
     free(wpath);
-    return (out);
+    return out;
 }
 
 static inline
@@ -185,7 +185,7 @@ hs_basename(
     char const *base;
 
     base = strrchr(path, '\\');
-    return (base ? base + 1 : path);
+    return base ? base + 1 : path;
 }
 
 static inline
@@ -216,7 +216,7 @@ hs_fmtime(
 
 end:
     free(wpath);
-    return (out);
+    return out;
 }
 
 static inline
@@ -246,7 +246,7 @@ hs_time(
     GetSystemTimeAsFileTime(&ts);
     time = (uint64_t)ts.dwHighDateTime << 32u | ts.dwLowDateTime;
     time /= 10;
-    return (time);
+    return time;
 }
 
 static inline
@@ -281,7 +281,7 @@ hs_basename(
     char const *base;
 
     base = strrchr(path, '/');
-    return (base ? base + 1 : path);
+    return base ? base + 1 : path;
 }
 
 static inline
@@ -292,7 +292,7 @@ hs_time(
     struct timespec ts;
 
     hs_assert(clock_gettime(CLOCK_MONOTONIC, &ts) == 0);
-    return (ts.tv_sec * 1000000 + ts.tv_nsec / 1000);
+    return ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
 }
 
 static inline
@@ -305,7 +305,7 @@ hs_fmtime(
     char *out;
 
     if (stat(path, &stbuf)) {
-        return (NULL);
+        return NULL;
     }
 
     out = (char *)malloc(sizeof(char) * 128);
@@ -313,7 +313,7 @@ hs_fmtime(
 
     tm = localtime(&stbuf.st_mtime);
     strftime(out, 128, "%c", tm);
-    return (out);
+    return out;
 }
 
 static inline

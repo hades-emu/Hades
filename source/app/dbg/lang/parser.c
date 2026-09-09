@@ -28,7 +28,7 @@ node_new(
     memset(t, 0, sizeof(*t));
     t->kind = kind;
 
-    return (t);
+    return t;
 }
 
 static
@@ -40,7 +40,7 @@ debugger_lang_parse_value(
 
     token = ast->token;
     if (!token) {
-        return (NULL);
+        return NULL;
     }
 
     if (token->kind == TOKEN_OPERATOR && (token->value.operator == OP_BINARY_ADD || token->value.operator == OP_BINARY_SUB)) {
@@ -50,14 +50,14 @@ debugger_lang_parse_value(
         op->value.operator = token->value.operator == OP_BINARY_ADD ? OP_UNARY_PLUS : OP_UNARY_MINUS;
         ast->token = token->next; // Eat '+'
         op->rhs = debugger_lang_parse_value(ast); // Parse rhs
-        return (op);
+        return op;
     } else if (token->kind == TOKEN_LITTERAL) {
         struct node *node;
 
         node = node_new(NODE_LITTERAL);
         node->value.litteral = token->value.litteral;
         ast->token = token->next; // Eat litteral
-        return (node);
+        return node;
     } else if (token->kind == TOKEN_OPEN_PARENTHESIS) {
         struct node *content;
 
@@ -68,28 +68,28 @@ debugger_lang_parse_value(
         if (!content && token) {
             free(ast->error);
             ast->error = strdup("Parenthesis have no content");
-            return (NULL);
+            return NULL;
         }
 
         if (!token || token->kind != TOKEN_CLOSE_PARENTHESIS) {
             free(ast->error);
             ast->error = strdup("Missing closing parenthesis");
-            return (content);
+            return content;
         }
 
         ast->token = token->next; // Eat ')'
-        return (content);
+        return content;
     } else if (token->kind == TOKEN_IDENTIFIER) {
         struct node *node;
 
         node = node_new(NODE_VARIABLE);
         node->value.identifier = strdup(token->value.identifier);
         ast->token = token->next; // Eat identifier
-        return (node);
+        return node;
     }
     free(ast->error);
     ast->error = strdup("Invalid syntax");
-    return (NULL);
+    return NULL;
 }
 
 static
@@ -113,7 +113,7 @@ debugger_lang_try_parse_binary_op(
 
         new_prio = operator_binary_prio[token->value.operator];
         if (new_prio < prio) {
-            return (lhs);
+            return lhs;
         }
 
         op = node_new(NODE_OP_BINARY);
@@ -124,12 +124,12 @@ debugger_lang_try_parse_binary_op(
         if (!ast->token) {
             free(ast->error);
             ast->error = hs_format("Missing right-handside value for operator \"%s\"", operator_name[op->value.operator]);
-            return (op);
+            return op;
         }
 
         op->rhs = debugger_lang_parse_value(ast); // Parse RHS
         if (!op->rhs) {
-            return (NULL);
+            return NULL;
         }
 
         token = ast->token;
@@ -146,9 +146,9 @@ debugger_lang_try_parse_binary_op(
             }
         }
 
-        return (debugger_lang_try_parse_binary_op(ast, prio, op));
+        return debugger_lang_try_parse_binary_op(ast, prio, op);
     }
-    return (lhs);
+    return lhs;
 }
 
 static
@@ -156,7 +156,7 @@ struct node *
 debugger_lang_parse_expr(
     struct ast *ast
 ) {
-    return (debugger_lang_try_parse_binary_op(ast, 0, debugger_lang_parse_value(ast)));
+    return debugger_lang_try_parse_binary_op(ast, 0, debugger_lang_parse_value(ast));
 }
 
 void

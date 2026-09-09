@@ -228,7 +228,7 @@ end:
         scheduler->next_event = event.at;
     }
 
-    return (i);
+    return i;
 }
 
 void

@@ -36,27 +36,27 @@ system_config_dir(
 
     home_dir = getenv("HOME");
     if (home_dir && hs_fexists(home_dir)) {
-        return (hs_format("%s/Library/Application Support", home_dir));
+        return hs_format("%s/Library/Application Support", home_dir);
     }
 
-    return (NULL);
+    return NULL;
 #elif __unix__
     char *xdg_config_dir;
     char *home_dir;
 
     xdg_config_dir = getenv("XDG_CONFIG_HOME");
     if (xdg_config_dir && hs_fexists(xdg_config_dir)) {
-        return (strdup(xdg_config_dir));
+        return strdup(xdg_config_dir);
     }
 
     home_dir = getenv("HOME");
     if (home_dir && hs_fexists(home_dir)) {
-        return (hs_format("%s/.config", home_dir));
+        return hs_format("%s/.config", home_dir);
     }
 
-    return (NULL);
+    return NULL;
 #else
-    return (NULL);
+    return NULL;
 #endif
 }
 
@@ -76,27 +76,27 @@ system_pictures_dir(
 
     home_dir = getenv("HOME");
     if (home_dir && hs_fexists(home_dir)) {
-        return (hs_format("%s/Pictures", home_dir));
+        return hs_format("%s/Pictures", home_dir);
     }
 
-    return (NULL);
+    return NULL;
 #elif __unix__
     char *xdg_pictures_dir;
     char *home_dir;
 
     xdg_pictures_dir = getenv("XDG_PICTURES_DIR");
     if (xdg_pictures_dir && hs_fexists(xdg_pictures_dir)) {
-        return (strdup(xdg_pictures_dir));
+        return strdup(xdg_pictures_dir);
     }
 
     home_dir = getenv("HOME");
     if (home_dir && hs_fexists(home_dir)) {
-        return (strdup(home_dir));
+        return strdup(home_dir);
     }
 
-    return (NULL);
+    return NULL;
 #else
-    return (NULL);
+    return NULL;
 #endif
 }
 
@@ -136,18 +136,18 @@ app_path_config(
     struct app const *app
 ) {
     if (app->args.config_path) {
-        return (app->args.config_path);
+        return app->args.config_path;
     }
 
     if (hs_fexists("./config.json")) {
-        return ("./config.json");
+        return "./config.json";
     }
 
     if (app->file.sys_config_path) {
-        return (app->file.sys_config_path);
+        return app->file.sys_config_path;
     }
 
-    return ("./config.json");
+    return "./config.json";
 }
 
 char const *
@@ -155,7 +155,7 @@ app_path_screenshots(
     struct app const *app
 ) {
     if (!app->settings.general.directories.screenshot.use_system_directory && app->settings.general.directories.screenshot.path) {
-        return (app->settings.general.directories.screenshot.path);
+        return app->settings.general.directories.screenshot.path;
     }
     return app->file.sys_pictures_dir_path ?: "screenshots";
 }

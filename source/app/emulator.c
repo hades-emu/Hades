@@ -259,7 +259,7 @@ app_emulator_configure_bios(
             UI_NOTIFICATION_ERROR,
             "No BIOS found.\nPlease download and select a valid Nintendo GBA Bios using \"File\" -> \"Open BIOS\"."
         );
-        return (true);
+        return true;
     }
 
     file = hs_fopen(bios_path, "rb");
@@ -271,7 +271,7 @@ app_emulator_configure_bios(
             bios_path,
             strerror(errno)
         );
-        return (true);
+        return true;
     }
 
     fseek(file, 0, SEEK_END);
@@ -281,7 +281,7 @@ app_emulator_configure_bios(
             UI_NOTIFICATION_ERROR,
             "The BIOS is invalid."
         );
-        return (true);
+        return true;
     }
 
     rewind(file);
@@ -298,13 +298,13 @@ app_emulator_configure_bios(
             strerror(errno)
         );
         free(data);
-        return (true);
+        return true;
     }
 
     app->emulation.launch_config->bios.data = data;
     app->emulation.launch_config->bios.size = BIOS_SIZE;
 
-    return (false);
+    return false;
 }
 
 static
@@ -336,7 +336,7 @@ app_emulator_configure_rom_archive(
             archive_path,
             archive_error_string(archive)
         );
-        return (true);
+        return true;
     }
 
     while (archive_read_next_header(archive, &entry) == ARCHIVE_OK) {
@@ -392,7 +392,7 @@ app_emulator_configure_rom_archive(
 
 cleanup:
     archive_read_free(archive);
-    return (!game_found);
+    return !game_found;
 }
 
 static
@@ -414,7 +414,7 @@ app_emulator_configure_rom(
             rom_path,
             strerror(errno)
         );
-        return (true);
+        return true;
     }
 
     fseek(file, 0, SEEK_END);
@@ -425,7 +425,7 @@ app_emulator_configure_rom(
             UI_NOTIFICATION_ERROR,
             "The ROM is invalid."
         );
-        return (true);
+        return true;
     }
 
     rewind(file);
@@ -442,13 +442,13 @@ app_emulator_configure_rom(
             strerror(errno)
         );
         free(data);
-        return (true);
+        return true;
     }
 
     app->emulation.launch_config->rom.data = data;
     app->emulation.launch_config->rom.size = file_len;
 
-    return (false);
+    return false;
 }
 
 static
@@ -495,10 +495,10 @@ app_emulator_configure_backup_storage(
                 backup_path,
                 strerror(errno)
             );
-            return (true);
+            return true;
         }
     }
-    return (false);
+    return false;
 }
 
 static
@@ -522,7 +522,7 @@ app_emulator_import_backup_storage(
             backup_path_to_import,
             strerror(errno)
         );
-        return (true);
+        return true;
     }
 
     fseek(backup, 0, SEEK_END);
@@ -563,10 +563,10 @@ app_emulator_import_backup_storage(
                 backup_path,
                 strerror(errno)
             );
-            return (true);
+            return true;
         }
     }
-    return (false);
+    return false;
 }
 
 /*
@@ -624,7 +624,7 @@ app_emulator_configure_and_run_impl(
         || (backup_to_import ? app_emulator_import_backup_storage(app, backup_to_import, backup_path) : app_emulator_configure_backup_storage(app, backup_path))
     ) {
         app_emulator_unconfigure(app);
-        return (true);
+        return true;
     }
 
     app_cheats_load(app, rom_path);
@@ -734,7 +734,7 @@ app_emulator_configure_and_run_impl(
         app_emulator_pause(app);
     }
 
-    return (false);
+    return false;
 }
 
 bool

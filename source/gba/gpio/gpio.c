@@ -17,7 +17,7 @@ gpio_read_u8(
 ) {
     switch (addr) {
         case GPIO_REG_CTRL: {
-            return (gba->gpio.readable);
+            return gba->gpio.readable;
         };
         case GPIO_REG_DATA: {
             uint8_t val;
@@ -36,13 +36,13 @@ gpio_read_u8(
                     break;
                 }
             }
-            return (val);
+            return val;
         };
         case GPIO_REG_DIRECTION: {
-            return (0); // FIXME
+            return 0; // FIXME
         };
     }
-    return (0);
+    return 0;
 }
 
 void

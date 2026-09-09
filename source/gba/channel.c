@@ -120,9 +120,9 @@ channel_next(
     }
 
     if (channel->events && (uint8_t *)new_event < (uint8_t *)channel->events + channel->size) {
-        return (new_event);
+        return new_event;
     }
-    return (NULL);
+    return NULL;
 }
 
 /*

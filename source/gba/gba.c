@@ -51,7 +51,7 @@ gba_create(
         pthread_mutex_init(&gba->shared_data.audio_rbuffer_mutex, NULL);
     }
 
-    return (gba);
+    return gba;
 }
 
 void
@@ -743,7 +743,7 @@ uint32_t
 gba_shared_audio_rbuffer_pop_sample(
     struct gba *gba
 ) {
-    return (apu_rbuffer_pop(&gba->shared_data.audio_rbuffer));
+    return apu_rbuffer_pop(&gba->shared_data.audio_rbuffer);
 }
 
 /*
@@ -753,7 +753,7 @@ uint32_t
 gba_shared_reset_frame_counter(
     struct gba *gba
 ) {
-    return (atomic_exchange(&gba->shared_data.frame_counter, 0));
+    return atomic_exchange(&gba->shared_data.frame_counter, 0);
 }
 
 /*
