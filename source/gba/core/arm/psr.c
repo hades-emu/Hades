@@ -60,7 +60,7 @@ core_arm_msr(
         val = core->registers[bitfield_get_range(op, 0, 4)];
     }
 
-    /* Build the mask */
+    // Build the mask
 
     mask = 0;
     mask |= (0x000000FF) * bitfield_get(op, 16);

@@ -167,7 +167,7 @@ debugger_cmd_disas_around(
     op_len = thumb ? 2 : 4;
     handle = thumb ? app->debugger.handle_thumb : app->debugger.handle_arm;
 
-    /* Calculate the value of `ptr_start` */
+    // Calculate the value of `ptr_start`
     {
         size_t i;
         uint32_t tmp;
@@ -193,7 +193,7 @@ debugger_cmd_disas_around(
         }
     }
 
-    /* Calculate the value of `ptr_end` */
+    // Calculate the value of `ptr_end`
     {
         size_t i;
 
@@ -224,7 +224,7 @@ debugger_cmd_disas_around(
         mnemonic_len = 5;
     }
 
-    /* Print <bad> for instructions that couldn't be disassembled before ptr_start */
+    // Print <bad> for instructions that couldn't be disassembled before ptr_start
     {
         uint32_t p;
 
@@ -263,7 +263,7 @@ debugger_cmd_disas_around(
         }
     }
 
-    /* Print <bad> for instructions that couldn't be disassembled after ptr_end */
+    // Print <bad> for instructions that couldn't be disassembled after ptr_end
     {
         while (ptr_end < ptr + radius * op_len) {
             printf(

@@ -384,7 +384,7 @@ mem_read16_ror(
     rotate = (addr & 0b1) * 8;
     value = template_read(uint16_t, gba, addr);
 
-    /* Unaligned 16-bits loads are supposed to be unpredictable, but in practise the GBA rotates them */
+    // Unaligned 16-bits loads are supposed to be unpredictable, but in practise the GBA rotates them
     return ror32(value, rotate);
 }
 

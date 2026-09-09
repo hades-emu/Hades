@@ -25,20 +25,16 @@ core_arm_branch(
     core = &gba->core;
     offset = (int32_t)((uint32_t)sign_extend24(op & 0xFFFFFF) << 2u);
 
-    /*
-    ** If the link bit (24) is set, the old PC is written in the link register.
-    */
+    // If the link bit (24) is set, the old PC is written in the link register.
     if (bitfield_get(op, 24)) {
         core->lr = core->pc - 4;
     }
 
-    /*
-    ** I believe adding `offset` (signed) to `core->pc` (unsigned) is safe.
-    ** I'll be promoted to an unsigned value, sure, but that promotion is defined.
-    ** As per C11's 6.3.1.3, when casting the negative value to unsigned the compiler
-    ** mathematically adds UINT32_MAX + 1 to the value. That preserves additions
-    ** and our resulting value is the correct one.
-    */
+    // I believe adding `offset` (signed) to `core->pc` (unsigned) is safe.
+    // I'll be promoted to an unsigned value, sure, but that promotion is defined.
+    // As per C11's 6.3.1.3, when casting the negative value to unsigned the compiler
+    // mathematically adds UINT32_MAX + 1 to the value. That preserves additions
+    // and our resulting value is the correct one.
     core->pc += offset;
     core_reload_pipeline(gba);
 }
@@ -59,9 +55,7 @@ core_arm_branch_xchg(
     rn = op & 0xF;
     addr = core->registers[rn];
 
-    /*
-    ** Mask out the last bit which used to indicate if Thumb mode must be entered.
-    */
+    // Mask out the last bit which used to indicate if Thumb mode must be entered.
     core->pc = addr & 0xFFFFFFFE;
     core->cpsr.thumb = addr & 0b1;
     core_reload_pipeline(gba);

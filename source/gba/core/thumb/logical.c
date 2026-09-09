@@ -31,7 +31,7 @@ core_thumb_lsl(
     core = &gba->core;
     value = core->registers[rs];
 
-    /* LSL (Logical Shift Left) */
+    // LSL (Logical Shift Left)
 
     if (shift > 0) {
         value <<= shift - 1;
@@ -69,7 +69,7 @@ core_thumb_lsr(
     core = &gba->core;
     value = core->registers[rs];
 
-    /* LSR (Logical Shift Right) */
+    // LSR (Logical Shift Right)
 
     if (shift == 0) {
         shift = 32;
@@ -109,7 +109,7 @@ core_thumb_asr(
     core = &gba->core;
     value = core->registers[rs];
 
-    /* ASR (Arithmetic Shift Right) */
+    // ASR (Arithmetic Shift Right)
 
     if (shift == 0) {
         shift = 32;

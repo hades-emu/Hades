@@ -451,12 +451,12 @@ void
 app_sdl_video_render_frame(
     struct app *app
 ) {
-    /* Create the new frame */
+    // Create the new frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     igNewFrame();
 
-    /* Render the ImGui stuff */
+    // Render the ImGui stuff
 
     app_win_menubar(app);
 
@@ -478,13 +478,13 @@ app_sdl_video_render_frame(
 
     app_win_notifications(app);
 
-    /* Render the imGui frame */
+    // Render the imGui frame
     igRender();
 
     SDL_GL_MakeCurrent(app->sdl.window, app->gfx.gl_context);
     glViewport(0, 0, (int)app->ui.ioptr->DisplaySize.x, (int)app->ui.ioptr->DisplaySize.y);
 
-    /* Change the background color if the game is running */
+    // Change the background color if the game is running
     if (app->emulation.is_started) {
         glClearColor(0.f, 0.f, 0.f, 1.f);
     } else {

@@ -162,7 +162,7 @@ mem_io_read8(
     io = &gba->io;
     switch (addr) {
 
-        /* Display */
+        // Display
         case IO_REG_DISPCNT:                return io->dispcnt.bytes[0];
         case IO_REG_DISPCNT + 1:            return io->dispcnt.bytes[1];
         case IO_REG_GREENSWP:               return io->greenswp.bytes[0];
@@ -188,7 +188,7 @@ mem_io_read8(
         case IO_REG_BLDALPHA:               return io->bldalpha.bytes[0];
         case IO_REG_BLDALPHA + 1:           return io->bldalpha.bytes[1];
 
-        /* Sound */
+        // Sound
         case IO_REG_SOUND1CNT_L:            return io->sound1cnt_l.bytes[0];
         case IO_REG_SOUND1CNT_L + 1:        return io->sound1cnt_l.bytes[1];
         case IO_REG_SOUND1CNT_H:            return io->sound1cnt_h.bytes[0] & 0xC0;
@@ -250,7 +250,7 @@ mem_io_read8(
         case IO_REG_WAVE_RAM3 + 2:
         case IO_REG_WAVE_RAM3 + 3:          return io->waveram[!io->sound3cnt_l.bank_select][addr - IO_REG_WAVE_RAM0];
 
-        /* DMA */
+        // DMA
         case IO_REG_DMA0CNT:
         case IO_REG_DMA0CNT + 1:            return 0;
         case IO_REG_DMA0CTL:                return io->dma[0].control.bytes[0];
@@ -268,7 +268,7 @@ mem_io_read8(
         case IO_REG_DMA3CTL:                return io->dma[3].control.bytes[0];
         case IO_REG_DMA3CTL + 1:            return io->dma[3].control.bytes[1];
 
-        /* Timer 0 */
+        // Timer 0
         case IO_REG_TM0CNT_LO:
         case IO_REG_TM0CNT_LO + 1: {
             uint16_t val;
@@ -279,7 +279,7 @@ mem_io_read8(
         case IO_REG_TM0CNT_HI:              return io->timers[0].control.bytes[0];
         case IO_REG_TM0CNT_HI + 1:          return 0;
 
-        /* Timer 1 */
+        // Timer 1
         case IO_REG_TM1CNT_LO:
         case IO_REG_TM1CNT_LO + 1: {
             uint16_t val;
@@ -290,7 +290,7 @@ mem_io_read8(
         case IO_REG_TM1CNT_HI:              return io->timers[1].control.bytes[0];
         case IO_REG_TM1CNT_HI + 1:          return 0;
 
-        /* Timer 2 */
+        // Timer 2
         case IO_REG_TM2CNT_LO:
         case IO_REG_TM2CNT_LO + 1: {
             uint16_t val;
@@ -301,7 +301,7 @@ mem_io_read8(
         case IO_REG_TM2CNT_HI:              return io->timers[2].control.bytes[0];
         case IO_REG_TM2CNT_HI + 1:          return 0;
 
-        /* Timer 3 */
+        // Timer 3
         case IO_REG_TM3CNT_LO:
         case IO_REG_TM3CNT_LO + 1: {
             uint16_t val;
@@ -312,13 +312,13 @@ mem_io_read8(
         case IO_REG_TM3CNT_HI:              return io->timers[3].control.bytes[0];
         case IO_REG_TM3CNT_HI + 1:          return 0;
 
-        /* Key Input */
+        // Key Input
         case IO_REG_KEYINPUT:               return io->keyinput.bytes[0];
         case IO_REG_KEYINPUT + 1:           return io->keyinput.bytes[1];
         case IO_REG_KEYCNT:                 return io->keycnt.bytes[0];
         case IO_REG_KEYCNT + 1:             return io->keycnt.bytes[1];
 
-        /* Serial communication */
+        // Serial communication
         case IO_REG_SIOCNT:                 return io->siocnt.bytes[0];
         case IO_REG_SIOCNT + 1:             return io->siocnt.bytes[1];
         case IO_REG_RCNT:                   return io->rcnt.bytes[0];
@@ -330,7 +330,7 @@ mem_io_read8(
         case IO_REG_UNKNOWN_2:              return 0;
         case IO_REG_UNKNOWN_2 + 1:          return 0;
 
-        /* Interrupts */
+        // Interrupts
         case IO_REG_IE:                     return io->int_enabled.bytes[0];
         case IO_REG_IE + 1:                 return io->int_enabled.bytes[1];
         case IO_REG_IF:                     return io->int_flag.bytes[0];
@@ -346,10 +346,10 @@ mem_io_read8(
         case IO_REG_UNKNOWN_3:              return 0;
         case IO_REG_UNKNOWN_3 + 1:          return 0;
 
-        /* System */
+        // System
         case IO_REG_POSTFLG:                return io->postflg;
 
-        /* mGBA logging system */
+        // mGBA logging system
 #ifdef WITH_DEBUGGER
         case IO_REG_MGBA_LOG_ENABLE:            return io->mgba_log.enable.bytes[0];
         case IO_REG_MGBA_LOG_ENABLE + 1:        return io->mgba_log.enable.bytes[1];
@@ -374,7 +374,7 @@ mem_io_write8(
     io = &gba->io;
     switch (addr) {
 
-        /* Display */
+        // Display
         case IO_REG_DISPCNT:                io->dispcnt.bytes[0] = val; break;
         case IO_REG_DISPCNT + 1:            io->dispcnt.bytes[1] = val; break;
         case IO_REG_GREENSWP:               io->greenswp.bytes[0] = val; break;
@@ -406,7 +406,7 @@ mem_io_write8(
         case IO_REG_BG3VOFS:                io->bg_voffset[3].bytes[0] = val; break;
         case IO_REG_BG3VOFS + 1:            io->bg_voffset[3].bytes[1] = val & 0x1; break;
 
-        /* Video - Affine Background */
+        // Video - Affine Background
         case IO_REG_BG2PA:                  io->bg_pa[0].bytes[0] = val; break;
         case IO_REG_BG2PA + 1:              io->bg_pa[0].bytes[1] = val; break;
         case IO_REG_BG2PB:                  io->bg_pb[0].bytes[0] = val; break;
@@ -440,7 +440,7 @@ mem_io_write8(
         case IO_REG_BG3Y + 2:               io->bg_y[1].bytes[2] = val; gba->ppu.reload_internal_affine_regs = true; break;
         case IO_REG_BG3Y + 3:               io->bg_y[1].bytes[3] = val; gba->ppu.reload_internal_affine_regs = true; break;
 
-        /* Video - Windows */
+        // Video - Windows
         case IO_REG_WIN0H:                  io->winh[0].bytes[0] = val; break;
         case IO_REG_WIN0H + 1:              io->winh[0].bytes[1] = val; break;
         case IO_REG_WIN1H:                  io->winh[1].bytes[0] = val; break;
@@ -454,11 +454,11 @@ mem_io_write8(
         case IO_REG_WINOUT:                 io->winout.bytes[0] = val & 0x3F; break;
         case IO_REG_WINOUT + 1:             io->winout.bytes[1] = val & 0x3F; break;
 
-        /* Video - Mosaic */
+        // Video - Mosaic
         case IO_REG_MOSAIC:                 io->mosaic.bytes[0] = val; break;
         case IO_REG_MOSAIC + 1:             io->mosaic.bytes[1] = val; break;
 
-        /* Video - Effects */
+        // Video - Effects
         case IO_REG_BLDCNT:                 io->bldcnt.bytes[0] = val; break;
         case IO_REG_BLDCNT + 1:             io->bldcnt.bytes[1] = val & 0x3F; break;
         case IO_REG_BLDALPHA:               io->bldalpha.bytes[0] = val & 0x1F; break;
@@ -466,7 +466,7 @@ mem_io_write8(
         case IO_REG_BLDY:                   io->bldy.bytes[0] = val; break;
         case IO_REG_BLDY + 1:               io->bldy.bytes[1] = val; break;
 
-        /* Sound */
+        // Sound
         case IO_REG_SOUND1CNT_L:            io->sound1cnt_l.bytes[0] = val & 0x7F; break;
         case IO_REG_SOUND1CNT_H:            io->sound1cnt_h.bytes[0] = val; break;
         case IO_REG_SOUND1CNT_H + 1: {
@@ -483,11 +483,9 @@ mem_io_write8(
         case IO_REG_SOUND1CNT_X + 1: {
             io->sound1cnt_x.bytes[1] = val;
 
-            /*
-            ** Only the frequency (and not the shadow frequency) is updated on register writes.
-            ** Reference:
-            **   - https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware#Frequency_Sweep
-            */
+            // Only the frequency (and not the shadow frequency) is updated on register writes.
+            // Reference:
+            //   - https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware#Frequency_Sweep
             gba->apu.tone_and_sweep.sweep.frequency = io->sound1cnt_x.sample_rate;
 
             if (io->sound1cnt_x.reset) {
@@ -583,9 +581,7 @@ mem_io_write8(
                 apu_reset_fifo(gba, 1);
                 apu_wave_stop(gba);
 
-                /*
-                ** Registers 0x4000060 to 0x4000081 are reset.
-                */
+                // Registers 0x4000060 to 0x4000081 are reset.
 
                 io->sound3cnt_l.raw = 0;
                 io->sound3cnt_h.raw = 0;
@@ -631,7 +627,7 @@ mem_io_write8(
             break;
         };
 
-        /* DMA - Channel 0 */
+        // DMA - Channel 0
         case IO_REG_DMA0SAD:                io->dma[0].src.bytes[0] = val; break;
         case IO_REG_DMA0SAD + 1:            io->dma[0].src.bytes[1] = val; break;
         case IO_REG_DMA0SAD + 2:            io->dma[0].src.bytes[2] = val; break;
@@ -645,7 +641,7 @@ mem_io_write8(
         case IO_REG_DMA0CTL:                io->dma[0].control.bytes[0] = val & 0xE0; break;
         case IO_REG_DMA0CTL + 1:            mem_io_dma_ctl_write8(gba, &io->dma[0], val); break;
 
-        /* DMA - Channel 1 */
+        // DMA - Channel 1
         case IO_REG_DMA1SAD:                io->dma[1].src.bytes[0] = val; break;
         case IO_REG_DMA1SAD + 1:            io->dma[1].src.bytes[1] = val; break;
         case IO_REG_DMA1SAD + 2:            io->dma[1].src.bytes[2] = val; break;
@@ -659,7 +655,7 @@ mem_io_write8(
         case IO_REG_DMA1CTL:                io->dma[1].control.bytes[0] = val & 0xE0; break;
         case IO_REG_DMA1CTL + 1:            mem_io_dma_ctl_write8(gba, &io->dma[1], val); break;
 
-        /* DMA - Channel 2 */
+        // DMA - Channel 2
         case IO_REG_DMA2SAD:                io->dma[2].src.bytes[0] = val; break;
         case IO_REG_DMA2SAD + 1:            io->dma[2].src.bytes[1] = val; break;
         case IO_REG_DMA2SAD + 2:            io->dma[2].src.bytes[2] = val; break;
@@ -673,7 +669,7 @@ mem_io_write8(
         case IO_REG_DMA2CTL:                io->dma[2].control.bytes[0] = val & 0xE0; break;
         case IO_REG_DMA2CTL + 1:            mem_io_dma_ctl_write8(gba, &io->dma[2], val); break;
 
-        /* DMA - Channel 3 */
+        // DMA - Channel 3
         case IO_REG_DMA3SAD:                io->dma[3].src.bytes[0] = val; break;
         case IO_REG_DMA3SAD + 1:            io->dma[3].src.bytes[1] = val; break;
         case IO_REG_DMA3SAD + 2:            io->dma[3].src.bytes[2] = val; break;
@@ -687,7 +683,7 @@ mem_io_write8(
         case IO_REG_DMA3CTL:                io->dma[3].control.bytes[0] = val & 0xE0; break;
         case IO_REG_DMA3CTL + 1:            mem_io_dma_ctl_write8(gba, &io->dma[3], val); break;
 
-        /* Timer 0 */
+        // Timer 0
         case IO_REG_TM0CNT_LO:
         case IO_REG_TM0CNT_LO + 1: {
             io->pending.timers[0].reload.bytes[addr - IO_REG_TM0CNT_LO] = val;
@@ -700,7 +696,7 @@ mem_io_write8(
             break;
         };
 
-        /* Timer 1 */
+        // Timer 1
         case IO_REG_TM1CNT_LO:
         case IO_REG_TM1CNT_LO + 1: {
             io->pending.timers[1].reload.bytes[addr - IO_REG_TM1CNT_LO] = val;
@@ -713,7 +709,7 @@ mem_io_write8(
             break;
         };
 
-        /* Timer 2 */
+        // Timer 2
         case IO_REG_TM2CNT_LO:
         case IO_REG_TM2CNT_LO + 1: {
             io->pending.timers[2].reload.bytes[addr - IO_REG_TM2CNT_LO] = val;
@@ -726,7 +722,7 @@ mem_io_write8(
             break;
         };
 
-        /* Timer 3 */
+        // Timer 3
         case IO_REG_TM3CNT_LO:
         case IO_REG_TM3CNT_LO + 1: {
             io->pending.timers[3].reload.bytes[addr - IO_REG_TM3CNT_LO] = val;
@@ -739,12 +735,12 @@ mem_io_write8(
             break;
         };
 
-        /* Serial communication */
+        // Serial communication
         case IO_REG_SIOCNT:
         case IO_REG_SIOCNT + 1: {
             io->siocnt.bytes[addr - IO_REG_SIOCNT] = val;
 
-            /* Stub */
+            // Stub
             if (io->siocnt.start && io->siocnt.irq) {
                 core_schedule_irq(gba, IRQ_SERIAL);
             }
@@ -756,7 +752,7 @@ mem_io_write8(
         case IO_REG_RCNT:
         case IO_REG_RCNT + 1:               io->rcnt.bytes[addr - IO_REG_RCNT] = val; break;
 
-        /* Keypad input */
+        // Keypad input
         case IO_REG_KEYCNT:
         case IO_REG_KEYCNT + 1: {
             bool old_cond;
@@ -774,7 +770,7 @@ mem_io_write8(
             break;
         };
 
-        /* Interrupt */
+        // Interrupt
         case IO_REG_IE:
         case IO_REG_IE + 1: {
             io->pending.int_enabled.bytes[addr - IO_REG_IE] = val;
@@ -810,7 +806,7 @@ mem_io_write8(
             break;
         };
 
-        /* System */
+        // System
         case IO_REG_POSTFLG:                io->postflg = val; break;
         case IO_REG_HALTCNT: {
             gba->core.state = (val >> 7) + 1;
@@ -820,7 +816,7 @@ mem_io_write8(
             break;
         };
 
-        /* mGBA logging system */
+        // mGBA logging system
 #ifdef WITH_DEBUGGER
         case IO_REG_MGBA_LOG_BUFFER ... IO_REG_MGBA_LOG_BUFFER_END - 1: {
             io->mgba_log.buffer[addr - IO_REG_MGBA_LOG_BUFFER] = val;
@@ -899,7 +895,7 @@ io_register_delayed_write(
     addr = args.a1.u32;
 
     switch (addr) {
-        /* Time reload */
+        // Time reload
         case IO_REG_TM0CNT_LO:
         case IO_REG_TM1CNT_LO:
         case IO_REG_TM2CNT_LO:
@@ -911,7 +907,7 @@ io_register_delayed_write(
             break;
         };
 
-        /* Time Control */
+        // Time Control
         case IO_REG_TM0CNT_HI:
         case IO_REG_TM1CNT_HI:
         case IO_REG_TM2CNT_HI:
@@ -926,7 +922,7 @@ io_register_delayed_write(
             io->timers[idx].control.raw = io->pending.timers[idx].control.raw;
             new_enable = io->timers[idx].control.enable;
 
-            /* Timer 0 cannot use the count_up bit. */
+            // Timer 0 cannot use the count_up bit.
             if (!idx) {
                 io->timers[idx].control.count_up = false;
             }
@@ -941,7 +937,7 @@ io_register_delayed_write(
             break;
         };
 
-        /* Interrupt-Related Registers */
+        // Interrupt-Related Registers
         case IO_REG_IE:
         case IO_REG_IF:
         case IO_REG_IME: {
@@ -961,7 +957,7 @@ io_register_delayed_write(
 
             new_irq_line = int_available && gba->io.ime.raw;
             if (new_irq_line != gba->core.irq_line) {
-                /* There's a two-cycle delay for the CPU to register the new IRQ line */
+                // There's a two-cycle delay for the CPU to register the new IRQ line
                 core_schedule_update_irq_line(gba, new_irq_line);
             }
             break;

@@ -34,10 +34,8 @@ core_arm_sdt(
     base = core->registers[rn];
     offset = 0;
 
-    /*
-    ** If bit 25 is *not* set, the offset is an immediate value ROR-shifted by a certain amount.
-    ** Otherwise, it is derived from a register shifted by a certain amount.
-    */
+    // If bit 25 is *not* set, the offset is an immediate value ROR-shifted by a certain amount.
+    // Otherwise, it is derived from a register shifted by a certain amount.
     if (bitfield_get(op, 25)) {
         uint32_t rm;
         uint32_t shift;
@@ -49,36 +47,28 @@ core_arm_sdt(
         offset = bitfield_get_range(op, 0, 12);
     }
 
-    /*
-    ** When R15 is the source register (Rd) of a register store (STR) instruction,
-    ** the stored value will be address of the instruction plus 12
-    */
+    // When R15 is the source register (Rd) of a register store (STR) instruction,
+    // the stored value will be address of the instruction plus 12
     core->pc += 4;
 
-    /*
-    ** If bit 23 is set, the offset must be added to the base.
-    ** Otherwise, it must be substracted.
-    */
+    // If bit 23 is set, the offset must be added to the base.
+    // Otherwise, it must be substracted.
     if (bitfield_get(op, 23)) {
         addr = base + offset;
     } else {
         addr = base - offset;
     }
 
-    /*
-    ** If bit 24 is set, we must add the offset before the transfer, or
-    ** after otherwise.
-    */
+    // If bit 24 is set, we must add the offset before the transfer, or
+    // after otherwise.
     if (bitfield_get(op, 24)) {
         effective_addr = addr;
     } else {
         effective_addr = base;
     }
 
-    /*
-    ** Bit 20 indicates if it is a load or a store, bit 22 if it is
-    ** a byte or word transfer
-    */
+    // Bit 20 indicates if it is a load or a store, bit 22 if it is
+    // a byte or word transfer
     if (bitfield_get(op, 20)) { // Load
         uint32_t val;
 
@@ -138,10 +128,8 @@ core_arm_hsdt(
     base = core->registers[rn];
     offset = 0;
 
-    /*
-    ** If bit 22 is set, the offset is an immediate value.
-    ** Otherwise, it is derived from a register shifted by a certain amount.
-    */
+    // If bit 22 is set, the offset is an immediate value.
+    // Otherwise, it is derived from a register shifted by a certain amount.
     if (bitfield_get(op, 22)) {
         offset = (bitfield_get_range(op, 8, 12) << 4) | bitfield_get_range(op, 0, 4);
     } else {
@@ -151,29 +139,23 @@ core_arm_hsdt(
     core->prefetch_access_type = NON_SEQUENTIAL;
     core->pc += 4;
 
-    /*
-    ** If bit 23 is set, the offset must be added to the base.
-    ** Otherwise, it must be substracted.
-    */
+    // If bit 23 is set, the offset must be added to the base.
+    // Otherwise, it must be substracted.
     if (bitfield_get(op, 23)) {
         addr = base + offset;
     } else {
         addr = base - offset;
     }
 
-    /*
-    ** If bit 24 is set, we must add the offset before the transfer, or
-    ** after otherwise.
-    */
+    // If bit 24 is set, we must add the offset before the transfer, or
+    // after otherwise.
     if (bitfield_get(op, 24)) {
         effective_addr = addr;
     } else {
         effective_addr = base;
     }
 
-    /*
-    ** Bit 20 indicates if it is a load or a store, bit 5 and 6 indicate the operation.
-    */
+    // Bit 20 indicates if it is a load or a store, bit 5 and 6 indicate the operation.
     if (bitfield_get(op, 20)) { // Load
         uint32_t val;
 
@@ -200,10 +182,8 @@ core_arm_hsdt(
 
         mem_bus_idle(gba);
 
-        /*
-        ** if bit 24 or bit 21 is set (post-indexing modification or write-through),
-        ** we must update the base register with the calculated address.
-        */
+        // if bit 24 or bit 21 is set (post-indexing modification or write-through),
+        // we must update the base register with the calculated address.
         if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
             core->registers[rn] = addr;
         }
@@ -221,10 +201,8 @@ core_arm_hsdt(
                 break;
         }
 
-        /*
-        ** if bit 24 or bit 21 is set (post-indexing modification or write-through),
-        ** we must update the base register with the calculated address.
-        */
+        // if bit 24 or bit 21 is set (post-indexing modification or write-through),
+        // we must update the base register with the calculated address.
         if (!bitfield_get(op, 24) || bitfield_get(op, 21)) {
             core->registers[rn] = addr;
         }

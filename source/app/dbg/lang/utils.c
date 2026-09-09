@@ -183,7 +183,7 @@ debugger_lang_cleanup(
 ) {
     struct token *token;
 
-    /* Lexer */
+    // Lexer
 
     token = lexer->tokens;
     while (token) {
@@ -202,14 +202,14 @@ debugger_lang_cleanup(
     lexer->tokens = NULL;
     lexer->error = NULL;
 
-    /* Parser */
+    // Parser
 
     debugger_lang_cleanup_node(ast->root);
     free(ast->error);
     ast->root = NULL;
     ast->error = NULL;
 
-    /* Eval */
+    // Eval
     free(eval->error);
     eval->error = NULL;
 }

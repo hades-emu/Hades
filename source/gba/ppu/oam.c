@@ -106,9 +106,7 @@ ppu_prerender_oam(
                 pd = 0x100;
             }
 
-            /*
-            ** We pre-compute PX and PY for x=0 and simply add the difference when X is increased.
-            */
+            // We pre-compute PX and PY for x=0 and simply add the difference when X is increased.
             px = pa * -(win_sx / 2) + pb * ((line - win_oy) - (win_sy / 2)) + ((sprite_sx / 2) << 8);
             py = pc * -(win_sx / 2) + pd * ((line - win_oy) - (win_sy / 2)) + ((sprite_sy / 2) << 8);
 
@@ -174,11 +172,9 @@ ppu_prerender_oam(
                     palette_idx = mem_vram_read8(gba, tile_offset + chr_y * 8 + chr_x);
                 } else { // 16 colors, 16 palettes
 
-                    /*
-                    ** In this mode, each byte represents two pixels:
-                    **   * The lower 4 bits define the color for the left pixel
-                    **   * The upper 4 bits define the color for the right pixel
-                    */
+                    // In this mode, each byte represents two pixels:
+                    //   * The lower 4 bits define the color for the left pixel
+                    //   * The upper 4 bits define the color for the right pixel
 
                     palette_idx = mem_vram_read8(gba, tile_offset + chr_y * 4 + (chr_x >> 1));
                     palette_idx >>= (chr_x % 2) * 4;

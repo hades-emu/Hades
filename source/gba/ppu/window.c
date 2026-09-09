@@ -35,7 +35,7 @@ ppu_window_build_masks(
         maxx = gba->io.winh[idx].max;
         within_y = !((miny <= maxy && (y < miny || y >= maxy)) || (miny > maxy  && (y >= miny || y < maxy)));
 
-        /* Avoid rebuilding the masks if the parameters are the same. */
+        // Avoid rebuilding the masks if the parameters are the same.
         hash = minx | (maxx << 8) | (enabled << 16) | (within_y << 17);
         if (hash == gba->ppu.win_masks_hash[idx]) {
             continue;

@@ -133,6 +133,7 @@ enum io_regs {
     IO_REG_DMA3CTL      = 0x040000DE,
 
     /* Timer */
+
     IO_REG_TM0CNT       = 0x04000100,
     IO_REG_TM0CNT_LO    = 0x04000100,
     IO_REG_TM0CNT_HI    = 0x04000102,
@@ -147,10 +148,12 @@ enum io_regs {
     IO_REG_TM3CNT_HI    = 0x0400010E,
 
     /* Input */
+
     IO_REG_KEYINPUT     = 0x04000130,
     IO_REG_KEYCNT       = 0x04000132,
 
-    /* Serial Communication (2) */
+    /* Serial Communication */
+
     IO_REG_SIOCNT       = 0x04000128,
     IO_REG_RCNT         = 0x04000134,
     IO_REG_IR           = 0x04000136,
@@ -171,10 +174,14 @@ enum io_regs {
     IO_REG_UNKNOWN_3    = 0x04000302,
 
 #ifdef WITH_DEBUGGER
+
+    /* Logs */
+
     IO_REG_MGBA_LOG_BUFFER      = 0x04FFF600,
     IO_REG_MGBA_LOG_BUFFER_END  = 0x04FFF700,
     IO_REG_MGBA_LOG_FLAGS       = 0x04FFF700,
     IO_REG_MGBA_LOG_ENABLE      = 0x04FFF780,
+
 #endif
 
     IO_REG_END,

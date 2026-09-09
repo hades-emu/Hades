@@ -1283,10 +1283,8 @@ app_emulator_set_breakpoints_list(
     event.sw_breakpoints.list = sw_bps;
     event.sw_breakpoints.len = sw_len;
 
-    /*
-    ** Process all notifications before sending the message to make sure the notification we will
-    ** receive comes from the correct message.
-    */
+    // Process all notifications before sending the message to make sure the notification we will
+    // receive comes from the correct message.
 
     debugger_process_all_notifs(app);
     channel_lock(&app->emulation.gba->channels.messages);
@@ -1311,10 +1309,8 @@ app_emulator_set_watchpoints_list(
     event.watchpoints = watchpoints;
     event.len = len;
 
-    /*
-    ** Process all notifications before sending the message to make sure the notification we will
-    ** receive comes from the correct message.
-    */
+    // Process all notifications before sending the message to make sure the notification we will
+    // receive comes from the correct message.
 
     debugger_process_all_notifs(app);
     channel_lock(&app->emulation.gba->channels.messages);

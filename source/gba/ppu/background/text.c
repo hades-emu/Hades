@@ -35,16 +35,14 @@ ppu_render_background_text(
     io = &gba->io;
     scanline->top_idx = bg_idx;
 
-    /* Retrieve all those before so that we don't have to read them for each pixel. */
+    // Retrieve all those before so that we don't have to read them for each pixel.
     mosaic = io->bgcnt[bg_idx].mosaic;
     bg_size = io->bgcnt[bg_idx].size;
     palette_type = io->bgcnt[bg_idx].palette_type;
     screen_addr = (uint32_t)io->bgcnt[bg_idx].screen_base * 0x800;
     chrs_addr = (uint32_t)io->bgcnt[bg_idx].character_base * 0x4000;
 
-    /*
-    ** Do all the maths for the Y coordinate first, since those do not change until the next scanline.
-    */
+    // Do all the maths for the Y coordinate first, since those do not change until the next scanline.
 
     if (mosaic) {
         rel_y = line / (io->mosaic.bg_vsize + 1) * (io->mosaic.bg_vsize + 1);
@@ -57,7 +55,7 @@ ppu_render_background_text(
     tile_y %= 32;
     chr_y = rel_y % 8;
 
-    /* Now iterate for each pixels of this scanline. */
+    // Now iterate for each pixels of this scanline.
     for (x = 0; x < GBA_SCREEN_WIDTH; ++x) {
         int32_t rel_x;          // X coord of the pixel within the bg
         uint32_t tile_x;        // X coord of the tile in the tilemap
@@ -104,11 +102,9 @@ ppu_render_background_text(
             palette_idx = mem_vram_read8(gba, chrs_addr + tile.number * 64 + chr_vy * 8 + chr_x);
         } else { // 16 colors, 16 palettes
 
-            /*
-            ** In this mode, each byte represents two pixels:
-            **   * The lower 4 bits define the color of the left pixel
-            **   * The upper 4 bits define the color of the right pixel
-            */
+            // In this mode, each byte represents two pixels:
+            //   * The lower 4 bits define the color of the left pixel
+            //   * The upper 4 bits define the color of the right pixel
 
             palette_idx = mem_vram_read8(gba, chrs_addr + tile.number * 32 + chr_vy * 4 + (chr_x >> 1));
             palette_idx >>= (chr_x % 2) * 4;

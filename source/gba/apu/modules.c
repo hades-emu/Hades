@@ -67,7 +67,7 @@ apu_modules_sweep_step(
                 new_frequency = sweep->shadow_frequency + (sweep->shadow_frequency >> sweep->shifts);
             }
 
-            /* Overflow check */
+            // Overflow check
             if (new_frequency >= 2048) {
                 return false;
             }

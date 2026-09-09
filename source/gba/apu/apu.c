@@ -84,12 +84,10 @@ apu_resample(
     sample_l *= psg_volume[gba->io.soundcnt_h.volume_channels] * gba->io.soundcnt_l.channel_left_volume; // [-0x3800; 0x3800]
     sample_r *= psg_volume[gba->io.soundcnt_h.volume_channels] * gba->io.soundcnt_l.channel_right_volume; // [-0x3800; 0x3800]
 
-    /*
-    ** Keep the range of the PSG channels within [-0x200; 0x200] even after applying the volumes.
-    ** This ensures the ratio PSG/Direct Sound is normal.
-    **
-    ** max(sound_volume) * max(gba->io.soundcnt_l.channel_{left,right}_volume) = 4 * 7 = 28
-    */
+    // Keep the range of the PSG channels within [-0x200; 0x200] even after applying the volumes.
+    // This ensures the ratio PSG/Direct Sound is normal.
+    //
+    // max(sound_volume) * max(gba->io.soundcnt_l.channel_{left,right}_volume) = 4 * 7 = 28
     sample_l /= 28; // [-0x200; 0x200]
     sample_r /= 28;
 

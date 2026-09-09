@@ -22,7 +22,7 @@ mem_flash_read8(
     addr &= FLASH_MASK;
 
     if (flash->identity_mode) {
-        /* Use Panasonic (0x1b32) for Flash 64k and Sanyo (0x1362) for Flash 128k. */
+        // Use Panasonic (0x1b32) for Flash 64k and Sanyo (0x1362) for Flash 128k.
         if (addr == 0x0) {
             return gba->memory.backup_storage.type == BACKUP_FLASH64 ? 0x32 : 0x62;
         } else if (addr == 0x1) {

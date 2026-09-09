@@ -113,7 +113,7 @@ cheat_lexe(
             case '0' ... '9':
             case 'a' ... 'f':
             case 'A' ... 'F': {
-                /* Lexe the whole number */
+                // Lexe the whole number
                 struct cheat_token *t;
                 size_t j;
 

@@ -38,9 +38,7 @@ core_arm_bdt(
     wb = bitfield_get(op, 21);
     s = bitfield_get(op, 22);
 
-    /*
-    ** Count how many registers we are going to transfer
-    */
+    // Count how many registers we are going to transfer
 
     i = 0;
     count = 0;
@@ -49,10 +47,8 @@ core_arm_bdt(
         ++i;
     }
 
-    /*
-    ** Edge case: if rlist is empty, transfer the pc but
-    ** increment the base as if all registers were transferred.
-    */
+    // Edge case: if rlist is empty, transfer the pc but
+    // increment the base as if all registers were transferred.
     if (count == 0) {
         op |= (1 << 15);
         count = 16;
@@ -61,13 +57,11 @@ core_arm_bdt(
     base = core->registers[rn];
     pc_in_rlist = bitfield_get(op, 15);
 
-    /*
-    ** Pre-calculate the end address and go incrementally from
-    ** there.
-    **
-    ** This part is inspired by Fleroviux's NanoBoyAdvance implementation.
-    ** Thank you for your amazing work!
-    */
+    // Pre-calculate the end address and go incrementally from
+    // there.
+    //
+    // This part is inspired by Fleroviux's NanoBoyAdvance implementation.
+    // Thank you for your amazing work!
     if (bitfield_get(op, 23)) { // Up
         base_new = base + count * 4;
     } else { // Down
@@ -79,12 +73,10 @@ core_arm_bdt(
     core->pc += 4;
     core->prefetch_access_type = NON_SEQUENTIAL;
 
-    /*
-    ** User bank transfer:
-    **
-    ** The registers transferred are taken from the User bank rather
-    ** than the bank corresponding to the current mode
-    */
+    // User bank transfer:
+    //
+    // The registers transferred are taken from the User bank rather
+    // than the bank corresponding to the current mode
     if (s && (!pc_in_rlist || !load)) {
         mode_old = core->cpsr.mode;
         core_switch_mode(core, MODE_USR);

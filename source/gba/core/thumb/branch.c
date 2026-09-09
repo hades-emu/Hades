@@ -105,9 +105,7 @@ core_thumb_branch_xchg(
     core = &gba->core;
     addr = core->registers[rs];
 
-    /*
-    ** Mask out the last bit which used to indicate if Thumb mode must be entered.
-    */
+    // Mask out the last bit which used to indicate if Thumb mode must be entered.
     core->pc = addr & 0xFFFFFFFE;
     core->cpsr.thumb = addr & 0b1;
     core_reload_pipeline(gba);

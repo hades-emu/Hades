@@ -69,7 +69,7 @@ debugger_lang_lexe(
             case '_':
             case 'a' ... 'z':
             case 'A' ... 'Z': {
-                /* Lexe the whole identifier */
+                // Lexe the whole identifier
                 struct token *t;
                 size_t j;
 
@@ -93,7 +93,7 @@ debugger_lang_lexe(
                 break;
             };
             case '0' ... '9': {
-                /* Lexe the whole number */
+                // Lexe the whole number
                 char *end;
                 struct token *t;
 

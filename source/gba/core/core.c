@@ -259,7 +259,7 @@ core_switch_mode(
             arm_modes_name[mode]
         );
 
-        /* Save current registers to their bank */
+        // Save current registers to their bank
         switch (core->cpsr.mode) {
             case MODE_SYS:
             case MODE_USR:
@@ -323,7 +323,7 @@ core_switch_mode(
 
         core->cpsr.mode = mode;
 
-        /* Restore the registers based on the bank's content */
+        // Restore the registers based on the bank's content
         switch (mode) {
             case MODE_SYS:
             case MODE_USR:
@@ -402,14 +402,12 @@ core_interrupt(
 
     core = &gba->core;
 
-    /*
-    ** According to the ARM7TDMI manual, the prefetch of the aborted instructions
-    ** happens regardless, even if it is discarded shortly after when the pipeline is
-    ** reloaded.
-    **
-    ** This is necessary for timing reasons, like the `irq-delay` test rom of NBA.
-    ** NOTE: There's no prefetch with the SWI instruction.
-    */
+    // According to the ARM7TDMI manual, the prefetch of the aborted instructions
+    // happens regardless, even if it is discarded shortly after when the pipeline is
+    // reloaded.
+    //
+    // This is necessary for timing reasons, like the `irq-delay` test rom of NBA.
+    // NOTE: There's no prefetch with the SWI instruction.
     if (do_aborted_prefetch) {
         if (core->cpsr.thumb) {
             mem_read16(gba, core->pc, core->prefetch_access_type);
@@ -483,20 +481,16 @@ core_compute_shift(
     uint32_t bits;
     bool carry_out;
 
-    /*
-    ** The first bit tells us if the amount of bits to shift is either stored as
-    ** an immediate value or within a register.
-    */
+    // The first bit tells us if the amount of bits to shift is either stored as
+    // an immediate value or within a register.
     if (bitfield_get(encoded_shift, 0)) {   // Register
         uint32_t rs;
 
         rs = (encoded_shift >> 4) & 0xF;
         bits = core->registers[rs] & 0xFF;
 
-        /*
-        ** The spec requires a bit of error handling regarding register
-        ** specified shift amount.
-        */
+        // The spec requires a bit of error handling regarding register
+        // specified shift amount.
 
         if (bits == 0) {
             return value;
@@ -508,19 +502,15 @@ core_compute_shift(
     type = (encoded_shift >> 1) & 0b11;
     carry_out = false;
 
-    /*
-    ** There's four kind of shifts: logical left, logicial right, arithmetic
-    ** right and rotate right.
-    */
+    // There's four kind of shifts: logical left, logicial right, arithmetic
+    // right and rotate right.
     switch (type) {
         // Logical left
         case 0:
-            /*
-            ** If LSL#0 then the carry bit is the old content of the CPSR C flag
-            ** and the value is left untouched.
-            ** LSL by 32 has result zero, carry out equal to bit 0 of Rm.
-            ** LSL by more than 32 has result zero, carry out zero.
-            */
+            // If LSL#0 then the carry bit is the old content of the CPSR C flag
+            // and the value is left untouched.
+            // LSL by 32 has result zero, carry out equal to bit 0 of Rm.
+            // LSL by more than 32 has result zero, carry out zero.
             if (bits == 0) {
                 carry_out = core->cpsr.carry;
             } else if (bits <= 32) {
@@ -560,11 +550,9 @@ core_compute_shift(
         // Rotate right
         case 3:
 
-            /*
-            ** ROR by n where n is greater than 32 will give the same result and carry out
-            ** as ROR by n-32; therefore repeatedly subtract 32 from n until the amount is
-            ** in the range 1 to 32 and see above
-            */
+            // ROR by n where n is greater than 32 will give the same result and carry out
+            // as ROR by n-32; therefore repeatedly subtract 32 from n until the amount is
+            // in the range 1 to 32 and see above
             if (bits > 32) {
                 bits = ((bits - 1) % 32) + 1;
             }

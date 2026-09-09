@@ -150,10 +150,8 @@ gpio_rtc_write(
                 data = rtc->data;
                 rtc->data = 0;
 
-                /*
-                ** If data doesn't match a specific pattern then swap all bits
-                **   - https://graphics.stanford.edu/~seander/bithacks.html
-                */
+                // If data doesn't match a specific pattern then swap all bits
+                //   - https://graphics.stanford.edu/~seander/bithacks.html
                 if ((data >> 4) != 6) {
                     data = ((data * 0x0802LU & 0x22110LU) | (data * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
                 }

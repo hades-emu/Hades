@@ -25,14 +25,14 @@ core_thumb_push(
     core->pc += 2;
     core->prefetch_access_type = NON_SEQUENTIAL;
 
-    /* Edge case: if rlist is empty, sp is decreased by 0x40 and r15 is stored instead */
+    // Edge case: if rlist is empty, sp is decreased by 0x40 and r15 is stored instead
     if (!bitfield_get_range(op, 0, 9)) {
         core->sp -= 0x40;
         mem_write32(gba, core->sp, core->pc, NON_SEQUENTIAL);
         return;
     }
 
-    /* Push LR */
+    // Push LR
     if (bitfield_get(op, 8)) {
         core->sp -= 4;
         mem_write32(gba, core->sp, core->lr, NON_SEQUENTIAL);
@@ -62,7 +62,7 @@ core_thumb_pop(
     core->pc += 2;
     core->prefetch_access_type = NON_SEQUENTIAL;
 
-    /* Edge case: if rlist is empty, r15 is loaded instead and sp is increased by 0x40 */
+    // Edge case: if rlist is empty, r15 is loaded instead and sp is increased by 0x40
     if (!bitfield_get_range(op, 0, 9)) {
         core->pc = mem_read32(gba, core->sp, NON_SEQUENTIAL);
         core_reload_pipeline(gba);
@@ -82,7 +82,7 @@ core_thumb_pop(
 
     mem_bus_idle(gba);
 
-    /* Pop PC */
+    // Pop PC
     if (bitfield_get(op, 8)) {
         core->pc = mem_read32(gba, core->sp, access_type);
         core->sp += 4;
@@ -113,10 +113,8 @@ core_thumb_stmia(
     count = 0;
     rb = bitfield_get_range(op, 8, 11);
 
-    /*
-    ** Edge case: if rlist is empty, r15 is stored instead and rb is increased by 0x40
-    ** (as if all registered were pushed).
-    */
+    // Edge case: if rlist is empty, r15 is stored instead and rb is increased by 0x40
+    // (as if all registered were pushed).
     if (!bitfield_get_range(op, 0, 8)) {
         mem_write32(gba, core->registers[rb], core->pc, NON_SEQUENTIAL);
         core->registers[rb] += 0x40;
@@ -132,11 +130,9 @@ core_thumb_stmia(
     first = true;
     addr = core->registers[rb];
 
-    /*
-    ** Edge case if Rb is included in the rlist:
-    ** We must store the OLD base if Rb is the FIRST entry in Rlist
-    ** and otherwise store the NEW base.
-    */
+    // Edge case if Rb is included in the rlist:
+    // We must store the OLD base if Rb is the FIRST entry in Rlist
+    // and otherwise store the NEW base.
 
     access_type = NON_SEQUENTIAL;
     for (i = 0; i < 8; ++i) {
@@ -175,10 +171,8 @@ core_thumb_ldmia(
     count = 0;
     rb = bitfield_get_range(op, 8, 11);
 
-    /*
-    ** Edge case: if rlist is empty, r15 is loaded instead and rb is increased by 0x40
-    ** (as if all registered were pushed).
-    */
+    // Edge case: if rlist is empty, r15 is loaded instead and rb is increased by 0x40
+    // (as if all registered were pushed).
     if (!bitfield_get_range(op, 0, 8)) {
         core->pc = mem_read32(gba, core->registers[rb], NON_SEQUENTIAL);
         core_reload_pipeline(gba);

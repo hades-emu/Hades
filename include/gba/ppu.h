@@ -112,17 +112,17 @@ union oam_entry {
 static_assert(sizeof(union oam_entry) == 3 * sizeof(uint16_t));
 
 struct ppu {
-    /* The emulator's screen as it is being rendered. */
+    // The emulator's screen as it is being rendered.
     uint32_t framebuffer[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
 
-    /* Internal registers used for affine backgrounds */
+    // Internal registers used for affine backgrounds
     int32_t internal_px[2];
     int32_t internal_py[2];
 
     bool reload_internal_affine_regs;       // Set when the registers above must be reloaded at the next H-Draw.
 
     bool win_masks[2][GBA_SCREEN_WIDTH];
-    uint32_t win_masks_hash[2];             // The min/max for that windows. Kept to avoid rebuilding the mask across scanlines. */
+    uint32_t win_masks_hash[2];             // The min/max for that windows. Kept to avoid rebuilding the mask across scanlines.
 
     bool video_capture_enabled;             // Set when the DMA video capture is enabled
 

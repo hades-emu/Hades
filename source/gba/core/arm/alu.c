@@ -37,10 +37,8 @@ core_arm_alu(
     core->prefetch_access_type = SEQUENTIAL;
     shift_carry = core->cpsr.carry;
 
-    /*
-    ** The second operand is either an immediate value or obtained through
-    ** anoter register, possibly shifted.
-    */
+    // The second operand is either an immediate value or obtained through
+    // anoter register, possibly shifted.
     if (bitfield_get(op, 25)) { // Immediate
         bool carry_out;
         uint32_t rot;
@@ -64,12 +62,10 @@ core_arm_alu(
         rm = op & 0xF;
         shift = (op >> 4) & 0xFF;
 
-        /*
-        ** If R15 (the PC) is used as an operand in a data processing instruction the register is used directly.
-        ** The PC value will be the address of the instruction, plus 8 or 12 bytes due to instruction prefetching.
-        **   - If the shift amount is specified in the instruction, the PC will be 8 bytes ahead.
-        **   - If a register is used to specify the shift amount the PC will be 12 bytes ahead
-        */
+        // If R15 (the PC) is used as an operand in a data processing instruction the register is used directly.
+        // The PC value will be the address of the instruction, plus 8 or 12 bytes due to instruction prefetching.
+        //   - If the shift amount is specified in the instruction, the PC will be 8 bytes ahead.
+        //   - If a register is used to specify the shift amount the PC will be 12 bytes ahead
         if (bitfield_get(shift, 0)) {
             early_pc_inc = true;
             core->pc += 4;
@@ -81,9 +77,7 @@ core_arm_alu(
         op2 = core_compute_shift(core, shift, core->registers[rm], (cond && rd != 15 ? &shift_carry : NULL));
     }
 
-    /*
-    ** Execute the correct data processing instruction.
-    */
+    // Execute the correct data processing instruction.
     switch ((op >> 21) & 0xF) {
         case 0: // AND (op1 AND op2)
             core->registers[rd] = op1 & op2;
@@ -228,10 +222,8 @@ core_arm_alu(
 
     if (rd == 15) {
 
-        /*
-        ** When Rd is R15 and the S flag is set the result of the operation is placed
-        ** in R15 and the SPSR corresponding to the current mode is moved to the CPSR.
-        */
+        // When Rd is R15 and the S flag is set the result of the operation is placed
+        // in R15 and the SPSR corresponding to the current mode is moved to the CPSR.
         if (cond) {
             struct psr new_cpsr;
 

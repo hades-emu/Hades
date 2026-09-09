@@ -323,7 +323,7 @@ app_win_menubar_video(
 
     if (igBeginMenu("Video", true)) {
 
-        /* Display Size */
+        // Display Size
         if (igBeginMenu("Display size", true)) {
             uint32_t x;
 
@@ -353,14 +353,14 @@ app_win_menubar_video(
 
         igSeparator();
 
-        /* Take a screenshot */
+        // Take a screenshot
         bind_str = app_bindings_keyboard_binding_to_str(&app->binds.keyboard[BIND_EMULATOR_SCREENSHOT]);
         if (igMenuItem_Bool("Take Screenshot", bind_str, false, app->emulation.is_started)) {
             app_emulator_screenshot(app);
         }
         free(bind_str);
 
-        /* Pixel Color Effect */
+        // Pixel Color Effect
         if (igBeginMenu("Color Effect", true)) {
             int i;
 
@@ -378,7 +378,7 @@ app_win_menubar_video(
             igEndMenu();
         }
 
-        /* Pixel Scaling Effect */
+        // Pixel Scaling Effect
         if (igBeginMenu("Scaling Effect", true)) {
             if (igMenuItem_Bool("None", NULL, app->settings.video.pixel_scaling_filter == PIXEL_SCALING_FILTER_NONE, true)) {
                 app->settings.video.pixel_scaling_filter = PIXEL_SCALING_FILTER_NONE;
@@ -454,14 +454,14 @@ app_win_menubar_help(
 
     if (igBeginMenu("Help", true)) {
 
-        /* Report Issue */
+        // Report Issue
         if (igMenuItem_Bool("Report Issue", NULL, false, true)) {
             hs_open_url("https://github.com/Arignir/Hades/issues/new");
         }
 
         igSeparator();
 
-        /* About */
+        // About
         if (igMenuItem_Bool("About", NULL, false, true)) {
             open_about = true;
         }

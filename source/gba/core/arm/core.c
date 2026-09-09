@@ -152,9 +152,7 @@ core_arm_decode_insns(
         encoded_insn = arm_insns + i;
         decoded_insn = arm_decoded_insns + i;
 
-        /*
-        ** Decode the user-friendly string mask into two values: decoded_insn->mask and decoded_insn->value.
-        */
+        // Decode the user-friendly string mask into two values: decoded_insn->mask and decoded_insn->value.
         j = 0; // Iterator over all the chars of `encoded_insn->mask`
         k = 0; // Counter of non-separator characters of `encoded_insn->mask`
         while (encoded_insn->mask[j]) {
@@ -180,15 +178,13 @@ core_arm_decode_insns(
             );
         }
 
-        /*
-        ** Ensure we don't have a collision with an existing instruction.
-        **
-        ** To do that, we must verify that there's at least one difference between
-        ** the instruction we want to add and all other instructions.
-        **
-        ** By difference, we mean at least one bit in common in the mask of both
-        ** instructions that maps to different values.
-        */
+        // Ensure we don't have a collision with an existing instruction.
+        //
+        // To do that, we must verify that there's at least one difference between
+        // the instruction we want to add and all other instructions.
+        //
+        // By difference, we mean at least one bit in common in the mask of both
+        // instructions that maps to different values.
         j = 0;
         while (j < i) {
             if (!(((decoded_insn->value ^ arm_decoded_insns[j].value) & decoded_insn->mask) & arm_decoded_insns[j].mask)) {
@@ -203,9 +199,7 @@ core_arm_decode_insns(
         }
     }
 
-    /*
-    ** Build the lookup table for ARM instructions.
-    */
+    // Build the lookup table for ARM instructions.
 
     for (i = 0; i < array_length(arm_lut); ++i) {
         uint32_t op;
@@ -222,9 +216,7 @@ core_arm_decode_insns(
         }
     }
 
-    /*
-    ** Build the conditions lookup table for ARM instructions.
-    */
+    // Build the conditions lookup table for ARM instructions.
 
     for (i = 0; i < array_length(cond_lut); ++i) {
         bool o;

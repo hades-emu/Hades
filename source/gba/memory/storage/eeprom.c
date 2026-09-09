@@ -42,11 +42,9 @@ mem_eeprom_read8(
         }
     }
 
-    /*
-    ** After a write transfer, games likely check if the transfer is complete.
-    ** They do this by reading from the EEPROM and waiting until it returns 1.
-    **   - Dennis H
-    */
+    // After a write transfer, games likely check if the transfer is complete.
+    // They do this by reading from the EEPROM and waiting until it returns 1.
+    //   - Dennis H
     return 1;
 }
 

@@ -131,15 +131,13 @@ dma_run_channel(
 
     while (channel->internal_count > 0 && !gba->core.reenter_dma_transfer_loop) {
 
-        /*
-        ** Trial and error have led me to believe that the only the first ROM access
-        ** will be non-sequential, no matter if it is the source or destination address.
-        ** It looks like it can't be both, even if they access the ROM at the same time (in which case
-        ** src has the priority).
-        **
-        ** On top of that, ROM access from DMA can only use incrementing addresses,regardless of the content of the
-        ** control register.
-        */
+        // Trial and error have led me to believe that the only the first ROM access
+        // will be non-sequential, no matter if it is the source or destination address.
+        // It looks like it can't be both, even if they access the ROM at the same time (in which case
+        // src has the priority).
+        //
+        // On top of that, ROM access from DMA can only use incrementing addresses,regardless of the content of the
+        // control register.
         if (!rom_accessed) {
             bool src_in_rom;
             bool dst_in_rom;
