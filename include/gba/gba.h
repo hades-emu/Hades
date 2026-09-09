@@ -272,9 +272,9 @@ uint32_t gba_shared_reset_frame_counter(struct gba *gba);
 void gba_delete_notification(struct notification const *notif);
 
 /* source/gba/db.c */
-struct game_entry *db_lookup_game(uint8_t const *code);
+struct game_entry *db_lookup_game(uint8_t const game_code[3]);
 struct game_entry *db_autodetect_game_features(uint8_t const *rom, size_t rom_size);
-struct idle_loop_entry const *db_lookup_idle_loop(uint8_t const *game_code);
+struct idle_loop_entry const *db_lookup_idle_loop(uint8_t const game_code[4]);
 
 /* source/gba/cheat/cheat.c */
 bool cheat_parse_and_compile(struct cheat_bin *bin, struct gba_cheat_raw *raw);
