@@ -133,8 +133,6 @@ static struct hs_arm_insn const arm_insns[] = {
     {"swp",         "xxxx_00010_b_00nnnndddd00001001mmmm",              core_arm_swp},
 };
 
-static size_t const arm_insns_len = array_length(arm_insns);
-
 void (*arm_lut[4096])(struct gba *gba, uint32_t op) = { 0 };
 bool cond_lut[256];
 
@@ -142,10 +140,10 @@ void
 core_arm_decode_insns(
     void
 ) {
-    struct hs_arm_decoded_insn arm_decoded_insns[arm_insns_len];
+    struct hs_arm_decoded_insn arm_decoded_insns[array_length(arm_insns)];
     size_t i;
 
-    for (i = 0; i < arm_insns_len; ++i) {
+    for (i = 0; i < array_length(arm_insns); ++i) {
         struct hs_arm_insn const *encoded_insn;
         struct hs_arm_decoded_insn *decoded_insn;
         size_t j;
@@ -214,7 +212,7 @@ core_arm_decode_insns(
         size_t j;
 
         op = ((i & 0xFF0) << 16) | ((i & 0xF) << 4);
-        for (j = 0; j < arm_insns_len; ++j) {
+        for (j = 0; j < array_length(arm_insns); ++j) {
             if ((op & arm_decoded_insns[j].mask & 0x0FF000F0) == (arm_decoded_insns[j].value & 0x0FF000F0)) {
 
                 // Check for double matches, which means the LUT is too small and ambiguous.

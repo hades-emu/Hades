@@ -99,18 +99,16 @@ static struct hs_thumb_insn const thumb_insns[] = {
     { "bl_2",           "11111xxxxxxxxxxx",          core_thumb_branch_link},
 };
 
-static size_t const thumb_insns_len = array_length(thumb_insns);
-
 void (*thumb_lut[256])(struct gba *gba, uint16_t op) = { 0 };
 
 void
 core_thumb_decode_insns(
     void
 ) {
-    struct hs_thumb_decoded_insn thumb_decoded_insns[thumb_insns_len];
+    struct hs_thumb_decoded_insn thumb_decoded_insns[array_length(thumb_insns)];
     size_t i;
 
-    for (i = 0; i < thumb_insns_len; ++i) {
+    for (i = 0; i < array_length(thumb_insns); ++i) {
         struct hs_thumb_insn const *encoded_insn;
         struct hs_thumb_decoded_insn *decoded_insn;
         size_t j;
@@ -179,7 +177,7 @@ core_thumb_decode_insns(
         size_t j;
 
         op = i << 8;
-        for (j = 0; j < thumb_insns_len; ++j) {
+        for (j = 0; j < array_length(thumb_insns); ++j) {
             if ((op & thumb_decoded_insns[j].mask & 0xFF00) == (thumb_decoded_insns[j].value & 0xFF00)) {
 
                 // Check for double matches, which means the LUT is too small and ambiguous.
