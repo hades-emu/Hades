@@ -497,23 +497,6 @@ app_win_settings_emulation(
         igEndTable();
     }
 
-    igSeparatorText("Idle Loop Elimination");
-
-    if (igBeginTable("##EmulationSettingsIdleLoop", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##EmulationSettingsIdleLoopLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##EmulationSettingsIdleLoopValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
-
-        // Idle Loop Elimination Mode
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Mode");
-
-        igTableNextColumn();
-        igCombo_Str_arr("##IdleLoopMode", (int *)&app->settings.emulation.idle_loop_mode, idle_loop_mode_names, array_length(idle_loop_mode_names), 0);
-
-        igEndTable();
-    }
-
     igSeparatorText("Misc");
 
     if (igBeginTable("##EmulationSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
@@ -527,6 +510,14 @@ app_win_settings_emulation(
 
         igTableNextColumn();
         igCheckbox("##PrefetchBuffer", &app->settings.emulation.prefetch_buffer);
+
+        // Idle Loop Elimination
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Idle Loop Elimination");
+
+        igTableNextColumn();
+        igCombo_Str_arr("##IdleLoopElimination", (int *)&app->settings.emulation.idle_loop_mode, idle_loop_mode_names, array_length(idle_loop_mode_names), 0);
 
         igEndTable();
     }
