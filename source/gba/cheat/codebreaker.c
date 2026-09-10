@@ -79,7 +79,7 @@ cheat_codebreaker_compile(
                 insn->or_assign.value = op2 & 0xFFFF;
                 break;
             }
-            case 0x3: { // Assign
+            case 0x3: { // Assign (8-bit)
                 struct cheat_insn *insn;
 
                 insn = cheat_create_insn(bin);
@@ -110,6 +110,44 @@ cheat_codebreaker_compile(
                 insn->assign.repeat = val1 & 0xFFFF;
                 insn->assign.addr_offset = val2;
                 insn->assign.value_offset = val1 >> 16;
+                break;
+            }
+            case 0x5: { // Memwrite
+                size_t len;
+                uint32_t addr;
+
+                addr = op1 & 0x0FFFFFFF;
+                len = op2 * 2;
+                while (len > 0) {
+                    uint32_t val1;
+                    uint16_t val2;
+                    uint64_t vals;
+                    size_t i;
+
+                    if (!cheat_codebreaker_try_fetch_next_op_pair(&token, &val1, &val2)) {
+                        compiler->error = hs_format("Invalid or missing Fill value");
+                        return false;
+                    }
+
+                    dbgln(HS_CHEAT, "    - [ %08x %04x ]", val1, val2);
+
+                    vals = ((uint64_t)val1 << 16) | (uint64_t)val2;
+
+                    dbgln(HS_CHEAT, "TEST: %016llx", vals);
+
+                    for (i = 0; i < 6 && len > 0; ++i) {
+                        struct cheat_insn *insn;
+
+                        insn = cheat_create_insn(bin);
+                        insn->kind = CHEAT_INSN_ASSIGN;
+                        insn->assign.addr = addr;
+                        insn->assign.width = 1;
+                        insn->assign.value = (vals >> (40 - 8 * i)) & 0xFF;
+
+                        ++addr;
+                        --len;
+                    }
+                }
                 break;
             }
             case 0x6: { // AND Assign
