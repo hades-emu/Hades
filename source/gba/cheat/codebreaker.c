@@ -75,8 +75,8 @@ cheat_codebreaker_compile(
                 insn = cheat_create_insn(bin);
                 insn->kind = CHEAT_INSN_OR_ASSIGN;
                 insn->or_assign.addr = op1 & 0x0FFFFFFF;
-                insn->or_assign.width = 2;
                 insn->or_assign.value = op2 & 0xFFFF;
+                insn->or_assign.width = 2;
                 break;
             }
             case 0x3: { // Assign (8-bit)
@@ -85,15 +85,14 @@ cheat_codebreaker_compile(
                 insn = cheat_create_insn(bin);
                 insn->kind = CHEAT_INSN_ASSIGN;
                 insn->assign.addr = op1 & 0x0FFFFFFF;
-                insn->assign.width = 1;
                 insn->assign.value = op2 & 0xFF;
+                insn->assign.width = 1;
                 break;
             }
             case 0x4: { // Fill
                 struct cheat_insn *insn;
                 uint32_t val1;
                 uint16_t val2;
-
 
                 if (!cheat_codebreaker_try_fetch_next_op_pair(&token, &val1, &val2)) {
                     compiler->error = hs_format("Invalid or missing Fill value");
@@ -105,14 +104,15 @@ cheat_codebreaker_compile(
                 insn = cheat_create_insn(bin);
                 insn->kind = CHEAT_INSN_ASSIGN;
                 insn->assign.addr = op1 & 0x0FFFFFFF;
-                insn->assign.width = 2;
                 insn->assign.value = op2;
+                insn->assign.width = 2;
                 insn->assign.repeat = val1 & 0xFFFF;
                 insn->assign.addr_offset = val2;
                 insn->assign.value_offset = val1 >> 16;
                 break;
             }
             case 0x5: { // Memwrite
+                // TODO FIXME: This must be re-written using one instruction otherwise conditions will not work as expected.
                 size_t len;
                 uint32_t addr;
 
@@ -141,8 +141,8 @@ cheat_codebreaker_compile(
                         insn = cheat_create_insn(bin);
                         insn->kind = CHEAT_INSN_ASSIGN;
                         insn->assign.addr = addr;
-                        insn->assign.width = 1;
                         insn->assign.value = (vals >> (40 - 8 * i)) & 0xFF;
+                        insn->assign.width = 1;
 
                         ++addr;
                         --len;
@@ -156,8 +156,18 @@ cheat_codebreaker_compile(
                 insn = cheat_create_insn(bin);
                 insn->kind = CHEAT_INSN_AND_ASSIGN;
                 insn->and_assign.addr = op1 & 0x0FFFFFFF;
-                insn->and_assign.width = 2;
                 insn->and_assign.value = op2 & 0xFFFF;
+                insn->and_assign.width = 2;
+                break;
+            }
+            case 0x7: { // IF Equals
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_IF_EQ;
+                insn->cond.addr = op1 & 0x0FFFFFFF;
+                insn->cond.value = op2;
+                insn->cond.width = 2;
                 break;
             }
             case 0x8: { // Assign (16-bit)
@@ -165,9 +175,39 @@ cheat_codebreaker_compile(
 
                 insn = cheat_create_insn(bin);
                 insn->kind = CHEAT_INSN_ASSIGN;
-                insn->assign.addr = op1 & 0x0FFFFFFF;
-                insn->assign.width = 2;
-                insn->assign.value = op2;
+                insn->cond.addr = op1 & 0x0FFFFFFF;
+                insn->cond.value = op2;
+                insn->cond.width = 2;
+                break;
+            }
+            case 0xA: { // IF Not Equal
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_IF_NEQ;
+                insn->cond.addr = op1 & 0x0FFFFFFF;
+                insn->cond.value = op2;
+                insn->cond.width = 2;
+                break;
+            }
+            case 0xB: { // IF Greater (Signed)
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_IF_GT_SIGNED;
+                insn->cond.addr = op1 & 0x0FFFFFFF;
+                insn->cond.value = op2;
+                insn->cond.width = 2;
+                break;
+            }
+            case 0xC: { // IF Lower (Signed)
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_IF_LT_SIGNED;
+                insn->cond.addr = op1 & 0x0FFFFFFF;
+                insn->cond.value = op2;
+                insn->cond.width = 2;
                 break;
             }
             case 0xE: { // ADD Assign
@@ -176,8 +216,18 @@ cheat_codebreaker_compile(
                 insn = cheat_create_insn(bin);
                 insn->kind = CHEAT_INSN_ADD_ASSIGN;
                 insn->add_assign.addr = op1 & 0x0FFFFFFF;
-                insn->add_assign.width = 2;
                 insn->add_assign.value = op2 & 0xFFFF;
+                insn->add_assign.width = 2;
+                break;
+            }
+            case 0xF: { // IF AND
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_IF_AND;
+                insn->cond.addr = op1 & 0x0FFFFFFF;
+                insn->cond.value = op2;
+                insn->cond.width = 2;
                 break;
             }
             default: {

@@ -55,6 +55,11 @@ cheat_dump(
             case CHEAT_INSN_ADD_ASSIGN:      dbgln(HS_CHEAT, "    - %2zu | Add Assign:      | [0x%08x] = [0x%08x] + 0x%0*x", i, insn->add_assign.addr, insn->add_assign.addr, insn->add_assign.width * 2, insn->add_assign.value); break;
             case CHEAT_INSN_AND_ASSIGN:      dbgln(HS_CHEAT, "    - %2zu | And Assign:      | [0x%08x] = [0x%08x] & 0x%0*x", i, insn->and_assign.addr, insn->and_assign.addr, insn->and_assign.width * 2, insn->and_assign.value); break;
             case CHEAT_INSN_OR_ASSIGN:       dbgln(HS_CHEAT, "    - %2zu | Or Assign:       | [0x%08x] = [0x%08x] | 0x%0*x", i, insn->or_assign.addr, insn->or_assign.addr, insn->or_assign.width * 2, insn->or_assign.value); break;
+            case CHEAT_INSN_IF_EQ:           dbgln(HS_CHEAT, "    - %2zu | If Equal:        | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_NEQ:          dbgln(HS_CHEAT, "    - %2zu | If Not Equal:    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_GT_SIGNED:    dbgln(HS_CHEAT, "    - %2zu | If greater (S):  | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_LT_SIGNED:    dbgln(HS_CHEAT, "    - %2zu | If lower (S):    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_AND:          dbgln(HS_CHEAT, "    - %2zu | If And:          | If [0x%08x] & 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
         }
     }
 
@@ -98,12 +103,12 @@ cheat_hook_impl(
     struct gba *gba,
     struct cheat_bin const *bin
 ) {
-    size_t i;
+    size_t insn_idx;
 
-    for (i = 0; i < bin->insns.len; ++i) {
+    for (insn_idx = 0; insn_idx < bin->insns.len; ++insn_idx) {
         struct cheat_insn *insn;
 
-        insn = &bin->insns.list[i];
+        insn = &bin->insns.list[insn_idx];
 
         switch (insn->kind) {
             case CHEAT_INSN_ASSIGN: {
@@ -172,6 +177,92 @@ cheat_hook_impl(
                     case 2: mem_write16_raw(gba, addr, mem_read16_raw(gba, addr) | (uint16_t)insn->or_assign.value); break;
                     case 4: mem_write32_raw(gba, addr, mem_read32_raw(gba, addr) | insn->or_assign.value); break;
                     default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+                break;
+            }
+            case CHEAT_INSN_IF_EQ: {
+                uint32_t addr;
+                bool cond;
+
+                addr = insn->cond.addr;
+                switch (insn->cond.width) {
+                    case 1: cond = mem_read8_raw(gba, addr) == (uint8_t)insn->cond.value; break;
+                    case 2: cond = mem_read16_raw(gba, addr) == (uint16_t)insn->cond.value; break;
+                    case 4: cond = mem_read32_raw(gba, addr) == insn->cond.value; break;
+                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+
+                if (!cond) {
+                    ++insn_idx;
+                }
+                break;
+            }
+            case CHEAT_INSN_IF_NEQ: {
+                uint32_t addr;
+                bool cond;
+
+                addr = insn->cond.addr;
+                switch (insn->cond.width) {
+                    case 1: cond = mem_read8_raw(gba, addr) != (uint8_t)insn->cond.value; break;
+                    case 2: cond = mem_read16_raw(gba, addr) != (uint16_t)insn->cond.value; break;
+                    case 4: cond = mem_read32_raw(gba, addr) != insn->cond.value; break;
+                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+
+                if (!cond) {
+                    ++insn_idx;
+                }
+                break;
+            }
+            case CHEAT_INSN_IF_LT_SIGNED: {
+                uint32_t addr;
+                bool cond;
+
+                addr = insn->cond.addr;
+                switch (insn->cond.width) {
+                    case 1: cond = (int8_t)mem_read8_raw(gba, addr) < (int8_t)insn->cond.value; break;
+                    case 2: cond = (int16_t)mem_read16_raw(gba, addr) < (int16_t)insn->cond.value; break;
+                    case 4: cond = (int32_t)mem_read32_raw(gba, addr) < (int32_t)insn->cond.value; break;
+                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+
+                if (!cond) {
+                    ++insn_idx;
+                }
+                break;
+            }
+            case CHEAT_INSN_IF_GT_SIGNED: {
+                uint32_t addr;
+                bool cond;
+
+                addr = insn->cond.addr;
+                switch (insn->cond.width) {
+                    case 1: cond = (int8_t)mem_read8_raw(gba, addr) > (int8_t)insn->cond.value; break;
+                    case 2: cond = (int16_t)mem_read16_raw(gba, addr) > (int16_t)insn->cond.value; break;
+                    case 4: cond = (int32_t)mem_read32_raw(gba, addr) > (int32_t)insn->cond.value; break;
+                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+
+                if (!cond) {
+                    ++insn_idx;
+                }
+                break;
+            }
+            case CHEAT_INSN_IF_AND: {
+                uint32_t addr;
+                bool cond;
+
+                addr = insn->cond.addr;
+                switch (insn->cond.width) {
+                    case 1: cond = mem_read8_raw(gba, addr) & (uint8_t)insn->cond.value; break;
+                    case 2: cond = mem_read16_raw(gba, addr) & (uint16_t)insn->cond.value; break;
+                    case 4: cond = mem_read32_raw(gba, addr) & insn->cond.value; break;
+                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+
+                // If cond is true then execute next code means if code is false then skip next code.
+                if (!cond) {
+                    ++insn_idx;
                 }
                 break;
             }
