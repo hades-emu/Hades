@@ -120,18 +120,19 @@ cheat_parv3_compile(
                             insn->assign.width = 1;
                             insn->assign.value = op2 & 0xFF;
                             insn->assign.repeat = op2 >> 8;
+                            insn->assign.addr_offset = 1;
                             break;
                         }
                         case 0x02: {
                             insn->assign.width = 2;
                             insn->assign.value = op2 & 0xFFFF;
                             insn->assign.repeat = (op2 >> 16) * 2;
+                            insn->assign.addr_offset = 2;
                             break;
                         }
                         case 0x04: {
                             insn->assign.width = 4;
                             insn->assign.value = op2;
-                            insn->assign.repeat = 0;
                             break;
                         }
                     }

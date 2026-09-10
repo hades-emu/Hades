@@ -107,19 +107,22 @@ cheat_hook_impl(
 
         switch (insn->kind) {
             case CHEAT_INSN_ASSIGN: {
-                size_t repeat;
+                size_t i;
                 uint32_t addr;
+                uint32_t value;
 
                 addr = insn->assign.addr;
+                value = insn->assign.value;
 
-                for (repeat = 0; repeat <= insn->assign.repeat; ++repeat) {
+                for (i = 0; i <= insn->assign.repeat; ++i) {
                     switch (insn->assign.width) {
-                        case 1: mem_write8_raw(gba, addr, insn->assign.value); break;
-                        case 2: mem_write16_raw(gba, addr, insn->assign.value); break;
-                        case 4: mem_write32_raw(gba, addr, insn->assign.value); break;
+                        case 1: mem_write8_raw(gba, addr, value); break;
+                        case 2: mem_write16_raw(gba, addr, value); break;
+                        case 4: mem_write32_raw(gba, addr, value); break;
                         default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->assign.width);
                     }
-                    addr += insn->assign.width;
+                    addr += insn->assign.addr_offset;
+                    value += insn->assign.value_offset;
                 }
                 break;
             }

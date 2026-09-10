@@ -89,6 +89,29 @@ cheat_codebreaker_compile(
                 insn->assign.value = op2 & 0xFF;
                 break;
             }
+            case 0x4: { // Fill
+                struct cheat_insn *insn;
+                uint32_t val1;
+                uint16_t val2;
+
+
+                if (!cheat_codebreaker_try_fetch_next_op_pair(&token, &val1, &val2)) {
+                    compiler->error = hs_format("Invalid or missing Fill value");
+                    return false;
+                }
+
+                dbgln(HS_CHEAT, "    - [ %08x %04x ]", val1, val2);
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_ASSIGN;
+                insn->assign.addr = op1 & 0x0FFFFFFF;
+                insn->assign.width = 2;
+                insn->assign.value = op2;
+                insn->assign.repeat = val1 & 0xFFFF;
+                insn->assign.addr_offset = val2;
+                insn->assign.value_offset = val1 >> 16;
+                break;
+            }
             case 0x6: { // AND Assign
                 struct cheat_insn *insn;
 
