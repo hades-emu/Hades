@@ -484,14 +484,14 @@ app_win_settings_emulation(
         igTableNextColumn();
         igCheckbox("##ROMMirroringAutoDetect", &app->settings.emulation.rom_mirroring.autodetect);
 
-        // ROM Mirroring Value
+        // ROM Mirroring Enabled
         igBeginDisabled(app->settings.emulation.rom_mirroring.autodetect);
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
-        igTextWrapped("Value");
+        igTextWrapped("Enable");
 
         igTableNextColumn();
-        igCheckbox("##ROMMirroringInnerValue", &app->settings.emulation.rom_mirroring.value);
+        igCheckbox("##ROMMirroringInnerEnabled", &app->settings.emulation.rom_mirroring.enabled);
         igEndDisabled();
 
         igEndTable();

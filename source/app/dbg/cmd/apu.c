@@ -7,7 +7,6 @@
 **
 \******************************************************************************/
 
-#include <string.h>
 #include "hades.h"
 #include "app/app.h"
 #include "app/dbg.h"

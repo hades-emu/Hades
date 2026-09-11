@@ -688,7 +688,7 @@ app_emulator_configure_and_run_impl(
     if (app->settings.emulation.rom_mirroring.autodetect) {
         app->emulation.launch_config->rom_mirroring = app->emulation.game_entry->mirror;
     } else {
-        app->emulation.launch_config->rom_mirroring = app->settings.emulation.rom_mirroring.value;
+        app->emulation.launch_config->rom_mirroring = app->settings.emulation.rom_mirroring.enabled;
     }
 
     app_emulator_fill_gba_settings(app, &app->emulation.launch_config->settings);

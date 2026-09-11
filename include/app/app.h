@@ -318,7 +318,7 @@ struct settings {
         // ROM Mirroring
         struct {
             bool autodetect;
-            bool value;
+            bool enabled;
         } rom_mirroring;
 
         // Idle loop elimination mode
