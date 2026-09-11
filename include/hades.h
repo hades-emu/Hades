@@ -33,6 +33,9 @@
 #ifndef __packed
 # define __packed           __attribute__((packed))
 #endif /* !__packed */
+#ifndef popcount
+# define popcount(x)        __builtin_popcount((x))
+#endif /* !popcount */
 #ifndef likely
 # define likely(x)          __builtin_expect((x), 1)
 #endif /* !likely */

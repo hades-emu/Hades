@@ -110,7 +110,6 @@ core_thumb_stmia(
     core->pc += 2;
     core->prefetch_access_type = NON_SEQUENTIAL;
 
-    count = 0;
     rb = bitfield_get_range(op, 8, 11);
 
     // Edge case: if rlist is empty, r15 is stored instead and rb is increased by 0x40
@@ -121,11 +120,7 @@ core_thumb_stmia(
         return;
     }
 
-    for (i = 0; i < 8; ++i) {
-        if (bitfield_get(op, i)) {
-            count += 4;
-        }
-    }
+    count = popcount(op & 0xFF) * 4;
 
     first = true;
     addr = core->registers[rb];
@@ -168,7 +163,6 @@ core_thumb_ldmia(
     core->pc += 2;
     core->prefetch_access_type = NON_SEQUENTIAL;
 
-    count = 0;
     rb = bitfield_get_range(op, 8, 11);
 
     // Edge case: if rlist is empty, r15 is loaded instead and rb is increased by 0x40
@@ -180,11 +174,7 @@ core_thumb_ldmia(
         return;
     }
 
-    for (i = 0; i < 8; ++i) {
-        if (bitfield_get(op, i)) {
-            count += 4;
-        }
-    }
+    count = popcount(op & 0xFF) * 4;
 
     addr = core->registers[rb];
     core->registers[rb] += count;

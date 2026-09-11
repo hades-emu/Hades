@@ -13,7 +13,7 @@ project(
     'cpp',
     version: '1.1.1',
     license: 'GPL-2.0-only',
-    default_options: ['c_std=gnu17', 'cpp_std=c++11', 'buildtype=release'],
+    default_options: ['c_std=gnu17', 'cpp_std=c++11', 'buildtype=release', 'b_lto=true'],
 )
 
 cc = meson.get_compiler('c')
