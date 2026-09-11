@@ -31,6 +31,12 @@ char const * const idle_loop_mode_names[IDLE_LOOP_MODE_LEN] = {
     [IDLE_LOOP_MODE_REMOVE_KNOWN] = "Remove Known",
 };
 
+char const * const rom_mirroring_mode_names[ROM_MIRRORING_LEN] = {
+    [ROM_MIRRORING_AUTODETECT] = "Auto-Detect",
+    [ROM_MIRRORING_ENABLED] = "Enabled",
+    [ROM_MIRRORING_DISABLED] = "Disabled",
+};
+
 char const * const pixel_color_filters_names[PIXEL_COLOR_FILTER_LEN] = {
     [PIXEL_COLOR_FILTER_NONE] = "None",
     [PIXEL_COLOR_FILTER_COLOR_CORRECTION_HIGAN] = "Color correction (Higan)",
@@ -470,33 +476,6 @@ app_win_settings_emulation(
         igEndTable();
     }
 
-    igSeparatorText("ROM Mirroring");
-
-    if (igBeginTable("##EmulationSettingsROMMirroring", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##EmulationSettingsROMMirroringLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##EmulationSettingsROMMirroringValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
-
-        // ROM Mirroring Auto-Detect
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Auto-Detect");
-
-        igTableNextColumn();
-        igCheckbox("##ROMMirroringAutoDetect", &app->settings.emulation.rom_mirroring.autodetect);
-
-        // ROM Mirroring Enabled
-        igBeginDisabled(app->settings.emulation.rom_mirroring.autodetect);
-        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
-        igTableNextColumn();
-        igTextWrapped("Enable");
-
-        igTableNextColumn();
-        igCheckbox("##ROMMirroringInnerEnabled", &app->settings.emulation.rom_mirroring.enabled);
-        igEndDisabled();
-
-        igEndTable();
-    }
-
     igSeparatorText("Misc");
 
     if (igBeginTable("##EmulationSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
@@ -518,6 +497,14 @@ app_win_settings_emulation(
 
         igTableNextColumn();
         igCombo_Str_arr("##IdleLoopElimination", (int *)&app->settings.emulation.idle_loop_mode, idle_loop_mode_names, array_length(idle_loop_mode_names), 0);
+
+        // ROM Mirroring
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("ROM Mirroring");
+
+        igTableNextColumn();
+        igCombo_Str_arr("##ROMMirroringMode", (int *)&app->settings.emulation.rom_mirroring, rom_mirroring_mode_names, array_length(rom_mirroring_mode_names), 0);
 
         igEndTable();
     }

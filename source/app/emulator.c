@@ -685,10 +685,10 @@ app_emulator_configure_and_run_impl(
         app->emulation.launch_config->gpio_device_type = app->settings.emulation.gpio_device.type;
     }
 
-    if (app->settings.emulation.rom_mirroring.autodetect) {
+    if (app->settings.emulation.rom_mirroring == ROM_MIRRORING_AUTODETECT) {
         app->emulation.launch_config->rom_mirroring = app->emulation.game_entry->mirror;
     } else {
-        app->emulation.launch_config->rom_mirroring = app->settings.emulation.rom_mirroring.enabled;
+        app->emulation.launch_config->rom_mirroring = (app->settings.emulation.rom_mirroring == ROM_MIRRORING_ENABLED);
     }
 
     app_emulator_fill_gba_settings(app, &app->emulation.launch_config->settings);

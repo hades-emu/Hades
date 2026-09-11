@@ -149,14 +149,6 @@ enum bind_actions {
     BIND_EMULATOR_MAX = BIND_EMULATOR_QUICKLOAD_10,
 };
 
-extern char const * const binds_pretty_name[];
-extern char const * const binds_slug[];
-extern SDL_DialogFileFilter const sdl_nfd_bios_filters[];
-extern SDL_DialogFileFilter const sdl_nfd_rom_filters[];
-extern SDL_DialogFileFilter const sdl_nfd_save_filters[];
-
-extern char const * const pixel_color_filters_names[];
-
 enum idle_loop_modes {
     IDLE_LOOP_MODE_DISABLED = 0,
     IDLE_LOOP_MODE_REMOVE_KNOWN = 1,
@@ -166,7 +158,23 @@ enum idle_loop_modes {
     IDLE_LOOP_MODE_LEN = IDLE_LOOP_MODE_MAX + 1,
 };
 
-extern char const * const idle_loop_mode_names[];
+enum rom_mirroring_modes {
+    ROM_MIRRORING_AUTODETECT = 0,
+    ROM_MIRRORING_ENABLED = 1,
+    ROM_MIRRORING_DISABLED = 2,
+
+    ROM_MIRRORING_MIN = ROM_MIRRORING_AUTODETECT,
+    ROM_MIRRORING_MAX = ROM_MIRRORING_DISABLED,
+    ROM_MIRRORING_LEN = ROM_MIRRORING_MAX + 1,
+};
+
+extern char const * const binds_pretty_name[];
+extern char const * const binds_slug[];
+extern SDL_DialogFileFilter const sdl_nfd_bios_filters[];
+extern SDL_DialogFileFilter const sdl_nfd_rom_filters[];
+extern SDL_DialogFileFilter const sdl_nfd_save_filters[];
+
+extern char const * const pixel_color_filters_names[];
 
 enum app_notification_kind {
     UI_NOTIFICATION_INFO,
@@ -316,10 +324,7 @@ struct settings {
         } gpio_device;
 
         // ROM Mirroring
-        struct {
-            bool autodetect;
-            bool enabled;
-        } rom_mirroring;
+        enum rom_mirroring_modes rom_mirroring;
 
         // Idle loop elimination mode
         enum idle_loop_modes idle_loop_mode;
