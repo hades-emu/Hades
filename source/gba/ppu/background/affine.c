@@ -15,10 +15,10 @@
 void
 ppu_reload_affine_internal_registers(
     struct gba *gba,
-    uint32_t idx
+    uint32_t bg_idx
 ) {
-    gba->ppu.internal_px[idx] = sign_extend28(gba->io.bg_x[idx].raw & 0x0FFFFFFF);
-    gba->ppu.internal_py[idx] = sign_extend28(gba->io.bg_y[idx].raw & 0x0FFFFFFF);
+    gba->ppu.internal_px[bg_idx] = sign_extend28(gba->io.bg_x[bg_idx].raw & 0x0FFFFFFF);
+    gba->ppu.internal_py[bg_idx] = sign_extend28(gba->io.bg_y[bg_idx].raw & 0x0FFFFFFF);
 }
 
 void
@@ -41,7 +41,6 @@ void
 ppu_render_background_affine(
     struct gba *gba,
     struct scanline *scanline,
-    uint32_t line,
     uint32_t bg_idx
 ) {
     uint32_t screen_addr;
@@ -85,8 +84,8 @@ ppu_render_background_affine(
         tile_y = py >> 8;
 
         if (io->bgcnt[bg_idx].wrap) {
-            tile_x = tile_x >= 0 ? (tile_x % bg_size) : (bg_size + (tile_x % bg_size));
-            tile_y = tile_y >= 0 ? (tile_y % bg_size) : (bg_size + (tile_y % bg_size));
+            tile_x &= bg_size - 1;
+            tile_y &= bg_size - 1;
         } else if (tile_x < 0 || tile_x >= bg_size || tile_y < 0 || tile_y >= bg_size) {
             continue;
         }

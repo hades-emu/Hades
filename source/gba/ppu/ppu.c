@@ -203,7 +203,7 @@ ppu_render_scanline(
                     if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio && likely(gba->settings.ppu.enable_bg_layers[bg_idx])) {
                         if (bg_idx == 2) {
                             memset(scanline->bg, 0x00, sizeof(scanline->bg));
-                            ppu_render_background_affine(gba, scanline, y, bg_idx);
+                            ppu_render_background_affine(gba, scanline, bg_idx);
                         } else {
                             ppu_render_background_text(gba, scanline, y, bg_idx);
                         }
@@ -225,7 +225,7 @@ ppu_render_scanline(
                 for (bg_idx = 3; bg_idx >= 2; --bg_idx) {
                     if (bitfield_get((uint8_t)io->dispcnt.bg, bg_idx) && io->bgcnt[bg_idx].priority == prio && likely(gba->settings.ppu.enable_bg_layers[bg_idx])) {
                         memset(scanline->bg, 0x00, sizeof(scanline->bg));
-                        ppu_render_background_affine(gba, scanline, y, bg_idx);
+                        ppu_render_background_affine(gba, scanline, bg_idx);
                         ppu_merge_layer(gba, scanline, scanline->bg);
                     }
                 }

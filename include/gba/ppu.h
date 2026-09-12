@@ -138,8 +138,8 @@ void ppu_render_background_bitmap_small(struct gba const *gba, struct scanline *
 void ppu_render_background_text(struct gba const *gba, struct scanline *scanline, uint32_t line, uint32_t bg_idx);
 
 /* gba/ppu/background/affine.c */
-void ppu_render_background_affine(struct gba *gba, struct scanline *scanline, uint32_t line, uint32_t bg_idx);
-void ppu_reload_affine_internal_registers(struct gba *gba, uint32_t idx);
+void ppu_render_background_affine(struct gba *gba, struct scanline *scanline, uint32_t bg_idx);
+void ppu_reload_affine_internal_registers(struct gba *gba, uint32_t bg_idx);
 void ppu_step_affine_internal_registers(struct gba *gba);
 
 /* gba/ppu/oam.c */
