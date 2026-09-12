@@ -133,8 +133,6 @@ cheat_codebreaker_compile(
 
                     vals = ((uint64_t)val1 << 16) | (uint64_t)val2;
 
-                    dbgln(HS_CHEAT, "TEST: %016llx", vals);
-
                     for (i = 0; i < 6 && len > 0; ++i) {
                         struct cheat_insn *insn;
 
