@@ -45,6 +45,12 @@
 #ifndef __noreturn
 # define __noreturn         __attribute__((noreturn))
 #endif /* !__noreturn */
+#ifndef __hs_force_inline
+# define __hs_force_inline  __attribute__((always_inline))
+#endif /* !__hs_force_inline */
+#ifndef __noinline
+# define __noinline         __attribute__((noinline))
+#endif /* !__noinline */
 #ifndef __unreachable
 # define __unreachable      __builtin_unreachable()
 #endif /* !__unreachable */

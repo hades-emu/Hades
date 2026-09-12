@@ -115,6 +115,7 @@ mem_bus_wait(
 ** are needed to transfer a data of the given size and access type.
 */
 void
+__hs_force_inline
 mem_bus_access(
     struct gba *gba,
     uint32_t addr,
@@ -170,6 +171,7 @@ mem_bus_idle(
 }
 
 void
+__noinline
 mem_bus_pbuffer_access(
     struct gba *gba,
     uint32_t addr,
