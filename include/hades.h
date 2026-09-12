@@ -24,40 +24,19 @@
 ** A useful set of macros that act like keywords that are not available
 ** otherwise in C11.
 */
-#ifndef __used
-# define __used             __attribute__((used))
-#endif /* !__used */
-#ifndef __unused
-# define __unused           __attribute__((unused))
-#endif /* !__unused */
-#ifndef __packed
-# define __packed           __attribute__((packed))
-#endif /* !__packed */
-#ifndef popcount
-# define popcount(x)        __builtin_popcount((x))
-#endif /* !popcount */
-#ifndef likely
-# define likely(x)          __builtin_expect((x), 1)
-#endif /* !likely */
-#ifndef unlikely
-# define unlikely(x)        __builtin_expect((x), 0)
-#endif /* !unlikely */
-#ifndef __noreturn
-# define __noreturn         __attribute__((noreturn))
-#endif /* !__noreturn */
-#ifndef __hs_force_inline
-# define __hs_force_inline  __attribute__((always_inline))
-#endif /* !__hs_force_inline */
-#ifndef __noinline
-# define __noinline         __attribute__((noinline))
-#endif /* !__noinline */
-#ifndef __unreachable
-# define __unreachable      __builtin_unreachable()
-#endif /* !__unreachable */
+#define __hs_used               __attribute__((used))
+#define __hs_unused             __attribute__((unused))
+#define __hs_packed             __attribute__((packed))
+#define __hs_popcount(x)        __builtin_popcount((x))
+#define __hs_likely(x)          __builtin_expect((x), 1)
+#define __hs_unlikely(x)        __builtin_expect((x), 0)
+#define __hs_noreturn           __attribute__((noreturn))
+#define __hs_force_inline       __attribute__((always_inline))
+#define __hs_noinline           __attribute__((noinline))
+#define __hs_unreachable        __builtin_unreachable()
 
 /* Panic if the given constant expression evaluates to `false`. */
-#undef static_assert
-#define static_assert(e)                                    \
+#define hs_static_assert(e)                                 \
     _Static_assert(                                         \
         e,                                                  \
         "(" #e ") evaluated to false (in " __FILE__ ")"     \
@@ -66,7 +45,7 @@
 /* Panic if the given expression evaluates to `false` */
 #define hs_assert(expr)                                     \
     do {                                                    \
-        if (unlikely(!(expr))) {                            \
+        if (__hs_unlikely(!(expr))) {                       \
             panic(                                          \
                 HS_ERROR,                                   \
                 "assert(%s) failed (in %s at line %u).",    \
@@ -97,8 +76,8 @@
     })
 
 /* ✨ Variadic macro magic ✨ */
-#define XSTR(...)                #__VA_ARGS__
-#define STR(...)               XSTR(__VA_ARGS__)
+#define XSTR(...)               #__VA_ARGS__
+#define STR(...)                XSTR(__VA_ARGS__)
 #define XCONCAT(a, b)           a ## b
 #define CONCAT(a, b)            XCONCAT(a, b)
 #define NTH(_0, _1, _2, _3, _4, _5, N, ...) N

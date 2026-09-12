@@ -14,8 +14,8 @@
 void
 debugger_cmd_exit(
     struct app *app,
-    size_t argc __unused,
-    struct arg const *argv __unused
+    size_t argc __hs_unused,
+    struct arg const *argv __hs_unused
 ) {
     app->run = false;
 }

@@ -87,7 +87,7 @@ apu_tone_and_sweep_stop(
 void
 apu_tone_and_sweep_step(
     struct gba *gba,
-    struct event_args args __unused
+    struct event_args args __hs_unused
 ) {
     int16_t sample;
 
@@ -180,7 +180,7 @@ apu_tone_stop(
 void
 apu_tone_step(
     struct gba *gba,
-    struct event_args args __unused
+    struct event_args args __hs_unused
 ) {
     int16_t sample;
 

@@ -95,7 +95,7 @@ void
 app_nfd_update_path(
     void *raw_event,
     const char * const *filelist,
-    int filter __unused
+    int filter __hs_unused
 ) {
     struct nfd_event *event;
     struct app *app;

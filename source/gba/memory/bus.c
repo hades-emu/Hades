@@ -91,7 +91,7 @@ mem_bus_wait_for(
     gba->scheduler.cycles += cycles;
 
     // Process any pending scheduler event
-    if (unlikely(gba->scheduler.cycles >= gba->scheduler.next_event)) {
+    if (__hs_unlikely(gba->scheduler.cycles >= gba->scheduler.next_event)) {
         sched_process_events(gba);
     }
 
@@ -139,7 +139,7 @@ mem_bus_access(
     }
 
     // Ensure memory access to page boundary are non-sequential
-    if (unlikely(page >= CART_REGION_START && page <= CART_REGION_END && !(addr & 0x1FFFF))) {
+    if (__hs_unlikely(page >= CART_REGION_START && page <= CART_REGION_END && !(addr & 0x1FFFF))) {
         access_type = NON_SEQUENTIAL;
     }
 
@@ -171,7 +171,7 @@ mem_bus_idle(
 }
 
 void
-__noinline
+__hs_noinline
 mem_bus_pbuffer_access(
     struct gba *gba,
     uint32_t addr,

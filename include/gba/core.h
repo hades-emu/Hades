@@ -45,7 +45,7 @@ struct psr {
         };
         uint32_t raw;
     };
-} __packed;
+} __hs_packed;
 
 struct dma_channel;
 
@@ -68,7 +68,7 @@ struct core {
             uint32_t sp;       // r13
             uint32_t lr;       // r14
             uint32_t pc;       // r15
-        } __packed;
+        } __hs_packed;
         uint32_t registers[16];
     };
 
@@ -107,7 +107,7 @@ struct core {
             uint32_t r13_und;
             uint32_t r14_und;
             struct psr spsr_und;
-        } __packed;
+        } __hs_packed;
         uint32_t bank_registers[28];
     };
 

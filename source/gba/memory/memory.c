@@ -141,14 +141,14 @@ mem_openbus_read(
                 _ret = *(T *)((uint8_t *)((gba)->memory.oam) + (_addr & OAM_MASK));         \
                 break;                                                                      \
             case CART_REGION_START ... CART_REGION_END: {                                   \
-                if (unlikely(                                                               \
+                if (__hs_unlikely(                                                               \
                     ((gba)->memory.backup_storage.type == BACKUP_EEPROM_4K || (gba)->memory.backup_storage.type == BACKUP_EEPROM_64K) \
                     && (_addr & (gba)->memory.backup_storage.chip.eeprom.mask) == (gba)->memory.backup_storage.chip.eeprom.range \
                 )) {                                                                        \
                     _ret = mem_eeprom_read8(gba);                                           \
-                } else if (unlikely(_addr >= GPIO_REG_START && _addr <= GPIO_REG_END && (gba)->gpio.readable)) { \
+                } else if (__hs_unlikely(_addr >= GPIO_REG_START && _addr <= GPIO_REG_END && (gba)->gpio.readable)) { \
                     _ret = gpio_read_u8((gba), _addr);                                      \
-                } else if (unlikely((_addr & (gba)->memory.rom_mask) >= (gba)->memory.rom_size)) { \
+                } else if (__hs_unlikely((_addr & (gba)->memory.rom_mask) >= (gba)->memory.rom_size)) { \
                     _ret = _Generic(_ret,                                                   \
                         uint32_t: (                                                         \
                             ((_addr >> 1) & 0xFFFF) |                                       \

@@ -39,7 +39,7 @@ struct verbosity_arg verbosities[] = {
 
 void
 debugger_cmd_verbose(
-    struct app *app __unused,
+    struct app *app __hs_unused,
     size_t argc,
     struct arg const *argv
 ) {

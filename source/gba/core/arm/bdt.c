@@ -40,7 +40,7 @@ core_arm_bdt(
 
     // Count how many registers we are going to transfer
 
-    count = popcount(op & 0xFFFF);
+    count = __hs_popcount(op & 0xFFFF);
 
     // Edge case: if rlist is empty, transfer the pc but
     // increment the base as if all registers were transferred.

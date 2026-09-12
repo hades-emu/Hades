@@ -120,7 +120,7 @@ core_thumb_stmia(
         return;
     }
 
-    count = popcount(op & 0xFF) * 4;
+    count = __hs_popcount(op & 0xFF) * 4;
 
     first = true;
     addr = core->registers[rb];
@@ -174,7 +174,7 @@ core_thumb_ldmia(
         return;
     }
 
-    count = popcount(op & 0xFF) * 4;
+    count = __hs_popcount(op & 0xFF) * 4;
 
     addr = core->registers[rb];
     core->registers[rb] += count;

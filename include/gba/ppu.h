@@ -40,18 +40,18 @@ union color {
         uint16_t green: 5;
         uint16_t blue: 5;
         uint16_t : 1;
-    } __packed;
+    } __hs_packed;
     uint16_t raw;
-} __packed;
+} __hs_packed;
 
-static_assert(sizeof(union color) == sizeof(uint16_t));
+hs_static_assert(sizeof(union color) == sizeof(uint16_t));
 
 struct rich_color {
     union color;
     uint8_t idx: 6; // 0-3 for bgs, 4 for OAM, 5 for BD
     uint8_t visible: 1;
     uint8_t force_blend: 1; // Only useful for OAM
-} __packed;
+} __hs_packed;
 
 struct scanline {
     struct rich_color bot[GBA_SCREEN_WIDTH];
@@ -69,11 +69,11 @@ union tile {
         uint16_t hflip: 1;
         uint16_t vflip: 1;
         uint16_t palette: 4;
-    } __packed;
+    } __hs_packed;
     uint16_t raw;
 };
 
-static_assert(sizeof(union tile) == sizeof(uint16_t));
+hs_static_assert(sizeof(union tile) == sizeof(uint16_t));
 
 union oam_entry {
     struct {
@@ -85,7 +85,7 @@ union oam_entry {
             uint16_t mosaic: 1;
             uint16_t color_256: 1;
             uint16_t size_high : 2;
-        } __packed;
+        } __hs_packed;
         union {
             struct {
                 uint16_t coord_x: 9;
@@ -93,23 +93,23 @@ union oam_entry {
                 uint16_t hflip: 1;
                 uint16_t vflip: 1;
                 uint16_t size_low : 2;
-            } __packed;
+            } __hs_packed;
             struct {
                 uint16_t : 9; // coord_x
                 uint16_t affine_data_idx: 5;
                 uint16_t : 2; // size_low
-            } __packed;
+            } __hs_packed;
         };
         struct {
             uint16_t tile_idx: 10;
             uint16_t priority: 2;
             uint16_t palette_num: 4;
-        } __packed;
-    } __packed;
+        } __hs_packed;
+    } __hs_packed;
     uint16_t raw[3];
 };
 
-static_assert(sizeof(union oam_entry) == 3 * sizeof(uint16_t));
+hs_static_assert(sizeof(union oam_entry) == 3 * sizeof(uint16_t));
 
 struct ppu {
     // The emulator's screen as it is being rendered.

@@ -101,7 +101,7 @@ dma_run_channel(
             case 0b01:      dst_step = -unit_size; break;
             case 0b10:      dst_step = 0; break;
             case 0b11:      dst_step = unit_size; break;
-            default:        __unreachable;
+            default:        __hs_unreachable;
         }
     }
 
@@ -110,7 +110,7 @@ dma_run_channel(
         case 0b01:      src_step = -unit_size; break;
         case 0b10:      src_step = 0; break;
         case 0b11:      src_step = 0; break;
-        default:        __unreachable;
+        default:        __hs_unreachable;
     }
 
     dbgln(
@@ -155,14 +155,14 @@ dma_run_channel(
         }
 
         if (unit_size == 4) {
-            if (likely(channel->internal_src >= EWRAM_START)) {
+            if (__hs_likely(channel->internal_src >= EWRAM_START)) {
                 channel->latch = mem_read32(gba, channel->internal_src, access_src);
             } else {
                 mem_read32(gba, channel->internal_src, access_src);
             }
             mem_write32(gba, channel->internal_dst, channel->latch, access_dst);
         } else { // unit_size == 2
-            if (likely(channel->internal_src >= EWRAM_START)) {
+            if (__hs_likely(channel->internal_src >= EWRAM_START)) {
                 channel->latch = mem_read16(gba, channel->internal_src, access_src);
                 channel->latch = ((channel->latch << 16) | channel->latch);
             } else {

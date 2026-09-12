@@ -122,7 +122,7 @@ apu_modules_envelope_step(
 void
 apu_modules_step(
     struct gba *gba,
-    struct event_args args __unused
+    struct event_args args __hs_unused
 ) {
     // Tick the length counter modules at a rate of 256Hz
     if ((gba->apu.modules_step % 2) == 0) {

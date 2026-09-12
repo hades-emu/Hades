@@ -292,7 +292,7 @@ sched_reset_frame_limiter(
 void
 sched_frame_limiter(
     struct gba *gba,
-    struct event_args args __unused
+    struct event_args args __hs_unused
 ) {
     if (gba->scheduler.time_per_frame) {
         uint64_t now;

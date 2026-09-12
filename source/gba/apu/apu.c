@@ -61,7 +61,7 @@ apu_rbuffer_pop(
 void
 apu_resample(
     struct gba *gba,
-    struct event_args args __unused
+    struct event_args args __hs_unused
 ) {
     int32_t sample_l;
     int32_t sample_r;

@@ -281,7 +281,7 @@ void mem_bus_wait(struct gba *gba);
 void mem_bus_wait_for(struct gba *gba, uint64_t cycles);
 void mem_bus_access(struct gba *gba, uint32_t addr, uint32_t size, enum access_flags flags) __hs_force_inline;
 void mem_bus_idle(struct gba *gba);
-void mem_bus_pbuffer_access(struct gba *gba, uint32_t addr, uint32_t intended_cycles, enum access_flags flags, uint32_t size) __noinline;
+void mem_bus_pbuffer_access(struct gba *gba, uint32_t addr, uint32_t intended_cycles, enum access_flags flags, uint32_t size) __hs_noinline;
 void mem_bus_pbuffer_step(struct gba *gba, uint32_t cycles);
 void mem_bus_pbuffer_stop(struct gba *gba);
 

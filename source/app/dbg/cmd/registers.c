@@ -18,8 +18,8 @@
 void
 debugger_cmd_registers(
     struct app *app,
-    size_t argc __unused,
-    struct arg const *argv __unused
+    size_t argc __hs_unused,
+    struct arg const *argv __hs_unused
 ) {
     size_t i;
     struct core *core;

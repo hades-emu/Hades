@@ -14,8 +14,8 @@
 void
 debugger_cmd_continue(
     struct app *app,
-    size_t argc __unused,
-    struct arg const *argv __unused
+    size_t argc __hs_unused,
+    struct arg const *argv __hs_unused
 ) {
     if (!app->debugger.is_started) {
         logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);

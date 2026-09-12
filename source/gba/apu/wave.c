@@ -69,7 +69,7 @@ apu_wave_stop(
 void
 apu_wave_step(
     struct gba *gba,
-    struct event_args args __unused
+    struct event_args args __hs_unused
 ) {
     uint8_t byte;
     int16_t sample;

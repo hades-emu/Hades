@@ -16,7 +16,7 @@ app_sdl_audio_callback(
     void *raw_app,
     SDL_AudioStream *stream,
     int additional_amount,
-    int total_amount __unused
+    int total_amount __hs_unused
 ) {
     struct app *app;
     struct gba *gba;

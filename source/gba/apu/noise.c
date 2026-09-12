@@ -78,7 +78,7 @@ apu_noise_stop(
 void
 apu_noise_step(
     struct gba *gba,
-    struct event_args args __unused
+    struct event_args args __hs_unused
 ) {
     bool carry;
     int16_t sample;

@@ -242,7 +242,7 @@ struct dma_channel {
             uint16_t timing: 2;
             uint16_t irq_end: 1;
             uint16_t enable: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } control;
@@ -270,7 +270,7 @@ struct timer {
             uint16_t irq: 1;
             uint16_t enable: 1;
             uint16_t : 8;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } control;
@@ -296,7 +296,7 @@ struct io {
             uint8_t win0: 1;
             uint8_t win1: 1;
             uint8_t winobj: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } dispcnt;
@@ -318,7 +318,7 @@ struct io {
             uint8_t vcount_irq: 1;      // Enable to IRQ when vcount_stg == vcount
             uint8_t : 2;
             uint8_t vcount_val: 8;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } dispstat;
@@ -339,7 +339,7 @@ struct io {
             uint16_t screen_base: 5;
             uint16_t wrap: 1;
             uint16_t size: 2;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } bgcnt[4];
@@ -399,7 +399,7 @@ struct io {
         struct {
             uint8_t max; // Exclusive
             uint8_t min; // Inclusive
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } winh[2];
@@ -409,7 +409,7 @@ struct io {
         struct {
             uint8_t max; // Exclusive
             uint8_t min; // Inclusive
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } winv[2];
@@ -423,19 +423,19 @@ struct io {
                     uint8_t win0_obj: 1;
                     uint8_t win0_effects: 1;
                     uint8_t : 2;
-                } __packed;
+                } __hs_packed;
                 uint8_t win0;
-            } __packed;
+            } __hs_packed;
             union {
                 struct {
                     uint8_t win1_bg: 4;
                     uint8_t win1_obj: 1;
                     uint8_t win1_effects: 1;
                     uint8_t : 2;
-                } __packed;
+                } __hs_packed;
                 uint8_t win1;
-            } __packed;
-        } __packed;
+            } __hs_packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } winin;
@@ -449,19 +449,19 @@ struct io {
                     uint8_t winout_obj: 1;
                     uint8_t winout_effects: 1;
                     uint8_t : 2;
-                } __packed;
+                } __hs_packed;
                 uint8_t winout;
-            } __packed;
+            } __hs_packed;
             union {
                 struct {
                     uint8_t winobj_bg: 4;
                     uint8_t winobj_obj: 1;
                     uint8_t winobj_effects: 1;
                     uint8_t : 2;
-                } __packed;
+                } __hs_packed;
                 uint8_t winobj;
-            } __packed;
-        } __packed;
+            } __hs_packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } winout;
@@ -474,7 +474,7 @@ struct io {
             uint16_t obj_hsize: 4;
             uint16_t obj_vsize: 4;
             uint16_t : 16;
-        } __packed;
+        } __hs_packed;
         uint32_t raw;
         uint8_t bytes[4];
     } mosaic;
@@ -490,7 +490,7 @@ struct io {
             uint16_t bot_oam: 1;
             uint16_t bot_backdrop: 1;
             uint16_t : 2;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } bldcnt;
@@ -502,7 +502,7 @@ struct io {
             uint16_t : 3;
             uint16_t bot_coef: 5;
             uint16_t : 3;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } bldalpha;
@@ -512,7 +512,7 @@ struct io {
         struct {
             uint16_t coef: 5;
             uint16_t : 11;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } bldy;
@@ -524,7 +524,7 @@ struct io {
             uint16_t sweep_direction: 1;
             uint16_t sweep_step_time: 3;
             uint16_t : 9;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound1cnt_l;
@@ -537,7 +537,7 @@ struct io {
             uint16_t envelope_step_time: 3;
             uint16_t envelope_direction: 1;
             uint16_t envelope_initial_volume: 4;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound1cnt_h;
@@ -549,7 +549,7 @@ struct io {
             uint16_t : 3;
             uint16_t use_length: 1;
             uint16_t reset: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound1cnt_x;
@@ -562,7 +562,7 @@ struct io {
             uint16_t envelope_step_time: 3;
             uint16_t envelope_direction: 1;
             uint16_t envelope_initial_volume: 4;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound2cnt_l;
@@ -574,7 +574,7 @@ struct io {
             uint16_t : 3;
             uint16_t use_length: 1;
             uint16_t reset: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound2cnt_h;
@@ -587,7 +587,7 @@ struct io {
             uint16_t bank_select: 1;
             uint16_t enable: 1;
             uint16_t : 8;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound3cnt_l;
@@ -599,7 +599,7 @@ struct io {
             uint16_t : 5;
             uint16_t volume: 2;
             uint16_t force_volume: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound3cnt_h;
@@ -611,7 +611,7 @@ struct io {
             uint16_t : 3;
             uint16_t use_length: 1;
             uint16_t reset: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound3cnt_x;
@@ -624,7 +624,7 @@ struct io {
             uint16_t envelope_step_time: 3;
             uint16_t envelope_direction: 1;
             uint16_t envelope_initial_volume: 4;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound4cnt_l;
@@ -638,7 +638,7 @@ struct io {
             uint16_t : 6;
             uint16_t use_length: 1;
             uint16_t reset: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } sound4cnt_h;
@@ -658,7 +658,7 @@ struct io {
             uint16_t enable_sound_2_left: 1;
             uint16_t enable_sound_3_left: 1;
             uint16_t enable_sound_4_left: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } soundcnt_l;
@@ -678,7 +678,7 @@ struct io {
             uint16_t enable_fifo_b_left: 1;
             uint16_t timer_fifo_b: 1;
             uint16_t reset_fifo_b: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } soundcnt_h;
@@ -693,7 +693,7 @@ struct io {
             uint16_t : 3;
             uint16_t master_enable: 1;
             uint16_t : 8;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } soundcnt_x;
@@ -705,7 +705,7 @@ struct io {
             uint32_t : 4;
             uint32_t resolution: 2;
             uint32_t : 16;
-        } __packed;
+        } __hs_packed;
         uint32_t raw;
         uint8_t bytes[4];
     } soundbias;
@@ -732,7 +732,7 @@ struct io {
             uint16_t r: 1;
             uint16_t l: 1;
             uint16_t : 6;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } keyinput;
@@ -744,7 +744,7 @@ struct io {
             uint16_t : 4;
             uint16_t irq_enable: 1;
             uint16_t irq_cond: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } keycnt;
@@ -763,7 +763,7 @@ struct io {
             uint16_t : 1;
             uint16_t irq: 1;
             uint16_t : 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } siocnt;
@@ -792,7 +792,7 @@ struct io {
             uint16_t keypad: 1;
             uint16_t gamepak: 1;
             uint16_t : 2;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } int_enabled;
@@ -815,7 +815,7 @@ struct io {
             uint16_t keypad: 1;
             uint16_t gamepak: 1;
             uint16_t : 2;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } int_flag;
@@ -834,7 +834,7 @@ struct io {
             uint16_t : 1;
             uint16_t gamepak_prefetch: 1;
             uint16_t gamepak_type: 1;
-        } __packed;
+        } __hs_packed;
         uint16_t raw;
         uint8_t bytes[2];
     } waitcnt;
@@ -895,7 +895,7 @@ struct io {
                 uint16_t level: 4;
                 uint16_t : 4;
                 uint16_t send: 1;
-            } __packed;
+            } __hs_packed;
             uint16_t raw;
             uint8_t bytes[2];
         } flags;
@@ -905,37 +905,37 @@ struct io {
 #endif
 };
 
-static_assert(sizeof(((struct io *)NULL)->dispcnt) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->dispstat) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->bgcnt) == 4 * sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->winh) == 2 * sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->winv) == 2 * sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->winin.win0) == sizeof(uint8_t));
-static_assert(sizeof(((struct io *)NULL)->winin.win1) == sizeof(uint8_t));
-static_assert(sizeof(((struct io *)NULL)->winin) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->winout.winout) == sizeof(uint8_t));
-static_assert(sizeof(((struct io *)NULL)->winout.winobj) == sizeof(uint8_t));
-static_assert(sizeof(((struct io *)NULL)->winout) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->mosaic) == sizeof(uint32_t));
-static_assert(sizeof(((struct io *)NULL)->bldcnt) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->bldalpha) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->bldy) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->sound3cnt_l) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->sound3cnt_h) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->sound3cnt_x) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->soundcnt_l) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->soundcnt_h) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->soundcnt_x) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->soundbias) == sizeof(uint32_t));
-static_assert(sizeof(((struct io *)NULL)->waveram) == 2 * (16 * sizeof(uint8_t)));
-static_assert(sizeof(((struct io *)NULL)->keycnt) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->keyinput) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->siocnt) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->int_enabled) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->int_flag) == sizeof(uint16_t));
-static_assert(sizeof(((struct io *)NULL)->waitcnt) == sizeof(uint16_t));
-static_assert(sizeof(((struct timer *)NULL)->control) == sizeof(uint16_t));
-static_assert(sizeof(((struct dma_channel *)NULL)->control) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->dispcnt) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->dispstat) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->bgcnt) == 4 * sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->winh) == 2 * sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->winv) == 2 * sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->winin.win0) == sizeof(uint8_t));
+hs_static_assert(sizeof(((struct io *)NULL)->winin.win1) == sizeof(uint8_t));
+hs_static_assert(sizeof(((struct io *)NULL)->winin) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->winout.winout) == sizeof(uint8_t));
+hs_static_assert(sizeof(((struct io *)NULL)->winout.winobj) == sizeof(uint8_t));
+hs_static_assert(sizeof(((struct io *)NULL)->winout) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->mosaic) == sizeof(uint32_t));
+hs_static_assert(sizeof(((struct io *)NULL)->bldcnt) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->bldalpha) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->bldy) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->sound3cnt_l) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->sound3cnt_h) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->sound3cnt_x) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->soundcnt_l) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->soundcnt_h) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->soundcnt_x) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->soundbias) == sizeof(uint32_t));
+hs_static_assert(sizeof(((struct io *)NULL)->waveram) == 2 * (16 * sizeof(uint8_t)));
+hs_static_assert(sizeof(((struct io *)NULL)->keycnt) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->keyinput) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->siocnt) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->int_enabled) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->int_flag) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct io *)NULL)->waitcnt) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct timer *)NULL)->control) == sizeof(uint16_t));
+hs_static_assert(sizeof(((struct dma_channel *)NULL)->control) == sizeof(uint16_t));
 
 struct gba;
 

@@ -321,7 +321,7 @@ void
 hs_open_url(
     char const *url
 ) {
-    int _out __unused;
+    int _out __hs_unused;
     char command[256];
 
     snprintf(

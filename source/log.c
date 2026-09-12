@@ -111,7 +111,7 @@ logln(
 /*
 ** Print the given formatted string to stderr and finally exit(1).
 */
-__noreturn
+__hs_noreturn
 void
 panic(
     enum modules module,
@@ -133,7 +133,7 @@ panic(
 ** Print the given formatted string to stderr, followed by a `\n`, and then
 ** exit(1).
 */
-__noreturn
+__hs_noreturn
 void
 unimplemented(
     enum modules module,

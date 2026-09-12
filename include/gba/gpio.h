@@ -77,7 +77,7 @@ struct rtc {
             uint8_t : 2;
             uint8_t mode_24h: 1;
             uint8_t poweroff: 1;
-        } __packed;
+        } __hs_packed;
         uint8_t raw;
     } control;
 };

@@ -50,7 +50,7 @@ core_next(
         core_interrupt(gba, VEC_IRQ, MODE_IRQ, true);
     }
 
-    if (likely(core->state == CORE_RUN)) {
+    if (__hs_likely(core->state == CORE_RUN)) {
         if (core->cpsr.thumb) {
             uint16_t op;
 
@@ -104,7 +104,7 @@ core_execute_arm_opcode(
     // The index of the LUT is both the CPSR and the condition combined in an 8-bit integer
     // unique per situation.
     idx = (bitfield_get_range(core->cpsr.raw, 28, 32) << 4) | (bitfield_get_range(op, 28, 32));
-    if (unlikely(!cond_lut[idx])) {
+    if (__hs_unlikely(!cond_lut[idx])) {
         core->pc += 4;
         core->prefetch_access_type = SEQUENTIAL;
         return;
@@ -115,7 +115,7 @@ core_execute_arm_opcode(
     //
     // TODO FIXME: We need to properly handle unknown instructions instead of crashing.
     idx = ((op >> 16) & 0xFF0) | ((op >> 4) & 0x00F);
-    if (unlikely(arm_lut[idx] == NULL)) {
+    if (__hs_unlikely(arm_lut[idx] == NULL)) {
         panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
     }
 
@@ -135,7 +135,7 @@ core_execute_thumb_opcode(
     // the Lookup Table (LUT) of Thumb instructions.
     //
     // TODO FIXME: We need to properly handle unknown instructions instead of crashing.
-    if (unlikely(thumb_lut[op >> 8] == NULL)) {
+    if (__hs_unlikely(thumb_lut[op >> 8] == NULL)) {
         panic(HS_CORE, "Unknown Thumb op-code 0x%04x (pc=0x%08x).", op, core->pc);
     }
 
