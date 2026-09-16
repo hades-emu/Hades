@@ -96,7 +96,7 @@ gba_send_notification_raw(
         }
 #endif
         default: {
-            unimplemented(HS_ERROR, "Unimplemented notification kind %i.", notif_header->kind);
+            hs_unimplemented(HS_ERROR, "Unimplemented notification kind %i.", notif_header->kind);
         }
     }
 }
@@ -375,7 +375,7 @@ gba_state_reset(
             case BACKUP_FLASH64: gba->shared_data.backup_storage.size = FLASH64_SIZE; break;
             case BACKUP_FLASH128:gba->shared_data.backup_storage.size = FLASH128_SIZE; break;
             case BACKUP_NONE: gba->shared_data.backup_storage.size = 0; break;
-            default: panic(HS_CORE, "Unknown backup type %i", gba->memory.backup_storage.type);
+            default: hs_panic(HS_CORE, "Unknown backup type %i", gba->memory.backup_storage.type);
         }
 
         if (gba->shared_data.backup_storage.size) {
@@ -442,14 +442,14 @@ gba_state_reset(
             raw = &config->cheats.list[i];
 
             if (raw->enabled) {
-                dbgln(HS_CHEAT, "Loading cheat \"%s%s%s\":", g_light_magenta, raw->name, g_reset);
+                hs_dbgln(HS_CHEAT, "Loading cheat \"%s%s%s\":", g_light_magenta, raw->name, g_reset);
                 if (cheat_parse_and_compile(bin, raw)) {
                     cheat_dump(bin);
                     gba->cheats.len += 1;
                 }
-                dbgln(HS_CHEAT, "Done.");
+                hs_dbgln(HS_CHEAT, "Done.");
             } else {
-                dbgln(HS_CHEAT, "Skipping cheat \"%s%s%s\" (disabled).", g_light_magenta, raw->name, g_reset);
+                hs_dbgln(HS_CHEAT, "Skipping cheat \"%s%s%s\" (disabled).", g_light_magenta, raw->name, g_reset);
             }
         }
     }

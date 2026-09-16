@@ -58,29 +58,16 @@ extern char const *g_white;
 extern bool g_verbose[HS_END];
 extern bool g_verbose_global;
 
-static char const * const modules_str[] = {
-    [HS_INFO]       = " INFO  ",
-    [HS_ERROR]      = " ERROR ",
-    [HS_WARN]       = " WARN  ",
-    [HS_CORE]       = " CORE  ",
-    [HS_IO]         = " IO    ",
-    [HS_VIDEO]      = " VIDEO ",
-    [HS_DMA]        = " DMA   ",
-    [HS_IRQ]        = " IRQ   ",
-    [HS_MEMORY]     = " MEM   ",
-    [HS_TIMER]      = " TIMER ",
-    [HS_DEBUG]      = " DEBUG ",
-    [HS_CHEAT]      = " CHEAT ",
-};
+extern char const * const module_names[];
 
 /* log.c */
-void logln(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3)));
-void panic(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
-void unimplemented(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
-void disable_colors(void);
+void hs_logln(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3)));
+void hs_panic(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
+void hs_unimplemented(enum modules module, char const *fmt, ...) __attribute__ ((format (printf, 2, 3))) __attribute__((noreturn));
+void hs_disable_colors(void);
 
 #ifdef WITH_DEBUGGER
-#define dbgln(...) logln(__VA_ARGS__)
+#define hs_dbgln(...) hs_logln(__VA_ARGS__)
 #else
-#define dbgln(...) if (0) { logln(__VA_ARGS__); }
+#define hs_dbgln(...) if (0) { hs_logln(__VA_ARGS__); }
 #endif

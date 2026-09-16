@@ -129,7 +129,7 @@ debugger_cmd_context(
     struct arg const *argv __hs_unused
 ) {
     if (!app->debugger.is_started) {
-        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        hs_logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
         return;
     }
 
@@ -143,7 +143,7 @@ debugger_cmd_context_compact(
     struct arg const *argv __hs_unused
 ) {
     if (!app->debugger.is_started) {
-        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        hs_logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
         return;
     }
 

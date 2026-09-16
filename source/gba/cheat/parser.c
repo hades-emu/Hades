@@ -211,7 +211,7 @@ cheat_parse_and_compile(
 
     if (compiler.error) {
         cheat_compilation_error_copy(raw, compiler.error);
-        logln(HS_ERROR, "Failed to parse cheat: %s.", compiler.error);
+        hs_logln(HS_ERROR, "Failed to parse cheat: %s.", compiler.error);
         ret = false;
         goto end;
     }
@@ -220,7 +220,7 @@ cheat_parse_and_compile(
         case RAW_CHEAT_KIND_PARV3: {
             if (!cheat_parv3_compile(bin, &compiler)) {
                 cheat_compilation_error_own(raw, hs_format("PARV3: %s", compiler.error));
-                logln(HS_ERROR, "Failed to compile PARV3 cheat: %s.", compiler.error);
+                hs_logln(HS_ERROR, "Failed to compile PARV3 cheat: %s.", compiler.error);
                 ret = false;
                 goto end;
             }
@@ -231,7 +231,7 @@ cheat_parse_and_compile(
         case RAW_CHEAT_KIND_GAMESHARK: {
             if (!cheat_gameshark_compile(bin, &compiler)) {
                 cheat_compilation_error_own(raw, hs_format("GameShark: %s", compiler.error));
-                logln(HS_ERROR, "Failed to compile GameShark cheat: %s.", compiler.error);
+                hs_logln(HS_ERROR, "Failed to compile GameShark cheat: %s.", compiler.error);
                 ret = false;
                 goto end;
             }
@@ -242,7 +242,7 @@ cheat_parse_and_compile(
         case RAW_CHEAT_KIND_CODEBREAKER: {
             if (!cheat_codebreaker_compile(bin, &compiler)) {
                 cheat_compilation_error_own(raw, hs_format("CodeBreaker: %s", compiler.error));
-                logln(HS_ERROR, "Failed to compile CodeBreaker cheat: %s.", compiler.error);
+                hs_logln(HS_ERROR, "Failed to compile CodeBreaker cheat: %s.", compiler.error);
                 ret = false;
                 goto end;
             }
@@ -252,13 +252,13 @@ cheat_parse_and_compile(
         }
         default: {
             cheat_compilation_error_own(raw, hs_format("Unsupported cheat type %i", raw->kind));
-            logln(HS_WARN, "Unsupported cheat type %i.", raw->kind);
+            hs_logln(HS_WARN, "Unsupported cheat type %i.", raw->kind);
             ret = false;
             goto end;
         }
     }
 
-    panic(HS_ERROR, "Reached supposedly unreachable code in `cheat_parse_and_compile()`.");
+    hs_panic(HS_ERROR, "Reached supposedly unreachable code in `cheat_parse_and_compile()`.");
 
 end:
     cheat_compiler_cleanup(&compiler);

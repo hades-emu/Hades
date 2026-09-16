@@ -46,7 +46,7 @@
 #define hs_assert(expr)                                     \
     do {                                                    \
         if (__hs_unlikely(!(expr))) {                       \
-            panic(                                          \
+            hs_panic(                                       \
                 HS_ERROR,                                   \
                 "assert(%s) failed (in %s at line %u).",    \
                 #expr,                                      \

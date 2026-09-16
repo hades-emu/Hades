@@ -318,7 +318,7 @@ app_emulator_configure_rom_archive(
     int err;
     bool game_found;
 
-    logln(HS_INFO, "Path given identified as an archived.");
+    hs_logln(HS_INFO, "Path given identified as an archived.");
 
     game_found = false;
     archive = archive_read_new();
@@ -475,15 +475,15 @@ app_emulator_configure_backup_storage(
         read_len = fread(data, 1, file_len, app->emulation.backup_file);
 
         if (read_len != file_len) {
-            logln(HS_WARN, "Failed to read the save file. Is it corrupted?");
+            hs_logln(HS_WARN, "Failed to read the save file. Is it corrupted?");
         } else {
-            logln(HS_INFO, "Save file successfully read.");
+            hs_logln(HS_INFO, "Save file successfully read.");
         }
 
         app->emulation.launch_config->backup_storage.data = data;
         app->emulation.launch_config->backup_storage.size = file_len;
     } else {
-        logln(HS_WARN, "Failed to open the save file. A new one will be created instead.");
+        hs_logln(HS_WARN, "Failed to open the save file. A new one will be created instead.");
 
         app->emulation.backup_file = hs_fopen(backup_path, "wb+");
 
@@ -535,7 +535,7 @@ app_emulator_import_backup_storage(
     read_len = fread(data, 1, file_len, backup);
 
     if (read_len != file_len) {
-        logln(HS_WARN, "Failed to import the save file. Is it corrupted?");
+        hs_logln(HS_WARN, "Failed to import the save file. Is it corrupted?");
     } else {
         app_new_notification(
             app,
@@ -551,7 +551,7 @@ app_emulator_import_backup_storage(
     app->emulation.backup_file = hs_fopen(backup_path, "rb+");
 
     if (!app->emulation.backup_file) {
-        logln(HS_WARN, "Failed to open the save file. A new one will be created instead.");
+        hs_logln(HS_WARN, "Failed to open the save file. A new one will be created instead.");
 
         app->emulation.backup_file = hs_fopen(backup_path, "wb+");
 
@@ -599,7 +599,7 @@ app_emulator_configure_and_run_impl(
 
     app_emulator_stop(app);
 
-    logln(HS_INFO, "Loading game at \"%s%s%s\".", g_light_green, rom_path, g_reset);
+    hs_logln(HS_INFO, "Loading game at \"%s%s%s\".", g_light_green, rom_path, g_reset);
 
     app->emulation.launch_config = calloc(1, sizeof(struct launch_config));
     hs_assert(app->emulation.launch_config);
@@ -615,7 +615,7 @@ app_emulator_configure_and_run_impl(
     }
 
     backup_path = app_path_backup(app, rom_path);
-    logln(HS_INFO, "Using save file \"%s%s%s\".", g_light_green, backup_path, g_reset);
+    hs_logln(HS_INFO, "Using save file \"%s%s%s\".", g_light_green, backup_path, g_reset);
 
     app_path_update_quicksave_paths(app, rom_path);
 
@@ -638,7 +638,7 @@ app_emulator_configure_and_run_impl(
     app->emulation.game_entry = db_lookup_game(code);
 
     if (app->emulation.game_entry) {
-        logln(
+        hs_logln(
             HS_INFO,
             "Game code %s%.4s%s identified as %s%s%s.",
             g_light_magenta,
@@ -649,7 +649,7 @@ app_emulator_configure_and_run_impl(
             g_reset
         );
     } else {
-        logln(
+        hs_logln(
             HS_WARN,
             "No game with the code \"%.3s\" could be found in the Hades game database.",
             code
@@ -693,19 +693,19 @@ app_emulator_configure_and_run_impl(
 
     app_emulator_fill_gba_settings(app, &app->emulation.launch_config->settings);
 
-    logln(HS_INFO, "Emulator's configuration:");
-    logln(HS_INFO, "    Skip BIOS: %s", app->emulation.launch_config->skip_bios ? "true" : "false");
-    logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
-    logln(HS_INFO, "    GPIO: %s", gpio_device_names[app->emulation.launch_config->gpio_device_type]);
-    logln(HS_INFO, "    ROM Mirroring: %s", app->emulation.launch_config->rom_mirroring ? "true" : "false");
+    hs_logln(HS_INFO, "Emulator's configuration:");
+    hs_logln(HS_INFO, "    Skip BIOS: %s", app->emulation.launch_config->skip_bios ? "true" : "false");
+    hs_logln(HS_INFO, "    Backup storage: %s", backup_storage_names[app->emulation.launch_config->backup_storage.type]);
+    hs_logln(HS_INFO, "    GPIO: %s", gpio_device_names[app->emulation.launch_config->gpio_device_type]);
+    hs_logln(HS_INFO, "    ROM Mirroring: %s", app->emulation.launch_config->rom_mirroring ? "true" : "false");
     if (app->emulation.launch_config->settings.fast_forward) {
-        logln(HS_INFO, "    Speed: Fast Forward");
+        hs_logln(HS_INFO, "    Speed: Fast Forward");
     } else {
-        logln(HS_INFO, "    Speed: %.0f%%", app->emulation.launch_config->settings.speed * 100.f);
+        hs_logln(HS_INFO, "    Speed: %.0f%%", app->emulation.launch_config->settings.speed * 100.f);
     }
-    logln(HS_INFO, "    Audio Frequency: %iHz (%i cycles)", app->audio.resample_frequency, app->emulation.launch_config->audio_frequency);
-    logln(HS_INFO, "    Cheats: %zu", app->emulation.launch_config->cheats.len);
-    logln(HS_INFO, "    Idle Loop Elimination: %s", app->emulation.launch_config->idle_loop.enabled ? "true" : "false");
+    hs_logln(HS_INFO, "    Audio Frequency: %iHz (%i cycles)", app->audio.resample_frequency, app->emulation.launch_config->audio_frequency);
+    hs_logln(HS_INFO, "    Cheats: %zu", app->emulation.launch_config->cheats.len);
+    hs_logln(HS_INFO, "    Idle Loop Elimination: %s", app->emulation.launch_config->idle_loop.enabled ? "true" : "false");
 
     event.header.kind = MESSAGE_RESET;
     event.header.size = sizeof(event);
@@ -726,7 +726,7 @@ app_emulator_configure_and_run_impl(
 
     app_sdl_video_update_win_title(app);
 
-    logln(HS_INFO, "Game successfully loaded.");
+    hs_logln(HS_INFO, "Game successfully loaded.");
 
     if (run) {
         app_emulator_run(app);
@@ -1126,7 +1126,7 @@ app_emulator_quickload(
     size_t size;
 
     if (app->emulation.quickload_request.enabled) {
-        logln(HS_WARN, "A saved state is already being loaded by the emulator, ignoring the new request.");
+        hs_logln(HS_WARN, "A saved state is already being loaded by the emulator, ignoring the new request.");
         return;
     }
 

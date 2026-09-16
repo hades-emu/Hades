@@ -171,7 +171,7 @@ core_arm_decode_insns(
         }
 
         if (k != 32) {
-            panic(
+            hs_panic(
                 HS_CORE,
                 "instruction \"%s\" doesn't have a length of 32 bits",
                 encoded_insn->name
@@ -188,7 +188,7 @@ core_arm_decode_insns(
         j = 0;
         while (j < i) {
             if (!(((decoded_insn->value ^ arm_decoded_insns[j].value) & decoded_insn->mask) & arm_decoded_insns[j].mask)) {
-                panic(
+                hs_panic(
                     HS_CORE,
                     "instruction \"%s\" collides with \"%s\".",
                     encoded_insn->name,

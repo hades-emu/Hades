@@ -53,15 +53,15 @@ app_cheats_load(
 
     path = app_path_cheats(app, rom_path);
     if (!hs_fexists(path)) {
-        logln(HS_INFO, "No cheats found for this game.");
+        hs_logln(HS_INFO, "No cheats found for this game.");
         return;
     }
 
-    logln(HS_INFO, "Using cheats at \"%s%s%s\".", g_light_green, path, g_reset);
+    hs_logln(HS_INFO, "Using cheats at \"%s%s%s\".", g_light_green, path, g_reset);
 
     file = hs_fopen(path, "r");
     if (!file) {
-        logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
+        hs_logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
         return;
     }
 
@@ -105,7 +105,7 @@ app_cheats_load(
         mjson_get_string(data + voff, vlen, "$.code", cheat->code, sizeof(cheat->code));
     }
 
-    logln(HS_INFO, "Cheats file successfully read.");
+    hs_logln(HS_INFO, "Cheats file successfully read.");
 
 end:
     free(data);
@@ -124,7 +124,7 @@ app_cheats_save(
     int out;
 
     if (!app->emulation.is_started || !app->emulation.game_path) {
-        logln(HS_ERROR, "Attempted to save cheats when no game is running.");
+        hs_logln(HS_ERROR, "Attempted to save cheats when no game is running.");
         return;
     }
 
@@ -139,7 +139,7 @@ app_cheats_save(
 
     file = hs_fopen(path, "w");
     if (!file) {
-        logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
+        hs_logln(HS_ERROR, "Failed to open \"%s\": %s", path, strerror(errno));
         return;
     }
 
@@ -169,15 +169,15 @@ app_cheats_save(
     out = mjson_pretty(data, strlen(data), "  ", mjson_print_dynamic_buf, &pretty_data);
 
     if (out < 0) {
-        logln(HS_ERROR, "Failed to write the cheats to \"%s\": the formatted JSON is invalid.", path);
+        hs_logln(HS_ERROR, "Failed to write the cheats to \"%s\": the formatted JSON is invalid.", path);
         goto end;
     }
 
     if (fwrite(pretty_data, strlen(pretty_data), 1, file) != 1) {
-        logln(HS_ERROR, "Failed to write the configuration to \"%s\": %s.", path, strerror(errno));
+        hs_logln(HS_ERROR, "Failed to write the configuration to \"%s\": %s.", path, strerror(errno));
     }
 
-    logln(HS_INFO, "Cheats saved to \"%s%s%s\".", g_light_green, path, g_reset);
+    hs_logln(HS_INFO, "Cheats saved to \"%s%s%s\".", g_light_green, path, g_reset);
 
 end:
     free(data);

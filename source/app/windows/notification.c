@@ -58,9 +58,9 @@ app_new_notification(
 
     // Print the notification's messages to the log.
     switch (notif->kind) {
-        case UI_NOTIFICATION_INFO:       logln(HS_INFO, "%s", formatted_msg); break;
-        case UI_NOTIFICATION_SUCCESS:    logln(HS_INFO, "%s%s%s", g_light_green, formatted_msg, g_reset); break;
-        case UI_NOTIFICATION_ERROR:      logln(HS_ERROR, "%s", formatted_msg); break;
+        case UI_NOTIFICATION_INFO:       hs_logln(HS_INFO, "%s", formatted_msg); break;
+        case UI_NOTIFICATION_SUCCESS:    hs_logln(HS_INFO, "%s%s%s", g_light_green, formatted_msg, g_reset); break;
+        case UI_NOTIFICATION_ERROR:      hs_logln(HS_ERROR, "%s", formatted_msg); break;
     }
 }
 

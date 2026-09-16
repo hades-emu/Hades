@@ -26,7 +26,7 @@ app_nfd_process_events(
             case NFD_BIOS_PATH: {
                 free(app->settings.emulation.bios_path);
                 app->settings.emulation.bios_path = event->path;
-                logln(HS_INFO, "BIOS updated to \"%s%s%s\".", g_light_green, app->settings.emulation.bios_path, g_reset);
+                hs_logln(HS_INFO, "BIOS updated to \"%s%s%s\".", g_light_green, app->settings.emulation.bios_path, g_reset);
                 break;
             };
             case NFD_ROM_PATH: {

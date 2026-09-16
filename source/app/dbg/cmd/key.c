@@ -31,7 +31,7 @@ debugger_cmd_key(
     struct arg const *argv
 ) {
     if (!app->debugger.is_started) {
-        logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
+        hs_logln(HS_ERROR, "%s%s%s", g_red, "This command cannot be used when no game is running.", g_reset);
         return;
     }
 

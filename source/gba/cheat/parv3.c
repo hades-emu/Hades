@@ -83,12 +83,12 @@ cheat_parv3_compile(
     uint32_t op1;
     uint32_t op2;
 
-    dbgln(HS_CHEAT, "  - Compiling (PARV3)");
+    hs_dbgln(HS_CHEAT, "  - Compiling (PARV3)");
 
     token = compiler->tokens;
 
     while (cheat_parv3_try_fetch_next_op_pair(&token, &op1, &op2)) {
-        dbgln(HS_CHEAT, "    - [ %08x %08x ]", op1, op2);
+        hs_dbgln(HS_CHEAT, "    - [ %08x %08x ]", op1, op2);
 
         if (op2 == 0x001DC0DE) { // Enable Code (Ignored)
             continue;
@@ -226,7 +226,7 @@ cheat_parv3_compile(
         } else {
             switch (op2 >> 24) {
                 case 0x08: {
-                    logln(HS_WARN, "Action Replay slowdown not implemented");
+                    hs_logln(HS_WARN, "Action Replay slowdown not implemented");
                     break;
                 }
                 case 0x18:
@@ -244,7 +244,7 @@ cheat_parv3_compile(
                         return false;
                     }
 
-                    dbgln(HS_CHEAT, "    - [ %08x %08x ]", val1, val2);
+                    hs_dbgln(HS_CHEAT, "    - [ %08x %08x ]", val1, val2);
 
                     cheat_create_rom_patch(
                         bin,
@@ -268,6 +268,6 @@ cheat_parv3_compile(
         return false;
     }
 
-    dbgln(HS_CHEAT, "  - Compiled successfuly");
+    hs_dbgln(HS_CHEAT, "  - Compiled successfuly");
     return true;
 }

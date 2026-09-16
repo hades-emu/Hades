@@ -71,7 +71,7 @@ mem_openbus_read(
                 break;
             };
             default: {
-                panic(HS_MEMORY, "Reading the open bus from an impossible page: %u", pc >> 24);
+                hs_panic(HS_MEMORY, "Reading the open bus from an impossible page: %u", pc >> 24);
                 break;
             };
         }
@@ -105,7 +105,7 @@ mem_openbus_read(
                     }                                                                       \
                     _ret = (gba)->memory.bios_bus >> _shift;                                \
                 } else {                                                                    \
-                    dbgln(HS_MEMORY, "Invalid BIOS read of size %zu from 0x%08x", sizeof(T), _addr); \
+                    hs_dbgln(HS_MEMORY, "Invalid BIOS read of size %zu from 0x%08x", sizeof(T), _addr); \
                     _ret = mem_openbus_read((gba), _addr);                                  \
                 }                                                                           \
                 break;                                                                      \
@@ -178,7 +178,7 @@ mem_openbus_read(
                 break;                                                                      \
             };                                                                              \
             default: {                                                                      \
-                dbgln(HS_MEMORY, "Invalid read of size %zu from 0x%08x", sizeof(T), _addr); \
+                hs_dbgln(HS_MEMORY, "Invalid read of size %zu from 0x%08x", sizeof(T), _addr); \
                 _ret = mem_openbus_read((gba), _addr);                                      \
                 break;                                                                      \
             }                                                                               \
@@ -306,7 +306,7 @@ mem_openbus_read(
                 );                                                                              \
                 break;                                                                          \
             default: {                                                                          \
-                dbgln(HS_MEMORY, "Invalid write of size %zu to 0x%08x", sizeof(T), _addr);      \
+                hs_dbgln(HS_MEMORY, "Invalid write of size %zu to 0x%08x", sizeof(T), _addr);      \
                 break;                                                                          \
             };                                                                                  \
         };                                                                                      \
@@ -584,7 +584,7 @@ mem_install_cheat_rom_patches(
         return;
     }
 
-    dbgln(HS_CHEAT, "Installing ROM patch for a cheat:");
+    hs_dbgln(HS_CHEAT, "Installing ROM patch for a cheat:");
 
     if (!gba->memory.patched_rom) {
         gba->memory.patched_rom = malloc(CART_SIZE);
@@ -598,16 +598,16 @@ mem_install_cheat_rom_patches(
 
         patch = &bin->rom_patches.list[i];
 
-        dbgln(HS_CHEAT, " - Patch %zu", i + 1);
-        dbgln(HS_CHEAT, "    - Address: %08x", patch->addr);
-        dbgln(HS_CHEAT, "    - Width: %i", patch->width);
-        dbgln(HS_CHEAT, "    - Val: %0*x", patch->width * 2, patch->value);
+        hs_dbgln(HS_CHEAT, " - Patch %zu", i + 1);
+        hs_dbgln(HS_CHEAT, "    - Address: %08x", patch->addr);
+        hs_dbgln(HS_CHEAT, "    - Width: %i", patch->width);
+        hs_dbgln(HS_CHEAT, "    - Val: %0*x", patch->width * 2, patch->value);
 
         switch (patch->width) {
             case 1: mem_patch_rom8(gba, patch->addr, patch->value); break;
             case 2: mem_patch_rom16(gba, patch->addr, patch->value); break;
             case 4: mem_patch_rom32(gba, patch->addr, patch->value); break;
-            default: panic(HS_CHEAT, "Invalid rom patch width: %u", patch->width);
+            default: hs_panic(HS_CHEAT, "Invalid rom patch width: %u", patch->width);
         }
     }
 }
@@ -618,7 +618,7 @@ mem_refresh_rom_patches(
 ) {
     size_t i;
 
-    dbgln(HS_CHEAT, "Refreshing ROM patches.");
+    hs_dbgln(HS_CHEAT, "Refreshing ROM patches.");
 
     free(gba->memory.patched_rom);
     gba->memory.patched_rom = NULL;

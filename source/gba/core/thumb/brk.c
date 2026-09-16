@@ -27,7 +27,7 @@ core_thumb_brk(
     addr = core->pc - 4;
     insn = *(uint16_t *)(gba->memory.unpatched_rom + (addr & gba->memory.rom_mask));
 
-    dbgln(HS_CORE, "Breakpoint instruction hit.");
+    hs_dbgln(HS_CORE, "Breakpoint instruction hit.");
 
     cheat_process_hooks_at_addr(gba, addr);
 

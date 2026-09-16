@@ -74,14 +74,14 @@ cheat_gameshark_compile(
     uint32_t op1;
     uint32_t op2;
 
-    dbgln(HS_CHEAT, "  - Compiling (GameShark)");
+    hs_dbgln(HS_CHEAT, "  - Compiling (GameShark)");
 
     token = compiler->tokens;
 
     while (cheat_gameshark_try_fetch_next_op_pair(&token, &op1, &op2)) {
         uint32_t kind;
 
-        dbgln(HS_CHEAT, "    - [ %08x %08x ]", op1, op2);
+        hs_dbgln(HS_CHEAT, "    - [ %08x %08x ]", op1, op2);
 
         if (op2 == 0x001DC0DE) { // Enable Code (Ignored)
             continue;
@@ -115,7 +115,7 @@ cheat_gameshark_compile(
                 while (i < length && cheat_gameshark_try_fetch_next_op_pair(&token, &op1, &op2)) {
                     size_t j;
 
-                    dbgln(HS_CHEAT, "    - [ %08x %08x ]", op1, op2);
+                    hs_dbgln(HS_CHEAT, "    - [ %08x %08x ]", op1, op2);
 
                     for (j = 0; j < 2; ++j) {
                         struct cheat_insn *insn;
@@ -168,6 +168,6 @@ cheat_gameshark_compile(
         return false;
     }
 
-    dbgln(HS_CHEAT, "  - Compiled successfuly");
+    hs_dbgln(HS_CHEAT, "  - Compiled successfuly");
     return true;
 }

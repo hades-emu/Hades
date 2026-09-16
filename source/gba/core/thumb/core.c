@@ -136,7 +136,7 @@ core_thumb_decode_insns(
         }
 
         if (k != 16) {
-            panic(
+            hs_panic(
                 HS_CORE,
                 "instruction \"%s\" doesn't have a length of 16 bits",
                 encoded_insn->name
@@ -153,7 +153,7 @@ core_thumb_decode_insns(
         j = 0;
         while (j < i) {
             if (!(((decoded_insn->value ^ thumb_decoded_insns[j].value) & decoded_insn->mask) & thumb_decoded_insns[j].mask)) {
-                panic(
+                hs_panic(
                     HS_CORE,
                     "instruction \"%s\" collides with \"%s\".",
                     encoded_insn->name,

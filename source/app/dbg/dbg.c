@@ -432,7 +432,7 @@ debugger_run(
         || cs_option(app->debugger.handle_arm, CS_OPT_DETAIL, CS_OPT_ON) != CS_ERR_OK
         || cs_option(app->debugger.handle_thumb, CS_OPT_DETAIL, CS_OPT_ON) != CS_ERR_OK
     ) {
-        panic(HS_DEBUG, "Failed to open capstone for ARM mode.");
+        hs_panic(HS_DEBUG, "Failed to open capstone for ARM mode.");
     }
 
     // Push the different registers as variable

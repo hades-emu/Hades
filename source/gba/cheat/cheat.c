@@ -33,15 +33,15 @@ cheat_dump(
     size_t i;
 
     if (bin->hook.active) {
-        dbgln(HS_CHEAT, "  - Hook: %08x", bin->hook.bp.ptr);
+        hs_dbgln(HS_CHEAT, "  - Hook: %08x", bin->hook.bp.ptr);
     } else {
-        dbgln(HS_CHEAT, "  - No hook");
+        hs_dbgln(HS_CHEAT, "  - No hook");
     }
 
     if (bin->insns.len > 0) {
-        dbgln(HS_CHEAT, "  - Instructions: ");
+        hs_dbgln(HS_CHEAT, "  - Instructions: ");
     } else {
-        dbgln(HS_CHEAT, "  - No instructions");
+        hs_dbgln(HS_CHEAT, "  - No instructions");
     }
 
     for (i = 0; i < bin->insns.len; ++i) {
@@ -50,30 +50,30 @@ cheat_dump(
         insn = &bin->insns.list[i];
 
         switch (insn->kind) {
-            case CHEAT_INSN_ASSIGN:          dbgln(HS_CHEAT, "    - %2zu | Assign:          | [0x%08x] = 0x%0*x", i, insn->assign.addr, insn->assign.width * 2, insn->assign.value); break;
-            case CHEAT_INSN_INDIRECT_ASSIGN: dbgln(HS_CHEAT, "    - %2zu | Indirect Assign: | [[0x%08x]] = 0x%0*x", i, insn->ind_assign.addr, insn->ind_assign.width * 2, insn->ind_assign.value); break;
-            case CHEAT_INSN_ADD_ASSIGN:      dbgln(HS_CHEAT, "    - %2zu | Add Assign:      | [0x%08x] = [0x%08x] + 0x%0*x", i, insn->add_assign.addr, insn->add_assign.addr, insn->add_assign.width * 2, insn->add_assign.value); break;
-            case CHEAT_INSN_AND_ASSIGN:      dbgln(HS_CHEAT, "    - %2zu | And Assign:      | [0x%08x] = [0x%08x] & 0x%0*x", i, insn->and_assign.addr, insn->and_assign.addr, insn->and_assign.width * 2, insn->and_assign.value); break;
-            case CHEAT_INSN_OR_ASSIGN:       dbgln(HS_CHEAT, "    - %2zu | Or Assign:       | [0x%08x] = [0x%08x] | 0x%0*x", i, insn->or_assign.addr, insn->or_assign.addr, insn->or_assign.width * 2, insn->or_assign.value); break;
-            case CHEAT_INSN_IF_EQ:           dbgln(HS_CHEAT, "    - %2zu | If Equal:        | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
-            case CHEAT_INSN_IF_NEQ:          dbgln(HS_CHEAT, "    - %2zu | If Not Equal:    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
-            case CHEAT_INSN_IF_GT_SIGNED:    dbgln(HS_CHEAT, "    - %2zu | If greater (S):  | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
-            case CHEAT_INSN_IF_LT_SIGNED:    dbgln(HS_CHEAT, "    - %2zu | If lower (S):    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
-            case CHEAT_INSN_IF_AND:          dbgln(HS_CHEAT, "    - %2zu | If And:          | If [0x%08x] & 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_ASSIGN:          hs_dbgln(HS_CHEAT, "    - %2zu | Assign:          | [0x%08x] = 0x%0*x", i, insn->assign.addr, insn->assign.width * 2, insn->assign.value); break;
+            case CHEAT_INSN_INDIRECT_ASSIGN: hs_dbgln(HS_CHEAT, "    - %2zu | Indirect Assign: | [[0x%08x]] = 0x%0*x", i, insn->ind_assign.addr, insn->ind_assign.width * 2, insn->ind_assign.value); break;
+            case CHEAT_INSN_ADD_ASSIGN:      hs_dbgln(HS_CHEAT, "    - %2zu | Add Assign:      | [0x%08x] = [0x%08x] + 0x%0*x", i, insn->add_assign.addr, insn->add_assign.addr, insn->add_assign.width * 2, insn->add_assign.value); break;
+            case CHEAT_INSN_AND_ASSIGN:      hs_dbgln(HS_CHEAT, "    - %2zu | And Assign:      | [0x%08x] = [0x%08x] & 0x%0*x", i, insn->and_assign.addr, insn->and_assign.addr, insn->and_assign.width * 2, insn->and_assign.value); break;
+            case CHEAT_INSN_OR_ASSIGN:       hs_dbgln(HS_CHEAT, "    - %2zu | Or Assign:       | [0x%08x] = [0x%08x] | 0x%0*x", i, insn->or_assign.addr, insn->or_assign.addr, insn->or_assign.width * 2, insn->or_assign.value); break;
+            case CHEAT_INSN_IF_EQ:           hs_dbgln(HS_CHEAT, "    - %2zu | If Equal:        | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_NEQ:          hs_dbgln(HS_CHEAT, "    - %2zu | If Not Equal:    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_GT_SIGNED:    hs_dbgln(HS_CHEAT, "    - %2zu | If greater (S):  | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_LT_SIGNED:    hs_dbgln(HS_CHEAT, "    - %2zu | If lower (S):    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_AND:          hs_dbgln(HS_CHEAT, "    - %2zu | If And:          | If [0x%08x] & 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
         }
     }
 
     if (bin->rom_patches.len > 0) {
-        dbgln(HS_CHEAT, "  - ROM Patches: ");
+        hs_dbgln(HS_CHEAT, "  - ROM Patches: ");
     } else {
-        dbgln(HS_CHEAT, "  - No ROM patches");
+        hs_dbgln(HS_CHEAT, "  - No ROM patches");
     }
 
     for (i = 0; i < bin->rom_patches.len; ++i) {
         struct cheat_rom_patch const *patch;
 
         patch = &bin->rom_patches.list[i];
-        dbgln(HS_CHEAT, "    - %2zu | [0x%08x] = 0x%0*x", i, patch->addr, patch->width * 2, patch->value);
+        hs_dbgln(HS_CHEAT, "    - %2zu | [0x%08x] = 0x%0*x", i, patch->addr, patch->width * 2, patch->value);
     }
 }
 
@@ -124,7 +124,7 @@ cheat_hook_impl(
                         case 1: mem_write8_raw(gba, addr, value); break;
                         case 2: mem_write16_raw(gba, addr, value); break;
                         case 4: mem_write32_raw(gba, addr, value); break;
-                        default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->assign.width);
+                        default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->assign.width);
                     }
                     addr += insn->assign.addr_offset;
                     value += insn->assign.value_offset;
@@ -140,7 +140,7 @@ cheat_hook_impl(
                     case 1: mem_write8_raw(gba, addr + insn->ind_assign.offset, insn->ind_assign.value); break;
                     case 2: mem_write16_raw(gba, addr + insn->ind_assign.offset, insn->ind_assign.value); break;
                     case 4: mem_write32_raw(gba, addr + insn->ind_assign.offset, insn->ind_assign.value); break;
-                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
                 break;
             }
@@ -152,7 +152,7 @@ cheat_hook_impl(
                     case 1: mem_write8_raw(gba, addr, mem_read8_raw(gba, addr) + insn->add_assign.value); break;
                     case 2: mem_write16_raw(gba, addr, mem_read16_raw(gba, addr) + insn->add_assign.value); break;
                     case 4: mem_write32_raw(gba, addr, mem_read32_raw(gba, addr) + insn->add_assign.value); break;
-                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
                 break;
             }
@@ -164,7 +164,7 @@ cheat_hook_impl(
                     case 1: mem_write8_raw(gba, addr, mem_read8_raw(gba, addr) & (uint8_t)insn->and_assign.value); break;
                     case 2: mem_write16_raw(gba, addr, mem_read16_raw(gba, addr) & (uint16_t)insn->and_assign.value); break;
                     case 4: mem_write32_raw(gba, addr, mem_read32_raw(gba, addr) & insn->and_assign.value); break;
-                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
                 break;
             }
@@ -176,7 +176,7 @@ cheat_hook_impl(
                     case 1: mem_write8_raw(gba, addr, mem_read8_raw(gba, addr) | (uint8_t)insn->or_assign.value); break;
                     case 2: mem_write16_raw(gba, addr, mem_read16_raw(gba, addr) | (uint16_t)insn->or_assign.value); break;
                     case 4: mem_write32_raw(gba, addr, mem_read32_raw(gba, addr) | insn->or_assign.value); break;
-                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
                 break;
             }
@@ -189,7 +189,7 @@ cheat_hook_impl(
                     case 1: cond = mem_read8_raw(gba, addr) == (uint8_t)insn->cond.value; break;
                     case 2: cond = mem_read16_raw(gba, addr) == (uint16_t)insn->cond.value; break;
                     case 4: cond = mem_read32_raw(gba, addr) == insn->cond.value; break;
-                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
 
                 if (!cond) {
@@ -206,7 +206,7 @@ cheat_hook_impl(
                     case 1: cond = mem_read8_raw(gba, addr) != (uint8_t)insn->cond.value; break;
                     case 2: cond = mem_read16_raw(gba, addr) != (uint16_t)insn->cond.value; break;
                     case 4: cond = mem_read32_raw(gba, addr) != insn->cond.value; break;
-                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
 
                 if (!cond) {
@@ -223,7 +223,7 @@ cheat_hook_impl(
                     case 1: cond = (int8_t)mem_read8_raw(gba, addr) < (int8_t)insn->cond.value; break;
                     case 2: cond = (int16_t)mem_read16_raw(gba, addr) < (int16_t)insn->cond.value; break;
                     case 4: cond = (int32_t)mem_read32_raw(gba, addr) < (int32_t)insn->cond.value; break;
-                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
 
                 if (!cond) {
@@ -240,7 +240,7 @@ cheat_hook_impl(
                     case 1: cond = (int8_t)mem_read8_raw(gba, addr) > (int8_t)insn->cond.value; break;
                     case 2: cond = (int16_t)mem_read16_raw(gba, addr) > (int16_t)insn->cond.value; break;
                     case 4: cond = (int32_t)mem_read32_raw(gba, addr) > (int32_t)insn->cond.value; break;
-                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
 
                 if (!cond) {
@@ -257,7 +257,7 @@ cheat_hook_impl(
                     case 1: cond = mem_read8_raw(gba, addr) & (uint8_t)insn->cond.value; break;
                     case 2: cond = mem_read16_raw(gba, addr) & (uint16_t)insn->cond.value; break;
                     case 4: cond = mem_read32_raw(gba, addr) & insn->cond.value; break;
-                    default: panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
 
                 // If cond is true then execute next code means if code is false then skip next code.

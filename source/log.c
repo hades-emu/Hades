@@ -25,6 +25,21 @@ bool g_verbose[HS_END] = {
     [HS_CHEAT] = true, // TODO FIXME: Enabled during the development of the new cheat code feature.
 };
 
+char const * const module_names[] = {
+    [HS_INFO]       = " INFO  ",
+    [HS_ERROR]      = " ERROR ",
+    [HS_WARN]       = " WARN  ",
+    [HS_CORE]       = " CORE  ",
+    [HS_IO]         = " IO    ",
+    [HS_VIDEO]      = " VIDEO ",
+    [HS_DMA]        = " DMA   ",
+    [HS_IRQ]        = " IRQ   ",
+    [HS_MEMORY]     = " MEM   ",
+    [HS_TIMER]      = " TIMER ",
+    [HS_DEBUG]      = " DEBUG ",
+    [HS_CHEAT]      = " CHEAT ",
+};
+
 /*
 ** A set of global strings pointing to ANSI control sequences to format the terminal.
 ** They can also be set to the empty string if coloration is disabled.
@@ -49,7 +64,7 @@ char const *g_light_cyan     = "\e[96m";
 char const *g_white          = "\e[97m";
 
 void
-disable_colors(
+hs_disable_colors(
     void
 ) {
     g_reset          = "";
@@ -76,7 +91,7 @@ disable_colors(
 ** Log the given formatted string, followed by a `\n`.
 */
 void
-logln(
+hs_logln(
     enum modules module,
     char const *fmt,
     ...
@@ -86,7 +101,7 @@ logln(
     if (g_verbose_global && g_verbose[module]) {
         va_start(va, fmt);
 
-        printf("[%s] ", modules_str[module]);
+        printf("[%s] ", module_names[module]);
 
         switch (module) {
             case HS_ERROR: printf("%s%s", g_bold, g_light_red); break;
@@ -113,7 +128,7 @@ logln(
 */
 __hs_noreturn
 void
-panic(
+hs_panic(
     enum modules module,
     char const *fmt,
     ...
@@ -121,7 +136,7 @@ panic(
     va_list va;
 
     va_start(va, fmt);
-    printf("[%s] Abort: ", modules_str[module]);
+    printf("[%s] Abort: ", module_names[module]);
     vprintf(fmt, va);
     printf("\n");
     va_end(va);
@@ -135,7 +150,7 @@ panic(
 */
 __hs_noreturn
 void
-unimplemented(
+hs_unimplemented(
     enum modules module,
     char const *fmt,
     ...
@@ -143,7 +158,7 @@ unimplemented(
     va_list va;
 
     va_start(va, fmt);
-    printf("[%s] Abort: Not Implemented: ", modules_str[module]);
+    printf("[%s] Abort: Not Implemented: ", module_names[module]);
     vprintf(fmt, va);
     printf("\n");
     va_end(va);

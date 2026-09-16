@@ -46,7 +46,7 @@ core_next(
 
     // Fire an interrupt if the IRQ line is set.
     if (core->irq_line && !gba->core.cpsr.irq_disable) {
-        dbgln(HS_IRQ, "Received new IRQ: 0x%04x.", gba->io.int_enabled.raw & gba->io.int_flag.raw);
+        hs_dbgln(HS_IRQ, "Received new IRQ: 0x%04x.", gba->io.int_enabled.raw & gba->io.int_flag.raw);
         core_interrupt(gba, VEC_IRQ, MODE_IRQ, true);
     }
 
@@ -116,7 +116,7 @@ core_execute_arm_opcode(
     // TODO FIXME: We need to properly handle unknown instructions instead of crashing.
     idx = ((op >> 16) & 0xFF0) | ((op >> 4) & 0x00F);
     if (__hs_unlikely(arm_lut[idx] == NULL)) {
-        panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
+        hs_panic(HS_CORE, "Unknown ARM op-code 0x%08x (pc=0x%08x).", op, core->pc);
     }
 
     arm_lut[idx](gba, op);
@@ -136,7 +136,7 @@ core_execute_thumb_opcode(
     //
     // TODO FIXME: We need to properly handle unknown instructions instead of crashing.
     if (__hs_unlikely(thumb_lut[op >> 8] == NULL)) {
-        panic(HS_CORE, "Unknown Thumb op-code 0x%04x (pc=0x%08x).", op, core->pc);
+        hs_panic(HS_CORE, "Unknown Thumb op-code 0x%04x (pc=0x%08x).", op, core->pc);
     }
 
     thumb_lut[op >> 8](gba, op);
@@ -195,7 +195,7 @@ core_spsr_get(
         case MODE_UND:
             return core->spsr_und;
         default:
-            panic(HS_CORE, "core_spsr_get(): unsupported mode (%u)", mode);
+            hs_panic(HS_CORE, "core_spsr_get(): unsupported mode (%u)", mode);
             break;
     }
 }
@@ -230,7 +230,7 @@ core_spsr_set(
             core->spsr_und.raw = psr.raw;
             break;
         default:
-            panic(HS_CORE, "core_spsr_set(): unsupported mode (%u)", mode);
+            hs_panic(HS_CORE, "core_spsr_set(): unsupported mode (%u)", mode);
             break;
     }
 }
@@ -252,7 +252,7 @@ core_switch_mode(
 ) {
     if (mode != core->cpsr.mode) {
 
-        dbgln(
+        hs_dbgln(
             HS_CORE,
             "Switching from %s to %s mode.",
             arm_modes_name[core->cpsr.mode],
@@ -317,7 +317,7 @@ core_switch_mode(
                 core->r14_und = core->lr;
                 break;
             default:
-                panic(HS_CORE, "core_switch_mode(): unsupported mode (%u)", core->cpsr.mode);
+                hs_panic(HS_CORE, "core_switch_mode(): unsupported mode (%u)", core->cpsr.mode);
                 break;
         }
 
@@ -381,7 +381,7 @@ core_switch_mode(
                 core->lr = core->r14_und;
                 break;
             default:
-                panic(HS_CORE, "core_switch_mode(): unsupported mode (%u)", mode);
+                hs_panic(HS_CORE, "core_switch_mode(): unsupported mode (%u)", mode);
                 break;
         }
     }

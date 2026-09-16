@@ -73,7 +73,7 @@ app_sdl_audio_init(
         app->audio.resample_frequency = spec.freq;
         SDL_ResumeAudioStreamDevice(app->audio.stream);
     } else {
-         logln(HS_ERROR, "Failed to initialize the audio device: %s", SDL_GetError());
+         hs_logln(HS_ERROR, "Failed to initialize the audio device: %s", SDL_GetError());
          app->audio.resample_frequency = spec.freq;
     }
 }

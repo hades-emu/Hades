@@ -32,7 +32,7 @@ app_sdl_handle_events(
         };
         case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: {
             app_sdl_video_update_scale(app);
-            logln(
+            hs_logln(
                 HS_INFO,
                 "Window Display Scale and Pixel Density changed to %s%.2f%s, %s%.2f%s.",
                 g_light_magenta,
@@ -82,7 +82,7 @@ app_sdl_handle_events(
                 app->sdl.gamepad.joystick.ptr = SDL_GetGamepadJoystick(app->sdl.gamepad.ptr);
                 app->sdl.gamepad.joystick.idx = SDL_GetJoystickID(app->sdl.gamepad.joystick.ptr);
                 app->sdl.gamepad.connected = true;
-                logln(
+                hs_logln(
                     HS_INFO,
                     "Gamepad \"%s%s%s\" connected.",
                     g_light_magenta,
@@ -97,7 +97,7 @@ app_sdl_handle_events(
         };
         case SDL_EVENT_GAMEPAD_REMOVED: {
             if (event->gdevice.which == app->sdl.gamepad.joystick.idx) {
-                logln(
+                hs_logln(
                     HS_INFO,
                     "Gamepad \"%s%s%s\" disconnected.",
                     g_light_magenta,

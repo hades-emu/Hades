@@ -157,7 +157,7 @@ mem_io_read8(
 ) {
     struct io const *io;
 
-    dbgln(HS_IO, "IO read to register %s (%#08x)", mem_io_reg_name(addr), addr);
+    hs_dbgln(HS_IO, "IO read to register %s (%#08x)", mem_io_reg_name(addr), addr);
 
     io = &gba->io;
     switch (addr) {
@@ -369,7 +369,7 @@ mem_io_write8(
 ) {
     struct io *io;
 
-    dbgln(HS_IO, "IO write to register %s (%#08x) (%#02x)", mem_io_reg_name(addr), addr, val);
+    hs_dbgln(HS_IO, "IO write to register %s (%#08x) (%#02x)", mem_io_reg_name(addr), addr, val);
 
     io = &gba->io;
     switch (addr) {
@@ -843,7 +843,7 @@ mem_io_write8(
                 }
 
                 io->mgba_log.buffer[MGBA_LOG_BUFFER_SIZE] = 0x0;
-                logln(module, "%s", io->mgba_log.buffer);
+                hs_logln(module, "%s", io->mgba_log.buffer);
                 memset(io->mgba_log.buffer, 0, MGBA_LOG_BUFFER_SIZE);
 
                 io->mgba_log.flags.send = false;
@@ -963,7 +963,7 @@ io_register_delayed_write(
             break;
         };
 
-        default: panic(HS_ERROR, "Delayed write to unsupported register %08x", addr);
+        default: hs_panic(HS_ERROR, "Delayed write to unsupported register %08x", addr);
     }
 }
 

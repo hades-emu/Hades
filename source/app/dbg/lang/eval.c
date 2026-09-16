@@ -45,7 +45,7 @@ debugger_lang_eval_node(
             switch (node->value.operator) {
                 case OP_UNARY_MINUS: return -(debugger_lang_eval_node(eval, app, node->rhs));
                 case OP_UNARY_PLUS: return +(debugger_lang_eval_node(eval, app, node->rhs));
-                default: panic(HS_DEBUG, "Unknown unary operator %i.", node->value.operator);
+                default: hs_panic(HS_DEBUG, "Unknown unary operator %i.", node->value.operator);
             }
             break;
         };
@@ -79,17 +79,17 @@ debugger_lang_eval_node(
                         case OP_BINARY_SUBASSIGN: return *variable->ptr -= debugger_lang_eval_node(eval, app, node->rhs);
                         case OP_BINARY_MULASSIGN: return *variable->ptr *= debugger_lang_eval_node(eval, app, node->rhs);
                         case OP_BINARY_DIVASSIGN: return *variable->ptr /= debugger_lang_eval_node(eval, app, node->rhs);
-                        default: panic(HS_DEBUG, "Unknown binary operator %i.", node->value.operator);
+                        default: hs_panic(HS_DEBUG, "Unknown binary operator %i.", node->value.operator);
                     }
                 };
                 case OP_BINARY_ADD: return debugger_lang_eval_node(eval, app, node->lhs) + debugger_lang_eval_node(eval, app, node->rhs);
                 case OP_BINARY_SUB: return debugger_lang_eval_node(eval, app, node->lhs) - debugger_lang_eval_node(eval, app, node->rhs);
                 case OP_BINARY_MUL: return debugger_lang_eval_node(eval, app, node->lhs) * debugger_lang_eval_node(eval, app, node->rhs);
                 case OP_BINARY_DIV: return debugger_lang_eval_node(eval, app, node->lhs) / debugger_lang_eval_node(eval, app, node->rhs);
-                default: panic(HS_DEBUG, "Unknown binary operator %i.", node->value.operator);
+                default: hs_panic(HS_DEBUG, "Unknown binary operator %i.", node->value.operator);
             }
         };
-        default: panic(HS_DEBUG, "Unknown kind of node %i.", node->kind);
+        default: hs_panic(HS_DEBUG, "Unknown kind of node %i.", node->kind);
     }
 }
 

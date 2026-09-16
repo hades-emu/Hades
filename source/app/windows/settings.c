@@ -552,7 +552,7 @@ app_win_settings_video(
                     break;
                 };
                 default: {
-                    panic(HS_INFO, "Invalid display mode %u", app->settings.video.display_mode);
+                    hs_panic(HS_INFO, "Invalid display mode %u", app->settings.video.display_mode);
                 };
             }
         }

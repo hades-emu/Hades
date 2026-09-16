@@ -63,9 +63,9 @@ SDL_AppInit(
     app_config_load(app);
     app->config_loaded = true;
 
-    logln(HS_INFO, "Welcome to Hades v" HADES_VERSION);
-    logln(HS_INFO, "=========================");
-    logln(HS_INFO, "Using configuration file \"%s%s%s\".", g_light_green, app_path_config(app), g_reset);
+    hs_logln(HS_INFO, "Welcome to Hades v" HADES_VERSION);
+    hs_logln(HS_INFO, "=========================");
+    hs_logln(HS_INFO, "Using configuration file \"%s%s%s\".", g_light_green, app_path_config(app), g_reset);
 
     if (!app->args.without_gui) {
 
@@ -89,16 +89,16 @@ SDL_AppInit(
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_TYPE_STRING, "application");
 
         if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_AUDIO)) {
-            logln(HS_ERROR, "Failed to init the SDL: %s", SDL_GetError());
+            hs_logln(HS_ERROR, "Failed to init the SDL: %s", SDL_GetError());
             return SDL_APP_FAILURE;
         }
 
         app_sdl_audio_init(app);
         app_sdl_video_init(app);
 
-        logln(HS_INFO, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
-        logln(HS_INFO, "Display Scale: %s%.2f%s", g_light_magenta, app->ui.window_display_scale, g_reset);
-        logln(HS_INFO, "Pixel Density: %s%.2f%s", g_light_magenta, app->ui.window_pixel_density, g_reset);
+        hs_logln(HS_INFO, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
+        hs_logln(HS_INFO, "Display Scale: %s%.2f%s", g_light_magenta, app->ui.window_display_scale, g_reset);
+        hs_logln(HS_INFO, "Pixel Density: %s%.2f%s", g_light_magenta, app->ui.window_pixel_density, g_reset);
     }
 
     // Start the gba thread

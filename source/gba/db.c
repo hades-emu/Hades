@@ -1839,23 +1839,23 @@ db_autodetect_game_features(
     entry = calloc(1, sizeof(*entry));
 
     if (array_search(rom, rom_size, "EEPROM_V", 7)) {
-        logln(HS_INFO, "Detected EEPROM 64K memory.");
-        logln(HS_WARN, "If you are having issues with corrupted saves, try EEPROM 8K instead.");
+        hs_logln(HS_INFO, "Detected EEPROM 64K memory.");
+        hs_logln(HS_WARN, "If you are having issues with corrupted saves, try EEPROM 8K instead.");
         entry->storage = BACKUP_EEPROM_64K;
     } else if (
            array_search(rom, rom_size, "SRAM_V", 5)
         || array_search(rom, rom_size, "SRAM_F_V", 5)
     ) {
-        logln(HS_INFO, "Detected SRAM memory");
+        hs_logln(HS_INFO, "Detected SRAM memory");
         entry->storage = BACKUP_SRAM;
     } else if (array_search(rom, rom_size, "FLASH1M_V", 8)) {
-        logln(HS_INFO, "Detected Flash 128 kilobytes / 1 megabit");
+        hs_logln(HS_INFO, "Detected Flash 128 kilobytes / 1 megabit");
         entry->storage = BACKUP_FLASH128;
     } else if (
            array_search(rom, rom_size, "FLASH_V", 6)
         || array_search(rom, rom_size, "FLASH512_V", 9)
     ) {
-        logln(HS_INFO, "Detected Flash 64 kilobytes / 512 kilobits");
+        hs_logln(HS_INFO, "Detected Flash 64 kilobytes / 512 kilobits");
         entry->storage = BACKUP_FLASH64;
     } else {
         entry->storage = BACKUP_NONE;

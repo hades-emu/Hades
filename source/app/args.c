@@ -182,11 +182,11 @@ app_args_parse(
     switch (color) {
         case 0:
             if (!hs_isatty(1)) {
-                disable_colors();
+                hs_disable_colors();
             }
             break;
         case 1:
-            disable_colors();
+            hs_disable_colors();
             break;
     }
 

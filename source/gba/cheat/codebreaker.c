@@ -48,12 +48,12 @@ cheat_codebreaker_compile(
     uint32_t op1;
     uint16_t op2;
 
-    dbgln(HS_CHEAT, "  - Compiling (Codebreaker)");
+    hs_dbgln(HS_CHEAT, "  - Compiling (Codebreaker)");
 
     token = compiler->tokens;
 
     while (cheat_codebreaker_try_fetch_next_op_pair(&token, &op1, &op2)) {
-        dbgln(HS_CHEAT, "    - [ %08x %04x ]", op1, op2);
+        hs_dbgln(HS_CHEAT, "    - [ %08x %04x ]", op1, op2);
 
         switch (op1 >> 28) {
             case 0x0: break; // Enable Code 1 (Ignored)
@@ -99,7 +99,7 @@ cheat_codebreaker_compile(
                     return false;
                 }
 
-                dbgln(HS_CHEAT, "    - [ %08x %04x ]", val1, val2);
+                hs_dbgln(HS_CHEAT, "    - [ %08x %04x ]", val1, val2);
 
                 insn = cheat_create_insn(bin);
                 insn->kind = CHEAT_INSN_ASSIGN;
@@ -129,7 +129,7 @@ cheat_codebreaker_compile(
                         return false;
                     }
 
-                    dbgln(HS_CHEAT, "    - [ %08x %04x ]", val1, val2);
+                    hs_dbgln(HS_CHEAT, "    - [ %08x %04x ]", val1, val2);
 
                     vals = ((uint64_t)val1 << 16) | (uint64_t)val2;
 
@@ -240,6 +240,6 @@ cheat_codebreaker_compile(
         return false;
     }
 
-    dbgln(HS_CHEAT, "  - Compiled successfuly");
+    hs_dbgln(HS_CHEAT, "  - Compiled successfuly");
     return true;
 }

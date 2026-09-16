@@ -81,7 +81,7 @@ app_sdl_video_init(
     // This also explains why the window is created hidden.
     app->sdl.window = SDL_CreateWindow("Hades", GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT, win_flags );
     if (!app->sdl.window) {
-        logln(HS_ERROR, "Failed to create the window: %s", SDL_GetError());
+        hs_logln(HS_ERROR, "Failed to create the window: %s", SDL_GetError());
         exit(EXIT_FAILURE);
     }
 
@@ -100,7 +100,7 @@ app_sdl_video_init(
     // Initialize OpenGL
     err = glewInit();
     if (err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY) {
-        logln(HS_ERROR, "Failed to initialize OpenGL.");
+        hs_logln(HS_ERROR, "Failed to initialize OpenGL.");
         exit(EXIT_FAILURE);
     }
 
@@ -346,7 +346,7 @@ build_shader_program(
 
         glGetShaderInfoLog(frag, log_len, &log_len, error);
 
-        panic(
+        hs_panic(
             HS_ERROR,
             "Failed to compile the \"%s%s%s/fragment%s\" shader:\n"
             "====== BEGIN ======\n"
@@ -383,7 +383,7 @@ build_shader_program(
 
         glGetShaderInfoLog(vertex, log_len, &log_len, error);
 
-        panic(
+        hs_panic(
             HS_ERROR,
             "Failed to compile the \"%s%s%s/vertex%s\" shader:\n"
             "====== BEGIN ======\n"
@@ -404,7 +404,7 @@ build_shader_program(
     glLinkProgram(program);
     glGetShaderiv(program, GL_LINK_STATUS, &status);
     if (status != GL_TRUE) {
-        panic(HS_ERROR, "Failed to link shader.");
+        hs_panic(HS_ERROR, "Failed to link shader.");
     }
 
     // Detach and delete both shaders
@@ -562,7 +562,7 @@ app_sdl_video_update_display_mode(
             break;
         };
         default: {
-            panic(HS_INFO, "Invalid display mode %u", app->settings.video.display_mode);
+            hs_panic(HS_INFO, "Invalid display mode %u", app->settings.video.display_mode);
         };
     }
 }

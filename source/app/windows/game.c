@@ -56,7 +56,7 @@ app_win_game_refresh_game_area(
             break;
         };
         default: {
-            panic(HS_INFO, "Invalid aspect ratio %u", app->settings.video.aspect_ratio);
+            hs_panic(HS_INFO, "Invalid aspect ratio %u", app->settings.video.aspect_ratio);
             break;
         };
     }
