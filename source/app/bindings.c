@@ -35,6 +35,7 @@ char const * const binds_pretty_name[] = {
     [BIND_EMULATOR_MENUBAR] = "Focus Menubar",
     [BIND_EMULATOR_SETTINGS] = "Toggle Settings Panel",
     [BIND_EMULATOR_CHEATS] = "Toggle Cheats Panel",
+    [BIND_EMULATOR_CHEAT_BUTTON] = "GameShark/Action Replay Button",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "Alt. Speed (Toggle)",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "Alt. Speed (Hold)",
     [BIND_EMULATOR_QUICKSAVE_1] = "Quicksave 1",
@@ -81,6 +82,7 @@ char const * const binds_slug[] = {
     [BIND_EMULATOR_MENUBAR] = "focus_menubar",
     [BIND_EMULATOR_SETTINGS] = "toggle_settings_panel",
     [BIND_EMULATOR_CHEATS] = "toggle_cheats_panel",
+    [BIND_EMULATOR_CHEAT_BUTTON] = "cheat_button",
     [BIND_EMULATOR_ALT_SPEED_TOGGLE] = "alternative_speed_toggle",
     [BIND_EMULATOR_ALT_SPEED_HOLD] = "alternative_speed_hold",
     [BIND_EMULATOR_QUICKSAVE_1] = "quicksave_1",
@@ -230,6 +232,7 @@ app_bindings_process_in_game_binds(
             app_emulator_settings(app);
             break;
         };
+        case BIND_EMULATOR_CHEAT_BUTTON:        app_emulator_cheat_button(app, pressed); break;
         default: break;
     }
 

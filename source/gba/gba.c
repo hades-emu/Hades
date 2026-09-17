@@ -428,24 +428,28 @@ gba_state_reset(
 
     // Cheats
     {
+        struct cheats *cheats;
         size_t i;
 
-        gba->cheats.len = 0;
-        gba->cheats.list = calloc(config->cheats.len, sizeof(struct cheat_bin));
-        hs_assert(gba->cheats.list);
+        cheats = &gba->cheats;
+
+        memset(cheats, 0, sizeof(*cheats));
+
+        cheats->list = calloc(config->cheats.len, sizeof(struct cheat_bin));
+        hs_assert(cheats->list);
 
         for (i = 0; i < config->cheats.len; ++i) {
             struct cheat_bin *bin;
             struct gba_cheat_raw *raw;
 
-            bin = &gba->cheats.list[gba->cheats.len];
+            bin = &cheats->list[cheats->len];
             raw = &config->cheats.list[i];
 
             if (raw->enabled) {
                 hs_dbgln(HS_CHEAT, "Loading cheat \"%s%s%s\":", g_light_magenta, raw->name, g_reset);
                 if (cheat_parse_and_compile(bin, raw)) {
                     cheat_dump(bin);
-                    gba->cheats.len += 1;
+                    cheats->len += 1;
                 }
                 hs_dbgln(HS_CHEAT, "Done.");
             } else {
@@ -519,6 +523,13 @@ gba_process_message(
             }
 
             io_scan_keypad_irq(gba);
+            break;
+        };
+        case MESSAGE_CHEAT_BUTTON: {
+            struct message_cheat_button const *msg_cheat_button;
+
+            msg_cheat_button = (struct message_cheat_button const *)message;
+            gba->cheats.button = msg_cheat_button->pressed;
             break;
         };
         case MESSAGE_SETTINGS: {

@@ -138,11 +138,6 @@ struct gba_settings {
     } apu;
 };
 
-struct gba_cheats {
-    struct cheat_bin *list;
-    size_t len;
-};
-
 struct game_entry {
     char *code;
     enum backup_storage_types storage;
@@ -175,9 +170,6 @@ struct gba {
     // A set of settings the frontend can update during the emulator's execution (speed, etc.)
     struct gba_settings settings;
 
-    // A list of enabled cheats.
-    struct gba_cheats cheats;
-
     // The different components of the GBA
     struct core core;
     struct scheduler scheduler;
@@ -187,6 +179,7 @@ struct gba {
     struct io io;
     struct gpio gpio;
     struct debugger debugger;
+    struct cheats cheats;
 };
 
 /*

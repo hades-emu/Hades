@@ -22,6 +22,7 @@ enum message_kind {
     MESSAGE_PAUSE,
     MESSAGE_STOP,
     MESSAGE_KEY,
+    MESSAGE_CHEAT_BUTTON,
     MESSAGE_QUICKSAVE,
     MESSAGE_QUICKLOAD,
     MESSAGE_SETTINGS,
@@ -57,6 +58,11 @@ struct message_settings {
 struct message_key {
     struct event_header header;
     enum gba_keys key;
+    bool pressed;
+};
+
+struct message_cheat_button {
+    struct event_header header;
     bool pressed;
 };
 

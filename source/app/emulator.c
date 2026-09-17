@@ -880,6 +880,25 @@ app_emulator_key(
 }
 
 /*
+** Press or release the GameShark/Action Replay special button.
+*/
+void
+app_emulator_cheat_button(
+    struct app *app,
+    bool pressed
+) {
+    struct message_cheat_button event;
+
+    event.header.kind = MESSAGE_CHEAT_BUTTON;
+    event.header.size = sizeof(event);
+    event.pressed = pressed;
+
+    channel_lock(&app->emulation.gba->channels.messages);
+    channel_push(&app->emulation.gba->channels.messages, &event.header);
+    channel_release(&app->emulation.gba->channels.messages);
+}
+
+/*
 ** Update the emulator's runtime settings.
 */
 void

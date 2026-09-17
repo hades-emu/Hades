@@ -202,15 +202,14 @@ cheat_parv3_compile(
                     insn = cheat_create_insn(bin);
                     insn->kind = CHEAT_INSN_ASSIGN;
                     insn->assign.addr = IO_START | (op1 & 0xFFFFFF);
+
                     switch (op1 >> 24) {
                         case 0xC6: {
-                            insn->assign.repeat = 0;
                             insn->assign.width = 2;
                             insn->assign.value = op2 & 0xFFFF;
                             break;
                         }
                         case 0xC7: {
-                            insn->assign.repeat = 0;
                             insn->assign.width = 4;
                             insn->assign.value = op2;
                             break;
@@ -227,6 +226,45 @@ cheat_parv3_compile(
             switch (op2 >> 24) {
                 case 0x08: {
                     hs_logln(HS_WARN, "Action Replay slowdown not implemented");
+                    break;
+                }
+                case 0x10:
+                case 0x12:
+                case 0x14: {
+                    struct cheat_insn *if_insn;
+                    struct cheat_insn *assign_insn;
+                    uint32_t val1;
+                    uint32_t val2;
+
+                    if (!cheat_parv3_try_fetch_next_op_pair(&token, &val1, &val2) || val2) {
+                        compiler->error = hs_format("Invalid or missing AR Button value");
+                        return false;
+                    }
+
+                    if_insn = cheat_create_insn(bin);
+                    if_insn->kind = CHEAT_INSN_IF_BUTTON;
+
+                    assign_insn = cheat_create_insn(bin);
+                    assign_insn->kind = CHEAT_INSN_ASSIGN;
+                    assign_insn->assign.addr = cheat_parv3_compute_addr(op2);
+
+                    switch (op2 >> 24) {
+                        case 0x10: {
+                            assign_insn->assign.width = 1;
+                            assign_insn->assign.value = val1 & 0xFF;
+                            break;
+                        }
+                        case 0x12: {
+                            assign_insn->assign.width = 2;
+                            assign_insn->assign.value = val1 & 0xFFFF;
+                            break;
+                        }
+                        case 0x14: {
+                            assign_insn->assign.width = 4;
+                            assign_insn->assign.value = val1;
+                            break;
+                        }
+                    }
                     break;
                 }
                 case 0x18:

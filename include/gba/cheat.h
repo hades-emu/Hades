@@ -64,9 +64,13 @@ struct cheat_insn {
         CHEAT_INSN_AND_ASSIGN,
         CHEAT_INSN_OR_ASSIGN,
 
+        CHEAT_INSN_IF_BUTTON,
+        CHEAT_INSN_IF_KEYPAD,
         CHEAT_INSN_IF_EQ,
         CHEAT_INSN_IF_NEQ,
+        CHEAT_INSN_IF_GT_UNSIGNED,
         CHEAT_INSN_IF_GT_SIGNED,
+        CHEAT_INSN_IF_LT_UNSIGNED,
         CHEAT_INSN_IF_LT_SIGNED,
         CHEAT_INSN_IF_AND,
     } kind;
@@ -111,6 +115,10 @@ struct cheat_insn {
             uint32_t value;
             uint32_t width;
         } cond;
+
+        struct {
+            uint16_t mask;
+        } keypad;
     };
 };
 
@@ -120,10 +128,11 @@ struct cheat_rom_patch {
     uint32_t width;
 };
 
-struct cheat_parv3_parser {
-    uint32_t *data;
-    uint32_t idx;
-    uint32_t len;
+struct cheats {
+    struct cheat_bin *list;
+    size_t len;
+
+    bool button;    // GameShark/Action Replay special button.
 };
 
 void cheat_delete(struct cheat_bin *bin);

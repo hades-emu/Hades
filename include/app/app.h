@@ -117,6 +117,7 @@ enum bind_actions {
     BIND_EMULATOR_MENUBAR,
     BIND_EMULATOR_SETTINGS,
     BIND_EMULATOR_CHEATS,
+    BIND_EMULATOR_CHEAT_BUTTON,
     BIND_EMULATOR_ALT_SPEED_HOLD,
     BIND_EMULATOR_ALT_SPEED_TOGGLE,
     BIND_EMULATOR_QUICKSAVE_1,
@@ -742,6 +743,7 @@ void app_emulator_run(struct app *app);
 void app_emulator_pause(struct app *app);
 void app_emulator_exit(struct app *app);
 void app_emulator_key(struct app *app, enum gba_keys key, bool pressed);
+void app_emulator_cheat_button(struct app *app, bool pressed);
 void app_emulator_settings(struct app *app);
 void app_emulator_export_save_to_path(struct app *app, char const *);
 void app_emulator_write_save_to_disk(struct app *app);

@@ -188,24 +188,37 @@ cheat_codebreaker_compile(
                 insn->cond.width = 2;
                 break;
             }
-            case 0xB: { // IF Greater (Signed)
+            case 0xB: { // IF Greater (Unsigned)
                 struct cheat_insn *insn;
 
                 insn = cheat_create_insn(bin);
-                insn->kind = CHEAT_INSN_IF_GT_SIGNED;
+                insn->kind = CHEAT_INSN_IF_GT_UNSIGNED;
                 insn->cond.addr = op1 & 0x0FFFFFFF;
                 insn->cond.value = op2;
                 insn->cond.width = 2;
                 break;
             }
-            case 0xC: { // IF Lower (Signed)
+            case 0xC: { // IF Lower (Unsigned)
                 struct cheat_insn *insn;
 
                 insn = cheat_create_insn(bin);
-                insn->kind = CHEAT_INSN_IF_LT_SIGNED;
+                insn->kind = CHEAT_INSN_IF_LT_UNSIGNED;
                 insn->cond.addr = op1 & 0x0FFFFFFF;
                 insn->cond.value = op2;
                 insn->cond.width = 2;
+                break;
+            }
+            case 0xD: { // IF Keypad
+                struct cheat_insn *insn;
+
+                if (op1 != 0xD0000020) {
+                    compiler->error = hs_format("Unknown, invalid or unsupported instruction %08x %08x", op1, op2);
+                    return false;
+                }
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_IF_KEYPAD;
+                insn->keypad.mask = op2;
                 break;
             }
             case 0xE: { // ADD Assign

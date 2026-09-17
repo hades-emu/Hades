@@ -146,6 +146,30 @@ cheat_gameshark_compile(
                 );
                 break;
             }
+            case 0x8: { // If GS Button
+                struct cheat_insn *if_insn;
+                struct cheat_insn *assign_insn;
+                uint32_t mask;
+
+                if_insn = cheat_create_insn(bin);
+                if_insn->kind = CHEAT_INSN_IF_BUTTON;
+
+                mask = (1ull << (8 << kind)) - 1;
+                assign_insn = cheat_create_insn(bin);
+                assign_insn->kind = CHEAT_INSN_ASSIGN;
+                assign_insn->assign.addr = op1 & 0x0FFFFFFF;
+                assign_insn->assign.value = op2 & mask;
+
+                switch ((op1 >> 20) & 0xF) {
+                    case 0x1: assign_insn->assign.width = 1; break;
+                    case 0x2: assign_insn->assign.width = 2; break;
+                    default: {
+                        compiler->error = hs_format("Unknown, invalid or unsupported instruction %08x %08x", op1, op2);
+                        return false;
+                    }
+                }
+                break;
+            }
             case 0xF: { // Hook routine
                 if (bin->hook.active) {
                     break;

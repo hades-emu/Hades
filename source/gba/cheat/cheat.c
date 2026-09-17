@@ -55,9 +55,13 @@ cheat_dump(
             case CHEAT_INSN_ADD_ASSIGN:      hs_dbgln(HS_CHEAT, "    - %2zu | Add Assign:      | [0x%08x] = [0x%08x] + 0x%0*x", i, insn->add_assign.addr, insn->add_assign.addr, insn->add_assign.width * 2, insn->add_assign.value); break;
             case CHEAT_INSN_AND_ASSIGN:      hs_dbgln(HS_CHEAT, "    - %2zu | And Assign:      | [0x%08x] = [0x%08x] & 0x%0*x", i, insn->and_assign.addr, insn->and_assign.addr, insn->and_assign.width * 2, insn->and_assign.value); break;
             case CHEAT_INSN_OR_ASSIGN:       hs_dbgln(HS_CHEAT, "    - %2zu | Or Assign:       | [0x%08x] = [0x%08x] | 0x%0*x", i, insn->or_assign.addr, insn->or_assign.addr, insn->or_assign.width * 2, insn->or_assign.value); break;
+            case CHEAT_INSN_IF_BUTTON:       hs_dbgln(HS_CHEAT, "    - %2zu | If Button:       | If Special Button then", i); break;
+            case CHEAT_INSN_IF_KEYPAD:       hs_dbgln(HS_CHEAT, "    - %2zu | If Keypad:       | If Keypad & %04x then", i, insn->keypad.mask); break;
             case CHEAT_INSN_IF_EQ:           hs_dbgln(HS_CHEAT, "    - %2zu | If Equal:        | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
             case CHEAT_INSN_IF_NEQ:          hs_dbgln(HS_CHEAT, "    - %2zu | If Not Equal:    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_GT_UNSIGNED:  hs_dbgln(HS_CHEAT, "    - %2zu | If greater (U):  | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
             case CHEAT_INSN_IF_GT_SIGNED:    hs_dbgln(HS_CHEAT, "    - %2zu | If greater (S):  | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_LT_UNSIGNED:  hs_dbgln(HS_CHEAT, "    - %2zu | If lower (U):    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
             case CHEAT_INSN_IF_LT_SIGNED:    hs_dbgln(HS_CHEAT, "    - %2zu | If lower (S):    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
             case CHEAT_INSN_IF_AND:          hs_dbgln(HS_CHEAT, "    - %2zu | If And:          | If [0x%08x] & 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
         }
@@ -180,6 +184,18 @@ cheat_hook_impl(
                 }
                 break;
             }
+            case CHEAT_INSN_IF_BUTTON: {
+                if (!gba->cheats.button) {
+                    ++insn_idx;
+                }
+                break;
+            }
+            case CHEAT_INSN_IF_KEYPAD: {
+                if (gba->io.keyinput.raw & insn->keypad.mask) {
+                    ++insn_idx;
+                }
+                break;
+            }
             case CHEAT_INSN_IF_EQ: {
                 uint32_t addr;
                 bool cond;
@@ -214,15 +230,15 @@ cheat_hook_impl(
                 }
                 break;
             }
-            case CHEAT_INSN_IF_LT_SIGNED: {
+            case CHEAT_INSN_IF_GT_UNSIGNED: {
                 uint32_t addr;
                 bool cond;
 
                 addr = insn->cond.addr;
                 switch (insn->cond.width) {
-                    case 1: cond = (int8_t)mem_read8_raw(gba, addr) < (int8_t)insn->cond.value; break;
-                    case 2: cond = (int16_t)mem_read16_raw(gba, addr) < (int16_t)insn->cond.value; break;
-                    case 4: cond = (int32_t)mem_read32_raw(gba, addr) < (int32_t)insn->cond.value; break;
+                    case 1: cond = mem_read8_raw(gba, addr) > insn->cond.value; break;
+                    case 2: cond = mem_read16_raw(gba, addr) > insn->cond.value; break;
+                    case 4: cond = mem_read32_raw(gba, addr) > insn->cond.value; break;
                     default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
 
@@ -248,6 +264,40 @@ cheat_hook_impl(
                 }
                 break;
             }
+            case CHEAT_INSN_IF_LT_UNSIGNED: {
+                uint32_t addr;
+                bool cond;
+
+                addr = insn->cond.addr;
+                switch (insn->cond.width) {
+                    case 1: cond = mem_read8_raw(gba, addr) < insn->cond.value; break;
+                    case 2: cond = mem_read16_raw(gba, addr) < insn->cond.value; break;
+                    case 4: cond = mem_read32_raw(gba, addr) < insn->cond.value; break;
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+
+                if (!cond) {
+                    ++insn_idx;
+                }
+                break;
+            }
+            case CHEAT_INSN_IF_LT_SIGNED: {
+                uint32_t addr;
+                bool cond;
+
+                addr = insn->cond.addr;
+                switch (insn->cond.width) {
+                    case 1: cond = (int8_t)mem_read8_raw(gba, addr) < (int8_t)insn->cond.value; break;
+                    case 2: cond = (int16_t)mem_read16_raw(gba, addr) < (int16_t)insn->cond.value; break;
+                    case 4: cond = (int32_t)mem_read32_raw(gba, addr) < (int32_t)insn->cond.value; break;
+                    default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
+                }
+
+                if (!cond) {
+                    ++insn_idx;
+                }
+                break;
+            }
             case CHEAT_INSN_IF_AND: {
                 uint32_t addr;
                 bool cond;
@@ -260,7 +310,6 @@ cheat_hook_impl(
                     default: hs_panic(HS_CORE, "Invalid cheat insn width: %u", insn->ind_assign.width);
                 }
 
-                // If cond is true then execute next code means if code is false then skip next code.
                 if (!cond) {
                     ++insn_idx;
                 }
