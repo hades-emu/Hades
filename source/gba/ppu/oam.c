@@ -34,6 +34,7 @@ ppu_prerender_oam(
     struct scanline *scanline,
     int32_t line
 ) {
+    int32_t remaining_cycles;
     uint32_t bg_mode;
     struct io const *io;
     int32_t oam_idx;
@@ -45,7 +46,10 @@ ppu_prerender_oam(
         return;
     }
 
-    for (oam_idx = 127; oam_idx >= 0; --oam_idx) {
+    // Total available OBJ rendering cycles per scanline, according to GBATek
+    remaining_cycles = io->dispcnt.hblank_int_free ? 954 : 1210;
+
+    for (oam_idx = 0; oam_idx < 128; ++oam_idx) {
         union oam_entry oam;
         int32_t x;
 
@@ -93,6 +97,12 @@ ppu_prerender_oam(
             int16_t pb;
             int16_t pc;
             int16_t pd;
+
+            // Calculate the cost (in cycles) of rendering this sprite, and abort if we don't have enough cycles anymore.
+            remaining_cycles -= oam.affine ? (10 + sprite_sx * 2) : sprite_sx;
+            if (remaining_cycles < 0) {
+                return;
+            }
 
             if (oam.affine) {
                 pa = (int16_t)mem_oam_read16(gba, oam.affine_data_idx * 32 + 0x6);
@@ -184,7 +194,10 @@ ppu_prerender_oam(
                 if (palette_idx) {
                     if (oam.mode == OAM_MODE_WINDOW) {
                         scanline->win_obj_mask[win_ox + x] = true;
-                    } else {
+                    } else if (!scanline->oam[oam.priority][win_ox + x].visible) {
+                        // Filter-out pixels that are already drawn by OAM entries with a lower index.
+                        // This check only applies to non-window sprites, since window sprites don't
+                        // write to `scanline->oam` and shouldn't be gated by it.
                         struct rich_color c;
 
                         // 16-bits palette mode
