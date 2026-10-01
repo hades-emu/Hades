@@ -10,9 +10,13 @@
 #define _GNU_SOURCE
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#include <stb_image_write.h>
+#pragma GCC diagnostic pop
+
 #include <archive.h>
 #include <archive_entry.h>
-#include <stb_image_write.h>
 #include <errno.h>
 #include "app/app.h"
 #include "gba/gba.h"

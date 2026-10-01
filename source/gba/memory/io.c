@@ -519,6 +519,7 @@ mem_io_write8(
             if (!io->sound3cnt_l.enable) {
                 apu_wave_stop(gba);
             }
+            break;
         };
         case IO_REG_SOUND3CNT_L + 1:        io->sound3cnt_l.bytes[1] = val; break;
         case IO_REG_SOUND3CNT_H:            io->sound3cnt_h.bytes[0] = val; break;

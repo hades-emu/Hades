@@ -21,6 +21,7 @@ incdir = include_directories('include', 'source')
 cflags = [
     '-fms-extensions',
     '-Wno-microsoft-anon-tag',
+    '-Wimplicit-fallthrough',
     '-DHADES_VERSION="@0@"'.format(meson.project_version()),
     # '-fsanitize=undefined',
 ]

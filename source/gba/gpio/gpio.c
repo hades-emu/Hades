@@ -68,6 +68,7 @@ gpio_write_u8(
                 }
                 default: break;
             }
+            break;
         };
         case GPIO_REG_DIRECTION: {
             break;
