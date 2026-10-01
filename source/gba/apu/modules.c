@@ -20,7 +20,7 @@ apu_modules_counter_reset(
     counter->value = value;
 }
 
-static inline
+static
 bool
 apu_modules_counter_step(
     struct apu_counter *counter
@@ -50,7 +50,7 @@ apu_modules_sweep_reset(
     sweep->step = sweep->time;
 }
 
-static inline
+static
 bool
 apu_modules_sweep_step(
     struct apu_sweep *sweep
@@ -99,7 +99,7 @@ apu_modules_envelope_reset(
     envelope->volume = initial_volume;
 }
 
-static inline
+static
 void
 apu_modules_envelope_step(
     struct apu_envelope *envelope

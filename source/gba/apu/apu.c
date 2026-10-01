@@ -15,6 +15,7 @@
 **   - https://belogic.com/gba/channel1.shtml
 **   - https://gbdev.gg8.se/wiki/articles/Gameboy_sound_hardware
 **   - https://gbdev.io/pandocs/Audio_details.html
+**   - https://gbadev.net/gbadoc/audio/introduction.html
 **   - https://nightshade256.github.io/2021/03/27/gb-sound-emulation.html
 */
 

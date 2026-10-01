@@ -155,10 +155,9 @@ apu_tone_reset(
 
     gba->apu.tone.step_handler = sched_add_event(
         gba,
-        NEW_REPEAT_EVENT(
+        NEW_FIX_EVENT(
             SCHED_EVENT_APU_TONE_STEP,
-            gba->scheduler.cycles,
-            CHANNEL_FREQUENCY_AS_CYCLES(gba->io.sound2cnt_h.sample_rate) // TODO: Is there a delay before the sound is started?
+            gba->scheduler.cycles + CHANNEL_FREQUENCY_AS_CYCLES(gba->io.sound2cnt_h.sample_rate) // TODO: Is there a delay before the sound is started?
         )
     );
 }
@@ -208,4 +207,12 @@ apu_tone_step(
     // Increment the step counter
     ++gba->apu.tone.step;
     gba->apu.tone.step %= 8;
+
+    gba->apu.tone.step_handler = sched_add_event(
+        gba,
+        NEW_FIX_EVENT(
+            SCHED_EVENT_APU_TONE_STEP,
+            gba->scheduler.cycles + CHANNEL_FREQUENCY_AS_CYCLES(gba->io.sound2cnt_h.sample_rate) // TODO: Is there a delay before the sound is started?
+        )
+    );
 }

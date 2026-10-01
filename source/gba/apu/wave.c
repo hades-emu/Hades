@@ -20,8 +20,6 @@ void
 apu_wave_reset(
     struct gba *gba
 ) {
-    uint64_t period;
-
     gba->io.sound3cnt_x.reset = false;
 
     apu_wave_stop(gba);
@@ -35,14 +33,11 @@ apu_wave_reset(
         gba->io.sound3cnt_x.use_length ? 256 - gba->io.sound3cnt_h.length : 0
     );
 
-    period = CHANNEL_FREQUENCY_AS_CYCLES(gba->io.sound3cnt_x.sample_rate);
-
     gba->apu.wave.step_handler = sched_add_event(
         gba,
-        NEW_REPEAT_EVENT(
+        NEW_FIX_EVENT(
             SCHED_EVENT_APU_WAVE_STEP,
-            gba->scheduler.cycles, // TODO: Is there a delay before the sound is started?
-            period
+            gba->scheduler.cycles + CHANNEL_FREQUENCY_AS_CYCLES(gba->io.sound3cnt_x.sample_rate) // TODO: Is there a delay before the sound is started?
         )
     );
 }
@@ -112,4 +107,12 @@ apu_wave_step(
             gba->io.sound3cnt_l.bank_select ^= 1;
         }
     }
+
+    gba->apu.wave.step_handler = sched_add_event(
+        gba,
+        NEW_FIX_EVENT(
+            SCHED_EVENT_APU_WAVE_STEP,
+            gba->scheduler.cycles + CHANNEL_FREQUENCY_AS_CYCLES(gba->io.sound3cnt_x.sample_rate) // TODO: Is there a delay before the sound is started?
+        )
+    );
 }

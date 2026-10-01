@@ -86,7 +86,7 @@ debugger_io_new_bitfield(
 }
 
 /*
-** The name and description provided in this function are from GBATEK.
+** The IO register names and descriptions provided in this function come from GBATEK.
 **   - https://problemkaputt.de/gbatek.htm
 */
 void
@@ -214,7 +214,7 @@ debugger_io_init(
 
         reg = debugger_io_new_register16(IO_REG_SOUND1CNT_H, "Channel 1 Duty/Len/Envelope", NULL);
         debugger_io_new_bitfield(reg,  0,  5,  "Sound length; units of (64-n)/256s",    "(0-63)");
-        debugger_io_new_bitfield(reg,  6,  7,  "Wave Pattern Duty",                     "(0-3, see below)");
+        debugger_io_new_bitfield(reg,  6,  7,  "Wave Pattern Duty",                     "(0-3)");
         debugger_io_new_bitfield(reg,  8, 10,  "Envelope Step-Time; units of n/64s",    "(1-7, 0=No Envelope)");
         debugger_io_new_bitfield(reg, 11, 11,  "Envelope Direction",                    "(0=Decrease, 1=Increase)");
         debugger_io_new_bitfield(reg, 12, 15,  "Initial Volume of envelope",            "(1-15, 0=No Sound)");
@@ -228,7 +228,7 @@ debugger_io_init(
 
         reg = debugger_io_new_register16(IO_REG_SOUND2CNT_L, "Channel 2 Duty/Len/Envelope", NULL);
         debugger_io_new_bitfield(reg,  0,  5,  "Sound length; units of (64-n)/256s",    "(0-63)");
-        debugger_io_new_bitfield(reg,  6,  7,  "Wave Pattern Duty",                     "(0-3, see below)");
+        debugger_io_new_bitfield(reg,  6,  7,  "Wave Pattern Duty",                     "(0-3)");
         debugger_io_new_bitfield(reg,  8, 10,  "Envelope Step-Time; units of n/64s",    "(1-7, 0=No Envelope)");
         debugger_io_new_bitfield(reg, 11, 11,  "Envelope Direction",                    "(0=Decrease, 1=Increase)");
         debugger_io_new_bitfield(reg, 12, 15,  "Initial Volume of envelope",            "(1-15, 0=No Sound)");
@@ -242,7 +242,7 @@ debugger_io_init(
         reg = debugger_io_new_register16(IO_REG_SOUND3CNT_L, "Channel 3 Stop/Wave RAM select", NULL);
         debugger_io_new_bitfield(reg,  0,  4,  "Not used",                              NULL);
         debugger_io_new_bitfield(reg,  5,  5,  "Wave RAM Dimension",                    "(0=One bank/32 digits, 1=Two banks/64 digits)");
-        debugger_io_new_bitfield(reg,  6,  6,  "Wave RAM Bank Number",                  "(0-1, see below)");
+        debugger_io_new_bitfield(reg,  6,  6,  "Wave RAM Bank Number",                  "(0-1)");
         debugger_io_new_bitfield(reg,  7,  7,  "Sound Channel 3 Off",                   "(0=Stop, 1=Playback)");
         debugger_io_new_bitfield(reg,  8, 15,  "Not used",                              NULL);
 
