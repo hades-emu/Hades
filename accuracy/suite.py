@@ -46,7 +46,7 @@ TESTS_SUITE: List[Test] = [
             frame 10
             screenshot ./.tests_screenshots/jsmolka_arm.png
         ''',
-        screenshot='jsmolka_arm.png',
+        screenshots=['jsmolka_arm.png'],
     ),
     Test(
         name="Jsmolka - bios.gba",
@@ -55,7 +55,7 @@ TESTS_SUITE: List[Test] = [
             frame 10
             screenshot ./.tests_screenshots/jsmolka_bios.png
         ''',
-        screenshot='jsmolka_bios.png',
+        screenshots=['jsmolka_bios.png'],
     ),
     Test(
         name="Jsmolka - memory.gba",
@@ -64,7 +64,7 @@ TESTS_SUITE: List[Test] = [
             frame 10
             screenshot ./.tests_screenshots/jsmolka_memory.png
         ''',
-        screenshot='jsmolka_memory.png',
+        screenshots=['jsmolka_memory.png'],
     ),
     Test(
         name="Jsmolka - nes.gba",
@@ -73,7 +73,7 @@ TESTS_SUITE: List[Test] = [
             frame 10
             screenshot ./.tests_screenshots/jsmolka_nes.png
         ''',
-        screenshot='jsmolka_nes.png',
+        screenshots=['jsmolka_nes.png'],
     ),
     Test(
         name="Jsmolka - thumb.gba",
@@ -82,7 +82,7 @@ TESTS_SUITE: List[Test] = [
             frame 10
             screenshot ./.tests_screenshots/jsmolka_thumb.png
         ''',
-        screenshot='jsmolka_thumb.png',
+        screenshots=['jsmolka_thumb.png'],
     ),
     Test(
         name="Jsmolka - unsafe.gba",
@@ -91,7 +91,7 @@ TESTS_SUITE: List[Test] = [
             frame 10
             screenshot ./.tests_screenshots/jsmolka_unsafe.png
         ''',
-        screenshot='jsmolka_unsafe.png',
+        screenshots=['jsmolka_unsafe.png'],
     ),
     Test(
         name="Jsmolka - save/sram.gba",
@@ -100,7 +100,7 @@ TESTS_SUITE: List[Test] = [
             frame 10
             screenshot ./.tests_screenshots/jsmolka_sram.png
         ''',
-        screenshot='jsmolka_sram.png',
+        screenshots=['jsmolka_sram.png'],
     ),
     Test(
         name="Jsmolka - save/none.gba",
@@ -109,7 +109,7 @@ TESTS_SUITE: List[Test] = [
             frame 10
             screenshot ./.tests_screenshots/jsmolka_none.png
         ''',
-        screenshot='jsmolka_none.png',
+        screenshots=['jsmolka_none.png'],
     ),
     Test(
         name="Jsmolka - save/flash64.gba",
@@ -118,7 +118,7 @@ TESTS_SUITE: List[Test] = [
             frame 110
             screenshot ./.tests_screenshots/jsmolka_flash64.png
         ''',
-        screenshot='jsmolka_flash64.png',
+        screenshots=['jsmolka_flash64.png'],
     ),
     Test(
         name="Jsmolka - save/flash128.gba",
@@ -127,7 +127,7 @@ TESTS_SUITE: List[Test] = [
             frame 110
             screenshot ./.tests_screenshots/jsmolka_flash128.png
         ''',
-        screenshot='jsmolka_flash128.png',
+        screenshots=['jsmolka_flash128.png'],
     ),
 
     # mGBA suite
@@ -143,7 +143,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_memory.png
         ''',
-        screenshot='mgba_suite_memory.png',
+        screenshots=['mgba_suite_memory.png'],
     ),
     Test(
         name="mGBA Suite - IO",
@@ -159,7 +159,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_io.png
         ''',
-        screenshot='mgba_suite_io.png',
+        screenshots=['mgba_suite_io.png'],
     ),
     Test(
         name="mGBA Suite - Timing",  # NOTE: Only passing 1918/2020 tests for now.
@@ -175,7 +175,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_timing.png
         ''',
-        screenshot='mgba_suite_timing.png',
+        screenshots=['mgba_suite_timing.png'],
     ),
     Test(
         name="mGBA Suite - Timer Count-Up",  # NOTE: Only passing 211/936 tests for now.
@@ -191,7 +191,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_timer_count_up.png
         ''',
-        screenshot='mgba_suite_timer_count_up.png',
+        screenshots=['mgba_suite_timer_count_up.png'],
     ),
     Test(
         name="mGBA Suite - Timer IRQ",  # NOTE: Only passing 28/90 tests for now.
@@ -206,7 +206,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_timer_irq.png
         ''',
-        screenshot='mgba_suite_timer_irq.png',
+        screenshots=['mgba_suite_timer_irq.png'],
     ),
     Test(
         name="mGBA Suite - Shifter",
@@ -221,7 +221,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_shifter.png
         ''',
-        screenshot='mgba_suite_shifter.png',
+        screenshots=['mgba_suite_shifter.png'],
     ),
     Test(
         name="mGBA Suite - Carry",
@@ -236,7 +236,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_carry.png
         ''',
-        screenshot='mgba_suite_carry.png',
+        screenshots=['mgba_suite_carry.png'],
     ),
     Test(
         name="mGBA Suite - Multiply Long",  # NOTE: Only passing 52/72 tests for now.
@@ -251,7 +251,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_multiply_long.png
         ''',
-        screenshot='mgba_suite_multiply_long.png',
+        screenshots=['mgba_suite_multiply_long.png'],
     ),
     Test(
         name="mGBA Suite - BIOS",
@@ -266,7 +266,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_bios.png
         ''',
-        screenshot='mgba_suite_bios.png',
+        screenshots=['mgba_suite_bios.png'],
     ),
     Test(
         name="mGBA Suite - DMA",  # NOTE: Only passing 1156/1256 tests for now.
@@ -282,7 +282,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/mgba_suite_dma.png
         ''',
-        screenshot='mgba_suite_dma.png',
+        screenshots=['mgba_suite_dma.png'],
     ),
 
     # NBA Hardware Tests
@@ -295,7 +295,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/nba_timer_reload.png
         ''',
-        screenshot='nba_timer_reload.png',
+        screenshots=['nba_timer_reload.png'],
     ),
     Test(
         name="NBA Tests - Timer Start/Stop",
@@ -305,7 +305,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/nba_timer_start_stop.png
         ''',
-        screenshot='nba_timer_start_stop.png',
+        screenshots=['nba_timer_start_stop.png'],
     ),
     Test(
         name="NBA Tests - DMA Latch",
@@ -315,7 +315,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/nba_dma_latch.png
         ''',
-        screenshot='nba_dma_latch.png',
+        screenshots=['nba_dma_latch.png'],
     ),
     Test(
         name="NBA Tests - DMA Start Delay",
@@ -325,7 +325,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/nba_dma_start_delay.png
         ''',
-        screenshot='nba_dma_start_delay.png',
+        screenshots=['nba_dma_start_delay.png'],
     ),
     Test(
         name="NBA Tests - IRQ Delay",
@@ -335,7 +335,7 @@ TESTS_SUITE: List[Test] = [
 
             screenshot ./.tests_screenshots/nba_irq_delay.png
         ''',
-        screenshot='nba_irq_delay.png',
+        screenshots=['nba_irq_delay.png'],
     ),
 
     # Hades Tests
@@ -347,7 +347,7 @@ TESTS_SUITE: List[Test] = [
             frame 20
             screenshot ./.tests_screenshots/hades_dma_latch.png
         ''',
-        screenshot='hades_dma_latch.png',
+        screenshots=['hades_dma_latch.png'],
     ),
     Test(
         name="Hades Tests - DMA Start Delay",
@@ -356,7 +356,7 @@ TESTS_SUITE: List[Test] = [
             frame 20
             screenshot ./.tests_screenshots/hades_dma_start_delay.png
         ''',
-        screenshot='hades_dma_start_delay.png',
+        screenshots=['hades_dma_start_delay.png'],
     ),
     Test(
         name="Hades Tests - BIOS Openbus",
@@ -365,7 +365,7 @@ TESTS_SUITE: List[Test] = [
             frame 20
             screenshot ./.tests_screenshots/hades_bios_openbus.png
         ''',
-        screenshot='hades_bios_openbus.png',
+        screenshots=['hades_bios_openbus.png'],
     ),
     Test(
         name="Hades Tests - Timer Basic",
@@ -374,7 +374,7 @@ TESTS_SUITE: List[Test] = [
             frame 20
             screenshot ./.tests_screenshots/hades_timer_basic.png
         ''',
-        screenshot='hades_timer_basic.png',
+        screenshots=['hades_timer_basic.png'],
     ),
 
     # AGS
@@ -385,7 +385,48 @@ TESTS_SUITE: List[Test] = [
             frame 425
             screenshot ./.tests_screenshots/ags_01.png
         ''',
-        screenshot='ags_01.png',
+        screenshots=['ags_01.png'],
+    ),
+
+    # AGS
+    Test(
+        name="AGS - PPU Tests",
+        rom=TestRoms.AGS.value,
+        code='''
+            key l true
+            key r true
+            frame 10
+            key l false
+            key r false
+            key down true
+            frame 5
+            key down false
+            key a true
+            frame 5
+            key a false
+            key down true
+            frame 50
+            key down false
+        ''' + ''.join(f'''
+            key a true
+            frame 10
+            screenshot ./.tests_screenshots/ags_ppu_{i:02d}.png
+            key a false
+            frame 10
+            '''
+            for i in range(1, 11)
+        ) + '''
+            frame 150 # 130
+        ''' + ''.join(f'''
+            key a true
+            frame 10
+            screenshot ./.tests_screenshots/ags_ppu_{i:02d}.png
+            key a false
+            frame 10
+            '''
+            for i in range(11, 51)
+        ),
+        screenshots=[f'ags_ppu_{i:02d}.png' for i in range(1, 51)],
     ),
 
     # AGBEEG
@@ -396,6 +437,6 @@ TESTS_SUITE: List[Test] = [
             frame 20
             screenshot ./.tests_screenshots/agbeeg.png
         ''',
-        screenshot='agbeeg.png',
+        screenshots=['agbeeg.png'],
     )
 ]

@@ -151,29 +151,35 @@ def main():
     print(f"┣━{'━' * 34}━╋━━━━━━┫")
 
     for test in TESTS_SUITE:
-        result = TestResult.FAIL
+        results = [TestResult.FAIL]
 
         try:
             if test.skip:
-                result = TestResult.SKIP
+                results = [TestResult.SKIP]
                 continue
 
-            test.run(hades_binary, rom_directory, Path(config.name), tests_screenshots_directory, args.verbose)
-            result = TestResult.PASS
+            results = test.run(hades_binary, rom_directory, Path(config.name), tests_screenshots_directory, args.verbose)
         except Exception as e:
             if args.verbose:
                 print(f"Error: {e}")
-            result = TestResult.FAIL
+            results = [TestResult.FAIL]
         finally:
-            if result == TestResult.PASS:
-                pretty_result = f'{BOLD}{GREEN}PASS{RESET}'
-            elif result == TestResult.SKIP:
-                pretty_result = f'{BOLD}{YELLOW}SKIP{RESET}'
-            else:
-                pretty_result = f'{BOLD}{RED}FAIL{RESET}'
-                exit_code = 1
 
-            print(f"┃ {test.name:34s} ┃ {pretty_result} ┃")
+            for i, result in enumerate(results):
+                if result == TestResult.PASS:
+                    pretty_result = f'{BOLD}{GREEN}PASS{RESET}'
+                elif result == TestResult.SKIP:
+                    pretty_result = f'{BOLD}{YELLOW}SKIP{RESET}'
+                else:
+                    pretty_result = f'{BOLD}{RED}FAIL{RESET}'
+                    exit_code = 1
+
+                if len(results) > 1:
+                    name = f"{test.name} - {i + 1:02d}"
+                else:
+                    name = test.name
+
+                print(f"┃ {name:34s} ┃ {pretty_result} ┃")
 
     print(f"┗━{'━' * 34}━┻━━━━━━┛")
 

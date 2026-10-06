@@ -15,12 +15,12 @@ class TestResult(Enum):
 
 
 class Test:
-    def __init__(self, name: str, rom: Rom, code: str, screenshot: str, skip: bool = False):
+    def __init__(self, name: str, rom: Rom, code: str, screenshots: List[str], skip: bool = False):
         self.name = name
 
         self.rom = rom
         self.code = textwrap.dedent(code)
-        self.screenshot = screenshot
+        self.screenshots = screenshots
         self.skip = skip
 
     def run(self, hades_path: Path, rom_directory: Path, config_path: Path, tests_screenshots_directory: Path, verbose: bool):
@@ -36,5 +36,12 @@ class Test:
             check=True,
         )
 
-        if not filecmp.cmp(tests_screenshots_directory / self.screenshot, module_path / 'expected' / self.screenshot, shallow=False):
-            raise RuntimeError("The screenshot taken during the test doesn't match the expected one.")
+        results = []
+
+        for screenshot in self.screenshots:
+            if filecmp.cmp(tests_screenshots_directory / screenshot, module_path / 'expected' / screenshot, shallow=False):
+                results += [TestResult.PASS]
+            else:
+                results += [TestResult.FAIL]
+
+        return results
