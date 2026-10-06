@@ -172,6 +172,12 @@ debugger_lang_lexe(
                 ++i;
                 break;
             };
+            case '#': {
+                while (input[i] && input[i] != '\n') {
+                    ++i;
+                }
+                break;
+            }
             default: {
                 lexer->error = hs_format("Invalid character \'%c\'", input[i]);
                 return;
