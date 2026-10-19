@@ -364,7 +364,7 @@ jobs:
     runs-on: ubuntu-${{ matrix.version }}
     strategy:
       matrix:
-        version: ["22.04", "24.04"]
+        version: ["22.04", "24.04", "26.04"]
     steps:
       - name: Fetch Source Code
         uses: actions/checkout@v4
