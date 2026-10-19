@@ -16,7 +16,7 @@ jobs:
         shell: msys2 {0}
     steps:
       - name: Fetch Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: Install Dependencies
@@ -61,7 +61,7 @@ jobs:
         run: |
           ./build/Hades.exe --help
       - name: Collect Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hades-win-x64
           path: build/Hades.exe
@@ -91,7 +91,7 @@ jobs:
             libarchive:p
             sdl3:p
       - name: Fetch Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: Build libarchive
@@ -132,7 +132,7 @@ jobs:
         run: |
           ./build/Hades.exe --help
       - name: Collect Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hades-win-arm64
           path: build/Hades.exe
@@ -143,7 +143,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Fetch Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: Install Dependencies
@@ -276,7 +276,7 @@ jobs:
           MACOS_APPLE_TEAMID: ${{ secrets.MACOS_APPLE_TEAMID }}
 
       - name: Collect Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hades-macos
           path: Hades-Installer.dmg
@@ -287,7 +287,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Fetch Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: Install Dependencies
@@ -353,7 +353,7 @@ jobs:
           ./hades.AppImage --help
 
       - name: Collect Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hades-linux-appimage
           path: hades.AppImage
@@ -367,7 +367,7 @@ jobs:
         version: ["22.04", "24.04", "26.04"]
     steps:
       - name: Fetch Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: Install Dependencies
@@ -417,7 +417,7 @@ jobs:
           echo "----  END  ----"
 
       - name: Package Hades
-        uses: jiro4989/build-deb-action@v3
+        uses: jiro4989/build-deb-action@v4
         with:
           package: hades
           package_root: pkg-root
@@ -434,7 +434,7 @@ jobs:
           sudo apt install -y ./hades.deb
           /usr/bin/hades --help
       - name: Collect Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hades-linux-ubuntu-${{ matrix.version }}
           path: hades.deb
