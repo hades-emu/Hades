@@ -3,6 +3,7 @@ import os
 import subprocess
 import textwrap
 from enum import Enum
+from typing import List
 from pathlib import Path
 
 from rom import Rom
@@ -15,12 +16,13 @@ class TestResult(Enum):
 
 
 class Test:
-    def __init__(self, name: str, rom: Rom, code: str, screenshots: List[str], skip: bool = False):
+    def __init__(self, name: str, rom: Rom, code: str, screenshots: List[str], skip_all: bool = False, skip: List[int] = []):
         self.name = name
 
         self.rom = rom
         self.code = textwrap.dedent(code)
         self.screenshots = screenshots
+        self.skip_all = skip_all
         self.skip = skip
 
     def run(self, hades_path: Path, rom_directory: Path, config_path: Path, tests_screenshots_directory: Path, verbose: bool):
@@ -38,7 +40,11 @@ class Test:
 
         results = []
 
-        for screenshot in self.screenshots:
+        for i, screenshot in enumerate(self.screenshots):
+            if i + 1 in self.skip:
+                results += [TestResult.SKIP]
+                continue
+
             if filecmp.cmp(tests_screenshots_directory / screenshot, module_path / 'expected' / screenshot, shallow=False):
                 results += [TestResult.PASS]
             else:

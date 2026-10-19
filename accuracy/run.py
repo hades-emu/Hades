@@ -154,7 +154,7 @@ def main():
         results = [TestResult.FAIL]
 
         try:
-            if test.skip:
+            if test.skip_all:
                 results = [TestResult.SKIP]
                 continue
 

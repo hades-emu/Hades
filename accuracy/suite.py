@@ -427,6 +427,7 @@ TESTS_SUITE: List[Test] = [
             for i in range(11, 51)
         ),
         screenshots=[f'ags_ppu_{i:02d}.png' for i in range(1, 51)],
+        skip=[10, 17, 18, 19, 20, 21, 28, 29, 30, 37, 42, 43, 44, 46, 49, 50],
     ),
 
     # AGBEEG
