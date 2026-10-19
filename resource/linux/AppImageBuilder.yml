@@ -12,7 +12,7 @@ AppDir:
     id: hades
     name: Hades
     icon: hades
-    version: 1.1.1
+    version: 1.2.0-dev
     exec: usr/bin/hades
     exec_args: $@
   apt:
