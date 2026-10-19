@@ -140,7 +140,7 @@ jobs:
 
   mac-os:
     name: MacOS arm64 (DMG Installer)
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - name: Fetch Source Code
         uses: actions/checkout@v4
