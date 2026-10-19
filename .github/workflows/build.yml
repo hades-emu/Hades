@@ -22,7 +22,7 @@ jobs:
       - name: Install Dependencies
         uses: msys2/setup-msys2@v2
         with:
-          install: make git mingw-w64-x86_64-ca-certificates mingw-w64-x86_64-cmake mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-glew mingw-w64-x86_64-libarchive mingw-w64-x86_64-sdl3
+          install: make git jq mingw-w64-x86_64-ca-certificates mingw-w64-x86_64-cmake mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config  mingw-w64-x86_64-gcc mingw-w64-x86_64-glew mingw-w64-x86_64-libarchive mingw-w64-x86_64-sdl3
       - name: Build libarchive
         run: |
           # msys2's libarchive assumes a DLL zlib, which breaks when linking hades statically.
@@ -54,17 +54,20 @@ jobs:
         run: |
           # Setup the Meson project
           meson setup build --buildtype=release -Dstatic_executable=true
+          echo "HADES_VERSION=$(meson introspect build --projectinfo | jq -r .version)" >> "$GITHUB_ENV"
 
           # Build the project
           ninja -C build
       - name: Test Hades
         run: |
-          ./build/Hades.exe --help
+          mv -v build/Hades.exe "hades-${HADES_VERSION}-win-x64.exe"
+
+          "./hades-${HADES_VERSION}-win-x64.exe" --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: hades-win-x64
-          path: build/Hades.exe
+          path: hades-${{ env.HADES_VERSION }}-win-x64.exe
+          archive: false
           if-no-files-found: error
 
   windows-arm:
@@ -79,7 +82,7 @@ jobs:
         with:
           msystem: CLANGARM64
           release: true
-          install: git
+          install: git jq
           pacboy:
             gcc-compat:p
             toolchain:p
@@ -125,17 +128,20 @@ jobs:
         run: |
           # Setup the Meson project
           meson setup build --buildtype=release -Dstatic_executable=true
+          echo "HADES_VERSION=$(meson introspect build --projectinfo | jq -r .version)" >> "$GITHUB_ENV"
 
           # Build the project
           ninja -C build
       - name: Test Hades
         run: |
-          ./build/Hades.exe --help
+          mv -v build/Hades.exe "hades-${HADES_VERSION}-win-arm64.exe"
+
+          "./hades-${HADES_VERSION}-win-arm64.exe" --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: hades-win-arm64
-          path: build/Hades.exe
+          path: hades-${{ env.HADES_VERSION }}-win-arm64.exe
+          archive: false
           if-no-files-found: error
 
   mac-os:
@@ -196,6 +202,7 @@ jobs:
 
           # Setup the Meson project
           meson setup build --buildtype=release -Dstatic_dependencies=true --prefix=/tmp/build/Hades.app --bindir=Contents/MacOS
+          echo "HADES_VERSION=$(meson introspect build --projectinfo | jq -r .version)" >> "$GITHUB_ENV"
 
           # Build & Install the project
           ninja -C build install
@@ -262,14 +269,14 @@ jobs:
               --icon Hades.app 150 225 \
               --hide-extension Hades.app \
               --app-drop-link 425 225 \
-              Hades-Installer.dmg \
+              "hades-${HADES_VERSION}-macos-arm64.dmg" \
               /tmp/build/
       - name: Notarize Hades DMG
         if: ${{ env.MACOS_APPLE_USERNAME != '' }}
         run: |
           echo "Notarizing file $file"
-          xcrun notarytool submit --apple-id "$MACOS_APPLE_USERNAME" --password "$MACOS_APPLE_PASSWORD" --team-id "$MACOS_APPLE_TEAMID" --wait "Hades-Installer.dmg"
-          xcrun stapler staple -v "Hades-Installer.dmg"
+          xcrun notarytool submit --apple-id "$MACOS_APPLE_USERNAME" --password "$MACOS_APPLE_PASSWORD" --team-id "$MACOS_APPLE_TEAMID" --wait "hades-${HADES_VERSION}-macos-arm64.dmg"
+          xcrun stapler staple -v "hades-${HADES_VERSION}-macos-arm64.dmg"
         env:
           MACOS_APPLE_USERNAME: ${{ secrets.MACOS_APPLE_USERNAME }}
           MACOS_APPLE_PASSWORD: ${{ secrets.MACOS_APPLE_PASSWORD }}
@@ -278,8 +285,8 @@ jobs:
       - name: Collect Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: hades-macos
-          path: Hades-Installer.dmg
+          path: hades-${{ env.HADES_VERSION }}-macos-arm64.dmg
+          archive: false
           if-no-files-found: error
 
   linux-appimage:
@@ -331,6 +338,7 @@ jobs:
         run: |
           # Setup the Meson project
           meson setup build --buildtype=release -Dstatic_sdl3=true -Dwith_wayland=false --prefix=/usr
+          echo "HADES_VERSION=$(meson introspect build --projectinfo | jq -r .version)" >> "$GITHUB_ENV"
 
           # Build & Install the project
           DESTDIR=$(pwd)/AppDir ninja -C build install
@@ -348,15 +356,15 @@ jobs:
       - name: Test Hades
         run: |
           sudo chown --reference=. *.AppImage
-          mv -v *.AppImage hades.AppImage
+          mv -v *.AppImage "hades-${HADES_VERSION}-linux-x64.appimage"
 
-          ./hades.AppImage --help
+          "./hades-${HADES_VERSION}-linux-x64.appimage" --help
 
       - name: Collect Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: hades-linux-appimage
-          path: hades.AppImage
+          path: hades-${{ env.HADES_VERSION }}-linux-x64.appimage
+          archive: false
           if-no-files-found: error
 
   linux-ubuntu:
@@ -409,6 +417,9 @@ jobs:
       - name: Build Hades
         run: |
           meson setup build --buildtype=release -Dstatic_sdl3=true --prefix=/usr
+          HADES_VERSION=$(meson introspect build --projectinfo | jq -r .version)
+          echo "HADES_VERSION=${HADES_VERSION}" >> "$GITHUB_ENV"
+          echo "HADES_DEB_VERSION=$(echo "${HADES_VERSION}" | tr '-' '~')" >> "$GITHUB_ENV"
           DESTDIR=$(pwd)/pkg-root ninja -C build install
 
           echo "Content of the package:"
@@ -422,20 +433,20 @@ jobs:
           package: hades
           package_root: pkg-root
           maintainer: The Hades Authors
-          version: 1.1.1
+          version: ${{ env.HADES_DEB_VERSION }}
           arch: 'amd64'
           depends: 'libarchive13, libglew2.2, libdecor-0-0'
           desc: 'A Nintendo Game Boy Advance Emulator.'
       - name: Test Hades
         run: |
           sudo chown --reference=. *.deb
-          mv -v *.deb hades.deb
+          mv -v *.deb "hades-${HADES_VERSION}-ubuntu-${{ matrix.version }}-x64.deb"
 
-          sudo apt install -y ./hades.deb
+          sudo apt install -y "./hades-${HADES_VERSION}-ubuntu-${{ matrix.version }}-x64.deb"
           /usr/bin/hades --help
       - name: Collect Artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: hades-linux-ubuntu-${{ matrix.version }}
-          path: hades.deb
+          path: hades-${{ env.HADES_VERSION }}-ubuntu-${{ matrix.version }}-x64.deb
+          archive: false
           if-no-files-found: error
