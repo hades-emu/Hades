@@ -498,6 +498,28 @@ app_sdl_video_render_frame(
 }
 
 /*
+** Calculate the size of the game area, in window coordinates, for the given display size.
+**
+** The display scale is rounded down to keep the pixel art sharp on fractional scales (125%, 150%, etc.).
+**
+** Reference:
+**   - https://wiki.libsdl.org/SDL3/README-highdpi
+*/
+void
+app_sdl_video_calculate_game_area_size(
+    struct app const *app,
+    uint32_t display_size,
+    uint32_t *width,
+    uint32_t *height
+) {
+    float size;
+
+    size = (float)display_size * max(1.0f, floorf(app->ui.window_display_scale));
+    *width = roundf(GBA_SCREEN_WIDTH * size / app->ui.window_pixel_density);
+    *height = roundf(GBA_SCREEN_HEIGHT * size / app->ui.window_pixel_density);
+}
+
+/*
 ** Resize the window to match the size chosen in the settings, taking into account the display's content scale.
 */
 void
@@ -507,10 +529,7 @@ app_sdl_video_resize_window(
     uint32_t w;
     uint32_t h;
 
-    // Calculate the desired width and height in **screen coordinates**, not pixels, hence why we
-    // divide by the display's scale.
-    w = round((float)(GBA_SCREEN_WIDTH * app->settings.video.display_size) / app->ui.window_pixel_density);
-    h = round((float)(GBA_SCREEN_HEIGHT * app->settings.video.display_size) / app->ui.window_pixel_density);
+    app_sdl_video_calculate_game_area_size(app, app->settings.video.display_size, &w, &h);
 
     // If relevant, expand the window by the size of the menubar
     h += app->settings.video.menubar_mode == MENUBAR_MODE_PINNED ? app->ui.menubar.size.y : 0;
@@ -537,7 +556,12 @@ app_sdl_video_update_scale(
     // This function is called when the window's display is changed so we have to refresh the cached value.
     app->ui.window_display_scale = SDL_GetWindowDisplayScale(app->sdl.window);
     app->ui.window_pixel_density = SDL_GetWindowPixelDensity(app->sdl.window);
-    app->ui.scale = app->settings.video.autodetect_scale ? 1.0f : app->settings.video.scale;
+
+    if (app->settings.video.autodetect_scale) {
+        app->ui.scale = max(1.0f, floorf(app->ui.window_display_scale / app->ui.window_pixel_density));
+    } else {
+        app->ui.scale = app->settings.video.scale;
+    }
 
     // Restore the default style
     memcpy(style, &app->ui.default_style, sizeof(struct ImGuiStyle));

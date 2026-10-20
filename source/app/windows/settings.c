@@ -618,10 +618,11 @@ app_win_settings_video(
 
         display_size = -1;
         for (i = 1; i < array_length(display_size_names) + 1; ++i) {
-            if (
-                   app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * i / app->ui.window_pixel_density)
-                && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * i / app->ui.window_pixel_density)
-            ) {
+            uint32_t w;
+            uint32_t h;
+
+            app_sdl_video_calculate_game_area_size(app, i, &w, &h);
+            if (app->ui.display.game.outer.width == w && app->ui.display.game.outer.height == h) {
                 display_size = i;
                 break;
             }

@@ -784,6 +784,7 @@ void app_sdl_video_init(struct app *app);
 void app_sdl_video_cleanup(struct app *app);
 void app_sdl_video_render_frame(struct app *app);
 void app_sdl_video_rebuild_pipeline(struct app *app);
+void app_sdl_video_calculate_game_area_size(struct app const *app, uint32_t display_size, uint32_t *width, uint32_t *height);
 void app_sdl_video_resize_window(struct app *app);
 void app_sdl_video_update_display_mode(struct app *app);
 void app_sdl_video_update_scale(struct app *app);

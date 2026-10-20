@@ -336,11 +336,14 @@ app_win_menubar_video(
             };
 
             for (x = 1; x <= 5; ++x) {
+                uint32_t w;
+                uint32_t h;
+
+                app_sdl_video_calculate_game_area_size(app, x, &w, &h);
                 if (igMenuItem_Bool(
                     display_sizes[x - 1],
                     NULL,
-                       app->ui.display.game.outer.width == (uint32_t)round(GBA_SCREEN_WIDTH * x / app->ui.window_pixel_density)
-                    && app->ui.display.game.outer.height == (uint32_t)round(GBA_SCREEN_HEIGHT * x / app->ui.window_pixel_density),
+                    app->ui.display.game.outer.width == w && app->ui.display.game.outer.height == h,
                     true
                 )) {
                     app->settings.video.display_size = x;
