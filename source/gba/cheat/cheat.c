@@ -209,7 +209,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    ++insn_idx;
+                    insn_idx += insn->cond.skip;
                 }
                 break;
             }
@@ -226,7 +226,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    ++insn_idx;
+                    insn_idx += insn->cond.skip;
                 }
                 break;
             }
@@ -243,7 +243,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    ++insn_idx;
+                    insn_idx += insn->cond.skip;
                 }
                 break;
             }
@@ -260,7 +260,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    ++insn_idx;
+                    insn_idx += insn->cond.skip;
                 }
                 break;
             }
@@ -277,7 +277,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    ++insn_idx;
+                    insn_idx += insn->cond.skip;
                 }
                 break;
             }
@@ -294,7 +294,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    ++insn_idx;
+                    insn_idx += insn->cond.skip;
                 }
                 break;
             }
@@ -311,7 +311,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    ++insn_idx;
+                    insn_idx += insn->cond.skip;
                 }
                 break;
             }

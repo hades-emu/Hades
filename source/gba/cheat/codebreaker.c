@@ -166,6 +166,7 @@ cheat_codebreaker_compile(
                 insn->cond.addr = op1 & 0x0FFFFFFF;
                 insn->cond.value = op2;
                 insn->cond.width = 2;
+                insn->cond.skip = 1;
                 break;
             }
             case 0x8: { // Assign (16-bit)
@@ -176,6 +177,7 @@ cheat_codebreaker_compile(
                 insn->cond.addr = op1 & 0x0FFFFFFF;
                 insn->cond.value = op2;
                 insn->cond.width = 2;
+                insn->cond.skip = 1;
                 break;
             }
             case 0xA: { // IF Not Equal
@@ -186,6 +188,7 @@ cheat_codebreaker_compile(
                 insn->cond.addr = op1 & 0x0FFFFFFF;
                 insn->cond.value = op2;
                 insn->cond.width = 2;
+                insn->cond.skip = 1;
                 break;
             }
             case 0xB: { // IF Greater (Unsigned)
@@ -196,6 +199,7 @@ cheat_codebreaker_compile(
                 insn->cond.addr = op1 & 0x0FFFFFFF;
                 insn->cond.value = op2;
                 insn->cond.width = 2;
+                insn->cond.skip = 1;
                 break;
             }
             case 0xC: { // IF Lower (Unsigned)
@@ -206,6 +210,7 @@ cheat_codebreaker_compile(
                 insn->cond.addr = op1 & 0x0FFFFFFF;
                 insn->cond.value = op2;
                 insn->cond.width = 2;
+                insn->cond.skip = 1;
                 break;
             }
             case 0xD: { // IF Keypad
@@ -239,6 +244,7 @@ cheat_codebreaker_compile(
                 insn->cond.addr = op1 & 0x0FFFFFFF;
                 insn->cond.value = op2;
                 insn->cond.width = 2;
+                insn->cond.skip = 1;
                 break;
             }
             default: {

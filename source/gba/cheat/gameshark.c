@@ -170,6 +170,28 @@ cheat_gameshark_compile(
                 }
                 break;
             }
+            case 0xD: { // IF Equal
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_IF_EQ;
+                insn->cond.addr = op1 & 0x0FFFFFFF;
+                insn->cond.value = op2 & 0xFFFF;
+                insn->cond.width = 2;
+                insn->cond.skip = 1;
+                break;
+            }
+            case 0xE: {
+                struct cheat_insn *insn;
+
+                insn = cheat_create_insn(bin);
+                insn->kind = CHEAT_INSN_IF_EQ;
+                insn->cond.addr = op2 & 0x0FFFFFFF;
+                insn->cond.value = op1 & 0xFFFF;
+                insn->cond.width = 2;
+                insn->cond.skip = (op1 >> 16) & 0xFF;
+                break;
+            }
             case 0xF: { // Hook routine
                 if (bin->hook.active) {
                     break;

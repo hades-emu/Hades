@@ -114,6 +114,7 @@ struct cheat_insn {
             uint32_t addr;
             uint32_t value;
             uint32_t width;
+            uint32_t skip;
         } cond;
 
         struct {
