@@ -143,7 +143,7 @@ struct command g_commands[] = {
     [CMD_KEY] = {
         .name = "key",
         .usage = "key KEY STATE",
-        .description = "Set the state of any input key.",
+        .description = "Set the state of any input key, including the GameShark/Action Replay button (\"gs\", \"ar\").",
         .func = debugger_cmd_key,
     },
     [CMD_SCREENSHOT] = {

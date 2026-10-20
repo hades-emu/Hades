@@ -44,6 +44,17 @@ debugger_cmd_key(
             return;
         }
 
+        // The GameShark/Action Replay button isn't a GBA key, so it goes through its own message.
+        if (!strcmp(argv[0].value.s, "gs") || !strcmp(argv[0].value.s, "ar")) {
+            app_emulator_cheat_button(app, (bool)argv[1].value.i64);
+            printf(
+                "Key \"%s\" set to %s.\n",
+                argv[0].value.s,
+                argv[1].value.i64 ? "true" : "false"
+            );
+            return;
+        }
+
         for (i = KEY_MIN; i < KEY_MAX; ++i) {
             if (!strcmp(argv[0].value.s, key_names[i])) {
                 app_emulator_key(app, i, (bool)argv[1].value.i64);
