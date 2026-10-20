@@ -605,6 +605,10 @@ app_win_settings_video(
             scale = scale + 2;
             scale -= scale % 5;
             app->settings.video.scale = scale / 100.0;
+        }
+
+        // Only rescale the UI once the slider is released, otherwise it rescales for every value in-between.
+        if (igIsItemDeactivatedAfterEdit()) {
             app->ui.request_scale_update = true;
         }
         igEndDisabled();
