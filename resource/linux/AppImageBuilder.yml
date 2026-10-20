@@ -33,6 +33,7 @@ AppDir:
     include:
       - libarchive13
       - libglew2.2
+      - libcurl4
       - librsvg2-common  # See https://github.com/hades-emu/Hades/issues/102
     exclude:
       - libxkbcommon0

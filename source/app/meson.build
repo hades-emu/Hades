@@ -39,8 +39,19 @@ libapp_sources = [
     'main.c',
     'nfd.c',
     'path.c',
+    'update.c',
     'video.c',
 ]
+
+# Used to check for updates.
+# MacOS ships libcurl as a system library, which is why it's never linked statically.
+if host_machine.system() == 'windows'
+    http_dep = cc.find_library('winhttp', required: true)
+elif host_machine.system() == 'darwin'
+    http_dep = cc.find_library('curl', required: true)
+else
+    http_dep = dependency('libcurl', required: true)
+endif
 
 libapp_dbg_sources = [
     'dbg/cmd/apu.c',
@@ -78,6 +89,7 @@ libapp = static_library(
     dependencies: [
         dependency('threads', required: true, static: static_dependencies),
         dependency('libarchive', version: '>=3.0', required: true, static: static_dependencies or get_option('static_libarchive')),
+        http_dep,
     ] + imgui_dep,
     link_with: [libgba, imgui, mjson] + libapp_extra_deps,
     include_directories: [incdir, imgui_inc, mjson_inc, stb_inc],
@@ -94,6 +106,7 @@ if get_option('with_debugger')
             dependency('libarchive', version: '>=3.0', required: true, static: static_dependencies or get_option('static_libarchive')),
             dependency('libedit', required: true, static: static_dependencies),
             dependency('capstone', required: true, static: static_dependencies),
+            http_dep,
         ] + imgui_dep,
         link_with: [libgba_dbg, imgui, mjson] + libapp_extra_deps,
         include_directories: [incdir, imgui_inc, mjson_inc, stb_inc],

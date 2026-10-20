@@ -225,6 +225,21 @@ struct nfd_event {
     struct nfd_event *next;
 };
 
+struct http_response {
+    char *data;
+    size_t size;
+};
+
+/*
+** Shared between the main thread and the update thread, and freed by whichever releases it last.
+*/
+struct update_check {
+    atomic_int refcount;
+
+    // Set by the update thread if a newer version is available.
+    _Atomic(char *) new_version;
+};
+
 struct keyboard_binding {
     SDL_Keycode key;
 
@@ -245,6 +260,9 @@ struct settings {
 
             // Pause when the game resets
             bool pause_when_game_resets;
+
+            // Check on GitHub if a newer version of Hades is available
+            bool check_for_updates;
         } startup;
 
         struct {
@@ -658,6 +676,10 @@ struct app {
 #endif
     } threads;
 
+    // State shared with the update thread, NULL if no update check is running.
+    // The thread never touches `app` so it doesn't need to be waited for when the emulator exits.
+    struct update_check *update_check;
+
 #if WITH_DEBUGGER
     struct {
         bool is_running;
@@ -778,6 +800,11 @@ char *app_path_backup(struct app const *app, char const *rom);
 char *app_path_cheats(struct app const *app, char const *rom);
 void app_path_update_quicksave_paths(struct app *app, char const *rom);
 void app_path_refresh_quicksave_cache(struct app *app);
+
+/* update.c */
+void app_update_check_start(struct app *app);
+void app_update_process_result(struct app *app);
+void app_update_check_cleanup(struct app *app);
 
 /* video.c */
 void app_sdl_video_init(struct app *app);

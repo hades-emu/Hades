@@ -36,6 +36,7 @@ app_config_default_settings(
     settings->general.show_fps = false;
     settings->general.startup.start_last_played_game = false;
     settings->general.startup.pause_when_game_resets = false;
+    settings->general.startup.check_for_updates = true;
     settings->general.window.pause_game_when_window_loses_focus = false;
     settings->general.window.hide_cursor_when_mouse_inactive = true;
     settings->general.window.hide_pause_overlay = false;
@@ -218,6 +219,10 @@ app_config_load(
 
         if (mjson_get_bool(data, data_len, "$.general.startup.pause_when_game_resets", &b)) {
             app->settings.general.startup.pause_when_game_resets = b;
+        }
+
+        if (mjson_get_bool(data, data_len, "$.general.startup.check_for_updates", &b)) {
+            app->settings.general.startup.check_for_updates = b;
         }
 
         if (mjson_get_bool(data, data_len, "$.general.window.pause_game_when_window_loses_focus", &b)) {
@@ -503,7 +508,8 @@ app_config_save(
                 "show_fps": %B,
                 "startup": {
                     "start_last_played_game": %B,
-                    "pause_when_game_resets": %B
+                    "pause_when_game_resets": %B,
+                    "check_for_updates": %B
                 },
                 "window": {
                     "pause_game_when_window_loses_focus": %B,
@@ -580,6 +586,7 @@ app_config_save(
         (int)app->settings.general.show_fps,
         (int)app->settings.general.startup.start_last_played_game,
         (int)app->settings.general.startup.pause_when_game_resets,
+        (int)app->settings.general.startup.check_for_updates,
         (int)app->settings.general.window.pause_game_when_window_loses_focus,
         (int)app->settings.general.window.hide_cursor_when_mouse_inactive,
         (int)app->settings.general.window.hide_pause_overlay,

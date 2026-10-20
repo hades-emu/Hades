@@ -14,7 +14,7 @@
 #include "app/app.h"
 #include "compat.h"
 
-#define NOTIFICATION_WIDTH              300.f
+#define NOTIFICATION_WIDTH              320.f
 #define NOTIFICATION_PADDING_X          13.f
 #define NOTIFICATION_PADDING_Y          13.f
 #define NOTIFICATION_TOTAL_TIME_MS      3000

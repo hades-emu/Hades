@@ -30,6 +30,7 @@ jobs:
             libudev-dev \
             libpipewire-0.3-dev \
             libarchive-dev \
+            libcurl4-openssl-dev \
             p7zip-full
 
       - name: Download Test Roms

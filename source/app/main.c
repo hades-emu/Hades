@@ -99,6 +99,10 @@ SDL_AppInit(
         hs_logln(HS_INFO, "Opengl version: %s%s%s.", g_light_magenta, (char*)glGetString(GL_VERSION), g_reset);
         hs_logln(HS_INFO, "Display Scale: %s%.2f%s", g_light_magenta, app->ui.window_display_scale, g_reset);
         hs_logln(HS_INFO, "Pixel Density: %s%.2f%s", g_light_magenta, app->ui.window_pixel_density, g_reset);
+
+        if (app->settings.general.startup.check_for_updates) {
+            app_update_check_start(app);
+        }
     }
 
     // Start the gba thread
@@ -154,6 +158,7 @@ SDL_AppIterate(
     elapsed_ms = ((float)(app->sdl.counters[1] - app->sdl.counters[0]) / (float)SDL_GetPerformanceFrequency()) * 1000.f;
 
     app_nfd_process_events(app);
+    app_update_process_result(app);
     app_emulator_process_all_notifs(app);
 
 #if WITH_DEBUGGER
@@ -294,6 +299,8 @@ SDL_AppQuit(
     if (app->threads.gba) {
         pthread_join(app->threads.gba, NULL);
     }
+
+    app_update_check_cleanup(app);
 
 #ifdef WITH_DEBUGGER
     debugger_reset_terminal();

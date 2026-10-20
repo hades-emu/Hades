@@ -135,6 +135,14 @@ app_win_settings_general(
         igTableNextColumn();
         igCheckbox("##StartLastPlayedGame", &app->settings.general.startup.start_last_played_game);
 
+        // Check for updates on startup
+        igTableNextRow(ImGuiTableRowFlags_None, 0.f);
+        igTableNextColumn();
+        igTextWrapped("Check for updates on startup");
+
+        igTableNextColumn();
+        igCheckbox("##CheckForUpdates", &app->settings.general.startup.check_for_updates);
+
 #ifdef WITH_DEBUGGER
         // Pause when the game resets
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
