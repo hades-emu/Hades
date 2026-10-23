@@ -7,6 +7,7 @@ from typing import List
 from pathlib import Path
 
 from rom import Rom
+from cheat import Cheat
 
 
 class TestResult(Enum):
@@ -16,10 +17,11 @@ class TestResult(Enum):
 
 
 class Test:
-    def __init__(self, name: str, rom: Rom, code: str, screenshots: List[str], skip_all: bool = False, skip: List[int] = []):
+    def __init__(self, name: str, rom: Rom, code: str, screenshots: List[str], cheats: List[Cheat] = [], skip_all: bool = False, skip: List[int] = []):
         self.name = name
 
         self.rom = rom
+        self.cheats = cheats
         self.code = textwrap.dedent(code)
         self.screenshots = screenshots
         self.skip_all = skip_all

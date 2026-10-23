@@ -2,6 +2,7 @@ from enum import Enum
 from typing import List
 
 from rom import Rom
+from cheat import Cheat, CheatKind
 from test import Test
 
 
@@ -23,6 +24,12 @@ class TestRoms(Enum):
     HADES_DMA_LATCH = Rom('hades-dma-latch', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/dma-latch.gba')
     HADES_BIOS_OPENBUS = Rom('hades-bios-openbus', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/bios-openbus.gba')
     HADES_TIMER_BASIC = Rom('hades-timer-basic', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/timer-basic.gba')
+    HADES_CHEAT_CODEBREAKER_BASIC = Rom('hades-cheat-codebreaker-basic', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/cheat-codebreaker-basic.gba')
+    HADES_CHEAT_CODEBREAKER_ADVANCE = Rom('hades-cheat-codebreaker-advance', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/cheat-codebreaker-advance.gba')
+    HADES_CHEAT_GAMESHARK_BASIC = Rom('hades-cheat-gameshark-basic', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/cheat-gameshark-basic.gba')
+    HADES_CHEAT_GAMESHARK_ADVANCE = Rom('hades-cheat-gameshark-advance', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/cheat-gameshark-advance.gba')
+    HADES_CHEAT_PARV3_BASIC = Rom('hades-cheat-parv3-basic', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/cheat-parv3-basic.gba')
+    HADES_CHEAT_PARV3_ADVANCE = Rom('hades-cheat-parv3-advance', 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/roms/cheat-parv3-advance.gba')
 
     NBA_DMA_START_DELAY = Rom('nba-dma-start-delay', 'https://codeberg.org/nba-emu/hw-test/raw/branch/master/dma/start-delay/start-delay.gba')
     NBA_DMA_LATCH = Rom('nba-dma-latch', 'https://codeberg.org/nba-emu/hw-test/raw/branch/master/dma/latch/latch.gba')
@@ -33,6 +40,15 @@ class TestRoms(Enum):
     AGS = Rom('ags', None)
 
     AGBEEG = Rom('agbeeg', 'https://github.com/zaydlang/AGBEEG-Aging-Cartridge/releases/download/v0.0.2/AGBEEG_AGING_CARTRIDGE.gba')
+
+
+class TestCheats(Enum):
+    HADES_CHEAT_CODEBREAKER_BASIC = Cheat('hades-cheat-codebreaker-basic', CheatKind.CODEBREAKER, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-codebreaker-basic.hex')
+    HADES_CHEAT_CODEBREAKER_ADVANCE = Cheat('hades-cheat-codebreaker-advance', CheatKind.CODEBREAKER, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-codebreaker-advance.hex')
+    HADES_CHEAT_GAMESHARK_BASIC = Cheat('hades-cheat-gameshark-basic', CheatKind.GAMESHARK, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-gameshark-basic.encrypted.hex')
+    HADES_CHEAT_GAMESHARK_ADVANCE = Cheat('hades-cheat-gameshark-advance', CheatKind.GAMESHARK, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-gameshark-advance.encrypted.hex')
+    HADES_CHEAT_PARV3_BASIC = Cheat('hades-cheat-parv3-basic', CheatKind.PARV3, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-parv3-basic.encrypted.hex')
+    HADES_CHEAT_PARV3_ADVANCE = Cheat('hades-cheat-parv3-advance', CheatKind.PARV3, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-parv3-advance.encrypted.hex')
 
 
 TESTS_SUITE: List[Test] = [
@@ -375,6 +391,78 @@ TESTS_SUITE: List[Test] = [
             screenshot ./.tests_screenshots/hades_timer_basic.png
         ''',
         screenshots=['hades_timer_basic.png'],
+    ),
+    Test(
+        name="Hades Tests - Codebreaker Basic",
+        rom=TestRoms.HADES_CHEAT_CODEBREAKER_BASIC.value,
+        cheats=[TestCheats.HADES_CHEAT_CODEBREAKER_BASIC.value],
+        code='''
+            frame 20
+            screenshot ./.tests_screenshots/hades_cheat_codebreaker_basic.png
+        ''',
+        screenshots=['hades_cheat_codebreaker_basic.png'],
+    ),
+    Test(
+        name="Hades Tests - Codebreaker Advance",
+        rom=TestRoms.HADES_CHEAT_CODEBREAKER_ADVANCE.value,
+        cheats=[TestCheats.HADES_CHEAT_CODEBREAKER_ADVANCE.value],
+        code='''
+            frame 20
+            key select true
+            frame 10
+            key select false
+            frame 10
+            screenshot ./.tests_screenshots/hades_cheat_codebreaker_advance.png
+        ''',
+        screenshots=['hades_cheat_codebreaker_advance.png'],
+    ),
+    Test(
+        name="Hades Tests - GameShark Basic",
+        rom=TestRoms.HADES_CHEAT_GAMESHARK_BASIC.value,
+        cheats=[TestCheats.HADES_CHEAT_GAMESHARK_BASIC.value],
+        code='''
+            frame 20
+            screenshot ./.tests_screenshots/hades_cheat_gameshark_basic.png
+        ''',
+        screenshots=['hades_cheat_gameshark_basic.png'],
+    ),
+    Test(
+        name="Hades Tests - GameShark Advance",
+        rom=TestRoms.HADES_CHEAT_GAMESHARK_ADVANCE.value,
+        cheats=[TestCheats.HADES_CHEAT_GAMESHARK_ADVANCE.value],
+        code='''
+            frame 20
+            key gs true
+            frame 10
+            key gs false
+            frame 10
+            screenshot ./.tests_screenshots/hades_cheat_gameshark_advance.png
+        ''',
+        screenshots=['hades_cheat_gameshark_advance.png'],
+    ),
+    Test(
+        name="Hades Tests - PARv3 Basic",
+        rom=TestRoms.HADES_CHEAT_PARV3_BASIC.value,
+        cheats=[TestCheats.HADES_CHEAT_PARV3_BASIC.value],
+        code='''
+            frame 20
+            screenshot ./.tests_screenshots/hades_cheat_parv3_basic.png
+        ''',
+        screenshots=['hades_cheat_parv3_basic.png'],
+    ),
+    Test(
+        name="Hades Tests - PARv3 Advance",
+        rom=TestRoms.HADES_CHEAT_PARV3_ADVANCE.value,
+        cheats=[TestCheats.HADES_CHEAT_PARV3_ADVANCE.value],
+        code='''
+            frame 20
+            key ar true
+            frame 10
+            key ar false
+            frame 10
+            screenshot ./.tests_screenshots/hades_cheat_parv3_advance.png
+        ''',
+        screenshots=['hades_cheat_parv3_advance.png'],
     ),
 
     # AGS

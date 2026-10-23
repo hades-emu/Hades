@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 from test import TestResult
+from cheat import write_cheats_file
 
 
 GREEN = '\033[32m'
@@ -82,7 +83,7 @@ def main():
                 try:
                     if test.rom.url is None:
                         print(f"Skipping test \"{test.name}\" because ROM \"{test.rom.filename}\" is missing from the ROM directory.")
-                        test.skip = True
+                        test.skip_all = True
                         continue
 
                     print(f"Downloading test rom \"{test.rom.filename}\".")
@@ -91,7 +92,27 @@ def main():
                     print(f"An error occurred while downloading {test.rom.filename}: {e}")
             else:
                 print(f"Skipping test \"{test.name}\" because ROM \"{test.rom.filename}\" is missing from the ROM directory. Try downloading it using the \"--download\" flag.")
-                test.skip = True
+                test.skip_all = True
+
+        for cheat in test.cheats:
+            if not cheat.path(rom_directory).exists():
+                if args.download:
+                    try:
+                        print(f"Downloading test cheat \"{cheat.filename}\".")
+                        cheat.download(rom_directory)
+                    except RuntimeError as e:
+                        print(f"An error occurred while downloading {cheat.filename}: {e}")
+                else:
+                    print(f"Skipping test \"{test.name}\" because cheat \"{cheat.filename}\" is missing from the ROM directory. Try downloading it using the \"--download\" flag.")
+                    test.skip_all = True
+
+        # Hades loads the cheats from a `.cheats.json` file next to the ROM.
+        if test.cheats and not test.skip_all:
+            try:
+                write_cheats_file(test.cheats, test.rom.path(rom_directory), rom_directory)
+            except OSError as e:
+                print(f"Skipping test \"{test.name}\" because its cheats file couldn't be created: {e}")
+                test.skip_all = True
 
     # Ensure Hades was built with its debugger
     try:
