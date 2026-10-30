@@ -64,6 +64,9 @@ cheat_dump(
             case CHEAT_INSN_IF_LT_UNSIGNED:  hs_dbgln(HS_CHEAT, "    - %2zu | If lower (U):    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
             case CHEAT_INSN_IF_LT_SIGNED:    hs_dbgln(HS_CHEAT, "    - %2zu | If lower (S):    | If [0x%08x] == 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
             case CHEAT_INSN_IF_AND:          hs_dbgln(HS_CHEAT, "    - %2zu | If And:          | If [0x%08x] & 0x%0*x then", i, insn->cond.addr, insn->cond.width * 2, insn->cond.value); break;
+            case CHEAT_INSN_IF_FALSE:        hs_dbgln(HS_CHEAT, "    - %2zu | If False:        | If False then", i); break;
+            case CHEAT_INSN_ELSE:            hs_dbgln(HS_CHEAT, "    - %2zu | Else:            | Else", i); break;
+            case CHEAT_INSN_ENDIF:           hs_dbgln(HS_CHEAT, "    - %2zu | Endif:           | Endif", i); break;
         }
     }
 
@@ -102,6 +105,38 @@ cheat_process_hooks_at_addr(
     }
 }
 
+static
+void
+cheat_resolve_condition(
+    struct cheat_bin const *bin,
+    struct cheat_insn const *insn,
+    size_t *insn_idx
+) {
+    switch (insn->cond.then) {
+        case CHEAT_INSN_THEN_SKIP_NEXT: {
+            *insn_idx += 1;
+            break;
+        }
+        case CHEAT_INSN_THEN_SKIP_N_INSNS: {
+            *insn_idx += insn->cond.skip_amount;
+            break;
+        }
+        case CHEAT_INSN_THEN_SKIP_UNTIL: {
+            while (*insn_idx < bin->insns.len) {
+                if (bin->insns.list[*insn_idx].kind == CHEAT_INSN_ELSE || bin->insns.list[*insn_idx].kind == CHEAT_INSN_ENDIF) {
+                    break;
+                }
+                *insn_idx += 1;
+            }
+            break;
+        }
+        case CHEAT_INSN_THEN_SKIP_ALL: {
+            *insn_idx = bin->insns.len;
+            break;
+        }
+    }
+}
+
 void
 cheat_hook_impl(
     struct gba *gba,
@@ -110,7 +145,7 @@ cheat_hook_impl(
     size_t insn_idx;
 
     for (insn_idx = 0; insn_idx < bin->insns.len; ++insn_idx) {
-        struct cheat_insn *insn;
+        struct cheat_insn const *insn;
 
         insn = &bin->insns.list[insn_idx];
 
@@ -209,7 +244,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    insn_idx += insn->cond.skip;
+                    cheat_resolve_condition(bin, insn, &insn_idx);
                 }
                 break;
             }
@@ -226,7 +261,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    insn_idx += insn->cond.skip;
+                    cheat_resolve_condition(bin, insn, &insn_idx);
                 }
                 break;
             }
@@ -243,7 +278,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    insn_idx += insn->cond.skip;
+                    cheat_resolve_condition(bin, insn, &insn_idx);
                 }
                 break;
             }
@@ -253,6 +288,8 @@ cheat_hook_impl(
 
                 addr = insn->cond.addr;
                 switch (insn->cond.width) {
+                    // XXX: mGBA and VBA-M disagree with GBATek/Gamehacking on what to do here.
+                    //   I followed GBATek, but a few tests against real hardware are needed to be sure what the expected behaviour is.
                     case 1: cond = (int8_t)mem_read8_raw(gba, addr) > (int8_t)insn->cond.value; break;
                     case 2: cond = (int16_t)mem_read16_raw(gba, addr) > (int16_t)insn->cond.value; break;
                     case 4: cond = (int32_t)mem_read32_raw(gba, addr) > (int32_t)insn->cond.value; break;
@@ -260,7 +297,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    insn_idx += insn->cond.skip;
+                    cheat_resolve_condition(bin, insn, &insn_idx);
                 }
                 break;
             }
@@ -277,7 +314,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    insn_idx += insn->cond.skip;
+                    cheat_resolve_condition(bin, insn, &insn_idx);
                 }
                 break;
             }
@@ -287,6 +324,8 @@ cheat_hook_impl(
 
                 addr = insn->cond.addr;
                 switch (insn->cond.width) {
+                    // XXX: mGBA and VBA-M disagree with GBATek/Gamehacking on what to do here.
+                    //   I followed GBATek, but a few tests against real hardware are needed to be sure what the expected behaviour is.
                     case 1: cond = (int8_t)mem_read8_raw(gba, addr) < (int8_t)insn->cond.value; break;
                     case 2: cond = (int16_t)mem_read16_raw(gba, addr) < (int16_t)insn->cond.value; break;
                     case 4: cond = (int32_t)mem_read32_raw(gba, addr) < (int32_t)insn->cond.value; break;
@@ -294,7 +333,7 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    insn_idx += insn->cond.skip;
+                    cheat_resolve_condition(bin, insn, &insn_idx);
                 }
                 break;
             }
@@ -311,8 +350,24 @@ cheat_hook_impl(
                 }
 
                 if (!cond) {
-                    insn_idx += insn->cond.skip;
+                    cheat_resolve_condition(bin, insn, &insn_idx);
                 }
+                break;
+            }
+            case CHEAT_INSN_IF_FALSE: {
+                cheat_resolve_condition(bin, insn, &insn_idx);
+                break;
+            }
+            case CHEAT_INSN_ELSE: {
+                while (insn_idx < bin->insns.len) {
+                    if (bin->insns.list[insn_idx].kind == CHEAT_INSN_ENDIF) {
+                        break;
+                    }
+                    insn_idx += 1;
+                }
+                break;
+            }
+            case CHEAT_INSN_ENDIF: {
                 break;
             }
         }

@@ -73,6 +73,9 @@ struct cheat_insn {
         CHEAT_INSN_IF_LT_UNSIGNED,
         CHEAT_INSN_IF_LT_SIGNED,
         CHEAT_INSN_IF_AND,
+        CHEAT_INSN_IF_FALSE,
+        CHEAT_INSN_ELSE,
+        CHEAT_INSN_ENDIF,
     } kind;
 
     union {
@@ -114,7 +117,14 @@ struct cheat_insn {
             uint32_t addr;
             uint32_t value;
             uint32_t width;
-            uint32_t skip;
+
+            enum {
+                CHEAT_INSN_THEN_SKIP_NEXT,          // Skip the next instruction
+                CHEAT_INSN_THEN_SKIP_N_INSNS,       // Skip the next n instructions
+                CHEAT_INSN_THEN_SKIP_UNTIL,         // Skip until an "else" or "endif" instruction
+                CHEAT_INSN_THEN_SKIP_ALL,           // Skip all remaining codes
+            } then;
+            uint32_t skip_amount;
         } cond;
 
         struct {

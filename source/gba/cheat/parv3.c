@@ -203,6 +203,8 @@ cheat_parv3_compile(
                     insn->kind = CHEAT_INSN_ASSIGN;
                     insn->assign.addr = IO_START | (op1 & 0xFFFFFF);
 
+                    // XXX: mGBA and VBA-M disagree with GBATek/Gamehacking on what to do here.
+                    //   I followed GBATek, but a few tests against real hardware are needed to be sure what the expected behaviour is.
                     switch (op1 >> 24) {
                         case 0xC6: {
                             insn->assign.width = 2;
@@ -217,9 +219,81 @@ cheat_parv3_compile(
                     }
                     break;
                 }
-                default: {
-                    compiler->error = hs_format("Unknown, invalid or unsupported instruction %08x %08x", op1, op2);
-                    return false;
+                default: { // Conditions
+                    struct cheat_insn *insn;
+                    uint32_t cond;
+                    uint32_t width;
+                    uint32_t action;
+
+                    if (bitfield_get(op1, 24)) { // Bit 24 is always zero
+                        compiler->error = hs_format("Unknown, invalid or unsupported instruction %08x %08x", op1, op2);
+                        return false;
+                    }
+
+                    width = bitfield_get_range(op1, 25, 27);
+                    cond = bitfield_get_range(op1, 27, 30);
+                    action = bitfield_get_range(op1, 30, 32);
+
+                    insn = cheat_create_insn(bin);
+                    insn->cond.addr = cheat_parv3_compute_addr(op1);
+                    insn->cond.value = op2;
+
+                    switch (cond) {
+                        case 0x1: insn->kind = CHEAT_INSN_IF_EQ; break;
+                        case 0x2: insn->kind = CHEAT_INSN_IF_NEQ; break;
+                        case 0x3: insn->kind = CHEAT_INSN_IF_LT_SIGNED; break;
+                        case 0x4: insn->kind = CHEAT_INSN_IF_GT_SIGNED; break;
+                        case 0x5: insn->kind = CHEAT_INSN_IF_LT_UNSIGNED; break;
+                        case 0x6: insn->kind = CHEAT_INSN_IF_GT_UNSIGNED; break;
+                        case 0x7: insn->kind = CHEAT_INSN_IF_AND; break;
+                        default: {
+                            compiler->error = hs_format("Unknown, invalid or unsupported instruction %08x %08x", op1, op2);
+                            return false;
+                        }
+                    }
+
+                    switch (width) {
+                        case 0x0: {
+                            insn->cond.width = 1;
+                            insn->cond.value &= 0xFF;
+                            break;
+                        }
+                        case 0x1: {
+                            insn->cond.width = 2;
+                            insn->cond.value &= 0xFFFF;
+                            break;
+                        }
+                        case 0x2: {
+                            insn->cond.width = 4;
+                            break;
+                        }
+                        case 0x3: {
+                            insn->kind = CHEAT_INSN_IF_FALSE;
+                            insn->cond.width = 0;
+                            break;
+                        }
+                        default: {
+                            compiler->error = hs_format("Unknown, invalid or unsupported instruction %08x %08x", op1, op2);
+                            return false;
+                        }
+                    }
+
+                    switch (action) {
+                        case 0x0: insn->cond.then = CHEAT_INSN_THEN_SKIP_NEXT; break;
+                        case 0x1: {
+                            insn->cond.then = CHEAT_INSN_THEN_SKIP_N_INSNS;
+                            insn->cond.skip_amount = 2;
+                            break;
+                        }
+                        case 0x2: insn->cond.then = CHEAT_INSN_THEN_SKIP_UNTIL; break;
+                        case 0x3: insn->cond.then = CHEAT_INSN_THEN_SKIP_ALL; break;
+                        default: {
+                            compiler->error = hs_format("Unknown, invalid or unsupported instruction %08x %08x", op1, op2);
+                            return false;
+                        }
+                    }
+
+                    break;
                 }
             };
         } else {
@@ -292,7 +366,21 @@ cheat_parv3_compile(
                     );
 
                     break;
-                };
+                }
+                case 0x40: {
+                    struct cheat_insn *insn;
+
+                    insn = cheat_create_insn(bin);
+                    insn->kind = CHEAT_INSN_ENDIF;
+                    break;
+                }
+                case 0x60: {
+                    struct cheat_insn *insn;
+
+                    insn = cheat_create_insn(bin);
+                    insn->kind = CHEAT_INSN_ELSE;
+                    break;
+                }
                 default: {
                     compiler->error = hs_format("Unknown, invalid or unsupported instruction %08x %08x", op1, op2);
                     return false;

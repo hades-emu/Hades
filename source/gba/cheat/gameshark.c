@@ -184,7 +184,7 @@ cheat_gameshark_compile(
                 insn->cond.addr = op1 & 0x0FFFFFFF;
                 insn->cond.value = op2 & 0xFFFF;
                 insn->cond.width = 2;
-                insn->cond.skip = 1;
+                insn->cond.then = CHEAT_INSN_THEN_SKIP_NEXT;
                 break;
             }
             case 0xE: {
@@ -195,7 +195,8 @@ cheat_gameshark_compile(
                 insn->cond.addr = op2 & 0x0FFFFFFF;
                 insn->cond.value = op1 & 0xFFFF;
                 insn->cond.width = 2;
-                insn->cond.skip = (op1 >> 16) & 0xFF;
+                insn->cond.then = CHEAT_INSN_THEN_SKIP_N_INSNS;
+                insn->cond.skip_amount = (op1 >> 16) & 0xFF;
                 break;
             }
             case 0xF: { // Hook routine
