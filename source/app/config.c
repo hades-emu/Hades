@@ -70,7 +70,7 @@ app_config_default_settings(
     settings->video.vsync = false;
     settings->video.texture_filter = TEXTURE_FILTER_NEAREST;
     settings->video.pixel_color_filter = PIXEL_COLOR_FILTER_COLOR_CORRECTION_GBA_NSO;
-    settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_LCD_GRID;
+    settings->video.pixel_scaling_filter = PIXEL_SCALING_FILTER_NONE;
     settings->audio.mute = false;
     settings->audio.level = 1.0f;
 }
@@ -104,7 +104,7 @@ app_config_default_bindings(
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_MUTE], SDL_GetKeyFromName("M"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_PAUSE], SDL_GetKeyFromName("P"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_STOP], SDL_GetKeyFromName("Q"), true, false, false);
-    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SHOW_FPS], SDL_GetKeyFromName("F"), true, false, false);
+    app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SHOW_FPS], SDL_GetKeyFromName("/"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_SETTINGS], SDL_GetKeyFromName("Escape"), false, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_CHEATS], SDL_GetKeyFromName("C"), true, false, false);
     app_bindings_keyboard_binding_build(&app->binds.keyboard[BIND_EMULATOR_CHEAT_BUTTON], SDL_GetKeyFromName("G"), true, false, false);
