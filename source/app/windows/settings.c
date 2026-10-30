@@ -9,6 +9,7 @@
 
 #include <SDL3/SDL_dialog.h>
 #include <cimgui.h>
+#include <float.h>
 #include <math.h>
 #include "hades.h"
 #include "app/app.h"
@@ -95,10 +96,6 @@ void
 app_win_settings_general(
     struct app *app
 ) {
-    ImGuiViewport *vp;
-
-    vp = igGetMainViewport();
-
     igTextWrapped("General Settings");
     igSpacing();
     igSeparator();
@@ -107,8 +104,8 @@ app_win_settings_general(
     igSeparatorText("General");
 
     if (igBeginTable("##GeneralSettingsGeneral", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##GeneralSettingsGeneralLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##GeneralSettingsGeneralValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##GeneralSettingsGeneralLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##GeneralSettingsGeneralValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Show FPS
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -124,8 +121,8 @@ app_win_settings_general(
     igSeparatorText("Start-Up");
 
     if (igBeginTable("##GeneralSettingsStartUp", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##GeneralSettingsStartUpLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##GeneralSettingsStartUpValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##GeneralSettingsStartUpLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##GeneralSettingsStartUpValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Start the last played game on startup, when no game is provided
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -159,8 +156,8 @@ app_win_settings_general(
     igSeparatorText("Window");
 
     if (igBeginTable("##VideoSettingsWindow", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##VideoSettingsWindowLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##VideoSettingsWindowValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##VideoSettingsWindowLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##VideoSettingsWindowValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Pause when the window loses focus
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -192,13 +189,13 @@ app_win_settings_general(
     igSeparatorText("Directories");
 
     if (igBeginTable("##GeneralSettingsDirectories", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##GeneralSettingsDirectoriesLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##GeneralSettingsDirectoriesValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##GeneralSettingsDirectoriesLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##GeneralSettingsDirectoriesValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Use a Dedicated Backup Directory
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
-        igTextWrapped("Use dedicated directory for save files");
+        igTextWrapped("Use custom dir. for save files");
 
         igTableNextColumn();
         igCheckbox("##UseDedicatedDirSaveFiles", &app->settings.general.directories.backup.use_dedicated_directory);
@@ -212,6 +209,7 @@ app_win_settings_general(
 
         igTableNextColumn();
         igBeginDisabled(true);
+        igSetNextItemWidth(-(50.f + igGetStyle()->ItemSpacing.x));
         igInputText("##SaveDirectory", app->settings.general.directories.backup.path, strlen(app->settings.general.directories.backup.path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
@@ -230,7 +228,7 @@ app_win_settings_general(
         // Use a Dedicated Quicksave Directory
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
-        igTextWrapped("Use dedicated directory for quicksaves");
+        igTextWrapped("Use custom dir. for quicksaves");
 
         igTableNextColumn();
         igCheckbox("##UseDedicatedDirQuickSavesFiles", &app->settings.general.directories.quicksave.use_dedicated_directory);
@@ -244,6 +242,7 @@ app_win_settings_general(
 
         igTableNextColumn();
         igBeginDisabled(true);
+        igSetNextItemWidth(-(50.f + igGetStyle()->ItemSpacing.x));
         igInputText("##QuickSaveDirectory", app->settings.general.directories.quicksave.path, strlen(app->settings.general.directories.quicksave.path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
@@ -262,7 +261,7 @@ app_win_settings_general(
         // Use the System Directory for Screenshots
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
         igTableNextColumn();
-        igTextWrapped("Use System Directory For Screenshots");
+        igTextWrapped("Use system dir. for screenshots");
 
         igTableNextColumn();
         igCheckbox("##UseSystemDirectoryForScreenshots", &app->settings.general.directories.screenshot.use_system_directory);
@@ -276,6 +275,7 @@ app_win_settings_general(
 
         igTableNextColumn();
         igBeginDisabled(true);
+        igSetNextItemWidth(-(50.f + igGetStyle()->ItemSpacing.x));
         igInputText("##ScreenshotDirectory", app->settings.general.directories.screenshot.path, strlen(app->settings.general.directories.screenshot.path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
@@ -300,10 +300,6 @@ void
 app_win_settings_emulation(
     struct app *app
 ) {
-    ImGuiViewport *vp;
-
-    vp = igGetMainViewport();
-
     igTextWrapped("Emulation Settings");
     igSpacing();
     igSeparator();
@@ -312,8 +308,8 @@ app_win_settings_emulation(
     igSeparatorText("BIOS");
 
     if (igBeginTable("##EmulationSettingsBIOS", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##EmulationSettingsBIOSLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##EmulationSettingsBIOSValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##EmulationSettingsBIOSLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##EmulationSettingsBIOSValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // BIOS Path
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -322,6 +318,7 @@ app_win_settings_emulation(
 
         igTableNextColumn();
         igBeginDisabled(true);
+        igSetNextItemWidth(-(50.f + igGetStyle()->ItemSpacing.x));
         igInputText("##BiosPath", app->settings.emulation.bios_path, strlen(app->settings.emulation.bios_path), ImGuiInputTextFlags_ReadOnly, NULL, NULL);
         igEndDisabled();
         igSameLine(0.0f, -1.0f);
@@ -368,8 +365,8 @@ app_win_settings_emulation(
             "##EmulationSettingsAltSpeedSlider",
         };
 
-        igTableSetupColumn("##EmulationSettingsSpeedLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##EmulationSettingsSpeedValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##EmulationSettingsSpeedLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##EmulationSettingsSpeedValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Speed & Alt speed
         for (i = 0; i < array_length(speeds); ++i) {
@@ -407,6 +404,7 @@ app_win_settings_emulation(
                 snprintf(label, sizeof(label), "%i%%%%", new_speed);
             }
 
+            igSetNextItemWidth(-FLT_MIN);
             if (igSliderInt(
                 labels_name[i],
                 &new_speed,
@@ -433,8 +431,8 @@ app_win_settings_emulation(
     igSeparatorText("Backup Storage");
 
     if (igBeginTable("##EmulationSettingsBackupStorage", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##EmulationSettingsBackupStorageLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##EmulationSettingsBackupStorageValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##EmulationSettingsBackupStorageLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##EmulationSettingsBackupStorageValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Backup Storage Auto-Detect
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -451,6 +449,7 @@ app_win_settings_emulation(
         igTextWrapped("Type");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         igCombo_Str_arr("##BackupStorageType", (int *)&app->settings.emulation.backup_storage.type, backup_storage_names, array_length(backup_storage_names), 0);
         igEndDisabled();
 
@@ -460,8 +459,8 @@ app_win_settings_emulation(
     igSeparatorText("GPIO Devices");
 
     if (igBeginTable("##EmulationSettingsGPIODevices", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##EmulationSettingsGPIODevicesLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##EmulationSettingsGPIODevicesValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##EmulationSettingsGPIODevicesLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##EmulationSettingsGPIODevicesValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // GPIO Device Auto-Detect
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -478,6 +477,7 @@ app_win_settings_emulation(
         igTextWrapped("Type");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         igCombo_Str_arr("##GPIODeviceType", (int *)&app->settings.emulation.gpio_device.type, gpio_device_names, array_length(gpio_device_names), 0);
         igEndDisabled();
 
@@ -487,8 +487,8 @@ app_win_settings_emulation(
     igSeparatorText("Misc");
 
     if (igBeginTable("##EmulationSettingsMisc", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##EmulationSettingsMiscLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##EmulationSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##EmulationSettingsMiscLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##EmulationSettingsMiscValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Emulate the Prefetch Buffer
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -504,6 +504,7 @@ app_win_settings_emulation(
         igTextWrapped("Idle Loop Elimination");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         igCombo_Str_arr("##IdleLoopElimination", (int *)&app->settings.emulation.idle_loop_mode, idle_loop_mode_names, array_length(idle_loop_mode_names), 0);
 
         // ROM Mirroring
@@ -512,6 +513,7 @@ app_win_settings_emulation(
         igTextWrapped("ROM Mirroring");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         igCombo_Str_arr("##ROMMirroringMode", (int *)&app->settings.emulation.rom_mirroring, rom_mirroring_mode_names, array_length(rom_mirroring_mode_names), 0);
 
         igEndTable();
@@ -524,10 +526,7 @@ app_win_settings_video(
     struct app *app
 ) {
     int32_t display_size;
-    ImGuiViewport *vp;
     uint32_t i;
-
-    vp = igGetMainViewport();
 
     igTextWrapped("Video Settings");
     igSpacing();
@@ -540,8 +539,8 @@ app_win_settings_video(
         char label[128];
         int32_t scale;
 
-        igTableSetupColumn("##VideoSettingsDisplayLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##VideoSettingsDisplayValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##VideoSettingsDisplayLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##VideoSettingsDisplayValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Menubar Mode
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -549,6 +548,7 @@ app_win_settings_video(
         igTextWrapped("Menubar Mode");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         if (igCombo_Str_arr("##MenubarMode", (int *)&app->settings.video.menubar_mode, menubar_mode_names, array_length(menubar_mode_names), 0)) {
             switch (app->settings.video.display_mode) {
                 case DISPLAY_MODE_WINDOW: {
@@ -571,6 +571,7 @@ app_win_settings_video(
         igTextWrapped("Display Mode");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         if (igCombo_Str_arr("##DisplayMode", (int *)&app->settings.video.display_mode, display_mode_names, DISPLAY_MODE_LEN, 0)) {
             app_sdl_video_update_display_mode(app);
         }
@@ -601,6 +602,7 @@ app_win_settings_video(
 
         igTableNextColumn();
         igBeginDisabled(app->settings.video.autodetect_scale);
+        igSetNextItemWidth(-FLT_MIN);
         if (igSliderInt(
             "##Scale",
             &scale,
@@ -640,6 +642,7 @@ app_win_settings_video(
             }
         }
 
+        igSetNextItemWidth(-FLT_MIN);
         if (igBeginCombo("##DisplaySize", display_size > 0 ? display_size_names[display_size - 1] : "<Other>", ImGuiComboFlags_None)) {
             for (i = 1; i < array_length(display_size_names) + 1; ++i) {
                 bool is_selected;
@@ -663,6 +666,7 @@ app_win_settings_video(
         igTextWrapped("Aspect Ratio");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         if (igCombo_Str_arr("##AspectRatio", (int *)&app->settings.video.aspect_ratio, aspect_ratio_names, ASPECT_RATIO_LEN, 0)) {
             app_win_game_refresh_game_area(app);
         }
@@ -683,8 +687,8 @@ app_win_settings_video(
     igSeparatorText("Frame Skip");
 
     if (igBeginTable("##VideoSettingsFrameSkip", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##VideoSettingsFrameSkipLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##VideoSettingsFrameSkipValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##VideoSettingsFrameSkipLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##VideoSettingsFrameSkipValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Enable Frame Skip
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -705,6 +709,7 @@ app_win_settings_video(
 
         igTableNextColumn();
 
+        igSetNextItemWidth(-FLT_MIN);
         if (igSliderInt(
             "##VideoSettingsFrameSkipSlider",
             (int *)&app->settings.video.frame_skip_counter,
@@ -724,8 +729,8 @@ app_win_settings_video(
     igSeparatorText("Filters");
 
     if (igBeginTable("##VideoSettingsFilters", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##VideoSettingsFiltersLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##VideoSettingsFiltersValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##VideoSettingsFiltersLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##VideoSettingsFiltersValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Texture Filter
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -733,6 +738,7 @@ app_win_settings_video(
         igTextWrapped("Texture Filter");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         if (igCombo_Str_arr("##TextureFilters", (int *)&app->settings.video.texture_filter, texture_filters_names, TEXTURE_FILTER_LEN, 0)) {
             app_sdl_video_rebuild_pipeline(app);
         }
@@ -743,6 +749,7 @@ app_win_settings_video(
         igTextWrapped("Color Filter");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         if (igCombo_Str_arr("##ColorFilter", (int *)&app->settings.video.pixel_color_filter, pixel_color_filters_names, PIXEL_COLOR_FILTER_LEN, 0)) {
             app_sdl_video_rebuild_pipeline(app);
         }
@@ -753,6 +760,7 @@ app_win_settings_video(
         igTextWrapped("Scaling Filter");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         if (igCombo_Str_arr("##ScalingFilter", (int *)&app->settings.video.pixel_scaling_filter, pixel_scaling_filters_names, PIXEL_SCALING_FILTER_LEN, 0)) {
             app_sdl_video_rebuild_pipeline(app);
         }
@@ -764,8 +772,8 @@ app_win_settings_video(
     igSeparatorText("Debug");
 
     if (igBeginTable("##VideoSettingsDebug", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##VideoSettingsDebugLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##VideoSettingsDebugValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##VideoSettingsDebugLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##VideoSettingsDebugValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Enable BG layer X
         for (i = 0; i < array_length(app->settings.video.enable_bg_layers); ++i) {
@@ -803,10 +811,8 @@ void
 app_win_settings_audio(
     struct app *app
 ) {
-    ImGuiViewport *vp;
     float level;
 
-    vp = igGetMainViewport();
     level = app->settings.audio.level * 100.f;
 
     igTextWrapped("Audio Settings");
@@ -817,8 +823,8 @@ app_win_settings_audio(
     igSeparatorText("Volume");
 
     if (igBeginTable("##AudioSettings", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##AudioSettingsLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##AudioSettingsValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##AudioSettingsLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##AudioSettingsValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         // Mute
         igTableNextRow(ImGuiTableRowFlags_None, 0.f);
@@ -835,6 +841,7 @@ app_win_settings_audio(
         igTextWrapped("Audio Level");
 
         igTableNextColumn();
+        igSetNextItemWidth(-FLT_MIN);
         if (igSliderFloat("##SoundLevel", &level, 0.0f, 100.0f, "%.0f%%", ImGuiSliderFlags_None)) {
             app->settings.audio.level = max(0.0f, min(level / 100.f, 1.f));
         }
@@ -847,8 +854,8 @@ app_win_settings_audio(
     igSeparatorText("Debug");
 
     if (igBeginTable("##AudioSettingsDebug", 2, ImGuiTableFlags_None, (ImVec2){ .x = 0.f, .y = 0.f }, 0.f)) {
-        igTableSetupColumn("##AudioSettingsDebugLabel", ImGuiTableColumnFlags_WidthFixed, vp->WorkSize.x / 5.f, 0);
-        igTableSetupColumn("##AudioSettingsDebugValue", ImGuiTableColumnFlags_WidthStretch, 0.f, 0);
+        igTableSetupColumn("##AudioSettingsDebugLabel", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
+        igTableSetupColumn("##AudioSettingsDebugValue", ImGuiTableColumnFlags_WidthStretch, 1.f, 0);
 
         uint32_t i;
 
