@@ -17,6 +17,7 @@
 #include "gba/gba.h"
 
 static GLuint build_shader_program(char const *name, char const *frag_path, char const *vertex_path);
+static void app_sdl_video_set_style_hue_to_lavender(void);
 
 void
 app_sdl_video_init(
@@ -116,6 +117,8 @@ app_sdl_video_init(
     ImGui_ImplSDL3_InitForOpenGL(app->sdl.window, app->gfx.gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    app_sdl_video_set_style_hue_to_lavender();
+
     // Copy the default style so we can easily rescale ImGui to something different
     memcpy(&app->ui.default_style, igGetStyle(), sizeof(*igGetStyle()));
 
@@ -186,6 +189,31 @@ app_sdl_video_init(
     // And finally we show the window
     SDL_ShowWindow(app->sdl.window);
     SDL_SyncWindow(app->sdl.window);
+}
+
+static
+void
+app_sdl_video_set_style_hue_to_lavender(
+    void
+) {
+    ImGuiStyle *style;
+    size_t i;
+
+    style = igGetStyle();
+
+    for (i = 0; i < ImGuiCol_COUNT; ++i) {
+        ImVec4 *col;
+        float h;
+        float s;
+        float v;
+
+        col = &style->Colors[i];
+        igColorConvertRGBtoHSV(col->x, col->y, col->z, &h, &s, &v);
+
+        // 0.785 is the hue for lavender
+        // We multiply the saturation by 0.7 to make it a bit lighter
+        igColorConvertHSVtoRGB(0.785f, s *  0.7f, v, &col->x, &col->y, &col->z);
+    }
 }
 
 void
