@@ -43,12 +43,12 @@ class TestRoms(Enum):
 
 
 class TestCheats(Enum):
-    HADES_CHEAT_CODEBREAKER_BASIC = Cheat('hades-cheat-codebreaker-basic', CheatKind.CODEBREAKER, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-codebreaker-basic.hex')
-    HADES_CHEAT_CODEBREAKER_ADVANCE = Cheat('hades-cheat-codebreaker-advance', CheatKind.CODEBREAKER, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-codebreaker-advance.hex')
-    HADES_CHEAT_GAMESHARK_BASIC = Cheat('hades-cheat-gameshark-basic', CheatKind.GAMESHARK, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-gameshark-basic.encrypted.hex')
-    HADES_CHEAT_GAMESHARK_ADVANCE = Cheat('hades-cheat-gameshark-advance', CheatKind.GAMESHARK, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-gameshark-advance.encrypted.hex')
-    HADES_CHEAT_PARV3_BASIC = Cheat('hades-cheat-parv3-basic', CheatKind.PARV3, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-parv3-basic.encrypted.hex')
-    HADES_CHEAT_PARV3_ADVANCE = Cheat('hades-cheat-parv3-advance', CheatKind.PARV3, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/source/cheat-parv3-advance.encrypted.hex')
+    HADES_CHEAT_CODEBREAKER_BASIC = Cheat('hades-cheat-codebreaker-basic', CheatKind.CODEBREAKER, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/cheat/cheat-codebreaker-basic.hex')
+    HADES_CHEAT_CODEBREAKER_ADVANCE = Cheat('hades-cheat-codebreaker-advance', CheatKind.CODEBREAKER, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/cheat/cheat-codebreaker-advance.hex')
+    HADES_CHEAT_GAMESHARK_BASIC = Cheat('hades-cheat-gameshark-basic', CheatKind.GAMESHARK, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/cheat/cheat-gameshark-basic.encrypted.hex')
+    HADES_CHEAT_GAMESHARK_ADVANCE = Cheat('hades-cheat-gameshark-advance', CheatKind.GAMESHARK, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/cheat/cheat-gameshark-advance.encrypted.hex')
+    HADES_CHEAT_PARV3_BASIC = Cheat('hades-cheat-parv3-basic', CheatKind.PARV3, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/cheat/cheat-parv3-basic.encrypted.hex')
+    HADES_CHEAT_PARV3_ADVANCE = Cheat('hades-cheat-parv3-advance', CheatKind.PARV3, 'https://raw.githubusercontent.com/Arignir/Hades-Tests/master/cheat/cheat-parv3-advance.encrypted.hex')
 
 
 TESTS_SUITE: List[Test] = [
