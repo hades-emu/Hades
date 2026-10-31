@@ -29,6 +29,7 @@ Currently, Hades features:
   - Game controller support
   - Keys and buttons remapping
   - Quick Saves (also known as Save State)
+  - Loading games from common archive formats (`.zip`, `.7z`, `.rar`, etc.)
   - Some GPIO devices, such as:
     - Real Time Clock (RTC)
     - Rumble
@@ -37,7 +38,10 @@ Currently, Hades features:
     - xBRZ scaling
     - LCD effects
     - Etc.
-  - Loading games from common archive formats (`.zip`, `.7z`, `.rar`, etc.)
+  - Cheat devices, such as:
+    - Action Replay
+    - GameShark
+    - Codebreaker
 
 It is the third 🥉 software emulator to pass the AGS Aging Cartridge used to test Game Boy Advance systems.
 
@@ -62,12 +66,6 @@ On the latest Ubuntu, you can install all those dependencies with:
 
 ```bash
 $ apt install meson ninja-build gcc libsdl3-dev libglew-dev libarchive-dev libcurl4-openssl-dev
-```
-
-On Fedora, you can install all those dependencies with:
-
-```bash
-$ dnf install meson ninja-build gcc SDL3-devel glew-devel libarchive-devel libcurl-devel
 ```
 
 Finally, to build Hades, run:
