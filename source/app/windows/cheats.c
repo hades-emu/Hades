@@ -312,10 +312,7 @@ app_win_cheats(
 
         if (igButton("Apply", (ImVec2){ 0.f, 0.f})) {
             app_cheats_save(app);
-
-            if (app->emulation.is_started) {
-                app_emulator_update_cheats(app);
-            }
+            app_emulator_update_cheats(app);
         }
 
         igSameLine(0.0f, -1.0f);
@@ -325,20 +322,21 @@ app_win_cheats(
 
         igSameLine(0.0f, -1.0f);
         if (igButton("Delete", (ImVec2){ 0.f, 0.f})) {
-            memmove(
-                &app->cheats.list[app->ui.cheats.selected],
-                &app->cheats.list[app->ui.cheats.selected + 1],
-                (app->cheats.len - app->ui.cheats.selected - 1) * sizeof(struct gba_cheat_raw)
-            );
+            if (app->ui.cheats.selected < app->cheats.len) {
+                cheat_delete_raw(&app->cheats.list[app->ui.cheats.selected]);
 
-            app->cheats.len -= 1;
-            app->cheats.list = realloc(app->cheats.list, app->cheats.len * sizeof(struct gba_cheat_raw));
-            hs_assert(app->cheats.list);
+                memmove(
+                    &app->cheats.list[app->ui.cheats.selected],
+                    &app->cheats.list[app->ui.cheats.selected + 1],
+                    (app->cheats.len - app->ui.cheats.selected - 1) * sizeof(struct gba_cheat_raw)
+                );
 
-            app_cheats_save(app);
+                app->cheats.len -= 1;
+                app->cheats.list = realloc(app->cheats.list, app->cheats.len * sizeof(struct gba_cheat_raw));
 
-            if (app->emulation.is_started) {
-                app_emulator_update_cheats(app);
+                if (app->cheats.len > 0) {
+                    hs_assert(app->cheats.list);
+                }
             }
         }
 

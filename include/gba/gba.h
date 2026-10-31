@@ -270,6 +270,7 @@ struct game_entry *db_autodetect_game_features(uint8_t const *rom, size_t rom_si
 struct idle_loop_entry const *db_lookup_idle_loop(uint8_t const game_code[4]);
 
 /* source/gba/cheat/cheat.c */
+void cheat_delete_raw(struct gba_cheat_raw *raw);
 bool cheat_parse_and_compile(struct cheat_bin *bin, struct gba_cheat_raw *raw);
 bool cheat_parse(struct gba_cheat_raw *raw);
 

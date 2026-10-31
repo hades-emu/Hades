@@ -241,6 +241,12 @@ app_emulator_unconfigure(
     }
 
     if (app->cheats.list) {
+        size_t i;
+
+        for (i = 0; i < app->cheats.len; ++i) {
+            cheat_delete_raw(&app->cheats.list[i]);
+        }
+
         free(app->cheats.list);
         app->cheats.list = NULL;
         app->cheats.len = 0;

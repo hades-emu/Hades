@@ -47,8 +47,16 @@ app_cheats_load(
     int voff;
     int vlen;
     int vtype;
+    size_t i;
+
+    // Delete the existing cheats for the current game
+
+    for (i = 0; i < app->cheats.len; ++i) {
+        cheat_delete_raw(&app->cheats.list[i]);
+    }
 
     free(app->cheats.list);
+    app->cheats.list = NULL;
     app->cheats.len = 0;
 
     path = app_path_cheats(app, rom_path);

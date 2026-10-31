@@ -27,6 +27,14 @@ cheat_delete(
 }
 
 void
+cheat_delete_raw(
+    struct gba_cheat_raw *raw
+) {
+    free(raw->compilation.error);
+    raw->compilation.error = NULL;
+}
+
+void
 cheat_dump(
     struct cheat_bin const *bin
 ) {
