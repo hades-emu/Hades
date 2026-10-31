@@ -625,7 +625,7 @@ app_emulator_configure_and_run_impl(
     }
 
     backup_path = app_path_backup(app, rom_path);
-    hs_logln(HS_INFO, "Using save file \"%s%s%s\".", g_light_green, backup_path, g_reset);
+    hs_logln(HS_INFO, "Using save file at \"%s%s%s\".", g_light_green, backup_path, g_reset);
 
     app_path_update_quicksave_paths(app, rom_path);
 
