@@ -773,6 +773,7 @@ void app_emulator_screenshot(struct app *app);
 void app_emulator_screenshot_path(struct app *app, char const *);
 void app_emulator_quicksave(struct app *app, size_t idx);
 void app_emulator_quickload(struct app *app, size_t idx);
+void app_emulator_update_cheats(struct app *app);
 
 #ifdef WITH_DEBUGGER
 

@@ -1203,6 +1203,30 @@ finally:
     }
 }
 
+/*
+** Update the cheats of the running game with the current list of cheats, and wait to make sure it was correctly compiled by the emulator.
+*/
+void
+app_emulator_update_cheats(
+    struct app *app
+) {
+    struct message_cheats event;
+
+    event.header.kind = MESSAGE_CHEATS;
+    event.header.size = sizeof(event);
+    event.list = app->cheats.list;
+    event.len = app->cheats.len;
+
+    // Process all notifications before sending the message to make sure the notification we will
+    // receive comes from the correct message.
+
+    app_emulator_process_all_notifs(app);
+    channel_lock(&app->emulation.gba->channels.messages);
+    channel_push(&app->emulation.gba->channels.messages, &event.header);
+    channel_release(&app->emulation.gba->channels.messages);
+    app_emulator_wait_for_notification(app, NOTIFICATION_CHEATS_UPDATED);
+}
+
 #ifdef WITH_DEBUGGER
 
 #include "app/dbg.h"

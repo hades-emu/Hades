@@ -78,7 +78,8 @@ gba_send_notification_raw(
         };
         case NOTIFICATION_QUICKSAVE:
         case NOTIFICATION_QUICKLOAD:
-        case NOTIFICATION_RUMBLE: {
+        case NOTIFICATION_RUMBLE:
+        case NOTIFICATION_CHEATS_UPDATED: {
             channel_lock(&gba->channels.notifications);
             channel_push(&gba->channels.notifications, notif_header);
             channel_release(&gba->channels.notifications);
@@ -113,6 +114,63 @@ gba_send_notification(
     gba_send_notification_raw(gba, &notif.header);
 }
 
+static
+void
+gba_delete_all_cheats(
+    struct gba *gba
+) {
+    struct cheats *cheats;
+    size_t i;
+
+    cheats = &gba->cheats;
+
+    for (i = 0; i < cheats->len; ++i) {
+        cheat_delete(&cheats->list[i]);
+    }
+
+    free(cheats->list);
+    cheats->list = NULL;
+    cheats->len = 0;
+
+    memset(cheats, 0, sizeof(*cheats));
+}
+
+static
+void
+gba_reload_cheats(
+    struct gba *gba,
+    struct gba_cheat_raw *list,
+    size_t len
+) {
+    struct cheats *cheats;
+    size_t i;
+
+    gba_delete_all_cheats(gba);
+
+    cheats = &gba->cheats;
+    cheats->list = calloc(len, sizeof(struct cheat_bin));
+    hs_assert(cheats->list);
+
+    for (i = 0; i < len; ++i) {
+        struct cheat_bin *bin;
+        struct gba_cheat_raw *raw;
+
+        bin = &cheats->list[cheats->len];
+        raw = &list[i];
+
+        if (raw->enabled) {
+            hs_dbgln(HS_CHEAT, "Loading cheat \"%s%s%s\":", g_light_magenta, raw->name, g_reset);
+            if (cheat_parse_and_compile(bin, raw)) {
+                cheat_dump(bin);
+                cheats->len += 1;
+            }
+            hs_dbgln(HS_CHEAT, "Done.");
+        } else {
+            hs_dbgln(HS_CHEAT, "Skipping cheat \"%s%s%s\" (disabled).", g_light_magenta, raw->name, g_reset);
+        }
+    }
+}
+
 static void
 gba_state_stop(
     struct gba *gba
@@ -129,17 +187,7 @@ gba_state_stop(
     free(gba->memory.patched_rom);
     gba->memory.patched_rom = NULL;
 
-    {
-        size_t i;
-
-        for (i = 0; i < gba->cheats.len; ++i) {
-            cheat_delete(&gba->cheats.list[i]);
-        }
-
-        free(gba->cheats.list);
-        gba->cheats.list = NULL;
-        gba->cheats.len = 0;
-    }
+    gba_delete_all_cheats(gba);
 
     gba->state = GBA_STATE_STOP;
     gba_send_notification(gba, NOTIFICATION_STOP);
@@ -427,37 +475,8 @@ gba_state_reset(
     }
 
     // Cheats
-    {
-        struct cheats *cheats;
-        size_t i;
-
-        cheats = &gba->cheats;
-
-        memset(cheats, 0, sizeof(*cheats));
-
-        cheats->list = calloc(config->cheats.len, sizeof(struct cheat_bin));
-        hs_assert(cheats->list);
-
-        for (i = 0; i < config->cheats.len; ++i) {
-            struct cheat_bin *bin;
-            struct gba_cheat_raw *raw;
-
-            bin = &cheats->list[cheats->len];
-            raw = &config->cheats.list[i];
-
-            if (raw->enabled) {
-                hs_dbgln(HS_CHEAT, "Loading cheat \"%s%s%s\":", g_light_magenta, raw->name, g_reset);
-                if (cheat_parse_and_compile(bin, raw)) {
-                    cheat_dump(bin);
-                    cheats->len += 1;
-                }
-                hs_dbgln(HS_CHEAT, "Done.");
-            } else {
-                hs_dbgln(HS_CHEAT, "Skipping cheat \"%s%s%s\" (disabled).", g_light_magenta, raw->name, g_reset);
-            }
-        }
-    }
-
+    gba_delete_all_cheats(gba);
+    gba_reload_cheats(gba, config->cheats.list, config->cheats.len);
     mem_refresh_rom_patches(gba);
 
     gba_send_notification(gba, NOTIFICATION_RESET);
@@ -563,6 +582,18 @@ gba_process_message(
             gba_send_notification(gba, NOTIFICATION_QUICKLOAD);
             break;
         };
+        case MESSAGE_CHEATS: {
+            struct message_cheats const *msg_cheats;
+
+            msg_cheats = (struct message_cheats const *)message;
+
+            gba_reload_cheats(gba, msg_cheats->list, msg_cheats->len);
+            mem_refresh_rom_patches(gba);
+
+            gba_send_notification(gba, NOTIFICATION_CHEATS_UPDATED);
+
+            break;
+        }
 #ifdef WITH_DEBUGGER
         case MESSAGE_FRAME: {
             struct message_frame const *msg_frame;

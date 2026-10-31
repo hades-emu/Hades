@@ -26,6 +26,7 @@ enum message_kind {
     MESSAGE_QUICKSAVE,
     MESSAGE_QUICKLOAD,
     MESSAGE_SETTINGS,
+    MESSAGE_CHEATS,
 
 #ifdef WITH_DEBUGGER
     MESSAGE_FRAME,
@@ -70,6 +71,13 @@ struct message_quickload {
     struct event_header header;
     uint8_t *data;
     size_t size;
+};
+
+struct message_cheats {
+    struct event_header header;
+
+    struct gba_cheat_raw *list;
+    size_t len;
 };
 
 #ifdef WITH_DEBUGGER
@@ -127,6 +135,7 @@ enum notification_kind {
     NOTIFICATION_QUICKSAVE,
     NOTIFICATION_QUICKLOAD,
     NOTIFICATION_RUMBLE,
+    NOTIFICATION_CHEATS_UPDATED,
 
     // Only sent to the debuger
 #ifdef WITH_DEBUGGER
