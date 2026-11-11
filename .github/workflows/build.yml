@@ -157,7 +157,8 @@ jobs:
           echo "Installing dependencies"
           brew install meson ninja create-dmg libarchive
 
-          # Install glew 2.2.0 because the latest version doesn't ship with a static library anymore
+          # Install glew 2.2.0 because the latest version doesn't ship with a static library anymore.
+          brew tap --force homebrew/core
           brew tap-new hades/dependencies
           brew extract --version=2.2.0 glew hades/dependencies
 
