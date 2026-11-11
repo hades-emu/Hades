@@ -262,7 +262,7 @@ SDL_AppIterate(
         app->ui.power_save_fcounter -= !!(app->ui.power_save_fcounter);
 
         if (app->ui.power_save_fcounter <= 0) {
-            SDL_Delay(1000.f / 15.0f); // ~15 fps on power save mode
+            SDL_WaitEventTimeout(NULL, 1000 / 15); // ~15 fps on power save mode
         }
     } else {
         app->ui.power_save_fcounter = POWER_SAVE_FRAME_DELAY;
