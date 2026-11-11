@@ -606,6 +606,8 @@ app_emulator_configure_and_run_impl(
     char *backup_path;
     bool is_archive;
     uint8_t *code;
+    uint8_t revision;
+    char revision_str[16];
 
     app_emulator_stop(app);
 
@@ -645,14 +647,23 @@ app_emulator_configure_and_run_impl(
     }
 
     code = app->emulation.launch_config->rom.data + 0xAC;
+    revision = app->emulation.launch_config->rom.data[0xBC];
     app->emulation.game_entry = db_lookup_game(code);
+
+    // Most games are never revised, so only mention the revision when there is one.
+    if (revision) {
+        snprintf(revision_str, sizeof(revision_str), " (Rev %u)", revision);
+    } else {
+        revision_str[0] = '\0';
+    }
 
     if (app->emulation.game_entry) {
         hs_logln(
             HS_INFO,
-            "Game code %s%.4s%s identified as %s%s%s.",
+            "Game code %s%.4s%s%s identified as %s%s%s.",
             g_light_magenta,
             code,
+            revision_str,
             g_reset,
             g_light_magenta,
             app->emulation.game_entry->title,
@@ -671,7 +682,7 @@ app_emulator_configure_and_run_impl(
     if (app->settings.emulation.idle_loop_mode == IDLE_LOOP_MODE_REMOVE_KNOWN) {
         struct idle_loop_entry const *entry;
 
-        entry = db_lookup_idle_loop(code);
+        entry = db_lookup_idle_loop(code, revision);
         if (entry) {
             app->emulation.launch_config->idle_loop.enabled = true;
             app->emulation.launch_config->idle_loop.addr = entry->addr;

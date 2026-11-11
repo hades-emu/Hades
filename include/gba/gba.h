@@ -150,6 +150,7 @@ struct idle_loop_entry {
     char const *code;
     uint32_t addr;
     bool thumb;
+    uint8_t revision;
 };
 
 /*
@@ -278,7 +279,7 @@ void gba_delete_notification(struct notification const *notif);
 /* source/gba/db.c */
 struct game_entry *db_lookup_game(uint8_t const game_code[3]);
 struct game_entry *db_autodetect_game_features(uint8_t const *rom, size_t rom_size);
-struct idle_loop_entry const *db_lookup_idle_loop(uint8_t const game_code[4]);
+struct idle_loop_entry const *db_lookup_idle_loop(uint8_t const game_code[4], uint8_t revision);
 
 /* source/gba/cheat/cheat.c */
 void cheat_delete_raw(struct gba_cheat_raw *raw);

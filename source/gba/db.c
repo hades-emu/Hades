@@ -1735,27 +1735,42 @@ static struct game_entry game_database[] = {
 };
 
 static struct idle_loop_entry const idle_loop_database[] = {
+    // Advance Wars 1
+    (struct idle_loop_entry){ .code = "AWRE", .addr = 0x080387DE, .thumb = true },
+    (struct idle_loop_entry){ .code = "AWRP", .addr = 0x08038C6E, .thumb = true },
+
     // Advance Wars 2 - Black Hole Rising
     (struct idle_loop_entry){ .code = "AW2P", .addr = 0x08037192, .thumb = true },
     (struct idle_loop_entry){ .code = "AW2E", .addr = 0x08036DFE, .thumb = true },
 
+    // Final Fantasy Tactics Advance
+    (struct idle_loop_entry){ .code = "AFXE", .addr = 0x08000418, .thumb = true },
+
+    // Golden Sun - The Lost Age
+    (struct idle_loop_entry){ .code = "AGFE", .addr = 0x0801353A, .thumb = true },
+
+    // Kirby - Nightmare in Dream Land
+    (struct idle_loop_entry){ .code = "A7KE", .addr = 0x08000FAA, .thumb = true },
+
     // Pokemon - Fire Red Version
-    (struct idle_loop_entry){ .code = "BPRJ", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPRE", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPRP", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPRF", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPRD", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPRI", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPRS", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRJ", .addr = 0x080008AA, .thumb = true, .revision = 0 },
+    (struct idle_loop_entry){ .code = "BPRJ", .addr = 0x080008A6, .thumb = true, .revision = 1 },
+    (struct idle_loop_entry){ .code = "BPRE", .addr = 0x080008AA, .thumb = true, .revision = 0 },
+    (struct idle_loop_entry){ .code = "BPRE", .addr = 0x080008BE, .thumb = true, .revision = 1 },
+    (struct idle_loop_entry){ .code = "BPRF", .addr = 0x080008A6, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRD", .addr = 0x080008BA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRI", .addr = 0x080008BA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPRS", .addr = 0x080008A6, .thumb = true },
 
     // Pokemon - Leaf Green Version
-    (struct idle_loop_entry){ .code = "BPGJ", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPGE", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPGP", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPGF", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPGD", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPGI", .addr = 0x080008AA, .thumb = true },
-    (struct idle_loop_entry){ .code = "BPGS", .addr = 0x080008AA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGJ", .addr = 0x080008AA, .thumb = true, .revision = 0 },
+    (struct idle_loop_entry){ .code = "BPGJ", .addr = 0x080008A6, .thumb = true, .revision = 1 },
+    (struct idle_loop_entry){ .code = "BPGE", .addr = 0x080008AA, .thumb = true, .revision = 0 },
+    (struct idle_loop_entry){ .code = "BPGE", .addr = 0x080008BE, .thumb = true, .revision = 1 },
+    (struct idle_loop_entry){ .code = "BPGF", .addr = 0x080008A6, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGD", .addr = 0x080008BA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGI", .addr = 0x080008BA, .thumb = true },
+    (struct idle_loop_entry){ .code = "BPGS", .addr = 0x080008A6, .thumb = true },
 
     // Pokemon - Emerald Version
     (struct idle_loop_entry){ .code = "BPEJ", .addr = 0x080008C6, .thumb = true },
@@ -1787,13 +1802,20 @@ db_lookup_game(
 
 struct idle_loop_entry const *
 db_lookup_idle_loop(
-    uint8_t const game_code[4]
+    uint8_t const game_code[4],
+    uint8_t revision
 ) {
     size_t i;
 
     for (i = 0; i < array_length(idle_loop_database); ++i) {
-        if (!strncmp((char const *)game_code, idle_loop_database[i].code, 4) && idle_loop_database[i].addr) {
-            return &idle_loop_database[i];
+        struct idle_loop_entry const *entry;
+
+        entry = &idle_loop_database[i];
+        if (!strncmp((char const *)game_code, entry->code, 4)
+            && entry->revision == revision
+            && entry->addr
+        ) {
+            return entry;
         }
     }
 
