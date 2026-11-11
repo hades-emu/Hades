@@ -124,14 +124,6 @@ struct core {
     bool reenter_dma_transfer_loop;
 
     bool irq_line;                          // Set when there's an IRQ available
-
-    // Hard-coded, per-game idle loop elimination. See `core_idle_loop_eval()`.
-    struct {
-        bool enabled;
-        bool thumb;
-        bool first_visit;
-        uint32_t addr;
-    } idle_loop;
 };
 
 /*

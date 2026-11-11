@@ -440,6 +440,14 @@ gba_state_reset(
         gba->shared_data.backup_storage.dirty = false;
     }
 
+    // Idle loop elimination
+    {
+        gba->idle_loop.enabled = config->idle_loop.enabled;
+        gba->idle_loop.addr = config->idle_loop.addr;
+        gba->idle_loop.thumb = config->idle_loop.thumb;
+        gba->idle_loop.first_visit = true;
+    }
+
     // Core
     {
         struct core *core;
@@ -454,11 +462,6 @@ gba_state_reset(
         core->prefetch[0] = 0xF0000000;
         core->prefetch[1] = 0xF0000000;
         core->prefetch_access_type = NON_SEQUENTIAL;
-
-        core->idle_loop.enabled = config->idle_loop.enabled;
-        core->idle_loop.addr = config->idle_loop.addr;
-        core->idle_loop.thumb = config->idle_loop.thumb;
-        core->idle_loop.first_visit = true;
 
         if (config->skip_bios) {
             core->r13_irq = 0x03007FA0;

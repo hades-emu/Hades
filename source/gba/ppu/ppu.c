@@ -360,7 +360,7 @@ ppu_hdraw(
         }
 
         // Reset idle loop elimination
-        gba->core.idle_loop.first_visit = true;
+        gba->idle_loop.first_visit = true;
     } else if (io->vcount.raw == GBA_SCREEN_HEIGHT) {
         // Now that the frame is finished, we can copy the current framebuffer to
         // the one the frontend uses.

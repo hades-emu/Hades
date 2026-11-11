@@ -580,7 +580,7 @@ core_compute_shift(
 ** Idle loop elimination.
 **
 ** This function is called before executing the instruction identified as a main component of the game's idle loop.
-** This instruction is identified by the game's idle loop database and is stored in `gba->core.idle_loop.addr`.
+** This instruction is identified by the game's idle loop database and is stored in `gba->idle_loop.addr`.
 **
 ** This instruction is trapped (using software breakpoints) and we eventually end up here.
 **
@@ -597,15 +597,17 @@ core_idle_loop_eval(
     uint32_t addr
 ) {
     struct core *core;
+    struct idle_loop *idle_loop;
 
     core = &gba->core;
+    idle_loop = &gba->idle_loop;
 
-    if (!core->idle_loop.enabled || addr != core->idle_loop.addr) {
+    if (!idle_loop->enabled || addr != idle_loop->addr) {
         return false;
     }
 
-    if (core->idle_loop.first_visit) {
-        core->idle_loop.first_visit = false;
+    if (idle_loop->first_visit) {
+        idle_loop->first_visit = false;
         return false;
     }
 
@@ -621,7 +623,7 @@ core_idle_loop_eval(
         }
     }
 
-    core->idle_loop.first_visit = true;
+    idle_loop->first_visit = true;
     core_interrupt(gba, VEC_IRQ, MODE_IRQ, true);
     return true;
 }

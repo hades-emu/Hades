@@ -62,16 +62,25 @@ quicksave_read(
 */
 void
 quicksave(
-    struct gba const *gba,
+    struct gba *gba,
     uint8_t **data,
     size_t *size
 ) {
     struct quicksave_buffer buffer;
+    uint8_t *patched_rom;
+    uint8_t *active_rom;
     size_t i;
 
     buffer.data = NULL;
     buffer.size = 0;
     buffer.index = 0;
+
+    // Store the memory as if no ROM patch was applied, since `patched_rom` is a heap pointer.
+    // Patches are re-applied after a quickload.
+    patched_rom = gba->memory.patched_rom;
+    active_rom = gba->memory.active_rom;
+    gba->memory.patched_rom = NULL;
+    gba->memory.active_rom = NULL;
 
     quicksave_write(&buffer, (uint8_t *)&gba->core, sizeof(gba->core));
     quicksave_write(&buffer, (uint8_t *)&gba->memory, sizeof(gba->memory));
@@ -97,7 +106,10 @@ quicksave(
     }
 
     *data = buffer.data;
-    *size = buffer.size;
+    *size = buffer.index;
+
+    gba->memory.patched_rom = patched_rom;
+    gba->memory.active_rom = active_rom;
 }
 
 /*
@@ -110,11 +122,17 @@ quickload(
     size_t size
 ) {
     struct quicksave_buffer buffer;
+    bool ret;
     size_t i;
 
     buffer.data = data;
     buffer.size = size;
     buffer.index = 0;
+
+    // The ROM patches are re-applied once the save state is loaded.
+    free(gba->memory.patched_rom);
+    gba->memory.patched_rom = NULL;
+    gba->memory.active_rom = gba->memory.unpatched_rom;
 
     free(gba->scheduler.events);
     gba->scheduler.events = NULL;
@@ -136,7 +154,8 @@ quickload(
         || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.next_event, sizeof(uint64_t))
         || quicksave_read(&buffer, (uint8_t *)&gba->scheduler.events_size, sizeof(size_t))
     ) {
-        return true;
+        ret = true;
+        goto end;
     }
 
     gba->scheduler.events = calloc(gba->scheduler.events_size, sizeof(struct scheduler_event));
@@ -155,11 +174,21 @@ quickload(
             || quicksave_read(&buffer, (uint8_t *)&event->period, sizeof(uint64_t))
             || quicksave_read(&buffer, (uint8_t *)&event->args, sizeof(struct event_args))
         ) {
-            return true;
+            ret = true;
+            goto end;
         }
     }
 
     sched_minheap_rebuild(gba);
 
-    return false;
+    ret = false;
+
+end:
+    gba->idle_loop.first_visit = true;
+
+    gba->memory.patched_rom = NULL;
+    gba->memory.active_rom = gba->memory.unpatched_rom;
+    mem_refresh_rom_patches(gba);
+
+    return ret;
 }

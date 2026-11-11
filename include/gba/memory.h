@@ -329,7 +329,7 @@ void mem_backup_storage_write8(struct gba *gba, uint32_t addr, uint8_t value);
 void mem_backup_storage_write_to_disk(struct gba *gba);
 
 /* gba/quicksave.c */
-void quicksave(struct gba const *gba, uint8_t **data, size_t *size);
+void quicksave(struct gba *gba, uint8_t **data, size_t *size);
 bool quickload(struct gba *gba, uint8_t *data, size_t size);
 
 /*

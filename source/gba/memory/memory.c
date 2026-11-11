@@ -642,7 +642,7 @@ mem_refresh_rom_patches(
         mem_install_dbg_software_breakpoint(gba, swbp->ptr, swbp->thumb);
     }
 
-    if (gba->core.idle_loop.enabled) {
-        mem_install_dbg_software_breakpoint(gba, gba->core.idle_loop.addr, gba->core.idle_loop.thumb);
+    if (gba->idle_loop.enabled) {
+        mem_install_dbg_software_breakpoint(gba, gba->idle_loop.addr, gba->idle_loop.thumb);
     }
 }

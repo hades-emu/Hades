@@ -152,6 +152,16 @@ struct idle_loop_entry {
     bool thumb;
 };
 
+/*
+** The state of the idle loop elimination for the current game.
+*/
+struct idle_loop {
+    bool enabled;
+    bool thumb;
+    bool first_visit;
+    uint32_t addr;
+};
+
 struct gba {
     bool exit;
 
@@ -180,6 +190,7 @@ struct gba {
     struct gpio gpio;
     struct debugger debugger;
     struct cheats cheats;
+    struct idle_loop idle_loop;
 };
 
 /*
