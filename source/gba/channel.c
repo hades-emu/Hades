@@ -10,7 +10,6 @@
 #include <string.h>
 #include "hades.h"
 #include "gba/channel.h"
-#include "gba/event.h"
 
 /*
 ** Initialize the channel.

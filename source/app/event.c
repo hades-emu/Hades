@@ -10,9 +10,7 @@
 #include <SDL3/SDL.h>
 #include <cimgui.h>
 #include <cimgui_impl.h>
-#include <math.h>
 
-#include "hades.h"
 #include "app/app.h"
 
 /*

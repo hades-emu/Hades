@@ -8,7 +8,7 @@
 \******************************************************************************/
 
 #include <stdio.h>
-#include "hades.h"
+#include <stdlib.h>
 #include "app/lang.h"
 
 int operator_binary_prio[] = {

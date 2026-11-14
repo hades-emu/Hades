@@ -21,8 +21,6 @@ bool g_verbose[HS_END] = {
     [HS_ERROR] = true,
 
     [HS_DEBUG] = true,
-
-    [HS_CHEAT] = true, // TODO FIXME: Enabled during the development of the new cheat code feature.
 };
 
 char const * const module_names[] = {

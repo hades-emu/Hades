@@ -13,7 +13,6 @@
 #include <cimgui.h>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include "hades.h"
 #include "app/app.h"
 #include "compat.h"

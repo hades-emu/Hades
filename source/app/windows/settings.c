@@ -10,7 +10,6 @@
 #include <SDL3/SDL_dialog.h>
 #include <cimgui.h>
 #include <float.h>
-#include <math.h>
 #include "hades.h"
 #include "app/app.h"
 

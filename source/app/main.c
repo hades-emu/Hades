@@ -10,12 +10,11 @@
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
 #include <stdlib.h>
-#include <signal.h>
 #include "app/app.h"
-#include "compat.h"
 
 #ifdef WITH_DEBUGGER
-# include "app/dbg.h"
+#include <signal.h>
+#include "app/dbg.h"
 
 static atomic_bool g_force_interrupt = false;
 

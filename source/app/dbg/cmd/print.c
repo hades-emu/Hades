@@ -9,7 +9,6 @@
 
 #include <string.h>
 #include <ctype.h>
-#include "hades.h"
 #include "app/app.h"
 #include "app/dbg.h"
 

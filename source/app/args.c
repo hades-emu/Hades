@@ -9,7 +9,6 @@
 
 #include <getopt.h>
 #include <stdio.h>
-#include "hades.h"
 #include "app/app.h"
 #include "compat.h"
 
