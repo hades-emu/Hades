@@ -9,9 +9,9 @@ script:
 AppDir:
   path: AppDir
   app_info:
-    id: hades
+    id: org.hades_emu.Hades
     name: Hades
-    icon: hades
+    icon: org.hades_emu.Hades
     version: 1.2.0-dev
     exec: usr/bin/hades
     exec_args: $@

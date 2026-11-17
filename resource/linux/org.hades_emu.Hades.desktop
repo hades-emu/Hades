@@ -5,6 +5,6 @@ Name=Hades
 Comment=A Nintendo Game Boy Advance Emulator
 TryExec=hades
 Exec=hades %f
-Icon=hades
+Icon=org.hades_emu.Hades
 Categories=Game;Emulator;
 Terminal=false

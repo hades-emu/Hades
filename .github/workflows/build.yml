@@ -193,7 +193,7 @@ jobs:
 
           # Build the SDL3
           cd sdl
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON -DSDL_SHARED=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
           cmake --build build --config Release -j
           sudo cmake --install build
 
@@ -343,7 +343,7 @@ jobs:
 
           # Build the SDL3
           cd sdl
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON -DSDL_SHARED=OFF
           cmake --build build --config Release -j
           sudo cmake --install build --prefix /usr/local
 
@@ -355,6 +355,9 @@ jobs:
 
           # Build & Install the project
           DESTDIR=$(pwd)/AppDir ninja -C build install
+
+          # Ensure the binary doesn't carry any library search path from the build machine
+          readelf -d AppDir/usr/bin/hades | grep -E 'R(UN)?PATH' && false
 
           echo "Content of the package:"
           echo "---- START ----"
@@ -424,7 +427,7 @@ jobs:
 
           # Build the SDL3
           cd sdl
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSDL_STATIC=ON -DSDL_SHARED=OFF
           cmake --build build --config Release -j
           sudo cmake --install build --prefix /usr/local
 
@@ -436,28 +439,51 @@ jobs:
           echo "HADES_DEB_VERSION=$(echo "${HADES_VERSION}" | tr '-' '~')" >> "$GITHUB_ENV"
           DESTDIR=$(pwd)/pkg-root ninja -C build install
 
+          # Ensure the binary doesn't carry any library search path from the build machine
+          readelf -d pkg-root/usr/bin/hades | grep -E 'R(UN)?PATH' && false
+
           echo "Content of the package:"
           echo "---- START ----"
           find "$(pwd)/pkg-root" | sed -e "s/[^─][^\/]*\//   │/g" -e "s/│\([^ ]\)/├── \1/"
           echo "----  END  ----"
 
       - name: Package Hades
-        uses: jiro4989/build-deb-action@v4
-        with:
-          package: hades
-          package_root: pkg-root
-          maintainer: The Hades Authors
-          version: ${{ env.HADES_DEB_VERSION }}
-          arch: 'amd64'
-          depends: 'libarchive13, libglew2.2, libdecor-0-0, libcurl4'
-          desc: 'A Nintendo Game Boy Advance Emulator.'
+        run: |
+          mkdir -p pkg-meta/debian
+
+          pushd pkg-meta
+          printf 'Source: hades\n\nPackage: hades\nArchitecture: amd64\n' > debian/control
+          DEPENDS=$(dpkg-shlibdeps -O ../pkg-root/usr/bin/hades | sed 's/^shlibs:Depends=//')
+          popd
+
+          RECOMMENDS="libdecor-0-0, libdecor-0-plugin-1-gtk, libdecor-0-plugin-1"
+
+          mkdir -p pkg-root/DEBIAN
+          cat > pkg-root/DEBIAN/control << EOF
+          Package: hades
+          Version: ${HADES_DEB_VERSION}
+          Architecture: amd64
+          Maintainer: The Hades Authors
+          Installed-Size: $(du -sk --exclude=DEBIAN pkg-root | cut -f1)
+          Depends: ${DEPENDS}
+          Recommends: ${RECOMMENDS}
+          Section: otherosfs
+          Priority: optional
+          Homepage: https://hades-emu.org
+          Description: Nintendo Game Boy Advance emulator
+          EOF
+
+          echo "Control file:"
+          cat pkg-root/DEBIAN/control
+
+          dpkg-deb --root-owner-group --build pkg-root "hades-${HADES_VERSION}-ubuntu-${{ matrix.version }}-x64.deb"
       - name: Test Hades
         run: |
-          sudo chown --reference=. *.deb
-          mv -v *.deb "hades-${HADES_VERSION}-ubuntu-${{ matrix.version }}-x64.deb"
-
           sudo apt install -y "./hades-${HADES_VERSION}-ubuntu-${{ matrix.version }}-x64.deb"
           /usr/bin/hades --help
+
+          echo "Installed libdecor plugins:"
+          dpkg -l 'libdecor-0-plugin*' | grep '^ii'
       - name: Collect Artifacts
         uses: actions/upload-artifact@v7
         with:
