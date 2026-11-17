@@ -149,8 +149,8 @@ elif host_machine.system() == 'linux'  # Linux
         )
     endif
 
-    install_data('./resource/linux/hades.desktop', install_dir: 'share/applications')
-    install_data('./resource/linux/hades.png', install_dir: 'share/icons/hicolor/256x256/apps')
+    install_data('./resource/linux/org.hades_emu.Hades.desktop', install_dir: 'share/applications')
+    install_data('./resource/linux/org.hades_emu.Hades.png', install_dir: 'share/icons/hicolor/256x256/apps')
 else # Not supported officially, but there's no reason not to try and build them anyway
     hades = executable(
         'hades',

@@ -81,7 +81,7 @@ SDL_AppInit(
 
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, "Hades");
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_VERSION_STRING, HADES_VERSION);
-        SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "org.hades-emu.hades");
+        SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, "org.hades_emu.Hades");
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_CREATOR_STRING, "Arignir");
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Copyright (C) 2021-2026 - The Hades Authors");
         SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_URL_STRING, "https://hades-emu.org");
