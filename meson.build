@@ -11,7 +11,7 @@ project(
     'Hades',
     'c',
     'cpp',
-    version: '1.2.0-dev',
+    version: '1.2.0',
     license: 'GPL-2.0-only',
     default_options: ['c_std=gnu17', 'cpp_std=c++11', 'buildtype=release', 'b_lto=true'],
 )

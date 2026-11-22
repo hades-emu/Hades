@@ -12,7 +12,7 @@ AppDir:
     id: org.hades_emu.Hades
     name: Hades
     icon: org.hades_emu.Hades
-    version: 1.2.0-dev
+    version: 1.2.0
     exec: usr/bin/hades
     exec_args: $@
   apt:
